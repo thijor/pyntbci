@@ -10,15 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+
       - name: Install dependencies
+        uses: actions/setup-python@v4
         run: |
           pip install -e .
           pip install sphinx sphinx_rtd_theme myst_parser
+
       - name: Sphinx build
         run: |
           cd doc/
           make html
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
