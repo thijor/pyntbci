@@ -89,13 +89,65 @@
              
   <section id="pyntbci">
 <h1>PyntBCI<a class="headerlink" href="#pyntbci" title="Link to this heading"></a></h1>
-<p>Python Noise-Tagging Brain-Computer interface (PyntBCI) is a Python library for the noise-tagging brain-computer
-interface (BCI) project developed at the Donders Institute for Brain, Cognition and Behaviour, Radboud University,
-Nijmegen, the Netherlands. PyntBCI contains various signal processing steps and machine learning algorithms for BCIs
-that make use of evoked responses of the electroencephalogram (EEG), specifically code-modulated responses such as the
-code-modulated visual evoked potential (c-VEP).</p>
+<p>The Python Noise-Tagging Brain-Computer interface (PyntBCI) library is a Python toolbox for the noise-tagging
+brain-computer interfacing (BCI) project developed at the Donders Institute for Brain, Cognition and Behaviour, Radboud
+University, Nijmegen, the Netherlands. PyntBCI contains various signal processing steps and machine learning algorithms
+for BCIs that make use of evoked responses of the electroencephalogram (EEG), specifically code-modulated responses such
+as the code-modulated visual evoked potential (c-VEP). For a constructive review of this field, see <a href="#id5"><span class="problematic" id="id1">[7]_</span></a>.</p>
+<p>When using PyntBCI, please reference at least one of the following: <a href="#id6"><span class="problematic" id="id2">[1]_</span></a>, <a href="#id7"><span class="problematic" id="id3">[2]_</span></a>, <a href="#id8"><span class="problematic" id="id4">[5]_</span></a>.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>To install PyntBCI, use:</p>
+<blockquote>
+<div><p>pip install pyntbci</p>
+</div></blockquote>
+</section>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
+<p>Various tutorials and example analysis pipelines are provided in the <cite>tutorials/</cite> (under Getting Started) and
+<cite>examples/</cite> (under Examples) folder, which operate on limited preprocessed data as provided with PyntBCI. Furthermore,
+please find various pipelines for several of the datasets referenced below in the <cite>pipelines/</cite> folder.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<p>re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+DOI: <a href="#id9"><span class="problematic" id="id10">`10.1371/journal.pone.0133797&lt;https://doi.org/10.1371/journal.pone.0133797&gt;`_</span></a></p>
+<p>broad-band evoked potentials-based brain computer interfaces. In Brain-Computer Interface Research (pp. 35-42).
+Springer, Cham. DOI: <a href="#id11"><span class="problematic" id="id12">`10.1007/978-3-319-64373-1_4&lt;https://doi.org/10.1007/978-3-319-64373-1_4&gt;`_</span></a></p>
+<p>Washington, DC: U.S. Patent and Trademark Office. <a href="#id13"><span class="problematic" id="id14">`Link&lt;https://patentimages.storage.googleapis.com/40/a3/bb/65db00c7de99ec/US10314508.pdf&gt;`_</span></a></p>
+<p>tying for VEP-based BCI. Journal of Neural Engineering, 16(6), 066038.
+DOI: <a href="#id15"><span class="problematic" id="id16">`10.1088/1741-2552/ab4057&lt;https://doi.org/10.1088/1741-2552/ab4057&gt;`_</span></a></p>
+<p>code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5), 056007.
+DOI: <a href="#id17"><span class="problematic" id="id18">`10.1088/1741-2552/abecef&lt;https://doi.org/10.1088/1741-2552/abecef&gt;`_</span></a></p>
+<p>visual brain-computer interface as communication aid for patients with amyotrophic lateral sclerosis. Clinical
+Neurophysiology, 132(10), 2404-2415. DOI: <a href="#id19"><span class="problematic" id="id20">`10.1016/j.clinph.2021.07.012&lt;https://doi.org/10.1016/j.clinph.2021.07.012&gt;`_</span></a></p>
+<p>Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): a literature review. Journal of
+Neural Engineering. DOI: <a href="#id21"><span class="problematic" id="id22">`10.1088/1741-2552/ac38cf&lt;https://doi.org/10.1088/1741-2552/ac38cf&gt;`_</span></a></p>
+<p>Evoked Potentials: An Offline Simulation. In International Work-Conference on Artificial Neural Networks (pp. 555-568).
+Cham: Springer Nature Switzerland. DOI: <a href="#id23"><span class="problematic" id="id24">`10.1007/978-3-031-43078-7_45&lt;https://doi.org/10.1007/978-3-031-43078-7_45&gt;`_</span></a></p>
+</section>
+<section id="datasets">
+<h2>Datasets<a class="headerlink" href="#datasets" title="Link to this heading"></a></h2>
+<p>On the Radboud Data Repository (<a href="#id25"><span class="problematic" id="id26">`RDR&lt;https://data.ru.nl/&gt;`_</span></a>):
+- Thielen et al. (2018) Broad-Band Visually Evoked Potentials: Re(con)volution in Brain-Computer Interfacing.
+DOI: <a href="#id27"><span class="problematic" id="id28">`10.34973/1ecz-1232&lt;https://doi.org/10.34973/1ecz-1232&gt;`_</span></a>
+- Ahmadi et al. (2018) High density EEG measurement. DOI: <a href="#id29"><span class="problematic" id="id30">`10.34973/psaf-mq72&lt;https://doi.org/10.34973/psaf-mq72&gt;`_</span></a>
+- Ahmadi et al. (2019) Sensor tying. DOI: <a href="#id31"><span class="problematic" id="id32">`10.34973/ehq6-b836&lt;https://doi.org/10.34973/ehq6-b836&gt;`_</span></a>
+- Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain</p>
+<blockquote>
+<div><p>computer interface. DOI: <a href="#id33"><span class="problematic" id="id34">`10.34973/9txv-z787&lt;https://doi.org/10.34973/9txv-z787&gt;`_</span></a></p>
+</div></blockquote>
+<p>On Mother of all BCI Benchmarks (<a href="#id35"><span class="problematic" id="id36">`MOABB&lt;https://moabb.neurotechx.com/docs/index.html&gt;`_</span></a>):
+- c-VEP dataset from Thielen et al. (2021) <a href="#id37"><span class="problematic" id="id38">`link&lt;https://moabb.neurotechx.com/docs/generated/moabb.datasets.Thielen2021.html#moabb.datasets.Thielen2021&gt;`_</span></a></p>
+</section>
+<section id="contact">
+<h2>Contact<a class="headerlink" href="#contact" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Jordy Thielen (<a class="reference external" href="mailto:jordy&#46;thielen&#37;&#52;&#48;donders&#46;ru&#46;nl">jordy<span>&#46;</span>thielen<span>&#64;</span>donders<span>&#46;</span>ru<span>&#46;</span>nl</a>)</p></li>
+</ul>
 <div class="toctree-wrapper compound">
 </div>
+</section>
 </section>
 
 
