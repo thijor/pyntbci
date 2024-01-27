@@ -214,7 +214,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-136
+.. GENERATED FROM PYTHON SOURCE LINES 127-137
 
 Margin dynamic stopping
 -----------------------
@@ -222,11 +222,12 @@ The margin method learns threshold margins (i.e., the difference between the bes
 These margins are defined as such that a targeted accuracy is reached.
 
 References:
+
 .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
        doi: https://doi.org/10.1371/journal.pone.0133797
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-211
+.. GENERATED FROM PYTHON SOURCE LINES 137-212
 
 .. code-block:: Python
 
@@ -338,7 +339,7 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 212-221
+.. GENERATED FROM PYTHON SOURCE LINES 213-223
 
 Beta dynamic stopping
 ---------------------
@@ -346,11 +347,12 @@ The beta method fits a beta distribution to the non-maximum scores (i.e., if cor
 tests the probability of the maximum correlation to belong to that beta distribution.
 
 References:
+
 .. [4] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-283
+.. GENERATED FROM PYTHON SOURCE LINES 223-285
 
 .. code-block:: Python
 
@@ -437,7 +439,7 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 284-292
+.. GENERATED FROM PYTHON SOURCE LINES 286-295
 
 Bayesian dynamic stopping (BES0)
 --------------------------------
@@ -445,10 +447,11 @@ The Bayesian method fits Gaussian distributions for target and non-target respon
 threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
 
 References:
+
 .. [5] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
        for parallel stimulation evoked response BCIs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 292-372
+.. GENERATED FROM PYTHON SOURCE LINES 295-375
 
 .. code-block:: Python
 
@@ -565,7 +568,7 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 373-381
+.. GENERATED FROM PYTHON SOURCE LINES 376-385
 
 Bayesian dynamic stopping (BES1)
 --------------------------------
@@ -573,10 +576,11 @@ The Bayesian method fits Gaussian distributions for target and non-target respon
 threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
 
 References:
+
 .. [6] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
        for parallel stimulation evoked response BCIs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 381-442
+.. GENERATED FROM PYTHON SOURCE LINES 385-446
 
 .. code-block:: Python
 
@@ -662,7 +666,7 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 443-451
+.. GENERATED FROM PYTHON SOURCE LINES 447-456
 
 Bayesian dynamic stopping (BES2)
 --------------------------------
@@ -670,10 +674,11 @@ The Bayesian method fits Gaussian distributions for target and non-target respon
 threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
 
 References:
+
 .. [7] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
        for parallel stimulation evoked response BCIs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 451-512
+.. GENERATED FROM PYTHON SOURCE LINES 456-517
 
 .. code-block:: Python
 
@@ -759,14 +764,14 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 513-517
+.. GENERATED FROM PYTHON SOURCE LINES 518-522
 
 Overall comparison
 ------------------
 Comparison of the presented stopping methods. Note, each of these use default parameters that might need fine-tuning.
 Additionally, the evaluation is performed on a single participant only.
 
-.. GENERATED FROM PYTHON SOURCE LINES 517-545
+.. GENERATED FROM PYTHON SOURCE LINES 522-550
 
 .. code-block:: Python
 
@@ -819,7 +824,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 15.041 seconds)
+   **Total running time of the script:** (0 minutes 13.587 seconds)
 
 
 .. _sphx_glr_download_examples_dynamic_stopping.py:
