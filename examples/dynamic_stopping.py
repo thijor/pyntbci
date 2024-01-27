@@ -130,6 +130,7 @@ folds = np.repeat(np.arange(n_folds), int(n_trials / n_folds))
 # These margins are defined as such that a targeted accuracy is reached.
 #
 # References:
+#
 # .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
 #        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
 #        doi: https://doi.org/10.1371/journal.pone.0133797
@@ -215,6 +216,7 @@ print(f"\tITR: avg={itr_margin.mean():.1f} with std={itr_margin.std():.2f}")
 # tests the probability of the maximum correlation to belong to that beta distribution.
 #
 # References:
+#
 # .. [4] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
 #        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
 #        056007. doi: http://doi.org/10.1088/1741-2552/abecef
@@ -287,6 +289,7 @@ print(f"\tITR: avg={itr_beta.mean():.1f} with std={itr_beta.std():.2f}")
 # threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
 #
 # References:
+#
 # .. [5] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
 #        for parallel stimulation evoked response BCIs.
 
@@ -376,6 +379,7 @@ print(f"\tITR: avg={itr_bes0.mean():.1f} with std={itr_bes0.std():.2f}")
 # threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
 #
 # References:
+#
 # .. [6] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
 #        for parallel stimulation evoked response BCIs.
 
@@ -446,6 +450,7 @@ print(f"\tITR: avg={itr_bes1.mean():.1f} with std={itr_bes1.std():.2f}")
 # threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
 #
 # References:
+#
 # .. [7] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
 #        for parallel stimulation evoked response BCIs.
 
