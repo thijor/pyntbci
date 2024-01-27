@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.correct_latency
+=================================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: correct_latency
+
+.. include:: pyntbci.utilities.correct_latency.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

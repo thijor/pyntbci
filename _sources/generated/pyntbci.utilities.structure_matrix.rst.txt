@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.structure_matrix
+==================================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: structure_matrix
+
+.. include:: pyntbci.utilities.structure_matrix.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

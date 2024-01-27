@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; PyntBCI 0.2.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=6ffd866b"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyntbci.classifiers.eCCA" href="generated/pyntbci.classifiers.eCCA.html" />
+    <link rel="prev" title="Dynamic stopping" href="examples/dynamic_stopping.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyntBCI
+          </a>
+              <div class="version">
+                0.2.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.classifiers">Classifiers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html">pyntbci.classifiers.eCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html">pyntbci.classifiers.eTRCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html">pyntbci.classifiers.rCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.FilterBank.html">pyntbci.classifiers.FilterBank</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.codes">Codes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_apa_sequence.html">pyntbci.codes.make_apa_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_de_bruijn_sequence.html">pyntbci.codes.make_de_bruijn_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_golay_sequence.html">pyntbci.codes.make_golay_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_gold_codes.html">pyntbci.codes.make_gold_codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_m_sequence.html">pyntbci.codes.make_m_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.is_de_bruijn_sequence.html">pyntbci.codes.is_de_bruijn_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.is_gold_codes.html">pyntbci.codes.is_gold_codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.is_m_sequence.html">pyntbci.codes.is_m_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.modulate.html">pyntbci.codes.modulate</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.plotting">Plotting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.plotting.topoplot.html">pyntbci.plotting.topoplot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.stopping">Stopping</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stopping.BayesStopping.html">pyntbci.stopping.BayesStopping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stopping.BetaStopping.html">pyntbci.stopping.BetaStopping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stopping.MarginStopping.html">pyntbci.stopping.MarginStopping</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.transformers">Transformers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.transformers.CCA.html">pyntbci.transformers.CCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.transformers.TRCA.html">pyntbci.transformers.TRCA</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.utilities">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.correlation.html">pyntbci.utilities.correlation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.euclidean.html">pyntbci.utilities.euclidean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html">pyntbci.utilities.event_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.structure_matrix.html">pyntbci.utilities.structure_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html">pyntbci.utilities.correct_latency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html">pyntbci.utilities.filterbank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html">pyntbci.utilities.trials_to_epochs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.itr.html">pyntbci.utilities.itr</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyntBCI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+</section>
+<section id="module-pyntbci.classifiers">
+<span id="classifiers"></span><h1>Classifiers<a class="headerlink" href="#module-pyntbci.classifiers" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
+<td><p>ERP CCA pipeline.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
+<td><p>ERP TRCA pipeline.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(codes, fs[, event, transient_size, ...])</p></td>
+<td><p>Reconvolution CCA pipeline.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.FilterBank.html#pyntbci.classifiers.FilterBank" title="pyntbci.classifiers.FilterBank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilterBank</span></code></a>(estimator[, gating])</p></td>
+<td><p>Filterbank pipeline.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.codes">
+<span id="codes"></span><h1>Codes<a class="headerlink" href="#module-pyntbci.codes" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_apa_sequence.html#pyntbci.codes.make_apa_sequence" title="pyntbci.codes.make_apa_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_apa_sequence</span></code></a>()</p></td>
+<td><p>Generate an almost perfect auto-correlation sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_de_bruijn_sequence.html#pyntbci.codes.make_de_bruijn_sequence" title="pyntbci.codes.make_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_de_bruijn_sequence</span></code></a>([k, n, seed])</p></td>
+<td><p>Generate a de Bruijn sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_golay_sequence.html#pyntbci.codes.make_golay_sequence" title="pyntbci.codes.make_golay_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_golay_sequence</span></code></a>()</p></td>
+<td><p>Generate complementary Golay sequences.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_gold_codes.html#pyntbci.codes.make_gold_codes" title="pyntbci.codes.make_gold_codes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_gold_codes</span></code></a>([poly1, poly2, seed1, seed2])</p></td>
+<td><p>Generate a set of Gold codes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_m_sequence.html#pyntbci.codes.make_m_sequence" title="pyntbci.codes.make_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_m_sequence</span></code></a>([poly, base, seed])</p></td>
+<td><p>Generate a maximum length sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.is_de_bruijn_sequence.html#pyntbci.codes.is_de_bruijn_sequence" title="pyntbci.codes.is_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_de_bruijn_sequence</span></code></a>(code[, k, n])</p></td>
+<td><p>Check whether a code is a de Bruijn sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.is_gold_codes.html#pyntbci.codes.is_gold_codes" title="pyntbci.codes.is_gold_codes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_gold_codes</span></code></a>(codes)</p></td>
+<td><p>Check whether the codes are Gold codes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.is_m_sequence.html#pyntbci.codes.is_m_sequence" title="pyntbci.codes.is_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_m_sequence</span></code></a>(code)</p></td>
+<td><p>Check whether a code is an m-sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.modulate.html#pyntbci.codes.modulate" title="pyntbci.codes.modulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modulate</span></code></a>(codes)</p></td>
+<td><p>Modulate a set of codes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.plotting">
+<span id="plotting"></span><h1>Plotting<a class="headerlink" href="#module-pyntbci.plotting" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.plotting.topoplot.html#pyntbci.plotting.topoplot" title="pyntbci.plotting.topoplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topoplot</span></code></a>(z, locfile[, cbar, ax, iso])</p></td>
+<td><p>Plot a topoplot.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.stopping">
+<span id="stopping"></span><h1>Stopping<a class="headerlink" href="#module-pyntbci.stopping" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping" title="pyntbci.stopping.BayesStopping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BayesStopping</span></code></a>(estimator, segment_time, fs[, ...])</p></td>
+<td><p>Bayesian dynamic stopping.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stopping.BetaStopping.html#pyntbci.stopping.BetaStopping" title="pyntbci.stopping.BetaStopping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BetaStopping</span></code></a>(estimator[, target_p, fs, max_time])</p></td>
+<td><p>Beta dynamic stopping.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stopping.MarginStopping.html#pyntbci.stopping.MarginStopping" title="pyntbci.stopping.MarginStopping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MarginStopping</span></code></a>(estimator, segment_time, fs)</p></td>
+<td><p>Margin dynamic stopping.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.transformers">
+<span id="transformers"></span><h1>Transformers<a class="headerlink" href="#module-pyntbci.transformers" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA" title="pyntbci.transformers.CCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CCA</span></code></a>(n_components[, lx, ly, template_metric, ...])</p></td>
+<td><p>Canonical correlation analysis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.transformers.TRCA.html#pyntbci.transformers.TRCA" title="pyntbci.transformers.TRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TRCA</span></code></a>(n_components)</p></td>
+<td><p>Task related component analysis.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.utilities">
+<span id="utilities"></span><h1>Utilities<a class="headerlink" href="#module-pyntbci.utilities" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correlation.html#pyntbci.utilities.correlation" title="pyntbci.utilities.correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation</span></code></a>(A, B)</p></td>
+<td><p>Compute the correlation coefficient.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean" title="pyntbci.utilities.euclidean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euclidean</span></code></a>(A, B)</p></td>
+<td><p>Compute the Euclidean distance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix" title="pyntbci.utilities.event_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event_matrix</span></code></a>(V, event[, onset_event])</p></td>
+<td><p>Translate codes to an event matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.structure_matrix.html#pyntbci.utilities.structure_matrix" title="pyntbci.utilities.structure_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">structure_matrix</span></code></a>(E, transient_size[, amplitudes])</p></td>
+<td><p>Translate an event matrix to a structure matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency" title="pyntbci.utilities.correct_latency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_latency</span></code></a>(X, y, latency, fs[, axis])</p></td>
+<td><p>Correct for a latency in the data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank" title="pyntbci.utilities.filterbank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filterbank</span></code></a>(X, passbands, fs[, tmin, ftype, ...])</p></td>
+<td><p>Apply a filterbank.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
+<td><p>Slice trials to epochs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
+<td><p>Compute the information-transfer rate.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples/dynamic_stopping.html" class="btn btn-neutral float-left" title="Dynamic stopping" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generated/pyntbci.classifiers.eCCA.html" class="btn btn-neutral float-right" title="pyntbci.classifiers.eCCA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Jordy Thielen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

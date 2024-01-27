@@ -1,0 +1,12 @@
+﻿pyntbci.codes.modulate
+======================
+
+.. currentmodule:: pyntbci.codes
+
+.. autofunction:: modulate
+
+.. include:: pyntbci.codes.modulate.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

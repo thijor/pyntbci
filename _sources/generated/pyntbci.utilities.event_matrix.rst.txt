@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.event_matrix
+==============================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: event_matrix
+
+.. include:: pyntbci.utilities.event_matrix.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

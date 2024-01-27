@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyntbci.utilities &mdash; PyntBCI 0.2.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=6ffd866b"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PyntBCI
+          </a>
+              <div class="version">
+                0.2.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.codes">Codes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.utilities">Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PyntBCI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyntbci.utilities</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyntbci.utilities</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">cheby1</span><span class="p">,</span> <span class="n">cheb1ord</span><span class="p">,</span> <span class="n">filtfilt</span>
+
+
+<div class="viewcode-block" id="correct_latency">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency">[docs]</a>
+<span class="k">def</span> <span class="nf">correct_latency</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">latency</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Correct for a latency in the data. This is done by shifting data according to the class-specific latencies.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X: np.ndarray</span>
+<span class="sd">        The EEG data of shape (n_trials, ...)</span>
+<span class="sd">    y: np.ndarray</span>
+<span class="sd">        The labels of the EEG data of shape (n_trials) that indicate which latency to use for which trials.</span>
+<span class="sd">    latency: np.ndarray</span>
+<span class="sd">        The list with latencies in seconds of shape (n_classes).</span>
+<span class="sd">    fs: int</span>
+<span class="sd">        The sampling frequency of the EEG data in Hz.</span>
+<span class="sd">    axis: int (default: -1)</span>
+<span class="sd">        The axis in X to perform the correction to.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X: np.ndarray</span>
+<span class="sd">        The latency-corrected EEG data of shape (n_trials, ...).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">label</span> <span class="o">==</span> <span class="n">y</span>
+        <span class="k">if</span> <span class="n">latency</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Z</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">latency</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">*</span> <span class="n">fs</span><span class="p">))</span>
+            <span class="n">Z</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Z</span></div>
+
+
+
+<div class="viewcode-block" id="correlation">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.correlation.html#pyntbci.utilities.correlation">[docs]</a>
+<span class="k">def</span> <span class="nf">correlation</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the correlation coefficient. Computed between two sets of variables.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A: np.ndarray</span>
+<span class="sd">        The first set of variables of shape (n_A, n_samples).</span>
+<span class="sd">    B: np.ndarray</span>
+<span class="sd">        The second set of variables of shape (n_B, n_samples).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scores: np.ndarray</span>
+<span class="sd">        The correlation matrix of shape (n_A, n_B).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">B</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Number of samples in A (</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) does not equal B (</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="c1"># Demean</span>
+    <span class="n">Az</span> <span class="o">=</span> <span class="n">A</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">Bz</span> <span class="o">=</span> <span class="n">B</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Sum of squares</span>
+    <span class="n">ssA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Az</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ssB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Bz</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Correlation coefficient</span>
+    <span class="n">outer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ssA</span><span class="p">,</span> <span class="n">ssB</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Az</span><span class="p">,</span> <span class="n">Bz</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">outer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">scores</span></div>
+
+
+
+<div class="viewcode-block" id="euclidean">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean">[docs]</a>
+<span class="k">def</span> <span class="nf">euclidean</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the Euclidean distance. Computed between two sets of variables.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A: np.ndarray</span>
+<span class="sd">        The first set of variables of shape (n_A, n_samples).</span>
+<span class="sd">    B: np.ndarray</span>
+<span class="sd">        The second set of variables of shape (n_B, n_samples).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scores: np.ndarray</span>
+<span class="sd">        The correlation matrix of shape (n_A, n_B).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">B</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Number of samples in A (</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) does not equal B (</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">B</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">scores</span></div>
+
+
+
+<div class="viewcode-block" id="event_matrix">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix">[docs]</a>
+<span class="k">def</span> <span class="nf">event_matrix</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate codes to an event matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    V: np.ndarray</span>
+<span class="sd">        The noise-tags (i.e., pseudo-random noise-codes) used for stimulation of shape (n_codes, n_samples). Note, this</span>
+<span class="sd">        can be any continuous time-series per code, it is not limited to binary codes.</span>
+<span class="sd">    event: str</span>
+<span class="sd">        The event type to perform the transformation of codes to events with:</span>
+<span class="sd">            &quot;id&quot; | &quot;identity&quot;: the events are continuous, the code itself.</span>
+<span class="sd">            &quot;dur&quot; | &quot;duration&quot;: each run-length of the same value is an event (e.g., 1, 11, 111, etc.).</span>
+<span class="sd">            &quot;re&quot; | &quot;rise&quot; | &quot;risingedge&quot;: each transition of a lower to a higher value is an event (e.g., 01).</span>
+<span class="sd">            &quot;fe&quot; | &quot;fall&quot; | &quot;fallingedge&quot;: each transition of a higher to a lower value is an event (i.e., 10).</span>
+<span class="sd">            &quot;refe&quot; | &quot;risefall&quot; | &quot;risingedgefallingedge&quot; | &quot;contrast&quot;: one event for rising edges and one event for</span>
+<span class="sd">            falling edges (i.e., 01 and 10).</span>
+<span class="sd">    onset_event: bool (default: False)</span>
+<span class="sd">        Whether or not to model the onset of stimulation. This &quot;onset&quot; event is added as last event.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    E: np.ndarray</span>
+<span class="sd">        An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).</span>
+<span class="sd">    events: tuple</span>
+<span class="sd">        A tuple of event descriptors of shape (n_events).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">V</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">n_codes</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;id&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;identity&quot;</span><span class="p">:</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">V</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,)</span>
+
+    <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;dur&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span>
+
+        <span class="c1"># Get rising and falling edges</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">change</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">!=</span> <span class="mi">0</span>
+
+        <span class="c1"># Create event dictionary</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i_code</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_codes</span><span class="p">):</span>
+
+            <span class="c1"># Get rising and falling edge locations</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="n">i_code</span><span class="p">,</span> <span class="p">:])[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">n_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]))</span>
+
+            <span class="c1"># Get durations of events</span>
+            <span class="n">durations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+            <span class="c1"># Ignore inactive periods</span>
+            <span class="n">durations</span> <span class="o">=</span> <span class="n">durations</span><span class="p">[</span><span class="n">V</span><span class="p">[</span><span class="n">i_code</span><span class="p">,</span> <span class="n">idx</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">V</span><span class="p">[</span><span class="n">i_code</span><span class="p">,</span> <span class="n">idx</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Fill out durations in dictionary</span>
+            <span class="n">unique_durations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">duration</span> <span class="ow">in</span> <span class="n">unique_durations</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">duration</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">E</span><span class="p">:</span>
+                    <span class="n">E</span><span class="p">[</span><span class="n">duration</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bool_&quot;</span><span class="p">)</span>
+                <span class="n">E</span><span class="p">[</span><span class="n">duration</span><span class="p">][</span><span class="n">i_code</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">durations</span> <span class="o">==</span> <span class="n">duration</span>
+
+        <span class="c1"># Extract unique events (sorted numerically or alphabetically)</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">E</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+        <span class="c1"># Convert dictionary to event matrix</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">E</span><span class="p">[</span><span class="n">duration</span><span class="p">]</span> <span class="k">for</span> <span class="n">duration</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;bool_&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Get rising edges as event</span>
+    <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;re&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;rise&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;risingedge&quot;</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">V</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rise</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">rise</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;rise&quot;</span><span class="p">,)</span>
+
+    <span class="c1"># Get falling edges as event</span>
+    <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;fe&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;fall&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;fallingedge&quot;</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">V</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">fall</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">&lt;</span> <span class="mi">0</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">fall</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;fall&quot;</span><span class="p">,)</span>
+
+    <span class="c1"># Get rising and falling edges as separate events</span>
+    <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;refe&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;risefall&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;risingedgefallingedge&quot;</span> <span class="ow">or</span> <span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;contrast&quot;</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">V</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rise</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">fall</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">&lt;</span> <span class="mi">0</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">rise</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">fall</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;rise&quot;</span><span class="p">,</span> <span class="s2">&quot;fall&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown event: </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Add onset response as separate event</span>
+    <span class="k">if</span> <span class="n">onset_event</span><span class="p">:</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">E</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">E</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">events</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;onset&quot;</span><span class="p">,)</span>
+
+    <span class="k">return</span> <span class="n">E</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">events</span></div>
+
+
+
+<div class="viewcode-block" id="filterbank">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank">[docs]</a>
+<span class="k">def</span> <span class="nf">filterbank</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">passbands</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s2">&quot;butterworth&quot;</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stopbands</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="mf">40.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the</span>
+<span class="sd">    minimum loss in the stopband.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X: np.ndarray</span>
+<span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">    passbands: list(list)</span>
+<span class="sd">        A list of lists with passbands defined as [lower, higher] cutoff in Hz.</span>
+<span class="sd">    fs: int</span>
+<span class="sd">        The sampling frequency of the EEG data in Hz.</span>
+<span class="sd">    tmin: float (default: None)</span>
+<span class="sd">        The window before trial onset that can catch any filter artefacts and will be cut off after filtering. If None,</span>
+<span class="sd">        no data will be cut away.</span>
+<span class="sd">    ftype: str (default: &quot;butterworth&quot;)</span>
+<span class="sd">        The filter type: &quot;butterworth&quot; | &quot;chebyshev1&quot;</span>
+<span class="sd">    N: int | list (default: None)</span>
+<span class="sd">        The filter order. If a list is provided, it is the order for each passband. If None, the order is set given the</span>
+<span class="sd">        stopbands, gpass and gstop.</span>
+<span class="sd">    stopbands: list(list) (default: None)</span>
+<span class="sd">        A list of lists with a stopband for each passband defined as [lower, higher] cutoff in Hz. If None, the</span>
+<span class="sd">        stopbands default to [lower-2, higher+7] of the passbands. Only used if N=None.</span>
+<span class="sd">    gpass: float | list (default: 3.0)</span>
+<span class="sd">        The maximum loss in the passband (dB). If a list is provided, it is the gpass for each passband. Only used if</span>
+<span class="sd">        N=None.</span>
+<span class="sd">    gstop: float | list (fedault: 30.0)</span>
+<span class="sd">        The minimum attenuation in the stopband (dB). If a list is provided, it is the gstop for each stopband. Only</span>
+<span class="sd">        used if N=None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X: np.ndarray</span>
+<span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_passbands). If tmin is not None, n_samples</span>
+<span class="sd">        will be reduced with tmin * fs number of samples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">passband</span> <span class="ow">in</span> <span class="n">passbands</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">passband</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="s2">&quot;The passbands should be a list of lists.&quot;</span>
+
+    <span class="c1"># Set default stopband to lower-2 and higher+7</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stopbands</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stopbands</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">max</span><span class="p">([</span><span class="n">l</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]),</span> <span class="nb">min</span><span class="p">([</span><span class="n">h</span> <span class="o">+</span> <span class="mf">7.0</span><span class="p">,</span> <span class="n">fs</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])]</span> <span class="k">for</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="ow">in</span> <span class="n">passbands</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">passbands</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">stopbands</span><span class="p">),</span> <span class="s2">&quot;Number of bands in passbands and stopbands should be equal.&quot;</span>
+        <span class="k">for</span> <span class="n">passband</span><span class="p">,</span> <span class="n">stopband</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">passbands</span><span class="p">,</span> <span class="n">stopbands</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">passband</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">stopband</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;Lower passband values should be higher than lower stopband values.&quot;</span>
+            <span class="k">assert</span> <span class="n">passband</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">stopband</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;Higher passband values should be lower than higher stopband values.&quot;</span>
+
+    <span class="c1"># Set default gpass and gstop</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpass</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">gpass</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">passbands</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="n">gpass</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">passbands</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">gpass</span><span class="p">),</span> <span class="s2">&quot;The number of passbands should equal the number of gpass.&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gstop</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">gstop</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">passbands</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="n">gstop</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">stopbands</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">gstop</span><span class="p">),</span> <span class="s2">&quot;The number of stopbands should equal the number of gstop.&quot;</span>
+
+    <span class="c1"># Filter the data</span>
+    <span class="n">Xf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">passbands</span><span class="p">),)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i_band</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">passbands</span><span class="p">)):</span>
+
+        <span class="c1"># Butterworth filter design</span>
+        <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;butterworth&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">N</span><span class="p">,</span> <span class="n">Wn</span> <span class="o">=</span> <span class="n">buttord</span><span class="p">(</span><span class="n">wp</span><span class="o">=</span><span class="n">passbands</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span> <span class="n">ws</span><span class="o">=</span><span class="n">stopbands</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span> <span class="n">gpass</span><span class="o">=</span><span class="n">gpass</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span> <span class="n">gstop</span><span class="o">=</span><span class="n">gstop</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span>
+                                <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Wn</span> <span class="o">=</span> <span class="n">passbands</span><span class="p">[</span><span class="n">i_band</span><span class="p">]</span>
+            <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">butter</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
+
+        <span class="c1"># Chebyshev Type I filter design</span>
+        <span class="k">elif</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;chebyshev1&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">N</span><span class="p">,</span> <span class="n">Wn</span> <span class="o">=</span> <span class="n">cheb1ord</span><span class="p">(</span><span class="n">wp</span><span class="o">=</span><span class="n">passbands</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span> <span class="n">ws</span><span class="o">=</span><span class="n">stopbands</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span> <span class="n">gpass</span><span class="o">=</span><span class="n">gpass</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span> <span class="n">gstop</span><span class="o">=</span><span class="n">gstop</span><span class="p">[</span><span class="n">i_band</span><span class="p">],</span>
+                                 <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Wn</span> <span class="o">=</span> <span class="n">passbands</span><span class="p">[</span><span class="n">i_band</span><span class="p">]</span>
+            <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">cheby1</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">rp</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown ftype:&quot;</span><span class="p">,</span> <span class="n">ftype</span><span class="p">)</span>
+
+        <span class="c1"># Filter the data</span>
+        <span class="n">Xf</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i_band</span><span class="p">]</span> <span class="o">=</span> <span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Cut away initial window that can capture filter artefacts</span>
+    <span class="k">if</span> <span class="n">tmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Xf</span> <span class="o">=</span> <span class="n">Xf</span><span class="p">[:,</span> <span class="p">:,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">tmin</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)):,</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">Xf</span></div>
+
+
+
+<div class="viewcode-block" id="itr">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr">[docs]</a>
+<span class="k">def</span> <span class="nf">itr</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the information-transfer rate.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n: int | np.ndarray:</span>
+<span class="sd">        The number of classes.</span>
+<span class="sd">    p: float | np.ndarray:</span>
+<span class="sd">        The decoding accuracy between 0 and 1.</span>
+<span class="sd">    t: float | np.ndarray:</span>
+<span class="sd">        The decoding time in seconds (including inter-trial time).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    itr: float | np.ndarray</span>
+<span class="sd">        The ITR in bits per minute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">[</span><span class="n">p</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+    <span class="n">p</span><span class="p">[</span><span class="n">p</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="n">p</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="mi">60</span> <span class="o">/</span> <span class="n">t</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="structure_matrix">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.structure_matrix.html#pyntbci.utilities.structure_matrix">[docs]</a>
+<span class="k">def</span> <span class="nf">structure_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">transient_size</span><span class="p">,</span> <span class="n">amplitudes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate an event matrix to a structure matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    E: np.ndarray</span>
+<span class="sd">        An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).</span>
+<span class="sd">    transient_size: int | list</span>
+<span class="sd">        The length of the transient response to fit for all (int) or each of the (list) events in samples.</span>
+<span class="sd">    amplitudes: np.ndarray</span>
+<span class="sd">        An amplitude matrix to in/decrease the presence of events over the time-course of codes, of shape (n_codes,</span>
+<span class="sd">        n_samples).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    M: np.ndarray</span>
+<span class="sd">        The structure matrix denoting event timings of shape (n_codes, transient_size, n_samples).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_codes</span><span class="p">,</span> <span class="n">n_events</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">transient_size</span> <span class="o">=</span> <span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">transient_size</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient_size</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient_size</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">transient_size</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;len(transient_size) does not match E.shape[0].&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;transient_size should be (int, list, tuple).&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create structure matrix</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i_event</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_events</span><span class="p">):</span>
+
+        <span class="c1"># Add amplitude information</span>
+        <span class="k">if</span> <span class="n">amplitudes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">E</span><span class="p">[:,</span> <span class="n">i_event</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*=</span> <span class="n">amplitudes</span>
+
+        <span class="c1"># Create Toeplitz structure</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="n">transient_size</span><span class="p">[</span><span class="n">i_event</span><span class="p">],</span> <span class="n">n_samples</span><span class="p">))</span>
+        <span class="n">tmp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">E</span><span class="p">[:,</span> <span class="n">i_event</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">for</span> <span class="n">i_sample</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">transient_size</span><span class="p">[</span><span class="n">i_event</span><span class="p">]):</span>
+            <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_sample</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_sample</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_sample</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">M</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+    <span class="c1"># Concatenate structure matrices</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">M</span></div>
+
+
+
+<div class="viewcode-block" id="trials_to_epochs">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs">[docs]</a>
+<span class="k">def</span> <span class="nf">trials_to_epochs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">codes</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice trials to epochs.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X: np.ndarray</span>
+<span class="sd">        The EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">    y: np.ndarray</span>
+<span class="sd">        Label vector of shape (n_trials).</span>
+<span class="sd">    codes: np.ndarray</span>
+<span class="sd">        Codes matrix of shape (n_codes, n_samples).</span>
+<span class="sd">    epoch_size: int</span>
+<span class="sd">        The the width of an epoch starting at the onset of an epoch in samples.</span>
+<span class="sd">    step_size: int</span>
+<span class="sd">        The distance between consecutive epochs in samples.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The sliced EEG data of shape (n_trials, n_epochs, n_channels, epoch_size).</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The sliced label information of shape (n_trials, n_epochs).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n_epochs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">n_samples</span> <span class="o">-</span> <span class="n">epoch_size</span><span class="p">)</span> <span class="o">/</span> <span class="n">step_size</span><span class="p">)</span>
+
+    <span class="n">X_sliced</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">y_sliced</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i_epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">i_epoch</span> <span class="o">*</span> <span class="n">step_size</span>
+        <span class="n">X_sliced</span><span class="p">[:,</span> <span class="n">i_epoch</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start</span><span class="p">:</span><span class="n">start</span> <span class="o">+</span> <span class="n">epoch_size</span><span class="p">]</span>
+        <span class="n">y_sliced</span><span class="p">[:,</span> <span class="n">i_epoch</span><span class="p">]</span> <span class="o">=</span> <span class="n">codes</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">start</span> <span class="o">%</span> <span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">return</span> <span class="n">X_sliced</span><span class="p">,</span> <span class="n">y_sliced</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Jordy Thielen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+﻿pyntbci.codes.make_gold_codes
+=============================
+
+.. currentmodule:: pyntbci.codes
+
+.. autofunction:: make_gold_codes
+
+.. include:: pyntbci.codes.make_gold_codes.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

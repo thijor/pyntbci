@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.filterbank
+============================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: filterbank
+
+.. include:: pyntbci.utilities.filterbank.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

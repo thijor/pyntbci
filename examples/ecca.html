@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eCCA &mdash; PyntBCI 0.2.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=6ffd866b"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Epoch CCA and LDA" href="epoch_cca_lda.html" />
+    <link rel="prev" title="FBrCCA" href="fbrcca.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyntBCI
+          </a>
+              <div class="version">
+                0.2.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="fbrcca.html">FBrCCA</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">eCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epoch_cca_lda.html">Epoch CCA and LDA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="etrca.html">eTRCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rcca.html">rCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_stopping.html">Dynamic stopping</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.codes">Codes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyntBCI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">eCCA</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/ecca.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-examples-ecca-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="ecca">
+<span id="sphx-glr-examples-ecca-py"></span><h1>eCCA<a class="headerlink" href="#ecca" title="Link to this heading"></a></h1>
+<p>This script shows how to use eCCA from PyntBCI for decoding c-VEP trials. The eCCA method uses a template matching
+classifier where templates are estimated using averaging and canonical correlation analysis (CCA).</p>
+<p>The data used in this script come from Thielen et al. (2021), see references <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
+computer interface. DOI: <a class="reference external" href="https://doi.org/10.34973/9txv-z787">https://doi.org/10.34973/9txv-z787</a></p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
+code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
+056007. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/abecef">https://doi.org/10.1088/1741-2552/abecef</a></p>
+</aside>
+</aside>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">seaborn</span>
+
+<span class="kn">import</span> <span class="nn">pyntbci</span>
+
+<span class="n">seaborn</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="set-the-data-path">
+<h2>Set the data path<a class="headerlink" href="#set-the-data-path" title="Link to this heading"></a></h2>
+<p>The cell below specifies where the dataset has been downloaded to. Please, make sure it is set correctly according to
+the specification of your device. If none of the folder structures in the dataset were changed, the cells below should
+work just as fine.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pyntbci</span><span class="o">.</span><span class="vm">__file__</span><span class="p">))</span>  <span class="c1"># path to the dataset</span>
+<span class="n">subject</span> <span class="o">=</span> <span class="s2">&quot;sub-01&quot;</span>  <span class="c1"># the subject to analyse</span>
+</pre></div>
+</div>
+</section>
+<section id="the-data">
+<h2>The data<a class="headerlink" href="#the-data" title="Link to this heading"></a></h2>
+<p>The dataset consists of (1) the EEG data X that is a matrix of k trials, c channels, and m samples; (2) the labels y
+that is a vector of k trials; (3) the pseudo-random noise-codes V that is a matrix of n classes and m samples. Note,
+the codes are upsampled to match the EEG sampling frequency and contain only one code-cycle.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load data</span>
+<span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;thielen2021_</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">.npz&quot;</span><span class="p">)</span>
+<span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">]</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">]</span>
+<span class="n">fr</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials x channels x samples)&quot;</span><span class="p">)</span>  <span class="c1"># EEG</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials)&quot;</span><span class="p">)</span>  <span class="c1"># labels</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes, samples)&quot;</span><span class="p">)</span>  <span class="c1"># codes</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fs&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="s2">&quot;Hz&quot;</span><span class="p">)</span>  <span class="c1"># sampling frequency</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fr&quot;</span><span class="p">,</span> <span class="n">fr</span><span class="p">,</span> <span class="s2">&quot;Hz&quot;</span><span class="p">)</span>  <span class="c1"># presentation rate</span>
+
+<span class="c1"># Extract data dimensions</span>
+<span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">n_classes</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Read cap file</span>
+<span class="n">capfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;capfiles&quot;</span><span class="p">,</span> <span class="s2">&quot;thielen8.loc&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">capfile</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fid</span><span class="p">:</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fid</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+        <span class="n">channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Channels:&quot;</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">channels</span><span class="p">))</span>
+
+<span class="c1"># Visualize EEG data</span>
+<span class="n">i_trial</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># the trial to visualize</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs</span><span class="p">,</span> <span class="mf">25e-6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)</span> <span class="o">+</span> <span class="n">X</span><span class="p">[</span><span class="n">i_trial</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># limit to 1 second EEG data</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="mf">25e-6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_channels</span><span class="p">),</span> <span class="n">channels</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;time [sec]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;channel&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Single-trial multi-channel EEG time-series (trial </span><span class="si">{</span><span class="n">i_trial</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="c1"># Visualize labels</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">),</span> <span class="n">hist</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Single-trial labels&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="c1"># Visualize codes</span>
+<span class="n">Vup</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># upsample to better visualize the sharp edges</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Vup</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">20</span> <span class="o">*</span> <span class="n">fs</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span> <span class="o">+</span> <span class="n">Vup</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">fs</span> <span class="o">/</span> <span class="n">fr</span><span class="p">))):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">fr</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;time [sec]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Code time-series&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img src="../_images/sphx_glr_ecca_001.png" srcset="../_images/sphx_glr_ecca_001.png" alt="Single-trial multi-channel EEG time-series (trial 0)" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_ecca_002.png" srcset="../_images/sphx_glr_ecca_002.png" alt="Single-trial labels" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_ecca_003.png" srcset="../_images/sphx_glr_ecca_003.png" alt="Code time-series" class = "sphx-glr-multi-img"/></li>
+</ul>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X (100, 8, 2520) (trials x channels x samples)
+y (100,) (trials)
+V (20, 504) (classes, samples)
+fs 240 Hz
+fr 60 Hz
+Channels: Fpz, T7, O1, POz, Oz, Iz, O2, T8
+</pre></div>
+</div>
+</section>
+<section id="erp-cca">
+<h2>ERP CCA<a class="headerlink" href="#erp-cca" title="Link to this heading"></a></h2>
+<p>The full ERP CCA (eCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
+<cite>pyntbci.classifiers.eCCA</cite>. All it needs are the lags if a circular shifted code is used (not used here) in <cite>lags</cite>,
+the sampling frequency <cite>fs</cite>, and the the duration of one period of a code as <cite>cycle_size</cite>.</p>
+<p>When calling <cite>eCCA.fit(X, y)</cite> with training data <cite>X</cite> and labels <cite>y</cite>, the template responses are learned as well as the
+spatial filters <cite>eCCA.w_</cite>.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Perform CCA</span>
+<span class="n">cycle_size</span> <span class="o">=</span> <span class="mf">2.1</span>  <span class="c1"># 2.1 second code cycle length</span>
+<span class="n">ecca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">(</span><span class="n">lags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">cycle_size</span><span class="o">=</span><span class="n">cycle_size</span><span class="p">)</span>
+<span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;w: shape:&quot;</span><span class="p">,</span> <span class="n">ecca</span><span class="o">.</span><span class="n">w_</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;, type:&quot;</span><span class="p">,</span> <span class="n">ecca</span><span class="o">.</span><span class="n">w_</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+<span class="c1"># Plot CCA filters</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">pyntbci</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">topoplot</span><span class="p">(</span><span class="n">ecca</span><span class="o">.</span><span class="n">w_</span><span class="p">,</span> <span class="n">capfile</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;spatial filter&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_ecca_004.png" srcset="../_images/sphx_glr_ecca_004.png" alt="spatial filter" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>w: shape: (8, 1) , type: float64
+
+Text(0.5, 1.0, &#39;spatial filter&#39;)
+</pre></div>
+</div>
+</section>
+<section id="cross-validation">
+<h2>Cross-validation<a class="headerlink" href="#cross-validation" title="Link to this heading"></a></h2>
+<p>To perform decoding, one can call <cite>eCCA.fit(X_trn, y_trn)</cite> on training data <cite>X_trn</cite> and labels <cite>y_trn</cite> and
+<cite>eCCA.predict(X_tst)</cite> on testing data <cite>X_tst</cite>. In this section, a chronological cross-validation is setup to evaluate
+the performance of eCCA.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">trialtime</span> <span class="o">=</span> <span class="mf">4.2</span>  <span class="c1"># limit trials to a certain duration in seconds</span>
+<span class="n">intertrialtime</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># ITI in seconds for computing ITR</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">trialtime</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
+
+<span class="c1"># Chronological cross-validation</span>
+<span class="n">n_folds</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">folds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="n">n_folds</span><span class="p">))</span>
+
+<span class="c1"># Loop folds</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_folds</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">):</span>
+    <span class="c1"># Split data to train and valid set</span>
+    <span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">]</span>
+    <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
+
+    <span class="c1"># Train template-matching classifier</span>
+    <span class="n">ecca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">(</span><span class="n">lags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">cycle_size</span><span class="o">=</span><span class="mf">2.1</span><span class="p">)</span>
+    <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
+
+    <span class="c1"># Apply template-matching classifier</span>
+    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
+
+    <span class="c1"># Compute accuracy</span>
+    <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
+
+<span class="c1"># Compute ITR</span>
+<span class="n">itr</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">itr</span><span class="p">(</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="n">trialtime</span> <span class="o">+</span> <span class="n">intertrialtime</span><span class="p">)</span>
+
+<span class="c1"># Plot accuracy (over folds)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="n">accuracy</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">accuracy</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;chance&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;(test) fold&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Chronological cross-validation&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="c1"># Print accuracy (average and standard deviation over folds)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accuracy: avg=</span><span class="si">{</span><span class="n">accuracy</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">accuracy</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ITR: avg=</span><span class="si">{</span><span class="n">itr</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_ecca_005.png" srcset="../_images/sphx_glr_ecca_005.png" alt="Chronological cross-validation" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Accuracy: avg=1.00 with std=0.00
+ITR: avg=49.9 with std=0.00
+</pre></div>
+</div>
+</section>
+<section id="learning-curve">
+<h2>Learning curve<a class="headerlink" href="#learning-curve" title="Link to this heading"></a></h2>
+<p>In this section, we will apply the decoder to varying number of training trials, to estimate a so-called learning
+curve. With this information, one could decide how much training data is required, or compare algorithms on how much
+training data they require to estimate their parameters.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">trialtime</span> <span class="o">=</span> <span class="mf">4.2</span>  <span class="c1"># limit trials to a certain duration in seconds</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">trialtime</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
+
+<span class="c1"># Chronological cross-validation</span>
+<span class="n">n_folds</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">folds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="n">n_folds</span><span class="p">))</span>
+
+<span class="c1"># Set learning curve axis</span>
+<span class="c1"># Note, eCCA needs at least 1 trial per class if lags=None</span>
+<span class="n">train_trials</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">folds</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">n_train_trials</span> <span class="o">=</span> <span class="n">train_trials</span><span class="o">.</span><span class="n">size</span>
+
+<span class="c1"># Loop folds</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">n_train_trials</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">):</span>
+
+    <span class="c1"># Split data to train and test set</span>
+    <span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">]</span>
+    <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
+
+    <span class="c1"># Loop train trials</span>
+    <span class="k">for</span> <span class="n">i_trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_train_trials</span><span class="p">):</span>
+        <span class="c1"># Train classifier</span>
+        <span class="n">ecca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">(</span><span class="n">lags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">cycle_size</span><span class="o">=</span><span class="mf">2.1</span><span class="p">)</span>
+        <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">[:</span><span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y_trn</span><span class="p">[:</span><span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]])</span>
+
+        <span class="c1"># Apply classifier</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
+
+        <span class="c1"># Compute accuracy</span>
+        <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
+
+<span class="c1"># Plot results</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">avg</span> <span class="o">=</span> <span class="n">accuracy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">std</span> <span class="o">=</span> <span class="n">accuracy</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">train_trials</span> <span class="o">*</span> <span class="n">trialtime</span><span class="p">,</span> <span class="n">avg</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;eCCA&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">train_trials</span> <span class="o">*</span> <span class="n">trialtime</span><span class="p">,</span> <span class="n">avg</span> <span class="o">+</span> <span class="n">std</span><span class="p">,</span> <span class="n">avg</span> <span class="o">-</span> <span class="n">std</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;_eCCA&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;chance&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;learning time [sec]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Learning curve&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_ecca_006.png" srcset="../_images/sphx_glr_ecca_006.png" alt="Learning curve" class = "sphx-glr-single-img"/></section>
+<section id="decoding-curve">
+<h2>Decoding curve<a class="headerlink" href="#decoding-curve" title="Link to this heading"></a></h2>
+<p>In this section, we will apply the decoder to varying testing trial lengths, to estimate a so-called decoding curve.
+With this information, one could decide how much testing data is required, or compare algorithms on how much data they
+need during testing to classify single-trials.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">trialtime</span> <span class="o">=</span> <span class="mf">4.2</span>  <span class="c1"># limit trials to a certain duration in seconds</span>
+<span class="n">intertrialtime</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># ITI in seconds for computing ITR</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">trialtime</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
+
+<span class="c1"># Chronological cross-validation</span>
+<span class="n">n_folds</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">folds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="n">n_folds</span><span class="p">))</span>
+
+<span class="c1"># Set decoding curve axis</span>
+<span class="n">segmenttime</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># step size of the decoding curve in seconds</span>
+<span class="n">segments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">segmenttime</span><span class="p">,</span> <span class="n">trialtime</span><span class="p">,</span> <span class="n">segmenttime</span><span class="p">)</span>
+<span class="n">n_segments</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">size</span>
+
+<span class="c1"># Loop folds</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">):</span>
+
+    <span class="c1"># Split data to train and test set</span>
+    <span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">]</span>
+    <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
+
+    <span class="c1"># Setup classifier</span>
+    <span class="n">ecca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">(</span><span class="n">lags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">cycle_size</span><span class="o">=</span><span class="mf">2.1</span><span class="p">)</span>
+
+    <span class="c1"># Train classifier</span>
+    <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
+
+    <span class="c1"># Loop segments</span>
+    <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
+        <span class="c1"># Apply classifier</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span> <span class="o">*</span> <span class="n">segments</span><span class="p">[</span><span class="n">i_segment</span><span class="p">])])</span>
+
+        <span class="c1"># Compute accuracy</span>
+        <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
+
+<span class="c1"># Compute ITR</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">segments</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">n_folds</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">itr</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">itr</span><span class="p">(</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="n">time</span> <span class="o">+</span> <span class="n">intertrialtime</span><span class="p">)</span>
+
+<span class="c1"># Plot results</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">avg</span> <span class="o">=</span> <span class="n">accuracy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">std</span> <span class="o">=</span> <span class="n">accuracy</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">avg</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;eCCA&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">avg</span> <span class="o">+</span> <span class="n">std</span><span class="p">,</span> <span class="n">avg</span> <span class="o">-</span> <span class="n">std</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;_eCCA&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;chance&quot;</span><span class="p">)</span>
+<span class="n">avg</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">std</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">avg</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;eCCA&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">avg</span> <span class="o">+</span> <span class="n">std</span><span class="p">,</span> <span class="n">avg</span> <span class="o">-</span> <span class="n">std</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;_eCCA&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;decoding time [sec]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;ITR [bits/min]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Decoding curve&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_ecca_007.png" srcset="../_images/sphx_glr_ecca_007.png" alt="Decoding curve" class = "sphx-glr-single-img"/></section>
+<section id="analyse-multiple-participants">
+<h2>Analyse multiple participants<a class="headerlink" href="#analyse-multiple-participants" title="Link to this heading"></a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set paths</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pyntbci</span><span class="o">.</span><span class="vm">__file__</span><span class="p">))</span>
+<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sub-</span><span class="si">{</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">)]</span>
+
+<span class="c1"># Set trial duration</span>
+<span class="n">trialtime</span> <span class="o">=</span> <span class="mf">4.2</span>  <span class="c1"># limit trials to a certain duration in seconds</span>
+<span class="n">n_trials</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># limit the number of trials in the dataset</span>
+
+<span class="c1"># Chronological cross-validation</span>
+<span class="n">n_folds</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">folds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="n">n_folds</span><span class="p">))</span>
+
+<span class="c1"># Loop participants</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_subjects</span><span class="p">,</span> <span class="n">n_folds</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i_subject</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">):</span>
+    <span class="n">subject</span> <span class="o">=</span> <span class="n">subjects</span><span class="p">[</span><span class="n">i_subject</span><span class="p">]</span>
+
+    <span class="c1"># Load data</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;thielen2021_</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">.npz&quot;</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">]</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">][:</span><span class="n">n_trials</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">trialtime</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][:</span><span class="n">n_trials</span><span class="p">]</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Cross-validation</span>
+    <span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">):</span>
+        <span class="c1"># Split data to train and test set</span>
+        <span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">]</span>
+        <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
+
+        <span class="c1"># Train classifier</span>
+        <span class="n">ecca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">(</span><span class="n">lags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">cycle_size</span><span class="o">=</span><span class="mf">2.1</span><span class="p">)</span>
+        <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
+
+        <span class="c1"># Apply classifier</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
+
+        <span class="c1"># Compute accuracy</span>
+        <span class="n">accuracy</span><span class="p">[</span><span class="n">i_subject</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
+
+<span class="c1"># Add average to accuracies</span>
+<span class="n">subjects</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;avg&quot;</span><span class="p">]</span>
+<span class="n">avg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">avg</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Plot accuracy</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">avg</span> <span class="o">=</span> <span class="n">accuracy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">std</span> <span class="o">=</span> <span class="n">accuracy</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">n_subjects</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">avg</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">std</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;eCCA&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">accuracy</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;chance&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">cellText</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">avg</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">std</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">rowLabels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">],</span> <span class="n">colLabels</span><span class="o">=</span><span class="n">subjects</span><span class="p">,</span>
+          <span class="n">cellLoc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">n_subjects</span> <span class="o">+</span> <span class="mf">0.75</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Decoding performance full dataset&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="c1"># Print accuracy</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average accuracy: </span><span class="si">{</span><span class="n">avg</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># plt.show()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_ecca_008.png" srcset="../_images/sphx_glr_ecca_008.png" alt="Decoding performance full dataset" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Average accuracy: 0.92
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 5.040 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-ecca-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/3887a9ed47244b68cee76c93140624fd/ecca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">ecca.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/277cc02401475665a2a11dbc456cbbbc/ecca.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">ecca.py</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fbrcca.html" class="btn btn-neutral float-left" title="FBrCCA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="epoch_cca_lda.html" class="btn btn-neutral float-right" title="Epoch CCA and LDA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Jordy Thielen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

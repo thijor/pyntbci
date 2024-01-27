@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.itr
+=====================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: itr
+
+.. include:: pyntbci.utilities.itr.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FBrCCA &mdash; PyntBCI 0.2.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=6ffd866b"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eCCA" href="ecca.html" />
+    <link rel="prev" title="Examples" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyntBCI
+          </a>
+              <div class="version">
+                0.2.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FBrCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ecca.html">eCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="epoch_cca_lda.html">Epoch CCA and LDA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="etrca.html">eTRCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rcca.html">rCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_stopping.html">Dynamic stopping</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.codes">Codes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyntBCI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">FBrCCA</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/fbrcca.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-examples-fbrcca-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="fbrcca">
+<span id="sphx-glr-examples-fbrcca-py"></span><h1>FBrCCA<a class="headerlink" href="#fbrcca" title="Link to this heading"></a></h1>
+<p>This script shows how to use FBrCCA from PyntBCI for decoding c-VEP trials. The FBrCCA method uses a template matching
+classifier where templates are estimated using reconvolution and canonical correlation analysis (CCA). Additionally,
+FBrCCA uses a filterbank (FB).</p>
+<p>The data used in this script come from Thielen et al. (2021), see references <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
+computer interface. DOI: <a class="reference external" href="https://doi.org/10.34973/9txv-z787">https://doi.org/10.34973/9txv-z787</a></p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
+code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
+056007. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/abecef">https://doi.org/10.1088/1741-2552/abecef</a></p>
+</aside>
+</aside>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">seaborn</span>
+
+<span class="kn">import</span> <span class="nn">pyntbci</span>
+
+<span class="n">seaborn</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="set-the-data-path">
+<h2>Set the data path<a class="headerlink" href="#set-the-data-path" title="Link to this heading"></a></h2>
+<p>The cell below specifies where the dataset has been downloaded to. Please, make sure it is set correctly according to
+the specification of your device. If none of the folder structures in the dataset were changed, the cells below should
+work just as fine.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pyntbci</span><span class="o">.</span><span class="vm">__file__</span><span class="p">))</span>  <span class="c1"># path to the dataset</span>
+<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sub-</span><span class="si">{</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">)]</span>
+</pre></div>
+</div>
+</section>
+<section id="analyse-multiple-participants">
+<h2>Analyse multiple participants<a class="headerlink" href="#analyse-multiple-participants" title="Link to this heading"></a></h2>
+<p>In this section, we directly apply FBrCCA and compare it to a single-band rCCA using the pass-bands defined in the
+filterbank.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set trial duration</span>
+<span class="n">trialtime</span> <span class="o">=</span> <span class="mf">4.2</span>  <span class="c1"># limit trials to a certain duration in seconds</span>
+<span class="n">n_trials</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># limit the number of trials in the dataset</span>
+
+<span class="c1"># Set rCCA  (see pyntbci.classifiers.rCCA)</span>
+<span class="n">event</span> <span class="o">=</span> <span class="s2">&quot;duration&quot;</span>  <span class="c1"># event definition type</span>
+<span class="n">transient_size</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># length of a transient response in seconds</span>
+<span class="n">onset_event</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Set folds for chronological cross-validation</span>
+<span class="n">n_folds</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">folds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="n">n_folds</span><span class="p">))</span>
+
+<span class="c1"># Set filterbank (see pyntbci.utilities.filterbank)</span>
+<span class="n">tmin</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># seconds before trial onset that could catch filter artefacts and is cut off after the filterbank</span>
+<span class="n">filterbank</span> <span class="o">=</span> <span class="p">[</span>  <span class="c1"># passbands with lower and higher cutoffs in Hz</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">12.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">30.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">]]</span>
+<span class="n">ftype</span> <span class="o">=</span> <span class="s2">&quot;chebyshev1&quot;</span>  <span class="c1"># filter type</span>
+<span class="n">gpass</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># maximum attenuation in the passband in dB</span>
+<span class="n">gstop</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># minimum attenuation in the stopband in dB</span>
+<span class="n">n_bands</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">filterbank</span><span class="p">)</span>
+
+<span class="c1"># Loop participants</span>
+<span class="n">accuracy_rcca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_subjects</span><span class="p">,</span> <span class="n">n_folds</span><span class="p">,</span> <span class="n">n_bands</span><span class="p">))</span>
+<span class="n">accuracy_fbrcca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_subjects</span><span class="p">,</span> <span class="n">n_folds</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i_subject</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">):</span>
+    <span class="n">subject</span> <span class="o">=</span> <span class="n">subjects</span><span class="p">[</span><span class="n">i_subject</span><span class="p">]</span>
+
+    <span class="c1"># Load data</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;thielen2021_</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">.npz&quot;</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">]</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">][:</span><span class="n">n_trials</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">trialtime</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][:</span><span class="n">n_trials</span><span class="p">]</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Apply filterbank</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">filterbank</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">filterbank</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="n">gpass</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="n">gstop</span><span class="p">)</span>
+
+    <span class="c1"># Cross-validation</span>
+    <span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">):</span>
+
+        <span class="c1"># Split data to train and test set</span>
+        <span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">!=</span> <span class="n">i_fold</span><span class="p">]</span>
+        <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
+
+        <span class="c1"># Setup classifier</span>
+        <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">codes</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="n">transient_size</span><span class="p">,</span>
+                                        <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">)</span>
+        <span class="n">fbrcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">FilterBank</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">rcca</span><span class="p">,</span> <span class="n">gating</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Train classifier</span>
+        <span class="n">fbrcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
+
+        <span class="c1"># Apply classifier</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">fbrcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
+
+        <span class="c1"># Compute accuracy</span>
+        <span class="n">accuracy_fbrcca</span><span class="p">[</span><span class="n">i_subject</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
+
+        <span class="c1"># Loop individual pass-bands</span>
+        <span class="k">for</span> <span class="n">i_band</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bands</span><span class="p">):</span>
+            <span class="c1"># Setup classifier</span>
+            <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">codes</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="n">transient_size</span><span class="p">,</span>
+                                            <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">)</span>
+
+            <span class="c1"># Train classifier</span>
+            <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i_band</span><span class="p">],</span> <span class="n">y_trn</span><span class="p">)</span>
+
+            <span class="c1"># Apply classifier</span>
+            <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i_band</span><span class="p">])</span>
+
+            <span class="c1"># Compute accuracy</span>
+            <span class="n">accuracy_rcca</span><span class="p">[</span><span class="n">i_subject</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">,</span> <span class="n">i_band</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
+
+<span class="c1"># Stack results</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">accuracy_fbrcca</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">accuracy_rcca</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Plot accuracy</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">filterbank</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;FBrCCA&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;rCCA </span><span class="si">{</span><span class="n">filterbank</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">filterbank</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">filterbank</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">),</span> <span class="n">accuracy</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">width</span><span class="p">,</span>
+            <span class="n">yerr</span><span class="o">=</span><span class="n">accuracy</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;chance&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">filterbank</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">),</span> <span class="n">subjects</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Decoding performance full dataset&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="c1"># Print accuracy</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">filterbank</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;FBrCCA&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;rCCA </span><span class="si">{</span><span class="n">filterbank</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">filterbank</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">:,</span><span class="w"> </span><span class="n">i</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">:,</span><span class="w"> </span><span class="n">i</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># plt.show()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_fbrcca_001.png" srcset="../_images/sphx_glr_fbrcca_001.png" alt="Decoding performance full dataset" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>FBrCCA: 0.96 +/- 0.02
+rCCA  1.0-60.0: 0.96 +/- 0.02
+rCCA 12.0-60.0: 0.92 +/- 0.04
+rCCA 30.0-60.0: 0.39 +/- 0.04
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 45.909 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-fbrcca-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/0d6ec0989ccfcbad1497538b456ab21e/fbrcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fbrcca.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/ef8d2403bb83f20c5cdf64dc60070f4c/fbrcca.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fbrcca.py</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ecca.html" class="btn btn-neutral float-right" title="eCCA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Jordy Thielen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

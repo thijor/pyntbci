@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.correlation
+=============================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: correlation
+
+.. include:: pyntbci.utilities.correlation.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
