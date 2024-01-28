@@ -6,7 +6,7 @@ import numpy as np
 
 def eventplot(S, E, fs, ax=None, upsample=20, plotfs=True, events=None):
     """
-    Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events ober
+    Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events across
     time.
 
     Parameters

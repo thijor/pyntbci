@@ -9,4 +9,5 @@ Plotting
     :toctree: generated/
     :template: function.rst
 
+    eventplot
     topoplot
