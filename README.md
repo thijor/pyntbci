@@ -1,12 +1,16 @@
+---
+bibliography: references.bib
+---
+
 # PyntBCI
 
 The Python Noise-Tagging Brain-Computer interface (PyntBCI) library is a Python toolbox for the noise-tagging
 brain-computer interfacing (BCI) project developed at the Donders Institute for Brain, Cognition and Behaviour, Radboud
 University, Nijmegen, the Netherlands. PyntBCI contains various signal processing steps and machine learning algorithms
 for BCIs that make use of evoked responses of the electroencephalogram (EEG), specifically code-modulated responses such
-as the code-modulated visual evoked potential (c-VEP). For a constructive review of this field, see [7].
+as the code-modulated visual evoked potential (c-VEP). For a constructive review of this field, see @martinez2021.
 
-When using PyntBCI, please reference at least one of the following: [1], [2], [5].
+When using PyntBCI, please reference at least one of the following: @thielen2015, @thielen2017, @thielen2021.
 
 ## Installation
 
@@ -56,7 +60,7 @@ Springer Nature Switzerland. DOI: [10.1007/978-3-031-43078-7_45](https://doi.org
 
 ## Datasets
 
-On the Radboud Data Repository (RDR) (https://data.ru.nl/):
+On the Radboud Data Repository ([RDR](https://data.ru.nl/)):
 
 * Thielen et al. (2018) Broad-Band Visually Evoked Potentials: Re(con)volution in Brain-Computer Interfacing.
   DOI: [10.34973/1ecz-1232](https://doi.org/10.34973/1ecz-1232)
@@ -65,9 +69,9 @@ On the Radboud Data Repository (RDR) (https://data.ru.nl/):
 * Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
   computer interface. DOI: [10.34973/9txv-z787](https://doi.org/10.34973/9txv-z787)
 
-On Mother of all BCI Benchmarks (MOABB) (https://moabb.neurotechx.com/docs/index.html):
+On Mother of all BCI Benchmarks ([MOABB](https://moabb.neurotechx.com/docs/index.html)):
 
-* [c-VEP dataset from Thielen et al. (2021)](
+* c-VEP dataset from Thielen et al. (2021). [Link](
   https://moabb.neurotechx.com/docs/generated/moabb.datasets.Thielen2021.html#moabb.datasets.Thielen2021)
 
 ## Contact
