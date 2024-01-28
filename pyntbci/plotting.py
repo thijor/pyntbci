@@ -4,6 +4,68 @@ from scipy.interpolate import griddata
 import numpy as np
 
 
+def eventplot(S, E, fs, ax=None, upsample=20, plotfs=True, events=None):
+    """
+    Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events ober
+    time.
+
+    Parameters
+    ----------
+    S: np.ndarray
+        The stimulus time-series of shape (samples)
+    E: np.ndarray
+        The event time-series of shape (events, samples)
+    fs: int
+        The sampling rate in Hz
+    ax: matplotlib.axes.Axes (default: None)
+        The axis to plot in. If None, a new figure will be opened.
+    upsample: int (default: 20)
+        A scalar value to upsample the stimulus and event time-series with for improved visualization
+    plotfs: bool (default: True)
+        Whether or not to plot vertical gridlines at the original sampling rate fs
+    events: tuple (default: None)
+        A tuple with the names of each of the events
+    """
+    # Make figure
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+    n_events, n_samples = E.shape
+    S = S.astype("float")
+    E = E.astype("float")
+
+    # Scale stimulus and events to a range of 0-1
+    S += S.min()
+    S /= S.max()
+    E += E.min(axis=1, keepdims=True)
+    E /= E.max(axis=1, keepdims=True)
+
+    # Upsample for better visibility
+    S = S.repeat(20)
+    E = E.repeat(20, axis=1)
+
+    # Plot stimulus
+    ax.plot(np.arange(n_samples * upsample) / (upsample * fs), S, "k")
+
+    # Plot events
+    for i in range(n_events):
+        ax.plot(np.arange(n_samples * upsample) / (upsample * fs), -1.5 * (1 + i) + E[i, :])
+
+    # Plot samplerate
+    if plotfs:
+        for i in range(1 + int(n_samples)):
+            ax.axvline(i / fs, c="k", alpha=0.1)
+
+    # Markup
+    ax.set_xlabel("time [sec]")
+    if events is None:
+        ax.set_ylabel("events")
+    else:
+        ax.set_ylabel("")
+        ax.set_yticks(-1.5 * np.arange(0, 1 + n_events) + 0.5, ("stimulus",) + events)
+
+
 def topoplot(z, locfile, cbar=False, ax=None, iso=False):
     """Plot a topoplot. The values at each electrode are interpolated on an outline of a head using an electrode
     position file (loc file).

@@ -122,18 +122,9 @@ print("Events:", ", ".join([str(event) for event in events]))
 
 # Visualize event time-series
 i_class = 0  # the class to visualize
-Vu = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
-Eu = E.repeat(20, axis=2)  # upsample to better visualize the sharp edges
-plt.figure(figsize=(15, 3))
-plt.plot(np.arange(0, Vu.shape[1]) / (20 * fs), Vu[i_class, :], "k")
-for i_event in range(E.shape[1]):
-    plt.plot(np.arange(0, Eu.shape[2]) / (20 * fs), -1.5 * (1 + i_event) + Eu[i_class, i_event, :])
-for i in range(1 + int(V.shape[1] / (fs / fr))):
-    plt.axvline(i / fr, c="k", alpha=0.1)
-plt.yticks(-1.5 * np.arange(0, 1 + E.shape[1]) + 0.5, ("code",) + events)
-plt.xlabel("time [sec]")
-plt.ylabel("")
-plt.title(f"Event time-series (code {i_class})")
+fig, ax = plt.subplots(1, 1, figsize=(15, 3))
+pyntbci.plotting.eventplot(V[i_class, ::int(fs/fr)], E[i_class, :, ::int(fs/fr)], fs=fr, ax=ax, events=events)
+ax.set_title(f"Event time-series (code {i_class})")
 plt.tight_layout()
 
 # Visualize event matrix

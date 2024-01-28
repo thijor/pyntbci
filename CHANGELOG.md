@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 0.2.5
+
+### Added
+
+- Events time-series plot
+
+### Changed
+
+### Fixed
+
+- ITR calculation zero-division
+
 ## Version 0.2.4
 
 ### Added
