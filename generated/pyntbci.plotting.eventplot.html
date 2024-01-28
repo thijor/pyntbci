@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.plotting.topoplot &mdash; PyntBCI 0.2.4 documentation</title>
+  <title>pyntbci.plotting.eventplot &mdash; PyntBCI 0.2.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -25,8 +25,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.stopping.BayesStopping" href="pyntbci.stopping.BayesStopping.html" />
-    <link rel="prev" title="pyntbci.plotting.eventplot" href="pyntbci.plotting.eventplot.html" /> 
+    <link rel="next" title="pyntbci.plotting.topoplot" href="pyntbci.plotting.topoplot.html" />
+    <link rel="prev" title="pyntbci.codes.modulate" href="pyntbci.codes.modulate.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -79,9 +79,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">pyntbci.plotting.topoplot</li>
+      <li class="breadcrumb-item active">pyntbci.plotting.eventplot</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/pyntbci.plotting.topoplot.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pyntbci.plotting.eventplot.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -89,21 +89,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pyntbci-plotting-topoplot">
-<h1>pyntbci.plotting.topoplot<a class="headerlink" href="#pyntbci-plotting-topoplot" title="Link to this heading"></a></h1>
+  <section id="pyntbci-plotting-eventplot">
+<h1>pyntbci.plotting.eventplot<a class="headerlink" href="#pyntbci-plotting-eventplot" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyntbci.plotting.topoplot">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.plotting.</span></span><span class="sig-name descname"><span class="pre">topoplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iso</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/plotting.html#topoplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.plotting.topoplot" title="Link to this definition"></a></dt>
-<dd><p>Plot a topoplot. The values at each electrode are interpolated on an outline of a head using an electrode
-position file (loc file).</p>
+<dt class="sig sig-object py" id="pyntbci.plotting.eventplot">
+<span class="sig-prename descclassname"><span class="pre">pyntbci.plotting.</span></span><span class="sig-name descname"><span class="pre">eventplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upsample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/plotting.html#eventplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.plotting.eventplot" title="Link to this definition"></a></dt>
+<dd><p>Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events across
+time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>z</strong> (<em>np.ndarray</em>) – A vector of electrode values, e.g. a spatial filter/patterns.</p></li>
-<li><p><strong>locfile</strong> (<em>str</em>) – A .loc file with electrode position information.</p></li>
-<li><p><strong>cbar</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether or not to add a colorbar.</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em> (</em><em>default: None</em><em>)</em>) – Axes to plot in. A new one is made when None.</p></li>
-<li><p><strong>iso</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether or not to add iso lines.</p></li>
+<li><p><strong>S</strong> (<em>np.ndarray</em>) – The stimulus time-series of shape (samples)</p></li>
+<li><p><strong>E</strong> (<em>np.ndarray</em>) – The event time-series of shape (events, samples)</p></li>
+<li><p><strong>fs</strong> (<em>int</em>) – The sampling rate in Hz</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em> (</em><em>default: None</em><em>)</em>) – The axis to plot in. If None, a new figure will be opened.</p></li>
+<li><p><strong>upsample</strong> (<em>int</em><em> (</em><em>default: 20</em><em>)</em>) – A scalar value to upsample the stimulus and event time-series with for improved visualization</p></li>
+<li><p><strong>plotfs</strong> (<em>bool</em><em> (</em><em>default: True</em><em>)</em>) – Whether or not to plot vertical gridlines at the original sampling rate fs</p></li>
+<li><p><strong>events</strong> (<em>tuple</em><em> (</em><em>default: None</em><em>)</em>) – A tuple with the names of each of the events</p></li>
 </ul>
 </dd>
 </dl>
@@ -115,8 +117,8 @@ position file (loc file).</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.plotting.eventplot.html" class="btn btn-neutral float-left" title="pyntbci.plotting.eventplot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.stopping.BayesStopping.html" class="btn btn-neutral float-right" title="pyntbci.stopping.BayesStopping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.codes.modulate.html" class="btn btn-neutral float-left" title="pyntbci.codes.modulate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.plotting.topoplot.html" class="btn btn-neutral float-right" title="pyntbci.plotting.topoplot" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

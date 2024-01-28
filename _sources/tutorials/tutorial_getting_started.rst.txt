@@ -197,7 +197,7 @@ Please, note that more event definitions exist, which can be explored with the `
 instance, `event="contrast"` is a useful event definition as well, which looks at rising and falling edges,
 generalising over the length of a flash.
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-153
+.. GENERATED FROM PYTHON SOURCE LINES 120-144
 
 .. code-block:: Python
 
@@ -209,18 +209,9 @@ generalising over the length of a flash.
 
     # Visualize event time-series
     i_class = 0  # the class to visualize
-    Vu = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
-    Eu = E.repeat(20, axis=2)  # upsample to better visualize the sharp edges
-    plt.figure(figsize=(15, 3))
-    plt.plot(np.arange(0, Vu.shape[1]) / (20 * fs), Vu[i_class, :], "k")
-    for i_event in range(E.shape[1]):
-        plt.plot(np.arange(0, Eu.shape[2]) / (20 * fs), -1.5 * (1 + i_event) + Eu[i_class, i_event, :])
-    for i in range(1 + int(V.shape[1] / (fs / fr))):
-        plt.axvline(i / fr, c="k", alpha=0.1)
-    plt.yticks(-1.5 * np.arange(0, 1 + E.shape[1]) + 0.5, ("code",) + events)
-    plt.xlabel("time [sec]")
-    plt.ylabel("")
-    plt.title(f"Event time-series (code {i_class})")
+    fig, ax = plt.subplots(1, 1, figsize=(15, 3))
+    pyntbci.plotting.eventplot(V[i_class, ::int(fs/fr)], E[i_class, :, ::int(fs/fr)], fs=fr, ax=ax, events=events)
+    ax.set_title(f"Event time-series (code {i_class})")
     plt.tight_layout()
 
     # Visualize event matrix
@@ -265,7 +256,7 @@ generalising over the length of a flash.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-164
+.. GENERATED FROM PYTHON SOURCE LINES 145-155
 
 The structure matrix
 --------------------
@@ -278,7 +269,7 @@ classes, l response samples, and m samples.
 An important parameter here is the `transient_size` argument. An easy abstraction is to assume the same length for
 the responses to each of the events. However, one could also set different lengths for each of the events.
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-181
+.. GENERATED FROM PYTHON SOURCE LINES 155-172
 
 .. code-block:: Python
 
@@ -317,7 +308,7 @@ the responses to each of the events. However, one could also set different lengt
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-194
+.. GENERATED FROM PYTHON SOURCE LINES 173-185
 
 Reconvolution CCA
 -----------------
@@ -332,7 +323,7 @@ spatial filters `rCCA.w_` and temporal filter `rCCA.r_`.
 Please note that the transient responses are concatenated in this temporal filter `rCCA.r_`. One can use
 `rCCA.events_` to disentangle these and find which response is associated to which event.
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-215
+.. GENERATED FROM PYTHON SOURCE LINES 185-206
 
 .. code-block:: Python
 
@@ -376,7 +367,7 @@ Please note that the transient responses are concatenated in this temporal filte
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-227
+.. GENERATED FROM PYTHON SOURCE LINES 207-218
 
 Cross-validation
 ----------------
@@ -390,7 +381,7 @@ to repeated trials. As in this dataset a single circularly shifted code was used
 code, and circularly shift it to generate templates for all other classes. Therefore, eCCA requires a `lags` parameter
 that specifies the relationship between the different classes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-264
+.. GENERATED FROM PYTHON SOURCE LINES 218-255
 
 .. code-block:: Python
 
@@ -443,7 +434,7 @@ that specifies the relationship between the different classes.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-271
+.. GENERATED FROM PYTHON SOURCE LINES 256-262
 
 Learning curve
 --------------
@@ -452,7 +443,7 @@ is that rCCA reduce the number of free parameters to those of the transient resp
 at the same time allows to increase the amount of data to perform a kind of average over. This can be observed in the
 so-called learning curve, which shows the performance as a function of the amount of training data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-317
+.. GENERATED FROM PYTHON SOURCE LINES 262-308
 
 .. code-block:: Python
 
@@ -517,7 +508,7 @@ so-called learning curve, which shows the performance as a function of the amoun
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 25.590 seconds)
+   **Total running time of the script:** (0 minutes 25.388 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_getting_started.py:

@@ -92,6 +92,71 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
+<div class="viewcode-block" id="eventplot">
+<a class="viewcode-back" href="../../generated/pyntbci.plotting.eventplot.html#pyntbci.plotting.eventplot">[docs]</a>
+<span class="k">def</span> <span class="nf">eventplot</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">plotfs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events across</span>
+<span class="sd">    time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    S: np.ndarray</span>
+<span class="sd">        The stimulus time-series of shape (samples)</span>
+<span class="sd">    E: np.ndarray</span>
+<span class="sd">        The event time-series of shape (events, samples)</span>
+<span class="sd">    fs: int</span>
+<span class="sd">        The sampling rate in Hz</span>
+<span class="sd">    ax: matplotlib.axes.Axes (default: None)</span>
+<span class="sd">        The axis to plot in. If None, a new figure will be opened.</span>
+<span class="sd">    upsample: int (default: 20)</span>
+<span class="sd">        A scalar value to upsample the stimulus and event time-series with for improved visualization</span>
+<span class="sd">    plotfs: bool (default: True)</span>
+<span class="sd">        Whether or not to plot vertical gridlines at the original sampling rate fs</span>
+<span class="sd">    events: tuple (default: None)</span>
+<span class="sd">        A tuple with the names of each of the events</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Make figure</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="n">n_events</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Scale stimulus and events to a range of 0-1</span>
+    <span class="n">S</span> <span class="o">+=</span> <span class="n">S</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">S</span> <span class="o">/=</span> <span class="n">S</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">E</span> <span class="o">+=</span> <span class="n">E</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">E</span> <span class="o">/=</span> <span class="n">E</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Upsample for better visibility</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Plot stimulus</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">*</span> <span class="n">upsample</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">upsample</span> <span class="o">*</span> <span class="n">fs</span><span class="p">),</span> <span class="n">S</span><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plot events</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_events</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">*</span> <span class="n">upsample</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">upsample</span> <span class="o">*</span> <span class="n">fs</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="n">E</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+
+    <span class="c1"># Plot samplerate</span>
+    <span class="k">if</span> <span class="n">plotfs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">fs</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="c1"># Markup</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time [sec]&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">events</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">n_events</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">,)</span> <span class="o">+</span> <span class="n">events</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="topoplot">
 <a class="viewcode-back" href="../../generated/pyntbci.plotting.topoplot.html#pyntbci.plotting.topoplot">[docs]</a>
 <span class="k">def</span> <span class="nf">topoplot</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">locfile</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iso</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>

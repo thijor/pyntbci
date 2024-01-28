@@ -207,7 +207,7 @@ Please, note that more event definitions exist, which can be explored with the `
 instance, `event="contrast"` is a useful event definition as well, which looks at rising and falling edges,
 generalising over the length of a flash.
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-150
+.. GENERATED FROM PYTHON SOURCE LINES 117-141
 
 .. code-block:: Python
 
@@ -219,18 +219,9 @@ generalising over the length of a flash.
 
     # Visualize event time-series
     i_class = 0  # the class to visualize
-    Vu = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
-    Eu = E.repeat(20, axis=2)  # upsample to better visualize the sharp edges
-    plt.figure(figsize=(15, 3))
-    plt.plot(np.arange(0, Vu.shape[1]) / (20 * fs), Vu[i_class, :], "k")
-    for i_event in range(E.shape[1]):
-        plt.plot(np.arange(0, Eu.shape[2]) / (20 * fs), -1.5 * (1 + i_event) + Eu[i_class, i_event, :])
-    for i in range(1 + int(V.shape[1] / (fs / fr))):
-        plt.axvline(i / fr, c="k", alpha=0.1)
-    plt.yticks(-1.5 * np.arange(0, 1 + E.shape[1]) + 0.5, ("code",) + events)
-    plt.xlabel("time [sec]")
-    plt.ylabel("")
-    plt.title(f"Event time-series (code {i_class})")
+    fig, ax = plt.subplots(1, 1, figsize=(15, 3))
+    pyntbci.plotting.eventplot(V[i_class, ::int(fs/fr)], E[i_class, :, ::int(fs/fr)], fs=fr, ax=ax, events=events)
+    ax.set_title(f"Event time-series (code {i_class})")
     plt.tight_layout()
 
     # Visualize event matrix
@@ -275,7 +266,7 @@ generalising over the length of a flash.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-161
+.. GENERATED FROM PYTHON SOURCE LINES 142-152
 
 The structure matrix
 --------------------
@@ -288,7 +279,7 @@ classes, l response samples, and m samples.
 An important parameter here is the `transient_size` argument. An easy abstraction is to assume the same length for
 the responses to each of the events. However, one could also set different lengths for each of the events.
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-178
+.. GENERATED FROM PYTHON SOURCE LINES 152-169
 
 .. code-block:: Python
 
@@ -327,7 +318,7 @@ the responses to each of the events. However, one could also set different lengt
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-191
+.. GENERATED FROM PYTHON SOURCE LINES 170-182
 
 Reconvolution CCA
 -----------------
@@ -342,7 +333,7 @@ spatial filters `rCCA.w_` and temporal filter `rCCA.r_`.
 Please note that the transient responses are concatenated in this temporal filter `rCCA.r_`. One can use
 `rCCA.events_` to disentangle these and find which response is associated to which event.
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-212
+.. GENERATED FROM PYTHON SOURCE LINES 182-203
 
 .. code-block:: Python
 
@@ -386,7 +377,7 @@ Please note that the transient responses are concatenated in this temporal filte
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 213-218
+.. GENERATED FROM PYTHON SOURCE LINES 204-209
 
 Cross-validation
 ----------------
@@ -394,7 +385,7 @@ To perform decoding, one can call `rCCA.fit(X_trn, y_trn)` on training data `X_t
 `rCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is setup to evaluate
 the performance of rCCA.
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-262
+.. GENERATED FROM PYTHON SOURCE LINES 209-253
 
 .. code-block:: Python
 
@@ -461,7 +452,7 @@ the performance of rCCA.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 263-268
+.. GENERATED FROM PYTHON SOURCE LINES 254-259
 
 Learning curve
 --------------
@@ -469,7 +460,7 @@ In this section, we will apply the decoder to varying number of training trials,
 curve. With this information, one could decide how much training data is required, or compare algorithms on how much
 training data they require to estimate their parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-313
+.. GENERATED FROM PYTHON SOURCE LINES 259-304
 
 .. code-block:: Python
 
@@ -530,7 +521,7 @@ training data they require to estimate their parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 314-319
+.. GENERATED FROM PYTHON SOURCE LINES 305-310
 
 Decoding curve
 --------------
@@ -538,7 +529,7 @@ In this section, we will apply the decoder to varying testing trial lengths, to 
 With this information, one could decide how much testing data is required, or compare algorithms on how much data they
 need during testing to classify single-trials.
 
-.. GENERATED FROM PYTHON SOURCE LINES 319-377
+.. GENERATED FROM PYTHON SOURCE LINES 310-368
 
 .. code-block:: Python
 
@@ -612,12 +603,12 @@ need during testing to classify single-trials.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 378-380
+.. GENERATED FROM PYTHON SOURCE LINES 369-371
 
 Analyse multiple participants
 ---------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 380-449
+.. GENERATED FROM PYTHON SOURCE LINES 371-440
 
 .. code-block:: Python
 
@@ -711,7 +702,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 37.697 seconds)
+   **Total running time of the script:** (1 minutes 35.981 seconds)
 
 
 .. _sphx_glr_download_examples_rcca.py:
