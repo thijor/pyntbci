@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**03:31.116** total execution time for 7 files **from all galleries**:
+**03:31.405** total execution time for 7 files **from all galleries**:
 
 .. container::
 
@@ -33,23 +33,23 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_examples_rcca.py` (``../examples/rcca.py``)
-     - 01:36.111
+     - 01:37.697
      - 0.0
    * - :ref:`sphx_glr_examples_fbrcca.py` (``../examples/fbrcca.py``)
-     - 00:47.567
+     - 00:45.079
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_getting_started.py` (``../tutorials/tutorial_getting_started.py``)
-     - 00:24.755
+     - 00:25.590
      - 0.0
    * - :ref:`sphx_glr_examples_etrca.py` (``../examples/etrca.py``)
-     - 00:16.358
+     - 00:16.635
      - 0.0
    * - :ref:`sphx_glr_examples_dynamic_stopping.py` (``../examples/dynamic_stopping.py``)
-     - 00:13.409
+     - 00:13.520
      - 0.0
    * - :ref:`sphx_glr_examples_epoch_cca_lda.py` (``../examples/epoch_cca_lda.py``)
-     - 00:07.791
+     - 00:07.686
      - 0.0
    * - :ref:`sphx_glr_examples_ecca.py` (``../examples/ecca.py``)
-     - 00:05.125
+     - 00:05.199
      - 0.0
