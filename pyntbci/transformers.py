@@ -30,11 +30,12 @@ class CCA(BaseEstimator, TransformerMixin):
            distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14
     """
 
-    def __init__(self, n_components, lx=None, ly=None, template_metric="mean", cumulative=False):
+    def __init__(self, n_components, lx=None, ly=None, template_metric="mean", cov_estimator=None, cumulative=False):
         self.n_components = n_components
         self.lx = lx
         self.ly = ly
         self.template_metric = template_metric
+        self.cov_estimator = cov_estimator
         self.cumulative = cumulative
         self.n_ = 0
 
@@ -64,14 +65,23 @@ class CCA(BaseEstimator, TransformerMixin):
             self.n_ = n_obs
             self.mu_ = mu_obs
             Z1 = obs - mu_obs
-            cov_obs = np.dot(Z1.T, Z1)
-            self.cov_ = cov_obs / (self.n_ - 1)
+            if self.cov_estimator is None:
+                cov_obs = np.dot(Z1.T, Z1) / (self.n_ - 1)
+            else:
+                self.cov_estimator.fit(Z1)
+                cov_obs = self.cov_estimator.covariance_
+            self.cov_ = cov_obs
         else:
             self.n_ += n_obs
             Z1 = obs - self.mu_
             self.mu_ += (mu_obs - self.mu_) * (n_obs / self.n_)
             Z2 = obs - self.mu_
-            cov_obs = np.dot(Z1.T, Z2)
+            if self.cov_estimator is None:
+                cov_obs = np.dot(Z1.T, Z2)
+            else:
+                # TODO
+                # Compute the cumulative covariance with two different old/new obs using estimator
+                raise NotImplementedError
             self.cov_ = cov_obs / (self.n_ - 1) + self.cov_ * ((self.n_ - n_obs - 1) / (self.n_ - 1))
 
         # Regularization

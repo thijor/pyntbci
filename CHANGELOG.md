@@ -5,6 +5,8 @@
 ### Added
 
 - Events time-series plot
+- CCA covariance estimator
+- CCA cumulative covariance
 
 ### Changed
 
