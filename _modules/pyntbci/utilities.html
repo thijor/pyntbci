@@ -212,8 +212,7 @@
         <span class="k">if</span> <span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># TODO</span>
-            <span class="c1"># Compute the cumulative cross-covariance X1 and X2 using estimator</span>
+            <span class="c1"># TODO: Compute the cumulative cross-covariance X1 and X2 using estimator</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span> <span class="o">+</span> <span class="n">cov_old</span> <span class="o">*</span> <span class="p">((</span><span class="n">n_new</span> <span class="o">-</span> <span class="n">n_obs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">n_new</span><span class="p">,</span> <span class="n">avg_new</span><span class="p">,</span> <span class="n">cov_new</span>
