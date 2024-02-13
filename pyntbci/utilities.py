@@ -70,6 +70,61 @@ def correlation(A, B):
     return scores
 
 
+def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=False):
+    """
+
+    Parameters
+    ----------
+    X: np.ndarray
+        Data matrix of shape (n_samples, n_features.)
+    n_old: int (default: 0)
+        Number of already observed samples.
+    avg_old: np.ndarray (default: None)
+        Already observed average of shape (n_features).
+    cov_old: np.ndarray (default: None)
+        Already observed covariance of shape (n_features, n_features).
+    estimator: object (default: None)
+        An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the
+        empirical covariance is used.
+    running: bool (default: False)
+        Whether or not to use a running covariance. If False, the covariance matrix is computed instantaneously using
+        only X, such that n_old, avg_old, and cov_old are not used.
+
+    Returns
+    -------
+    n_new: int
+        Number of samples.
+    avg_new: np.ndarray
+        The average of shape (n_features).
+    cov_new: np.ndarray
+        The covariance of shape (n_features, n_features).
+    """
+    n_obs = X.shape[0]
+    avg_obs = np.mean(X, axis=0, keepdims=True)
+    if n_old == 0 or not running:
+        n_new = n_obs
+        avg_new = avg_obs
+        X1 = X - avg_obs
+        if estimator is None:
+            cov_obs = np.dot(X1.T, X1) / (n_new - 1)
+        else:
+            cov_obs = estimator.fit(X1).covariance_
+        cov_new = cov_obs
+    else:
+        n_new = n_old + n_obs
+        X1 = X - avg_old
+        avg_new = avg_old + (avg_obs - avg_old) * (n_obs / n_new)
+        X2 = X - avg_new
+        if estimator is None:
+            cov_obs = np.dot(X1.T, X2) / (n_new - 1)
+        else:
+            # TODO
+            # Compute the cumulative cross-covariance X1 and X2 using estimator
+            raise NotImplementedError
+        cov_new = cov_obs + cov_old * ((n_new - n_obs - 1) / (n_new - 1))
+    return n_new, avg_new, cov_new
+
+
 def euclidean(A, B):
     """Compute the Euclidean distance. Computed between two sets of variables.
 

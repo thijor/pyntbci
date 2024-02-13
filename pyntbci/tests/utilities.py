@@ -36,6 +36,34 @@ class TestCorrelation(unittest.TestCase):
         self.assertTrue(np.mean(etime_correlation[5:]) < np.mean(etime_corrcoef[5:]))
 
 
+class TestCovariance(unittest.TestCase):
+
+    def test_covariance(self):
+        for i in range(100):
+
+            X = np.random.rand(2000, 17)
+
+            n, avg, cov = pyntbci.utilities.covariance(X)
+
+            self.assertEqual(n, 2000)
+            self.assertTrue(np.allclose(avg, np.mean(X, axis=0), atol=1e-6))
+            self.assertTrue(np.allclose(cov, np.cov(X.T), atol=1e-6))
+
+    def test_covariance_running(self):
+        X = np.random.rand(100, 2000, 17)
+
+        n = 0
+        avg = None
+        cov = None
+        for i in range(100):
+            n, avg, cov = pyntbci.utilities.covariance(X[i, :, :], n, avg, cov, running=True)
+
+        X = X.reshape((-1, 17))
+        self.assertEqual(n, X.shape[0])
+        self.assertTrue(np.allclose(avg, np.mean(X, axis=0), atol=1e-6))
+        self.assertTrue(np.allclose(cov, np.cov(X.T), atol=1e-6))
+
+
 class TestEventMatrix(unittest.TestCase):
 
     def test_event_matrix_shape(self):

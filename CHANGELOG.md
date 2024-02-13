@@ -5,10 +5,13 @@
 ### Added
 
 - Events time-series plot
+- (Running) covariance in utilities
 - CCA covariance estimator
 - CCA cumulative covariance
 
 ### Changed
+- CCA separate computation for Cxx, Cyy and Cxy
+- CCA separate estimators for Cxx and Cyy
 
 ### Fixed
 

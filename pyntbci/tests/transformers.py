@@ -87,7 +87,7 @@ class TestCCA(unittest.TestCase):
         self.assertEqual(x.shape, (X.shape[0], 7))
         self.assertEqual(y.shape, (Y.shape[0], 7))
 
-    def test_cumulative(self):
+    def test_running(self):
         X = np.random.rand(2000, 17)
         Y = np.random.rand(2000, 23)
 
@@ -97,7 +97,7 @@ class TestCCA(unittest.TestCase):
         self.assertEqual(cca_full.w_x_.shape, (X.shape[1], 1))
         self.assertEqual(cca_full.w_y_.shape, (Y.shape[1], 1))
 
-        cca_incr = pyntbci.transformers.CCA(n_components=1, cumulative=True)
+        cca_incr = pyntbci.transformers.CCA(n_components=1, running=True)
         Xr = X.reshape((20, 100, 17))
         Yr = Y.reshape((20, 100, 23))
         for i in range(20):
@@ -105,9 +105,15 @@ class TestCCA(unittest.TestCase):
         self.assertEqual(cca_incr.w_x_.shape, (X.shape[1], 1))
         self.assertEqual(cca_incr.w_y_.shape, (Y.shape[1], 1))
 
-        self.assertTrue(np.allclose(cca_full.n_, cca_incr.n_, atol=1e-6))
-        self.assertTrue(np.allclose(cca_full.mu_, cca_incr.mu_, atol=1e-6))
-        self.assertTrue(np.allclose(cca_full.cov_, cca_incr.cov_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.n_x_, cca_incr.n_x_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.n_y_, cca_incr.n_y_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.n_xy_, cca_incr.n_xy_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.avg_x_, cca_incr.avg_x_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.avg_y_, cca_incr.avg_y_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.avg_xy_, cca_incr.avg_xy_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.cov_x_, cca_incr.cov_x_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.cov_y_, cca_incr.cov_y_, atol=1e-6))
+        self.assertTrue(np.allclose(cca_full.cov_xy_, cca_incr.cov_xy_, atol=1e-6))
         self.assertTrue(np.allclose(cca_full.w_x_, cca_incr.w_x_, atol=1e-6))
         self.assertTrue(np.allclose(cca_full.w_y_, cca_incr.w_y_, atol=1e-6))
         self.assertTrue(np.allclose(cca_full.rho_, cca_incr.rho_, atol=1e-6))

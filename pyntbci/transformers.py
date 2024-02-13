@@ -3,6 +3,8 @@ from scipy.linalg import eigh, inv, sqrtm, svd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
+from pyntbci.utilities import covariance
+
 
 class CCA(BaseEstimator, TransformerMixin):
     """Canonical correlation analysis. Maximizes the correlation between two variables in their projected spaces.
@@ -18,9 +20,9 @@ class CCA(BaseEstimator, TransformerMixin):
     ly: float | list (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
         None, no regularization is applied.
-    template_metric: str (default: "mean")
-        Metric to use to compute templates: mean, median.
-    cumulative: bool (default: False)
+    estimator_x
+    estimator_y
+    running: bool (default: False)
         If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
         track of previous data to update a running average and covariance for the CCA.
 
@@ -30,14 +32,22 @@ class CCA(BaseEstimator, TransformerMixin):
            distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14
     """
 
-    def __init__(self, n_components, lx=None, ly=None, template_metric="mean", cov_estimator=None, cumulative=False):
+    def __init__(self, n_components, lx=None, ly=None, estimator_x=None, estimator_y=None, running=False):
         self.n_components = n_components
         self.lx = lx
         self.ly = ly
-        self.template_metric = template_metric
-        self.cov_estimator = cov_estimator
-        self.cumulative = cumulative
-        self.n_ = 0
+        self.estimator_x = estimator_x
+        self.estimator_y = estimator_y
+        self.running = running
+        self.n_x_ = 0
+        self.avg_x_ = None
+        self.cov_x_ = None
+        self.n_y_ = 0
+        self.avg_y_ = None
+        self.cov_y_ = None
+        self.n_xy_ = 0
+        self.avg_xy_ = None
+        self.cov_xy_ = None
 
     def _fit_X2D_Y2D(self, X, Y):
         """Fit the CCA for a 2D X data matrix and 2D Y data matrix.
@@ -55,34 +65,18 @@ class CCA(BaseEstimator, TransformerMixin):
         X = X.astype("float32")
         Y = Y.astype("float32")
 
-        # Concatenate for ease of computations
-        obs = np.concatenate((X, Y), axis=1)
+        # Compute Cxx
+        self.n_x_, self.avg_x_, self.cov_x_ = covariance(X, self.n_x_, self.avg_x_, self.cov_x_,
+                                                         estimator=self.estimator_x, running=self.running)
 
-        # Update statistics
-        n_obs = obs.shape[0]
-        mu_obs = np.mean(obs, axis=0, keepdims=True)
-        if self.n_ == 0 or not self.cumulative:
-            self.n_ = n_obs
-            self.mu_ = mu_obs
-            Z1 = obs - mu_obs
-            if self.cov_estimator is None:
-                cov_obs = np.dot(Z1.T, Z1) / (self.n_ - 1)
-            else:
-                self.cov_estimator.fit(Z1)
-                cov_obs = self.cov_estimator.covariance_
-            self.cov_ = cov_obs
-        else:
-            self.n_ += n_obs
-            Z1 = obs - self.mu_
-            self.mu_ += (mu_obs - self.mu_) * (n_obs / self.n_)
-            Z2 = obs - self.mu_
-            if self.cov_estimator is None:
-                cov_obs = np.dot(Z1.T, Z2)
-            else:
-                # TODO
-                # Compute the cumulative covariance with two different old/new obs using estimator
-                raise NotImplementedError
-            self.cov_ = cov_obs / (self.n_ - 1) + self.cov_ * ((self.n_ - n_obs - 1) / (self.n_ - 1))
+        # Compute Xyy
+        self.n_y_, self.avg_y_, self.cov_y_ = covariance(Y, self.n_y_, self.avg_y_, self.cov_y_,
+                                                         estimator=self.estimator_x, running=self.running)
+
+        # Compute Cxy
+        Z = np.concatenate((X, Y), axis=1)
+        self.n_xy_, self.avg_xy_, self.cov_xy_ = covariance(Z, self.n_xy_, self.avg_xy_, self.cov_xy_,
+                                                         estimator=None, running=self.running)
 
         # Regularization
         if self.lx is None:
@@ -103,9 +97,9 @@ class CCA(BaseEstimator, TransformerMixin):
             ly = self.ly
 
         # Covariance matrices
-        Cxx = self.cov_[:X.shape[1], :X.shape[1]] + lx @ np.eye(X.shape[1])
-        Cxy = self.cov_[:X.shape[1], X.shape[1]:]
-        Cyy = self.cov_[X.shape[1]:, X.shape[1]:] + ly @ np.eye(Y.shape[1])
+        Cxx = self.cov_x_ + lx @ np.eye(X.shape[1])
+        Cyy = self.cov_y_ + ly @ np.eye(Y.shape[1])
+        Cxy = self.cov_xy_[:X.shape[1], X.shape[1]:]
 
         # Inverse square root
         iCxx = np.real(inv(sqrtm(Cxx)))
@@ -292,7 +286,7 @@ class CCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the
             input was None.
         """
-        check_is_fitted(self, ["w_x_", "w_y_", "n_", "mu_", "cov_", "rho_"])
+        check_is_fitted(self, ["w_x_", "w_y_", "rho_"])
 
         if (X is None or X.ndim == 3) and (Y is None or Y.ndim == 3):
             X, Y = self._transform_X3D(X, Y)
