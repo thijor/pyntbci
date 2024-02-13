@@ -41,6 +41,9 @@ class eCCA(BaseEstimator, ClassifierMixin):
         for.
     ensemble: bool (default: False)
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
+    cov_estimator: object (default: None)
+        Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
+        empirical covariance is used.
 
     References
     ----------
@@ -50,7 +53,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, lags, fs, cycle_size=None, template_metric="mean", score_metric="correlation", cca_channels=None,
-                 lx=None, ly=None, latency=None, ensemble=False):
+                 lx=None, ly=None, latency=None, ensemble=False, cov_estimator=None):
         self.lags = lags
         self.fs = fs
         self.cycle_size = cycle_size
@@ -61,6 +64,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self.ly = ly
         self.latency = latency
         self.ensemble = ensemble
+        self.cov_estimator = cov_estimator
 
     def _fit_T(self, X):
         """Fit the templates.
@@ -224,7 +228,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
                 R = np.tile(T[i_class, :, :].T, (np.sum(y == i_class), 1))  # Concatenate templates
                 if self.cca_channels is not None:
                     R = R[:, self.cca_channels]
-                self._cca.append(CCA(n_components=1, lx=self.lx, ly=self.ly))
+                self._cca.append(CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator,
+                                     estimator_y=self.cov_estimator))
                 self._cca[i_class].fit(S, R)
                 self.w_[:, i_class] = self._cca[i_class].w_x_.flatten()
         else:
@@ -232,7 +237,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
             R = np.reshape(T[y, :, :].transpose((0, 2, 1)), (-1, n_channels))  # Concatenate templates
             if self.cca_channels is not None:
                 R = R[:, self.cca_channels]
-            self._cca = CCA(n_components=1, lx=self.lx, ly=self.ly)
+            self._cca = CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator,
+                            estimator_y=self.cov_estimator)
             self._cca.fit(S, R)
             self.w_ = self._cca.w_x_
 
@@ -606,6 +612,12 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
     amplitudes: np.ndarray
         The amplitudes of the stimulation of shape (n_classes, n_samples). Should be sampled at fs similar to codes.
+    cov_estimator_x: object (default: None)
+        Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
+        empirical covariance is used.
+    cov_estimator_m: object (default: None)
+        Estimator object with a fit method that estimates a covariance matrix of the stimulus structure matrix. If None,
+        a custom empirical covariance is used.
 
     References
     ----------
@@ -620,7 +632,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, codes, fs, event="duration", transient_size=0.3, onset_event=False, score_metric="correlation",
-                 lx=None, ly=None, latency=None, ensemble=False, amplitudes=None):
+                 lx=None, ly=None, latency=None, ensemble=False, amplitudes=None, cov_estimator_x=None,
+                 cov_estimator_m=None):
         self.codes = codes
         self.fs = fs
         self.event = event
@@ -632,6 +645,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.latency = latency
         self.ensemble = ensemble
         self.amplitudes = amplitudes
+        self.cov_estimator_x = cov_estimator_x
+        self.cov_estimator_m = cov_estimator_m
 
     def _get_M(self, n_samples=None):
         """Get the structure matrix of a particular length.
@@ -765,12 +780,14 @@ class rCCA(BaseEstimator, ClassifierMixin):
             self.r_ = np.zeros((M.shape[1], n_classes))
             self._cca = []
             for i_class in range(n_classes):
-                self._cca.append(CCA(n_components=1, lx=self.lx, ly=self.ly))
+                self._cca.append(CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator_x,
+                                     estimator_y=self.cov_estimator_m))
                 self._cca[i_class].fit(X[y == i_class, :, :], np.tile(M[[i_class], :, :], (np.sum(y == i_class), 1, 1)))
                 self.w_[:, i_class] = self._cca[i_class].w_x_.flatten()
                 self.r_[:, i_class] = self._cca[i_class].w_y_.flatten()
         else:
-            self._cca = CCA(n_components=1, lx=self.lx, ly=self.ly)
+            self._cca = CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator_x,
+                            estimator_y=self.cov_estimator_m)
             self._cca.fit(X, M[y, :, :])
             self.w_ = self._cca.w_x_
             self.r_ = self._cca.w_y_

@@ -118,8 +118,7 @@ def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=F
         if estimator is None:
             cov_obs = np.dot(X1.T, X2) / (n_new - 1)
         else:
-            # TODO
-            # Compute the cumulative cross-covariance X1 and X2 using estimator
+            # TODO: Compute the cumulative cross-covariance X1 and X2 using estimator
             raise NotImplementedError
         cov_new = cov_obs + cov_old * ((n_new - n_obs - 1) / (n_new - 1))
     return n_new, avg_new, cov_new
