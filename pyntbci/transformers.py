@@ -20,8 +20,12 @@ class CCA(BaseEstimator, TransformerMixin):
     ly: float | list (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
         None, no regularization is applied.
-    estimator_x
+    estimator_x: object (Default: None)
+        An object that estimates a covariance matrix for X using a fit method. If None, a custom implementation of the
+        empirical covariance is used.
     estimator_y
+        An object that estimates a covariance matrix for Y using a fit method. If None, a custom implementation of the
+        empirical covariance is used.
     running: bool (default: False)
         If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
         track of previous data to update a running average and covariance for the CCA.
@@ -62,21 +66,28 @@ class CCA(BaseEstimator, TransformerMixin):
         X = check_array(X, ensure_2d=True, allow_nd=False)
         Y = check_array(Y, ensure_2d=True, allow_nd=False)
         assert X.shape[0] == Y.shape[0], f"Unequal samples in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
-        X = X.astype("float32")
-        Y = Y.astype("float32")
+        X = X.astype("float")
+        Y = Y.astype("float")
 
-        # Compute Cxx
-        self.n_x_, self.avg_x_, self.cov_x_ = covariance(X, self.n_x_, self.avg_x_, self.cov_x_,
-                                                         estimator=self.estimator_x, running=self.running)
-
-        # Compute Xyy
-        self.n_y_, self.avg_y_, self.cov_y_ = covariance(Y, self.n_y_, self.avg_y_, self.cov_y_,
-                                                         estimator=self.estimator_x, running=self.running)
-
-        # Compute Cxy
+        # Compute covariances
         Z = np.concatenate((X, Y), axis=1)
         self.n_xy_, self.avg_xy_, self.cov_xy_ = covariance(Z, self.n_xy_, self.avg_xy_, self.cov_xy_,
-                                                         estimator=None, running=self.running)
+                                                            estimator=None, running=self.running)
+        if self.estimator_x is None and self.estimator_y is None:
+            self.n_x_ = self.n_xy_
+            self.n_y_ = self.n_xy_
+            self.avg_x_ = self.avg_xy_[:, :X.shape[1]]
+            self.avg_y_ = self.avg_xy_[:, X.shape[1]:]
+            self.cov_x_ = self.cov_xy_[:X.shape[1], :X.shape[1]]
+            self.cov_y_ = self.cov_xy_[X.shape[1]:, X.shape[1]:]
+        else:
+            self.n_x_, self.avg_x_, self.cov_x_ = covariance(X, self.n_x_, self.avg_x_, self.cov_x_,
+                                                             estimator=self.estimator_x, running=self.running)
+            self.n_y_, self.avg_y_, self.cov_y_ = covariance(Y, self.n_y_, self.avg_y_, self.cov_y_,
+                                                             estimator=self.estimator_y, running=self.running)
+        Cxx = self.cov_x_
+        Cyy = self.cov_y_
+        Cxy = self.cov_xy_[:X.shape[1], X.shape[1]:]
 
         # Regularization
         if self.lx is None:
@@ -95,11 +106,8 @@ class CCA(BaseEstimator, TransformerMixin):
             ly = np.array(self.ly)[np.newaxis, :]
         else:
             ly = self.ly
-
-        # Covariance matrices
-        Cxx = self.cov_x_ + lx @ np.eye(X.shape[1])
-        Cyy = self.cov_y_ + ly @ np.eye(Y.shape[1])
-        Cxy = self.cov_xy_[:X.shape[1], X.shape[1]:]
+        Cxx += lx @ np.eye(X.shape[1])
+        Cyy += ly @ np.eye(Y.shape[1])
 
         # Inverse square root
         iCxx = np.real(inv(sqrtm(Cxx)))
@@ -127,8 +135,8 @@ class CCA(BaseEstimator, TransformerMixin):
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
         Y = check_array(Y, ensure_2d=False, allow_nd=True)
-        X = X.astype("float32")
-        Y = Y.astype("float32")
+        X = X.astype("float")
+        Y = Y.astype("float")
         assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
         assert X.shape[2] == Y.shape[2], f"Unequal samples in X ({X.shape[2]}) and Y ({Y.shape[2]})!"
 
@@ -153,7 +161,7 @@ class CCA(BaseEstimator, TransformerMixin):
             Label vector of shape (n_trials,).
         """
         X, Y = check_X_y(X, Y, ensure_2d=False, allow_nd=True, y_numeric=True)
-        X = X.astype("float32")
+        X = X.astype("float")
         Y = Y.astype(np.uint)
         assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
 
@@ -216,12 +224,12 @@ class CCA(BaseEstimator, TransformerMixin):
         """
         if X is not None:
             X = check_array(X, ensure_2d=True, allow_nd=False)
-            X = X.astype("float32")
+            X = X.astype("float")
             X -= self.avg_x_
             X = np.dot(X, self.w_x_)
         if Y is not None:
             Y = check_array(Y, ensure_2d=True, allow_nd=False)
-            Y = Y.astype("float32")
+            Y = Y.astype("float")
             Y -= self.avg_y_
             Y = np.dot(Y, self.w_y_)
 
@@ -246,12 +254,12 @@ class CCA(BaseEstimator, TransformerMixin):
         """
         if X is not None:
             X = check_array(X, ensure_2d=False, allow_nd=True)
-            X = X.astype("float32")
+            X = X.astype("float")
             n_trials, n_features_x, n_samples = X.shape
             X = X.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_x))
         if Y is not None:
             Y = check_array(Y, ensure_2d=False, allow_nd=True)
-            Y = Y.astype("float32")
+            Y = Y.astype("float")
             n_trials, n_features_y, n_samples = Y.shape
             Y = Y.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_y))
 
@@ -339,7 +347,7 @@ class TRCA(BaseEstimator, TransformerMixin):
             The learned weights of shape (n_features, n_components).
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
-        X = X.astype("float32")
+        X = X.astype("float")
         n_trials, n_channels, n_samples = X.shape
 
         # Covariance of all data
@@ -377,7 +385,7 @@ class TRCA(BaseEstimator, TransformerMixin):
             The learned weights of shape (n_features, n_components, n_classes).
         """
         X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
-        X = X.astype("float32")
+        X = X.astype("float")
         y = y.astype(np.uint)
 
         n_trials, n_channels, n_samples = X.shape
@@ -436,7 +444,7 @@ class TRCA(BaseEstimator, TransformerMixin):
         n_trials, n_channels, n_samples = X.shape
         if y is None:
             X = check_array(X, ensure_2d=False, allow_nd=True)
-            X = X.astype("float32")
+            X = X.astype("float")
             if self.w_.ndim == 2:
                 Y = np.dot(
                     X.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_channels)), self.w_
@@ -450,7 +458,7 @@ class TRCA(BaseEstimator, TransformerMixin):
                     ).reshape((n_trials, n_samples, self.n_components)).transpose((0, 2, 1))
         else:
             X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
-            X = X.astype("float32")
+            X = X.astype("float")
             y = y.astype(np.uint)
             Y = np.zeros((n_trials, self.n_components, n_samples))
             for i_trial in range(n_trials):

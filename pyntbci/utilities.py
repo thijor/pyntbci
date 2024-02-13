@@ -95,7 +95,7 @@ def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=F
     n_new: int
         Number of samples.
     avg_new: np.ndarray
-        The average of shape (n_features).
+        The average of shape (1, n_features).
     cov_new: np.ndarray
         The covariance of shape (n_features, n_features).
     """
