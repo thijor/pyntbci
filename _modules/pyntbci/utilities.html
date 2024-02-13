@@ -164,6 +164,61 @@
 
 
 
+<span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_old</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">avg_old</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cov_old</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X: np.ndarray</span>
+<span class="sd">        Data matrix of shape (n_samples, n_features.)</span>
+<span class="sd">    n_old: int (default: 0)</span>
+<span class="sd">        Number of already observed samples.</span>
+<span class="sd">    avg_old: np.ndarray (default: None)</span>
+<span class="sd">        Already observed average of shape (n_features).</span>
+<span class="sd">    cov_old: np.ndarray (default: None)</span>
+<span class="sd">        Already observed covariance of shape (n_features, n_features).</span>
+<span class="sd">    estimator: object (default: None)</span>
+<span class="sd">        An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the</span>
+<span class="sd">        empirical covariance is used.</span>
+<span class="sd">    running: bool (default: False)</span>
+<span class="sd">        Whether or not to use a running covariance. If False, the covariance matrix is computed instantaneously using</span>
+<span class="sd">        only X, such that n_old, avg_old, and cov_old are not used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    n_new: int</span>
+<span class="sd">        Number of samples.</span>
+<span class="sd">    avg_new: np.ndarray</span>
+<span class="sd">        The average of shape (n_features).</span>
+<span class="sd">    cov_new: np.ndarray</span>
+<span class="sd">        The covariance of shape (n_features, n_features).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_obs</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">avg_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_old</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">running</span><span class="p">:</span>
+        <span class="n">n_new</span> <span class="o">=</span> <span class="n">n_obs</span>
+        <span class="n">avg_new</span> <span class="o">=</span> <span class="n">avg_obs</span>
+        <span class="n">X1</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">avg_obs</span>
+        <span class="k">if</span> <span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span><span class="o">.</span><span class="n">covariance_</span>
+        <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_new</span> <span class="o">=</span> <span class="n">n_old</span> <span class="o">+</span> <span class="n">n_obs</span>
+        <span class="n">X1</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">avg_old</span>
+        <span class="n">avg_new</span> <span class="o">=</span> <span class="n">avg_old</span> <span class="o">+</span> <span class="p">(</span><span class="n">avg_obs</span> <span class="o">-</span> <span class="n">avg_old</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_obs</span> <span class="o">/</span> <span class="n">n_new</span><span class="p">)</span>
+        <span class="n">X2</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">avg_new</span>
+        <span class="k">if</span> <span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># TODO</span>
+            <span class="c1"># Compute the cumulative cross-covariance X1 and X2 using estimator</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span> <span class="o">+</span> <span class="n">cov_old</span> <span class="o">*</span> <span class="p">((</span><span class="n">n_new</span> <span class="o">-</span> <span class="n">n_obs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">n_new</span><span class="p">,</span> <span class="n">avg_new</span><span class="p">,</span> <span class="n">cov_new</span>
+
+
 <div class="viewcode-block" id="euclidean">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean">[docs]</a>
 <span class="k">def</span> <span class="nf">euclidean</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
