@@ -217,12 +217,12 @@ class CCA(BaseEstimator, TransformerMixin):
         if X is not None:
             X = check_array(X, ensure_2d=True, allow_nd=False)
             X = X.astype("float32")
-            X -= self.mu_[:, X.shape[1]]
+            X -= self.avg_x_
             X = np.dot(X, self.w_x_)
         if Y is not None:
             Y = check_array(Y, ensure_2d=True, allow_nd=False)
             Y = Y.astype("float32")
-            Y -= self.mu_[:, -Y.shape[1]:]
+            Y -= self.avg_y_
             Y = np.dot(Y, self.w_y_)
 
         return X, Y
