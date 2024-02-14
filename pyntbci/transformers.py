@@ -73,16 +73,18 @@ class CCA(BaseEstimator, TransformerMixin):
         Z = np.concatenate((X, Y), axis=1)
         self.n_xy_, self.avg_xy_, self.cov_xy_ = covariance(Z, self.n_xy_, self.avg_xy_, self.cov_xy_,
                                                             estimator=None, running=self.running)
-        if self.estimator_x is None and self.estimator_y is None:
+        if self.estimator_x is None:
             self.n_x_ = self.n_xy_
-            self.n_y_ = self.n_xy_
             self.avg_x_ = self.avg_xy_[:, :X.shape[1]]
-            self.avg_y_ = self.avg_xy_[:, X.shape[1]:]
             self.cov_x_ = self.cov_xy_[:X.shape[1], :X.shape[1]]
-            self.cov_y_ = self.cov_xy_[X.shape[1]:, X.shape[1]:]
         else:
             self.n_x_, self.avg_x_, self.cov_x_ = covariance(X, self.n_x_, self.avg_x_, self.cov_x_,
                                                              estimator=self.estimator_x, running=self.running)
+        if self.estimator_y is None:
+            self.n_y_ = self.n_xy_
+            self.avg_y_ = self.avg_xy_[:, X.shape[1]:]
+            self.cov_y_ = self.cov_xy_[X.shape[1]:, X.shape[1]:]
+        else:
             self.n_y_, self.avg_y_, self.cov_y_ = covariance(Y, self.n_y_, self.avg_y_, self.cov_y_,
                                                              estimator=self.estimator_y, running=self.running)
         Cxx = self.cov_x_
@@ -120,6 +122,7 @@ class CCA(BaseEstimator, TransformerMixin):
         Wx = iCxx @ U
         Wy = iCyy @ V.T
 
+        # Select components
         self.w_x_ = Wx[:, :self.n_components]
         self.w_y_ = Wy[:, :self.n_components]
 
