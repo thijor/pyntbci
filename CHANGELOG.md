@@ -8,6 +8,7 @@
 - (Running) covariance in utilities
 - CCA covariance estimator
 - CCA cumulative covariance
+- On, off and onoff events for rCCA
 
 ### Changed
 - CCA separate computation for Cxx, Cyy and Cxy

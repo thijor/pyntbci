@@ -74,7 +74,7 @@ class TestEventMatrix(unittest.TestCase):
 
     def test_number_of_events(self):
         V = np.random.rand(17, 123) > 0.5
-        for event in ["dur", "re", "fe", "refe"]:
+        for event in ["id", "on", "off", "onoff", "dur", "re", "fe", "refe"]:
             E, events = pyntbci.utilities.event_matrix(V, event=event)
             self.assertEqual(E.shape[1], len(events))
 

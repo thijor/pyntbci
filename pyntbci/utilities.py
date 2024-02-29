@@ -187,6 +187,20 @@ def event_matrix(V, event, onset_event=False):
         E = V[:, np.newaxis, :]
         events = ("id",)
 
+    elif event == "on":
+        E = V[:, np.newaxis, :] > 0
+        events = ("on",)
+
+    elif event == "off":
+        E = V[:, np.newaxis, :] == 0
+        events = ("off",)
+
+    elif event == "onoff":
+        on = V > 0
+        off = V == 0
+        E = np.concatenate((on[:, np.newaxis, :], off[:, np.newaxis, :]), axis=1)
+        events = ("on", "off")
+
     elif event == "dur" or event == "duration":
 
         # Get rising and falling edges
