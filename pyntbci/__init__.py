@@ -31,7 +31,7 @@ __author__ = "Jordy Thielen"
 __contact__ = "jordy.thielen@donders.ru.nl"
 __credits__ = "Radboud University; Donders Institute for Brain, Cognition and Behaviour"
 __license__ = "BSD"
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 
 from pyntbci import classifiers
 from pyntbci import codes
