@@ -24,7 +24,7 @@ import seaborn
 
 import pyntbci
 
-seaborn.set_context("paper")
+seaborn.set_context("paper", font_scale=1.5)
 
 # %%
 # The codes
