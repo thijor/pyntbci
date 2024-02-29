@@ -77,4 +77,4 @@ for event in events:
     ax.set_title(f"Event time-series {event} (code {i_class})")
     plt.tight_layout()
 
-plt.show()
+# plt.show()
