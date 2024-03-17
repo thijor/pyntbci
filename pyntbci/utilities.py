@@ -387,15 +387,15 @@ def itr(n, p, t):
     return b * (60 / t)
 
 
-def structure_matrix(E, transient_size, amplitudes=None):
+def structure_matrix(E, encoding_length, amplitudes=None):
     """Translate an event matrix to a structure matrix.
 
     Parameters
     ----------
     E: np.ndarray
         An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).
-    transient_size: int | list
-        The length of the transient response to fit for all (int) or each of the (list) events in samples.
+    encoding_length: int | list
+        The length of the transient response(s) for each of the events in samples.
     amplitudes: np.ndarray
         An amplitude matrix to in/decrease the presence of events over the time-course of codes, of shape (n_codes,
         n_samples).
@@ -403,16 +403,16 @@ def structure_matrix(E, transient_size, amplitudes=None):
     Returns
     -------
     M: np.ndarray
-        The structure matrix denoting event timings of shape (n_codes, transient_size, n_samples).
+        The structure matrix denoting event timings of shape (n_codes, encoding_length, n_samples).
     """
     n_codes, n_events, n_samples = E.shape
 
-    if isinstance(transient_size, int):
-        transient_size = n_events * [transient_size]
-    elif isinstance(transient_size, list) or isinstance(transient_size, tuple):
-        assert len(transient_size) == n_events, "len(transient_size) does not match E.shape[0]."
+    if isinstance(encoding_length, int):
+        encoding_length = n_events * [encoding_length]
+    elif isinstance(encoding_length, list) or isinstance(encoding_length, tuple):
+        assert len(encoding_length) == n_events, "len(encoding_length) does not match E.shape[0]."
     else:
-        raise Exception("transient_size should be (int, list, tuple).")
+        raise Exception("encoding_length should be (int, list, tuple).")
 
     # Create structure matrix
     M = []
@@ -423,9 +423,9 @@ def structure_matrix(E, transient_size, amplitudes=None):
             E[:, i_event, :] *= amplitudes
 
         # Create Toeplitz structure
-        tmp = np.zeros((n_codes, transient_size[i_event], n_samples))
+        tmp = np.zeros((n_codes, encoding_length[i_event], n_samples))
         tmp[:, 0, :] = E[:, i_event, :]
-        for i_sample in range(1, transient_size[i_event]):
+        for i_sample in range(1, encoding_length[i_event]):
             tmp[:, i_sample, :] = np.roll(tmp[:, i_sample - 1, :], 1, axis=1)
             tmp[:, i_sample, 0] = 0
 

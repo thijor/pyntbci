@@ -104,15 +104,15 @@ class TestRCCA(unittest.TestCase):
 
     def test_rcca_shape(self):
         fs = 1000
-        transient_size = 0.3
+        encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)
         y = np.random.choice(5, 111)
         V = np.random.rand(5, fs) > 0.5
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size)
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length)
         rcca.fit(X, y)
         self.assertEqual(rcca.w_.size, X.shape[1])
-        self.assertEqual(rcca.r_.size, int(2 * transient_size * fs))
+        self.assertEqual(rcca.r_.size, int(2 * encoding_length * fs))
         self.assertEqual(rcca.Ts_.shape[0], V.shape[0])
         self.assertEqual(rcca.Tw_.shape[0], V.shape[0])
         self.assertEqual(rcca.Ts_.shape[1], V.shape[1])
@@ -123,37 +123,40 @@ class TestRCCA(unittest.TestCase):
 
     def test_rcca_score_metric(self):
         fs = 1000
-        transient_size = 0.3
+        encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)
         y = np.random.choice(5, 111)
         V = np.random.rand(5, fs) > 0.5
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size, score_metric="correlation")
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="correlation")
         rcca.fit(X, y)
         yh = rcca.predict(X)
         self.assertEqual(y.shape, yh.shape)
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size, score_metric="euclidean")
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="euclidean")
         rcca.fit(X, y)
         yh = rcca.predict(X)
         self.assertEqual(y.shape, yh.shape)
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size, score_metric="inner")
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="inner")
         rcca.fit(X, y)
         yh = rcca.predict(X)
         self.assertEqual(y.shape, yh.shape)
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size, score_metric="correlation", ensemble=True)
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length,
+                                        score_metric="correlation", ensemble=True)
         rcca.fit(X, y)
         yh = rcca.predict(X)
         self.assertEqual(y.shape, yh.shape)
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size, score_metric="euclidean", ensemble=True)
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="euclidean",
+                                        ensemble=True)
         rcca.fit(X, y)
         yh = rcca.predict(X)
         self.assertEqual(y.shape, yh.shape)
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size, score_metric="inner", ensemble=True)
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="inner",
+                                        ensemble=True)
         rcca.fit(X, y)
         yh = rcca.predict(X)
         self.assertEqual(y.shape, yh.shape)

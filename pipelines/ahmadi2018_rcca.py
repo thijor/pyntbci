@@ -163,7 +163,7 @@ for i_subject in range(n_subjects):
         X_tst, y_tst = X[folds == i_fold, :, :], y[folds == i_fold]
 
         # Train classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.3, onset_event=True)
         rcca.fit(X_trn, y_trn)
 
         # Apply classifier

@@ -593,7 +593,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         The sampling frequency of the EEG data in Hz.
     event: str (default: "duration")
         The event definition to map stimulus to events.
-    transient_size: float | list (default: 0.3)
+    encoding_length: float | list (default: 0.3)
         The length of the transient response(s) for each of the events in seconds.
     onset_event: bool (default: False)
         Whether or not to add an event for the onset of stimulation. Added as last event.
@@ -631,13 +631,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
 
-    def __init__(self, stimulus, fs, event="duration", transient_size=0.3, onset_event=False, score_metric="correlation",
-                 lx=None, ly=None, latency=None, ensemble=False, amplitudes=None, cov_estimator_x=None,
-                 cov_estimator_m=None):
+    def __init__(self, stimulus, fs, event="duration", encoding_length=0.3, onset_event=False,
+                 score_metric="correlation", lx=None, ly=None, latency=None, ensemble=False, amplitudes=None,
+                 cov_estimator_x=None, cov_estimator_m=None):
         self.stimulus = stimulus
         self.fs = fs
         self.event = event
-        self.transient_size = transient_size
+        self.encoding_length = encoding_length
         self.onset_event = onset_event
         self.score_metric = score_metric
         self.lx = lx
@@ -670,7 +670,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         # Get structure matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
-        M = structure_matrix(E, int(self.transient_size * self.fs), self.amplitudes)
+        M = structure_matrix(E, int(self.encoding_length * self.fs), self.amplitudes)
         return M[:, :, :n_samples]
 
     def _get_T(self, n_samples=None):

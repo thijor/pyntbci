@@ -120,7 +120,7 @@ print("w: shape:", ecca.w_.shape, ", type:", ecca.w_.dtype)
 # Plot CCA filters
 fig, ax = plt.subplots(figsize=(5, 3))
 pyntbci.plotting.topoplot(ecca.w_, capfile, ax=ax)
-ax.set_title("spatial filter")
+ax.set_title("Spatial filter")
 
 # %%
 # Cross-validation

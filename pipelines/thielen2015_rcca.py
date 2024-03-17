@@ -132,7 +132,7 @@ plt.title("Code time-series")
 n_samples = int(4.2 * fs)
 
 # Train template-matching classifier
-rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.2, onset_event=True)
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.2, onset_event=True)
 rcca.fit(X_trn, y_trn)
 
 # Change stimuli to test set
@@ -185,7 +185,7 @@ for i_subject in range(n_subjects):
         X_tst_, y_tst_ = X_tst[folds == i_fold, :, :], y_tst[folds == i_fold]
 
         # Train classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=U, fs=fs, event="duration", transient_size=0.2, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=U, fs=fs, event="duration", encoding_length=0.2, onset_event=True)
         rcca.fit(X_trn_, y_trn_)
 
         # Apply classifier

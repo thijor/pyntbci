@@ -151,20 +151,20 @@ plt.tight_layout()
 # an event) and M (the structure matrix for a specific class) for the ith class. The structure matrix is a matrix of n
 # classes, l response samples, and m samples.
 #
-# An important parameter here is the `transient_size` argument. An easy abstraction is to assume the same length for
+# An important parameter here is the `encoding_length` argument. An easy abstraction is to assume the same length for
 # the responses to each of the events. However, one could also set different lengths for each of the events.
 
 # Create structure matrix
-transient_size = int(0.3 * fs)  # 300 ms responses
-M = pyntbci.utilities.structure_matrix(E, transient_size)
-print("M: shape:", M.shape, "(classes x transient_size*events x samples)")
+encoding_length = int(0.3 * fs)  # 300 ms responses
+M = pyntbci.utilities.structure_matrix(E, encoding_length)
+print("M: shape:", M.shape, "(classes x encoding_length*events x samples)")
 
 # Plot structure matrix
 i_class = 0  # the class to visualize
 plt.figure(figsize=(15, 6))
 plt.imshow(M[i_class, :, :], cmap="gray")
 plt.xticks(np.arange(0, M.shape[2], 60), np.arange(0, M.shape[2], 60) / fs)
-plt.yticks(np.arange(0, E.shape[1] * transient_size, 12), np.tile(np.arange(0, transient_size, 12) / fs, E.shape[1]))
+plt.yticks(np.arange(0, E.shape[1] * encoding_length, 12), np.tile(np.arange(0, encoding_length, 12) / fs, E.shape[1]))
 plt.xlabel("time [sec]")
 plt.ylabel(events[::-1])
 plt.title(f"Structure matrix (class {i_class})")
@@ -175,7 +175,7 @@ plt.tight_layout()
 # -----------------
 # The full reconvolution CCA (rCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 # `pyntbci.classifiers.rCCA`. All it needs are the binary sequences `stimulus`, the sampling frequency `fs`, the event
-# definition `event`, the transient response size `transient_size` and whether or not to include an event for the onset
+# definition `event`, the transient response size `encoding_length` and whether or not to include an event for the onset
 # of a trial `onset_event`.
 #
 # When calling `rCCA.fit(X, y)` with training data `X` and labels `y`, the full decomposition is performed to obtain
@@ -185,11 +185,11 @@ plt.tight_layout()
 # `rCCA.events_` to disentangle these and find which response is associated to which event.
 
 # Perform CCA
-transient_size = 0.3  # 300 ms responses
-rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size, onset_event=True)
+encoding_length = 0.3  # 300 ms responses
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length, onset_event=True)
 rcca.fit(X, y)
 print("w: ", rcca.w_.shape, "(channels)")
-print("r: ", rcca.r_.shape, "(transient_size*events)")
+print("r: ", rcca.r_.shape, "(encoding_length*events)")
 
 # Plot CCA filters
 fig, ax = plt.subplots(1, 2, figsize=(15, 3))
@@ -197,11 +197,11 @@ pyntbci.plotting.topoplot(rcca.w_, capfile, ax=ax[0])
 ax[0].set_title("spatial filter")
 tmp = np.reshape(rcca.r_, (len(rcca.events_), -1))
 for i in range(len(rcca.events_)):
-    ax[1].plot(np.arange(int(transient_size * fs)) / fs, tmp[i, :])
+    ax[1].plot(np.arange(int(encoding_length * fs)) / fs, tmp[i, :])
 ax[1].legend(rcca.events_)
 ax[1].set_xlabel("time [sec]")
 ax[1].set_ylabel("amplitude [a.u.]")
-ax[1].set_title("transient responses")
+ax[1].set_title("Transient responses")
 fig.tight_layout()
 
 # %%
@@ -227,7 +227,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.3, onset_event=True)
     rcca.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
@@ -283,7 +283,7 @@ for i_fold in range(n_folds):
     # Loop train trials
     for i_trial in range(n_train_trials):
         # Train classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.3, onset_event=True)
         rcca.fit(X_trn[:train_trials[i_trial], :, :], y_trn[:train_trials[i_trial]])
 
         # Apply classifier
@@ -334,7 +334,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Setup classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.3, onset_event=True)
 
     # Train classifier
     rcca.fit(X_trn, y_trn)
@@ -407,7 +407,7 @@ for i_subject in range(n_subjects):
         X_tst, y_tst = X[folds == i_fold, :, :], y[folds == i_fold]
 
         # Train classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.3, onset_event=True)
         rcca.fit(X_trn, y_trn)
 
         # Apply classifier

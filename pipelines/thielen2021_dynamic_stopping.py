@@ -117,7 +117,7 @@ intertrialtime = 1.0  # ITI in seconds for computing ITR
 n_samples = int(trialtime * fs)
 
 # Setup rCCA
-transient_size = 0.3
+encoding_length = 0.3
 onset_event = True
 
 # Set stopping
@@ -143,7 +143,7 @@ folds = np.repeat(np.arange(n_folds), int(n_trials / n_folds))
 target_p = 0.95 ** (1 / n_segments)
 
 # Fit classifier
-rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                 onset_event=onset_event, score_metric="correlation")
 margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p, max_time=trialtime)
 margin.fit(X, y)
@@ -153,7 +153,7 @@ plt.figure(figsize=(15, 3))
 plt.plot(np.arange(1, 1 + margin.margins_.size) * segmenttime, margin.margins_, c="k")
 plt.xlabel("time [sec]")
 plt.ylabel("margin")
-plt.title("margin dynamic stopping")
+plt.title("Margin dynamic stopping")
 
 # Loop folds
 accuracy_margin = np.zeros(n_folds)
@@ -165,7 +165,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
     margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p)
     margin.fit(X_trn, y_trn)
@@ -204,7 +204,7 @@ ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [sec]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"margin dynamic stopping: avg acc {accuracy_margin.mean():.2f} | " +
+ax[0].set_title(f"Margin dynamic stopping: avg acc {accuracy_margin.mean():.2f} | " +
                 f"avg dur {duration_margin.mean():.2f} | avg itr {itr_margin.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
@@ -237,7 +237,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
     beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trialtime)
     beta.fit(X, y)
@@ -276,7 +276,7 @@ ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [sec]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"beta dynamic stopping: avg acc {accuracy_beta.mean():.2f} | " +
+ax[0].set_title(f"Beta dynamic stopping: avg acc {accuracy_beta.mean():.2f} | " +
                 f"avg dur {duration_beta.mean():.2f} | avg itr {itr_beta.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
@@ -299,7 +299,7 @@ print(f"\tITR: avg={itr_beta.mean():.1f} with std={itr_beta.std():.2f}")
 cr = 1.0
 
 # Fit classifier
-rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                 onset_event=onset_event, score_metric="inner")
 bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, cr=cr, max_time=trialtime)
 bayes.fit(X, y)
@@ -330,7 +330,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes0", cr=cr, max_time=trialtime)
     bayes.fit(X_trn, y_trn)
@@ -365,7 +365,7 @@ ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [sec]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"bes0 dynamic stopping: avg acc {accuracy_bes0.mean():.2f} | " +
+ax[0].set_title(f"BES0 dynamic stopping: avg acc {accuracy_bes0.mean():.2f} | " +
                 f"avg dur {duration_bes0.mean():.2f} | avg itr {itr_bes0.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
@@ -399,7 +399,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes1", cr=cr, target_pf=target_pf,
                                            target_pd=target_pd, max_time=trialtime)
@@ -435,7 +435,7 @@ ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [sec]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"bes1 dynamic stopping: avg acc {accuracy_bes1.mean():.2f} | " +
+ax[0].set_title(f"BES1 dynamic stopping: avg acc {accuracy_bes1.mean():.2f} | " +
                 f"avg dur {duration_bes1.mean():.2f} | avg itr {itr_bes1.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
@@ -469,7 +469,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes2", cr=cr, target_pf=target_pf,
                                            target_pd=target_pd, max_time=trialtime)
@@ -505,7 +505,7 @@ ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [sec]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"bes2 dynamic stopping: avg acc {accuracy_bes2.mean():.2f} | " +
+ax[0].set_title(f"BES2 dynamic stopping: avg acc {accuracy_bes2.mean():.2f} | " +
                 f"avg dur {duration_bes2.mean():.2f} | avg itr {itr_bes2.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
@@ -544,6 +544,6 @@ ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [sec]")
 ax[2].set_ylabel("itr [bits/min]")
 ax[1].legend(bbox_to_anchor=(1.0, 1.0))
-ax[0].set_title("comparison of dynamic stopping methods averaged across folds")
+ax[0].set_title("Comparison of dynamic stopping methods averaged across folds")
 
 plt.show()

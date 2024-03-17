@@ -126,11 +126,11 @@ if etrca.ensemble:
     ax = ax.flatten()
     for i_class in range(n_classes):
         pyntbci.plotting.topoplot(etrca.w_[:, 0, i_class], capfile, ax=ax[i_class])
-        ax[i_class].set_title(f"spatial filter class={i_class}")
+        ax[i_class].set_title(f"Spatial filter class={i_class}")
 else:
     fig, ax = plt.subplots(figsize=(5, 3))
     pyntbci.plotting.topoplot(etrca.w_, capfile, ax=ax)
-    ax.set_title("spatial filter")
+    ax.set_title("Spatial filter")
 
 # %%
 # Cross-validation

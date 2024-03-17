@@ -8,7 +8,8 @@
 
 ### Changed
 
-- Variable `codes` is renamed to `stimulus`.
+- Variable `codes` is renamed to `stimulus`
+- Variable `transient_size` is renamed to `encoding_length`
 
 ### Fixed
 
