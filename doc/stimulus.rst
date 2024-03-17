@@ -1,9 +1,9 @@
 Codes
 =====
 
-.. automodule:: pyntbci.codes
+.. automodule:: pyntbci.stimulus
 
-.. currentmodule:: pyntbci.codes
+.. currentmodule:: pyntbci.stimulus
 
 .. autosummary::
     :toctree: generated/
@@ -15,6 +15,6 @@ Codes
     make_gold_codes
     make_m_sequence
     is_de_bruijn_sequence
-    is_gold_codes
+    is_gold_code
     is_m_sequence
     modulate
