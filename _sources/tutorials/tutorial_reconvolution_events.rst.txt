@@ -34,12 +34,10 @@ References
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. DOI: https://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 18-29
+.. GENERATED FROM PYTHON SOURCE LINES 18-27
 
 .. code-block:: Python
 
-
-    import os
 
     import matplotlib.pyplot as plt
     import numpy as np
@@ -56,14 +54,14 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-34
+.. GENERATED FROM PYTHON SOURCE LINES 28-32
 
 The stimulus
 --------
 PyntBCI contains a `stimulus` module with several functions that create various well-known noise-codes. Here we
 generate an m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-53
+.. GENERATED FROM PYTHON SOURCE LINES 32-51
 
 .. code-block:: Python
 
@@ -104,7 +102,7 @@ generate an m-sequence.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-62
+.. GENERATED FROM PYTHON SOURCE LINES 52-60
 
 The event matrix
 ----------------
@@ -115,7 +113,7 @@ potential events that can be used, such as `id` (identity), `on`, `off`, `onoff`
 `fe` (falling edge), and `refe` (rising and falling edge, contrast). Here, we show what these decompositions look like
 in more detail.
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-81
+.. GENERATED FROM PYTHON SOURCE LINES 60-79
 
 .. code-block:: Python
 
@@ -236,7 +234,7 @@ in more detail.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.085 seconds)
+   **Total running time of the script:** (0 minutes 0.978 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_reconvolution_events.py:

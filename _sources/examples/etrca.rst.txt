@@ -223,17 +223,17 @@ the spatial filters `eTRCA.w_`.
         ax = ax.flatten()
         for i_class in range(n_classes):
             pyntbci.plotting.topoplot(etrca.w_[:, 0, i_class], capfile, ax=ax[i_class])
-            ax[i_class].set_title(f"spatial filter class={i_class}")
+            ax[i_class].set_title(f"Spatial filter class={i_class}")
     else:
         fig, ax = plt.subplots(figsize=(5, 3))
         pyntbci.plotting.topoplot(etrca.w_, capfile, ax=ax)
-        ax.set_title("spatial filter")
+        ax.set_title("Spatial filter")
 
 
 
 
 .. image-sg:: /examples/images/sphx_glr_etrca_004.png
-   :alt: spatial filter class=0, spatial filter class=1, spatial filter class=2, spatial filter class=3, spatial filter class=4, spatial filter class=5, spatial filter class=6, spatial filter class=7, spatial filter class=8, spatial filter class=9, spatial filter class=10, spatial filter class=11, spatial filter class=12, spatial filter class=13, spatial filter class=14, spatial filter class=15, spatial filter class=16, spatial filter class=17, spatial filter class=18, spatial filter class=19
+   :alt: Spatial filter class=0, Spatial filter class=1, Spatial filter class=2, Spatial filter class=3, Spatial filter class=4, Spatial filter class=5, Spatial filter class=6, Spatial filter class=7, Spatial filter class=8, Spatial filter class=9, Spatial filter class=10, Spatial filter class=11, Spatial filter class=12, Spatial filter class=13, Spatial filter class=14, Spatial filter class=15, Spatial filter class=16, Spatial filter class=17, Spatial filter class=18, Spatial filter class=19
    :srcset: /examples/images/sphx_glr_etrca_004.png
    :class: sphx-glr-single-img
 
@@ -573,7 +573,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 16.428 seconds)
+   **Total running time of the script:** (0 minutes 15.852 seconds)
 
 
 .. _sphx_glr_download_examples_etrca.py:

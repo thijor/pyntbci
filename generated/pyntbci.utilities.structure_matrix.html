@@ -92,19 +92,19 @@
 <h1>pyntbci.utilities.structure_matrix<a class="headerlink" href="#pyntbci-utilities-structure-matrix" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyntbci.utilities.structure_matrix">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">structure_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transient_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/utilities.html#structure_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.structure_matrix" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">structure_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/utilities.html#structure_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.structure_matrix" title="Link to this definition"></a></dt>
 <dd><p>Translate an event matrix to a structure matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>np.ndarray</em>) – An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).</p></li>
-<li><p><strong>transient_size</strong> (<em>int</em><em> | </em><em>list</em>) – The length of the transient response to fit for all (int) or each of the (list) events in samples.</p></li>
+<li><p><strong>encoding_length</strong> (<em>int</em><em> | </em><em>list</em>) – The length of the transient response(s) for each of the events in samples.</p></li>
 <li><p><strong>amplitudes</strong> (<em>np.ndarray</em>) – An amplitude matrix to in/decrease the presence of events over the time-course of codes, of shape (n_codes,
 n_samples).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>M</strong> – The structure matrix denoting event timings of shape (n_codes, transient_size, n_samples).</p>
+<dd class="field-even"><p><strong>M</strong> – The structure matrix denoting event timings of shape (n_codes, encoding_length, n_samples).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>

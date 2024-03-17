@@ -161,7 +161,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     n_samples = int(trialtime * fs)
 
     # Setup rCCA
-    transient_size = 0.3
+    encoding_length = 0.3
     onset_event = True
 
     # Set stopping
@@ -236,7 +236,7 @@ References:
     target_p = 0.95 ** (1 / n_segments)
 
     # Fit classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
     margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p, max_time=trialtime)
     margin.fit(X, y)
@@ -246,7 +246,7 @@ References:
     plt.plot(np.arange(1, 1 + margin.margins_.size) * segmenttime, margin.margins_, c="k")
     plt.xlabel("time [sec]")
     plt.ylabel("margin")
-    plt.title("margin dynamic stopping")
+    plt.title("Margin dynamic stopping")
 
     # Loop folds
     accuracy_margin = np.zeros(n_folds)
@@ -258,7 +258,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p)
         margin.fit(X_trn, y_trn)
@@ -297,7 +297,7 @@ References:
     ax[0].set_ylabel("accuracy")
     ax[1].set_ylabel("duration [sec]")
     ax[2].set_ylabel("itr [bits/min]")
-    ax[0].set_title(f"margin dynamic stopping: avg acc {accuracy_margin.mean():.2f} | " +
+    ax[0].set_title(f"Margin dynamic stopping: avg acc {accuracy_margin.mean():.2f} | " +
                     f"avg dur {duration_margin.mean():.2f} | avg itr {itr_margin.mean():.1f}")
 
     # Print accuracy (average and standard deviation over folds)
@@ -315,14 +315,14 @@ References:
     *
 
       .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_004.png
-         :alt: margin dynamic stopping
+         :alt: Margin dynamic stopping
          :srcset: /examples/images/sphx_glr_dynamic_stopping_004.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_005.png
-         :alt: margin dynamic stopping: avg acc 0.97 | avg dur 0.77 | avg itr 137.0
+         :alt: Margin dynamic stopping: avg acc 0.97 | avg dur 0.77 | avg itr 137.0
          :srcset: /examples/images/sphx_glr_dynamic_stopping_005.png
          :class: sphx-glr-multi-img
 
@@ -370,7 +370,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trialtime)
         beta.fit(X, y)
@@ -409,7 +409,7 @@ References:
     ax[0].set_ylabel("accuracy")
     ax[1].set_ylabel("duration [sec]")
     ax[2].set_ylabel("itr [bits/min]")
-    ax[0].set_title(f"beta dynamic stopping: avg acc {accuracy_beta.mean():.2f} | " +
+    ax[0].set_title(f"Beta dynamic stopping: avg acc {accuracy_beta.mean():.2f} | " +
                     f"avg dur {duration_beta.mean():.2f} | avg itr {itr_beta.mean():.1f}")
 
     # Print accuracy (average and standard deviation over folds)
@@ -422,7 +422,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_006.png
-   :alt: beta dynamic stopping: avg acc 0.91 | avg dur 1.05 | avg itr 103.9
+   :alt: Beta dynamic stopping: avg acc 0.91 | avg dur 1.05 | avg itr 103.9
    :srcset: /examples/images/sphx_glr_dynamic_stopping_006.png
    :class: sphx-glr-single-img
 
@@ -460,7 +460,7 @@ References:
     cr = 1.0
 
     # Fit classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, cr=cr, max_time=trialtime)
     bayes.fit(X, y)
@@ -491,7 +491,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes0", cr=cr, max_time=trialtime)
         bayes.fit(X_trn, y_trn)
@@ -526,7 +526,7 @@ References:
     ax[0].set_ylabel("accuracy")
     ax[1].set_ylabel("duration [sec]")
     ax[2].set_ylabel("itr [bits/min]")
-    ax[0].set_title(f"bes0 dynamic stopping: avg acc {accuracy_bes0.mean():.2f} | " +
+    ax[0].set_title(f"BES0 dynamic stopping: avg acc {accuracy_bes0.mean():.2f} | " +
                     f"avg dur {duration_bes0.mean():.2f} | avg itr {itr_bes0.mean():.1f}")
 
     # Print accuracy (average and standard deviation over folds)
@@ -551,7 +551,7 @@ References:
     *
 
       .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_008.png
-         :alt: bes0 dynamic stopping: avg acc 0.96 | avg dur 1.45 | avg itr 97.0
+         :alt: BES0 dynamic stopping: avg acc 0.96 | avg dur 1.45 | avg itr 97.0
          :srcset: /examples/images/sphx_glr_dynamic_stopping_008.png
          :class: sphx-glr-multi-img
 
@@ -600,7 +600,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes1", cr=cr, target_pf=target_pf,
                                                target_pd=target_pd, max_time=trialtime)
@@ -636,7 +636,7 @@ References:
     ax[0].set_ylabel("accuracy")
     ax[1].set_ylabel("duration [sec]")
     ax[2].set_ylabel("itr [bits/min]")
-    ax[0].set_title(f"bes1 dynamic stopping: avg acc {accuracy_bes1.mean():.2f} | " +
+    ax[0].set_title(f"BES1 dynamic stopping: avg acc {accuracy_bes1.mean():.2f} | " +
                     f"avg dur {duration_bes1.mean():.2f} | avg itr {itr_bes1.mean():.1f}")
 
     # Print accuracy (average and standard deviation over folds)
@@ -649,7 +649,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_009.png
-   :alt: bes1 dynamic stopping: avg acc 1.00 | avg dur 1.63 | avg itr 99.2
+   :alt: BES1 dynamic stopping: avg acc 1.00 | avg dur 1.63 | avg itr 99.2
    :srcset: /examples/images/sphx_glr_dynamic_stopping_009.png
    :class: sphx-glr-single-img
 
@@ -698,7 +698,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes2", cr=cr, target_pf=target_pf,
                                                target_pd=target_pd, max_time=trialtime)
@@ -734,7 +734,7 @@ References:
     ax[0].set_ylabel("accuracy")
     ax[1].set_ylabel("duration [sec]")
     ax[2].set_ylabel("itr [bits/min]")
-    ax[0].set_title(f"bes2 dynamic stopping: avg acc {accuracy_bes2.mean():.2f} | " +
+    ax[0].set_title(f"BES2 dynamic stopping: avg acc {accuracy_bes2.mean():.2f} | " +
                     f"avg dur {duration_bes2.mean():.2f} | avg itr {itr_bes2.mean():.1f}")
 
     # Print accuracy (average and standard deviation over folds)
@@ -747,7 +747,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_010.png
-   :alt: bes2 dynamic stopping: avg acc 0.96 | avg dur 1.36 | avg itr 100.2
+   :alt: BES2 dynamic stopping: avg acc 0.96 | avg dur 1.36 | avg itr 100.2
    :srcset: /examples/images/sphx_glr_dynamic_stopping_010.png
    :class: sphx-glr-single-img
 
@@ -800,14 +800,14 @@ Additionally, the evaluation is performed on a single participant only.
     ax[1].set_ylabel("duration [sec]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[1].legend(bbox_to_anchor=(1.0, 1.0))
-    ax[0].set_title("comparison of dynamic stopping methods averaged across folds")
+    ax[0].set_title("Comparison of dynamic stopping methods averaged across folds")
 
     # plt.show()
 
 
 
 .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_011.png
-   :alt: comparison of dynamic stopping methods averaged across folds
+   :alt: Comparison of dynamic stopping methods averaged across folds
    :srcset: /examples/images/sphx_glr_dynamic_stopping_011.png
    :class: sphx-glr-single-img
 
@@ -817,14 +817,14 @@ Additionally, the evaluation is performed on a single participant only.
  .. code-block:: none
 
 
-    Text(0.5, 1.0, 'comparison of dynamic stopping methods averaged across folds')
+    Text(0.5, 1.0, 'Comparison of dynamic stopping methods averaged across folds')
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 18.077 seconds)
+   **Total running time of the script:** (0 minutes 17.853 seconds)
 
 
 .. _sphx_glr_download_examples_dynamic_stopping.py:

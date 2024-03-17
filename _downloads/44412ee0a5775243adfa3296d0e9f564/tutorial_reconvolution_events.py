@@ -16,8 +16,6 @@ References
        056007. DOI: https://doi.org/10.1088/1741-2552/abecef
 """
 
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn

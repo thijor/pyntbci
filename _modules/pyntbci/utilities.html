@@ -494,15 +494,15 @@
 
 <div class="viewcode-block" id="structure_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.structure_matrix.html#pyntbci.utilities.structure_matrix">[docs]</a>
-<span class="k">def</span> <span class="nf">structure_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">transient_size</span><span class="p">,</span> <span class="n">amplitudes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">structure_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">encoding_length</span><span class="p">,</span> <span class="n">amplitudes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate an event matrix to a structure matrix.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    E: np.ndarray</span>
 <span class="sd">        An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).</span>
-<span class="sd">    transient_size: int | list</span>
-<span class="sd">        The length of the transient response to fit for all (int) or each of the (list) events in samples.</span>
+<span class="sd">    encoding_length: int | list</span>
+<span class="sd">        The length of the transient response(s) for each of the events in samples.</span>
 <span class="sd">    amplitudes: np.ndarray</span>
 <span class="sd">        An amplitude matrix to in/decrease the presence of events over the time-course of codes, of shape (n_codes,</span>
 <span class="sd">        n_samples).</span>
@@ -510,16 +510,16 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    M: np.ndarray</span>
-<span class="sd">        The structure matrix denoting event timings of shape (n_codes, transient_size, n_samples).</span>
+<span class="sd">        The structure matrix denoting event timings of shape (n_codes, encoding_length, n_samples).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_codes</span><span class="p">,</span> <span class="n">n_events</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">shape</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">transient_size</span> <span class="o">=</span> <span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">transient_size</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient_size</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient_size</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">transient_size</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;len(transient_size) does not match E.shape[0].&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">encoding_length</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">encoding_length</span> <span class="o">=</span> <span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">encoding_length</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">encoding_length</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">encoding_length</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoding_length</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;len(encoding_length) does not match E.shape[0].&quot;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;transient_size should be (int, list, tuple).&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;encoding_length should be (int, list, tuple).&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create structure matrix</span>
     <span class="n">M</span> <span class="o">=</span> <span class="p">[]</span>
@@ -530,9 +530,9 @@
             <span class="n">E</span><span class="p">[:,</span> <span class="n">i_event</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*=</span> <span class="n">amplitudes</span>
 
         <span class="c1"># Create Toeplitz structure</span>
-        <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="n">transient_size</span><span class="p">[</span><span class="n">i_event</span><span class="p">],</span> <span class="n">n_samples</span><span class="p">))</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_codes</span><span class="p">,</span> <span class="n">encoding_length</span><span class="p">[</span><span class="n">i_event</span><span class="p">],</span> <span class="n">n_samples</span><span class="p">))</span>
         <span class="n">tmp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">E</span><span class="p">[:,</span> <span class="n">i_event</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="k">for</span> <span class="n">i_sample</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">transient_size</span><span class="p">[</span><span class="n">i_event</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">i_sample</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">encoding_length</span><span class="p">[</span><span class="n">i_event</span><span class="p">]):</span>
             <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_sample</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_sample</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_sample</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 

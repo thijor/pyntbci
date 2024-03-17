@@ -130,9 +130,9 @@ plt.tight_layout()
 # specifically, a target class-label (flash versus no-flash) for each epoch in each trial.
 
 # Slice trials to epochs
-epoch_size = int(0.3 * fs)  # 300 ms
-step_size = int(1 / 60 * fs)  # 1/60 ms
-X_sliced, y_sliced = pyntbci.utilities.trials_to_epochs(X, y, V, epoch_size, step_size)
+encoding_length = int(0.3 * fs)  # 300 ms
+encoding_stride = int(1 / 60 * fs)  # 1/60 ms
+X_sliced, y_sliced = pyntbci.utilities.trials_to_epochs(X, y, V, encoding_length, encoding_stride)
 print("X_sliced: shape:", X_sliced.shape, ", type:", X_sliced.dtype)
 print("y_sliced: shape:", y_sliced.shape, ", type:", y_sliced.dtype)
 
@@ -173,9 +173,9 @@ ax[-1].set_xlabel("time [sec]")
 # Visualize spatial response at a particular time-point
 fig, ax = plt.subplots(1, 2, figsize=(15, 3))
 pyntbci.plotting.topoplot(erp_flash[:, int(0.150 * fs)], capfile, ax=ax[0])  # 150 ms
-ax[0].set_title("target ERP at 150 ms")
+ax[0].set_title("Target ERP at 150 ms")
 pyntbci.plotting.topoplot(erp_flash[:, int(0.175 * fs)], capfile, ax=ax[1])  # 175 ms
-ax[1].set_title("target ERP at 175 ms")
+ax[1].set_title("Target ERP at 175 ms")
 
 # %%
 # Epoch to trial decoding with LDA
@@ -206,8 +206,8 @@ ax[1].set_title("target ERP at 175 ms")
 n_samples = int(4.2 * fs)
 
 # Set epoch size
-epoch_size = int(0.3 * fs)
-step_size = int(1 / 60 * fs)
+encoding_length = int(0.3 * fs)
+encoding_stride = int(1 / 60 * fs)
 
 # Setup cross-validation
 n_folds = 5
@@ -215,7 +215,7 @@ folds = np.repeat(np.arange(n_folds), n_trials / n_folds)
 
 # Set up codebook for trial classification
 n = int(np.ceil(n_samples / V.shape[1]))
-_V = np.tile(V, (1, n)).astype("float32")[:, :n_samples - epoch_size:step_size]
+_V = np.tile(V, (1, n)).astype("float32")[:, :n_samples - encoding_length:encoding_stride]
 
 # Setup pipeline
 pipeline = make_pipeline(
@@ -231,20 +231,20 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Slice trials to epochs
-    X_sliced_trn, y_sliced_trn = pyntbci.utilities.trials_to_epochs(X_trn, y_trn, V, epoch_size, step_size)
-    X_sliced_tst, y_sliced_tst = pyntbci.utilities.trials_to_epochs(X_tst, y_tst, V, epoch_size, step_size)
+    X_sliced_trn, y_sliced_trn = pyntbci.utilities.trials_to_epochs(X_trn, y_trn, V, encoding_length, encoding_stride)
+    X_sliced_tst, y_sliced_tst = pyntbci.utilities.trials_to_epochs(X_tst, y_tst, V, encoding_length, encoding_stride)
 
     # Train pipeline (on epoch level)
-    pipeline.fit(X_sliced_trn.reshape((-1, n_channels, epoch_size)), y_sliced_trn.flatten())
+    pipeline.fit(X_sliced_trn.reshape((-1, n_channels, encoding_length)), y_sliced_trn.flatten())
 
     # Apply pipeline (on epoch level)
-    yh_sliced_tst = pipeline.predict(X_sliced_tst.reshape((-1, n_channels, epoch_size)))
+    yh_sliced_tst = pipeline.predict(X_sliced_tst.reshape((-1, n_channels, encoding_length)))
 
     # Compute accuracy (on epoch level)
     accuracy_epoch[i_fold] = np.mean(yh_sliced_tst == y_sliced_tst.flatten())
 
     # Apply pipeline (on trial level)
-    ph_tst = pipeline.predict_proba(X_sliced_tst.reshape((-1, n_channels, epoch_size)))[:, 1]
+    ph_tst = pipeline.predict_proba(X_sliced_tst.reshape((-1, n_channels, encoding_length)))[:, 1]
     ph_tst = np.reshape(ph_tst, y_sliced_tst.shape)
     rho = pyntbci.utilities.correlation(ph_tst, _V)
     yh_tst = np.argmax(rho, axis=1)
@@ -302,8 +302,8 @@ plt.title(f"LDA: classification accuracy (trial): avg={np.mean(accuracy_trial):.
 n_samples = int(4.2 * fs)
 
 # Set epoch size
-epoch_size = int(0.3 * fs)
-step_size = int(1 / 60 * fs)
+encoding_length = int(0.3 * fs)
+encoding_stride = int(1 / 60 * fs)
 
 # Setup cross-validation
 n_folds = 5
@@ -311,7 +311,7 @@ folds = np.repeat(np.arange(n_folds), n_trials / n_folds)
 
 # Set up codebook for trial classification
 n = int(np.ceil(n_samples / V.shape[1]))
-_V = np.tile(V, (1, n)).astype("float32")[:, :n_samples - epoch_size:step_size]
+_V = np.tile(V, (1, n)).astype("float32")[:, :n_samples - encoding_length:encoding_stride]
 
 # Setup pipeline
 cca = pyntbci.transformers.CCA(n_components=1)
@@ -327,17 +327,17 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
     # Slice trials to epochs
-    X_sliced_trn, y_sliced_trn = pyntbci.utilities.trials_to_epochs(X_trn, y_trn, V, epoch_size, step_size)
-    X_sliced_tst, y_sliced_tst = pyntbci.utilities.trials_to_epochs(X_tst, y_tst, V, epoch_size, step_size)
+    X_sliced_trn, y_sliced_trn = pyntbci.utilities.trials_to_epochs(X_trn, y_trn, V, encoding_length, encoding_stride)
+    X_sliced_tst, y_sliced_tst = pyntbci.utilities.trials_to_epochs(X_tst, y_tst, V, encoding_length, encoding_stride)
 
     # Train pipeline (on epoch level)
-    X_ = X_sliced_trn.reshape((-1, n_channels, epoch_size))
+    X_ = X_sliced_trn.reshape((-1, n_channels, encoding_length))
     X_ = cca.fit_transform(X_, y_sliced_trn.flatten())[0]
     X_ = vec.fit_transform(X_, y_sliced_trn.flatten())
     lda.fit(X_, y_sliced_trn.flatten())
 
     # Apply pipeline (on epoch level)
-    X_ = X_sliced_tst.reshape((-1, n_channels, epoch_size))
+    X_ = X_sliced_tst.reshape((-1, n_channels, encoding_length))
     X_ = cca.transform(X_)[0]
     X_ = vec.transform(X_)
     yh_sliced_tst = lda.predict(X_)
@@ -346,7 +346,7 @@ for i_fold in range(n_folds):
     accuracy_epoch[i_fold] = np.mean(yh_sliced_tst == y_sliced_tst.flatten())
 
     # Apply pipeline (on trial level)
-    ph_tst = pipeline.predict_proba(X_sliced_tst.reshape((-1, n_channels, epoch_size)))[:, 1]
+    ph_tst = pipeline.predict_proba(X_sliced_tst.reshape((-1, n_channels, encoding_length)))[:, 1]
     ph_tst = np.reshape(ph_tst, y_sliced_tst.shape)
     rho = pyntbci.utilities.correlation(ph_tst, _V)
     yh_tst = np.argmax(rho, axis=1)
