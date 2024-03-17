@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.make_apa_sequence
+==================================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: make_apa_sequence
+
+.. include:: pyntbci.stimulus.make_apa_sequence.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

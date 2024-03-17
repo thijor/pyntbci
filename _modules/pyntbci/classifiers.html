@@ -54,7 +54,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.codes">Codes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.transformers">Transformers</a></li>
@@ -712,13 +711,13 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    codes: np.ndarray</span>
-<span class="sd">        The pseudo-random noise-codes used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and</span>
-<span class="sd">        one cycle (i.e., code-repetition) is sufficient.</span>
+<span class="sd">    stimulus: np.ndarray</span>
+<span class="sd">        The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle</span>
+<span class="sd">        (i.e., stimulus-repetition) is sufficient.</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling frequency of the EEG data in Hz.</span>
 <span class="sd">    event: str (default: &quot;duration&quot;)</span>
-<span class="sd">        The event type to perform the transformation of codes to events with.</span>
+<span class="sd">        The event definition to map stimulus to events.</span>
 <span class="sd">    transient_size: float | list (default: 0.3)</span>
 <span class="sd">        The length of the transient response(s) for each of the events in seconds.</span>
 <span class="sd">    onset_event: bool (default: False)</span>
@@ -737,7 +736,7 @@
 <span class="sd">    ensemble: bool (default: False)</span>
 <span class="sd">        Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.</span>
 <span class="sd">    amplitudes: np.ndarray</span>
-<span class="sd">        The amplitudes of the stimulation of shape (n_classes, n_samples). Should be sampled at fs similar to codes.</span>
+<span class="sd">        The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.</span>
 <span class="sd">    cov_estimator_x: object (default: None)</span>
 <span class="sd">        Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom</span>
 <span class="sd">        empirical covariance is used.</span>
@@ -757,10 +756,10 @@
 <span class="sd">           056007. doi: 10.1088/1741-2552/abecef</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">codes</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stimulus</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">,</span>
                  <span class="n">lx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latency</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ensemble</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">amplitudes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cov_estimator_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">cov_estimator_m</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">codes</span> <span class="o">=</span> <span class="n">codes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transient_size</span> <span class="o">=</span> <span class="n">transient_size</span>
@@ -780,22 +779,22 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        n_samples: int (default: None)</span>
-<span class="sd">            The number of samples that the structure matrix should be. If none, one code cycle will be used.</span>
+<span class="sd">            The number of samples that the structure matrix should be. If none, one stimulus cycle is used.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        M: np.ndarray</span>
 <span class="sd">            The structure matrix denoting event timings of shape (n_classes, transient_size, n_samples).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Repeat the codes to n_samples</span>
-        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
-            <span class="n">codes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">codes</span>
+        <span class="c1"># Repeat the stimulus to n_samples</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="n">stimulus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="n">codes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">stimulus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
 
         <span class="c1"># Get structure matrices</span>
-        <span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_</span> <span class="o">=</span> <span class="n">event_matrix</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span><span class="p">)</span>
+        <span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_</span> <span class="o">=</span> <span class="n">event_matrix</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span><span class="p">)</span>
         <span class="n">M</span> <span class="o">=</span> <span class="n">structure_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transient_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
 
@@ -805,7 +804,7 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        n_samples: int (default: None)</span>
-<span class="sd">            The number of samples requested. If None, one code cycle is given.</span>
+<span class="sd">            The number of samples requested. If None, one stimulus cycle is used.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -887,7 +886,7 @@
 <span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
 <span class="sd">        y: np.ndarray</span>
 <span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials). Note, these denote the index at</span>
-<span class="sd">            which to find the associated codes!</span>
+<span class="sd">            which to find the associated stimulus!</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -924,15 +923,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">w_y_</span>
 
         <span class="c1"># Set templates (start and wrapper)</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_M</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_M</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
             <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
                 <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">M</span><span class="p">[[</span><span class="n">i_class</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:])[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">M</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:]</span>
 
         <span class="c1"># Correct for raster latency</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -956,42 +955,42 @@
 <span class="sd">        -------</span>
 <span class="sd">        y: np.ndarray</span>
 <span class="sd">            The vector of predicted labels of the trials in X of shape (n_trials). Note, these denote the index at which</span>
-<span class="sd">            to find the associated codes!</span>
+<span class="sd">            to find the associated stimulus!</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;r_&quot;</span><span class="p">,</span> <span class="s2">&quot;Ts_&quot;</span><span class="p">,</span> <span class="s2">&quot;Tw_&quot;</span><span class="p">])</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="rCCA.set_codes">
-<a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.set_codes">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_codes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">codes</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the codes and as such change the templates.</span>
+<div class="viewcode-block" id="rCCA.set_stimulus">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.set_stimulus">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_stimulus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stimulus</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the stimulus and as such change the templates.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        codes: np.ndarray</span>
-<span class="sd">            The pseudo-random noise-codes used for stimulation of shape (n_classes, n_samples). Should be sampled at fs</span>
-<span class="sd">            and one code-repetition is sufficient.</span>
+<span class="sd">        stimulus: np.ndarray</span>
+<span class="sd">            The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle</span>
+<span class="sd">            (i.e., stimulus-repetition) is sufficient.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">codes</span> <span class="o">=</span> <span class="n">codes</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_M</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_M</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span> <span class="o">=</span> <span class="n">T</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:]</span></div>
 
 
 <div class="viewcode-block" id="rCCA.set_amplitudes">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.set_amplitudes">[docs]</a>
     <span class="k">def</span> <span class="nf">set_amplitudes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amplitudes</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the codes and as such change the templates.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the amplitudes of the stimulus and as such change the templates.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        amplitudes: np.ndarray</span>
-<span class="sd">            The amplitudes of the stimulation of shape (n_classes, n_samples). Should be sampled at fs similar to codes.</span>
+<span class="sd">            The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span> <span class="o">=</span> <span class="n">amplitudes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_codes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">codes</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_stimuus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

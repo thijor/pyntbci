@@ -138,7 +138,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     plt.title("Single-trial labels")
     plt.tight_layout()
 
-    # Visualize codes
+    # Visualize stimuli
     Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
     plt.figure(figsize=(15, 8))
     plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
@@ -323,7 +323,7 @@ the responses to each of the events. However, one could also set different lengt
 Reconvolution CCA
 -----------------
 The full reconvolution CCA (rCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
-`pyntbci.classifiers.rCCA`. All it needs are the binary sequences `codes`, the sampling frequency `fs`, the event
+`pyntbci.classifiers.rCCA`. All it needs are the binary sequences `stimulus`, the sampling frequency `fs`, the event
 definition `event`, the transient response size `transient_size` and whether or not to include an event for the onset
 of a trial `onset_event`.
 
@@ -340,7 +340,7 @@ Please note that the transient responses are concatenated in this temporal filte
 
     # Perform CCA
     transient_size = 0.3  # 300 ms responses
-    rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size, onset_event=True)
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size, onset_event=True)
     rcca.fit(X, y)
     print("w: ", rcca.w_.shape, "(channels)")
     print("r: ", rcca.r_.shape, "(transient_size*events)")
@@ -406,7 +406,7 @@ the performance of rCCA.
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
         rcca.fit(X_trn, y_trn)
 
         # Apply template-matching classifier
@@ -487,7 +487,7 @@ training data they require to estimate their parameters.
         # Loop train trials
         for i_trial in range(n_train_trials):
             # Train classifier
-            rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+            rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
             rcca.fit(X_trn[:train_trials[i_trial], :, :], y_trn[:train_trials[i_trial]])
 
             # Apply classifier
@@ -556,7 +556,7 @@ need during testing to classify single-trials.
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Setup classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
 
         # Train classifier
         rcca.fit(X_trn, y_trn)
@@ -646,7 +646,7 @@ Analyse multiple participants
             X_tst, y_tst = X[folds == i_fold, :, :], y[folds == i_fold]
 
             # Train classifier
-            rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+            rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
             rcca.fit(X_trn, y_trn)
 
             # Apply classifier
@@ -702,7 +702,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 5.004 seconds)
+   **Total running time of the script:** (2 minutes 8.925 seconds)
 
 
 .. _sphx_glr_download_examples_rcca.py:

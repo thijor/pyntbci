@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.make_golay_sequence
+====================================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: make_golay_sequence
+
+.. include:: pyntbci.stimulus.make_golay_sequence.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

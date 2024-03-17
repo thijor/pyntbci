@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.is_de_bruijn_sequence
+======================================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: is_de_bruijn_sequence
+
+.. include:: pyntbci.stimulus.is_de_bruijn_sequence.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -61,7 +61,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.codes">Codes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
@@ -131,16 +130,16 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 </pre></div>
 </div>
 </section>
-<section id="the-codes">
-<h2>The codes<a class="headerlink" href="#the-codes" title="Link to this heading"></a></h2>
-<p>PyntBCI contains a <cite>codes</cite> module with several functions that create various well-known noise-codes. Here we generate
-an m-sequence.</p>
+<section id="the-stimulus">
+<h2>The stimulus<a class="headerlink" href="#the-stimulus" title="Link to this heading"></a></h2>
+<p>PyntBCI contains a <cite>stimulus</cite> module with several functions that create various well-known noise-codes. Here we
+generate an m-sequence.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate an m-sequence</span>
-<span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">make_m_sequence</span><span class="p">()</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">make_m_sequence</span><span class="p">()</span>
 <span class="n">n_classes</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V shape: &quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(codes, samples)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V shape: &quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes, samples)&quot;</span><span class="p">)</span>
 
-<span class="c1"># Visualize codes</span>
+<span class="c1"># Visualize stimuli</span>
 <span class="n">fr</span> <span class="o">=</span> <span class="mi">60</span>  <span class="c1"># the monitor refresh rate in Hz</span>
 <span class="n">Vup</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># upsample to better visualize the sharp edges</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -154,7 +153,7 @@ an m-sequence.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_tutorial_reconvolution_events_001.png" srcset="../_images/sphx_glr_tutorial_reconvolution_events_001.png" alt="Code time-series" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>V shape:  (1, 63) (codes, samples)
+<img src="../_images/sphx_glr_tutorial_reconvolution_events_001.png" srcset="../_images/sphx_glr_tutorial_reconvolution_events_001.png" alt="Code time-series" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>V shape:  (1, 63) (classes, samples)
 </pre></div>
 </div>
 </section>
@@ -222,7 +221,7 @@ refe
         Events: rise, fall, onset
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.924 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.085 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-tutorial-reconvolution-events-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/3221ddc3f800c16de9478d6f59d6fe03/tutorial_reconvolution_events.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tutorial_reconvolution_events.ipynb</span></code></a></p>

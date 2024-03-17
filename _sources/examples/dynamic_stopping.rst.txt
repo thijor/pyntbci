@@ -138,7 +138,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     plt.title("Single-trial labels")
     plt.tight_layout()
 
-    # Visualize codes
+    # Visualize stimuli
     Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
     plt.figure(figsize=(15, 8))
     plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
@@ -236,7 +236,7 @@ References:
     target_p = 0.95 ** (1 / n_segments)
 
     # Fit classifier
-    rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
                                     onset_event=onset_event, score_metric="correlation")
     margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p, max_time=trialtime)
     margin.fit(X, y)
@@ -258,7 +258,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
                                         onset_event=onset_event, score_metric="correlation")
         margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p)
         margin.fit(X_trn, y_trn)
@@ -370,7 +370,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
                                         onset_event=onset_event, score_metric="correlation")
         beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trialtime)
         beta.fit(X, y)
@@ -460,7 +460,7 @@ References:
     cr = 1.0
 
     # Fit classifier
-    rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
                                     onset_event=onset_event, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, cr=cr, max_time=trialtime)
     bayes.fit(X, y)
@@ -491,7 +491,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes0", cr=cr, max_time=trialtime)
         bayes.fit(X_trn, y_trn)
@@ -600,7 +600,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes1", cr=cr, target_pf=target_pf,
                                                target_pd=target_pd, max_time=trialtime)
@@ -698,7 +698,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes2", cr=cr, target_pf=target_pf,
                                                target_pd=target_pd, max_time=trialtime)
@@ -824,7 +824,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 18.461 seconds)
+   **Total running time of the script:** (0 minutes 18.077 seconds)
 
 
 .. _sphx_glr_download_examples_dynamic_stopping.py:

@@ -65,7 +65,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.codes">Codes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
@@ -196,7 +195,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Single-trial labels&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
-<span class="c1"># Visualize codes</span>
+<span class="c1"># Visualize stimuli</span>
 <span class="n">Vup</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># upsample to better visualize the sharp edges</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Vup</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">20</span> <span class="o">*</span> <span class="n">fs</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span> <span class="o">+</span> <span class="n">Vup</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
@@ -501,7 +500,7 @@ need during testing to classify single-trials.</p>
 <img src="../_images/sphx_glr_etrca_008.png" srcset="../_images/sphx_glr_etrca_008.png" alt="Decoding performance full dataset" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Average accuracy: 0.73
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 15.692 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 16.428 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-etrca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/7bab6d21a7a703cf2852f1876e32612e/etrca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">etrca.ipynb</span></code></a></p>

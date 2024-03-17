@@ -65,7 +65,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.codes">Codes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
@@ -199,7 +198,7 @@ filterbank.</p>
         <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
         <span class="c1"># Setup classifier</span>
-        <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">codes</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="n">transient_size</span><span class="p">,</span>
+        <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="n">transient_size</span><span class="p">,</span>
                                         <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">)</span>
         <span class="n">fbrcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">FilterBank</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">rcca</span><span class="p">,</span> <span class="n">gating</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
 
@@ -215,7 +214,7 @@ filterbank.</p>
         <span class="c1"># Loop individual pass-bands</span>
         <span class="k">for</span> <span class="n">i_band</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bands</span><span class="p">):</span>
             <span class="c1"># Setup classifier</span>
-            <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">codes</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="n">transient_size</span><span class="p">,</span>
+            <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">transient_size</span><span class="o">=</span><span class="n">transient_size</span><span class="p">,</span>
                                             <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">)</span>
 
             <span class="c1"># Train classifier</span>
@@ -264,7 +263,7 @@ rCCA 12.0-60.0: 0.92 +/- 0.04
 rCCA 30.0-60.0: 0.39 +/- 0.04
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 0.760 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 1.749 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-fbrcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/0d6ec0989ccfcbad1497538b456ab21e/fbrcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fbrcca.ipynb</span></code></a></p>

@@ -63,18 +63,6 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.FilterBank.html">pyntbci.classifiers.FilterBank</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.codes">Codes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_apa_sequence.html">pyntbci.codes.make_apa_sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_de_bruijn_sequence.html">pyntbci.codes.make_de_bruijn_sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_golay_sequence.html">pyntbci.codes.make_golay_sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_gold_codes.html">pyntbci.codes.make_gold_codes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.make_m_sequence.html">pyntbci.codes.make_m_sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.is_de_bruijn_sequence.html">pyntbci.codes.is_de_bruijn_sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.is_gold_codes.html">pyntbci.codes.is_gold_codes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.is_m_sequence.html">pyntbci.codes.is_m_sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.codes.modulate.html">pyntbci.codes.modulate</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.plotting">Plotting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.plotting.eventplot.html">pyntbci.plotting.eventplot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.plotting.topoplot.html">pyntbci.plotting.topoplot</a></li>
@@ -141,45 +129,11 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
 <td><p>ERP TRCA pipeline.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(codes, fs[, event, transient_size, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(stimulus, fs[, event, transient_size, ...])</p></td>
 <td><p>Reconvolution CCA pipeline.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.FilterBank.html#pyntbci.classifiers.FilterBank" title="pyntbci.classifiers.FilterBank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilterBank</span></code></a>(estimator[, gating])</p></td>
 <td><p>Filterbank pipeline.</p></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="module-pyntbci.codes">
-<span id="codes"></span><h1>Codes<a class="headerlink" href="#module-pyntbci.codes" title="Link to this heading"></a></h1>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_apa_sequence.html#pyntbci.codes.make_apa_sequence" title="pyntbci.codes.make_apa_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_apa_sequence</span></code></a>()</p></td>
-<td><p>Generate an almost perfect auto-correlation sequence.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_de_bruijn_sequence.html#pyntbci.codes.make_de_bruijn_sequence" title="pyntbci.codes.make_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_de_bruijn_sequence</span></code></a>([k, n, seed])</p></td>
-<td><p>Generate a de Bruijn sequence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_golay_sequence.html#pyntbci.codes.make_golay_sequence" title="pyntbci.codes.make_golay_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_golay_sequence</span></code></a>()</p></td>
-<td><p>Generate complementary Golay sequences.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_gold_codes.html#pyntbci.codes.make_gold_codes" title="pyntbci.codes.make_gold_codes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_gold_codes</span></code></a>([poly1, poly2, seed1, seed2])</p></td>
-<td><p>Generate a set of Gold codes.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.make_m_sequence.html#pyntbci.codes.make_m_sequence" title="pyntbci.codes.make_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_m_sequence</span></code></a>([poly, base, seed])</p></td>
-<td><p>Generate a maximum length sequence.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.is_de_bruijn_sequence.html#pyntbci.codes.is_de_bruijn_sequence" title="pyntbci.codes.is_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_de_bruijn_sequence</span></code></a>(code[, k, n])</p></td>
-<td><p>Check whether a code is a de Bruijn sequence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.is_gold_codes.html#pyntbci.codes.is_gold_codes" title="pyntbci.codes.is_gold_codes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_gold_codes</span></code></a>(codes)</p></td>
-<td><p>Check whether the codes are Gold codes.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.codes.is_m_sequence.html#pyntbci.codes.is_m_sequence" title="pyntbci.codes.is_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_m_sequence</span></code></a>(code)</p></td>
-<td><p>Check whether a code is an m-sequence.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.codes.modulate.html#pyntbci.codes.modulate" title="pyntbci.codes.modulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modulate</span></code></a>(codes)</p></td>
-<td><p>Modulate a set of codes.</p></td>
 </tr>
 </tbody>
 </table>

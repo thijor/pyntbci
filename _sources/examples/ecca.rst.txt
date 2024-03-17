@@ -138,7 +138,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     plt.title("Single-trial labels")
     plt.tight_layout()
 
-    # Visualize codes
+    # Visualize stimuli
     Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
     plt.figure(figsize=(15, 8))
     plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
@@ -564,7 +564,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.791 seconds)
+   **Total running time of the script:** (0 minutes 5.749 seconds)
 
 
 .. _sphx_glr_download_examples_ecca.py:

@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.modulate
+=========================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: modulate
+
+.. include:: pyntbci.stimulus.modulate.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

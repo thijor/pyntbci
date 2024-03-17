@@ -57,7 +57,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.codes">Codes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
@@ -93,16 +92,16 @@
 <h1>pyntbci.classifiers.rCCA<a class="headerlink" href="#pyntbci-classifiers-rcca" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyntbci.classifiers.rCCA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.classifiers.</span></span><span class="sig-name descname"><span class="pre">rCCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'duration'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transient_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'correlation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.classifiers.</span></span><span class="sig-name descname"><span class="pre">rCCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'duration'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transient_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'correlation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA" title="Link to this definition"></a></dt>
 <dd><p>Reconvolution CCA pipeline. It performs a spatial and temporal decomposition (reconvolution <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>) within a
 CCA <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> to perform spatial filtering as well as template prediction <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>codes</strong> (<em>np.ndarray</em>) – The pseudo-random noise-codes used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and
-one cycle (i.e., code-repetition) is sufficient.</p></li>
+<li><p><strong>stimulus</strong> (<em>np.ndarray</em>) – The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle
+(i.e., stimulus-repetition) is sufficient.</p></li>
 <li><p><strong>fs</strong> (<em>int</em>) – The sampling frequency of the EEG data in Hz.</p></li>
-<li><p><strong>event</strong> (<em>str</em><em> (</em><em>default: &quot;duration&quot;</em><em>)</em>) – The event type to perform the transformation of codes to events with.</p></li>
+<li><p><strong>event</strong> (<em>str</em><em> (</em><em>default: &quot;duration&quot;</em><em>)</em>) – The event definition to map stimulus to events.</p></li>
 <li><p><strong>transient_size</strong> (<em>float</em><em> | </em><em>list</em><em> (</em><em>default: 0.3</em><em>)</em>) – The length of the transient response(s) for each of the events in seconds.</p></li>
 <li><p><strong>onset_event</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether or not to add an event for the onset of stimulation. Added as last event.</p></li>
 <li><p><strong>score_metric</strong> (<em>str</em><em> (</em><em>default: &quot;correlation&quot;</em><em>)</em>) – Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean.</p></li>
@@ -113,7 +112,7 @@ no regularization is applied.</p></li>
 <li><p><strong>latency</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
 for.</p></li>
 <li><p><strong>ensemble</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.</p></li>
-<li><p><strong>amplitudes</strong> (<em>np.ndarray</em>) – The amplitudes of the stimulation of shape (n_classes, n_samples). Should be sampled at fs similar to codes.</p></li>
+<li><p><strong>amplitudes</strong> (<em>np.ndarray</em>) – The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.</p></li>
 <li><p><strong>cov_estimator_x</strong> (<em>object</em><em> (</em><em>default: None</em><em>)</em>) – Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
 empirical covariance is used.</p></li>
 <li><p><strong>cov_estimator_m</strong> (<em>object</em><em> (</em><em>default: None</em><em>)</em>) – Estimator object with a fit method that estimates a covariance matrix of the stimulus structure matrix. If None,
@@ -167,7 +166,7 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>X</strong> (<em>np.ndarray</em>) – The matrix of EEG data of shape (n_trials, n_channels, n_samples).</p></li>
 <li><p><strong>y</strong> (<em>np.ndarray</em>) – The vector of ground-truth labels of the trials in X of shape (n_trials). Note, these denote the index at
-which to find the associated codes!</p></li>
+which to find the associated stimulus!</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -189,7 +188,7 @@ which to find the associated codes!</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>y</strong> – The vector of predicted labels of the trials in X of shape (n_trials). Note, these denote the index at which
-to find the associated codes!</p>
+to find the associated stimulus!</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
@@ -200,22 +199,10 @@ to find the associated codes!</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.set_amplitudes">
 <span class="sig-name descname"><span class="pre">set_amplitudes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA.set_amplitudes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA.set_amplitudes" title="Link to this definition"></a></dt>
-<dd><p>Set the codes and as such change the templates.</p>
+<dd><p>Set the amplitudes of the stimulus and as such change the templates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>amplitudes</strong> (<em>np.ndarray</em>) – The amplitudes of the stimulation of shape (n_classes, n_samples). Should be sampled at fs similar to codes.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.set_codes">
-<span class="sig-name descname"><span class="pre">set_codes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA.set_codes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA.set_codes" title="Link to this definition"></a></dt>
-<dd><p>Set the codes and as such change the templates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>codes</strong> (<em>np.ndarray</em>) – The pseudo-random noise-codes used for stimulation of shape (n_classes, n_samples). Should be sampled at fs
-and one code-repetition is sufficient.</p>
+<dd class="field-odd"><p><strong>amplitudes</strong> (<em>np.ndarray</em>) – The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -256,6 +243,18 @@ sub-estimator of a meta-estimator, e.g. used inside a
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.set_stimulus">
+<span class="sig-name descname"><span class="pre">set_stimulus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA.set_stimulus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA.set_stimulus" title="Link to this definition"></a></dt>
+<dd><p>Set the stimulus and as such change the templates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stimulus</strong> (<em>np.ndarray</em>) – The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle
+(i.e., stimulus-repetition) is sufficient.</p>
 </dd>
 </dl>
 </dd></dl>

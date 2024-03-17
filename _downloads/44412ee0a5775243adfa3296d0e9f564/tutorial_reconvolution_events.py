@@ -27,17 +27,17 @@ import pyntbci
 seaborn.set_context("paper", font_scale=1.5)
 
 # %%
-# The codes
+# The stimulus
 # --------
-# PyntBCI contains a `codes` module with several functions that create various well-known noise-codes. Here we generate
-# an m-sequence.
+# PyntBCI contains a `stimulus` module with several functions that create various well-known noise-codes. Here we
+# generate an m-sequence.
 
 # Generate an m-sequence
-V = pyntbci.codes.make_m_sequence()
+V = pyntbci.stimulus.make_m_sequence()
 n_classes, n_samples = V.shape
-print("V shape: ", V.shape, "(codes, samples)")
+print("V shape: ", V.shape, "(classes, samples)")
 
-# Visualize codes
+# Visualize stimuli
 fr = 60  # the monitor refresh rate in Hz
 Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
 plt.figure(figsize=(15, 3))

@@ -141,7 +141,7 @@ filterbank.
             X_tst, y_tst = X[folds == i_fold, :, :, :], y[folds == i_fold]
 
             # Setup classifier
-            rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event=event, transient_size=transient_size,
+            rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, transient_size=transient_size,
                                             onset_event=onset_event)
             fbrcca = pyntbci.classifiers.FilterBank(estimator=rcca, gating="mean")
 
@@ -157,7 +157,7 @@ filterbank.
             # Loop individual pass-bands
             for i_band in range(n_bands):
                 # Setup classifier
-                rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event=event, transient_size=transient_size,
+                rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, transient_size=transient_size,
                                                 onset_event=onset_event)
 
                 # Train classifier
@@ -222,7 +222,7 @@ filterbank.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 0.760 seconds)
+   **Total running time of the script:** (1 minutes 1.749 seconds)
 
 
 .. _sphx_glr_download_examples_fbrcca.py:

@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.make_m_sequence
+================================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: make_m_sequence
+
+.. include:: pyntbci.stimulus.make_m_sequence.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
