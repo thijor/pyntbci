@@ -8,8 +8,9 @@
 
 ### Changed
 
-- Variable `codes` is renamed to `stimulus`
-- Variable `transient_size` is renamed to `encoding_length`
+- Variable `codes` of `rCCA` in `classifiers` is renamed to `stimulus`
+- Variable `transient_size` of `rCCA` in `classifiers` is renamed to `encoding_length`
+- Class `FilterBank` in `classifiers`, is renamed to `Ensemble`
 
 ### Fixed
 
