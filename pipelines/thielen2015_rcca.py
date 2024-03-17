@@ -101,7 +101,7 @@ plt.xlabel("label")
 plt.ylabel("count")
 plt.title("Single-trial labels")
 
-# Visualize codes
+# Visualize stimuli
 Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
 plt.figure(figsize=(15, 8))
 plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
@@ -125,18 +125,18 @@ plt.title("Code time-series")
 # used, this leads to 100% accuracy. A new parameter is introduced here, that cuts the single-trials to shorter lengths.
 # Ideally, this parameter is explored, to estimate a so-called decoding curve.
 #
-# Please note that in this dataset, different code sets were used during the training (V) and testing (U) phase.
-# Therefore, after fitting the classifier on the training data, we need to set the code set to the testing codes.
+# Please note that in this dataset, different stimulus sets were used during the training (V) and testing (U) phase.
+# Therefore, after fitting the classifier on the training data, we need to set the stimulus set to the testing stimuli.
 
 # Set trial duration
 n_samples = int(4.2 * fs)
 
 # Train template-matching classifier
-rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=0.2, onset_event=True)
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.2, onset_event=True)
 rcca.fit(X_trn, y_trn)
 
-# Change codes to test set
-rcca.set_codes(U)
+# Change stimuli to test set
+rcca.set_stimulus(U)
 
 # Apply template-matching classifier
 yh_tst = rcca.predict(X_tst)
@@ -185,7 +185,7 @@ for i_subject in range(n_subjects):
         X_tst_, y_tst_ = X_tst[folds == i_fold, :, :], y_tst[folds == i_fold]
 
         # Train classifier
-        rcca = pyntbci.classifiers.rCCA(codes=U, fs=fs, event="duration", transient_size=0.2, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=U, fs=fs, event="duration", transient_size=0.2, onset_event=True)
         rcca.fit(X_trn_, y_trn_)
 
         # Apply classifier

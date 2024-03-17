@@ -586,13 +586,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    codes: np.ndarray
-        The pseudo-random noise-codes used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and
-        one cycle (i.e., code-repetition) is sufficient.
+    stimulus: np.ndarray
+        The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle
+        (i.e., stimulus-repetition) is sufficient.
     fs: int
         The sampling frequency of the EEG data in Hz.
     event: str (default: "duration")
-        The event type to perform the transformation of codes to events with.
+        The event definition to map stimulus to events.
     transient_size: float | list (default: 0.3)
         The length of the transient response(s) for each of the events in seconds.
     onset_event: bool (default: False)
@@ -611,7 +611,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
     ensemble: bool (default: False)
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
     amplitudes: np.ndarray
-        The amplitudes of the stimulation of shape (n_classes, n_samples). Should be sampled at fs similar to codes.
+        The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.
     cov_estimator_x: object (default: None)
         Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
         empirical covariance is used.
@@ -631,10 +631,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
 
-    def __init__(self, codes, fs, event="duration", transient_size=0.3, onset_event=False, score_metric="correlation",
+    def __init__(self, stimulus, fs, event="duration", transient_size=0.3, onset_event=False, score_metric="correlation",
                  lx=None, ly=None, latency=None, ensemble=False, amplitudes=None, cov_estimator_x=None,
                  cov_estimator_m=None):
-        self.codes = codes
+        self.stimulus = stimulus
         self.fs = fs
         self.event = event
         self.transient_size = transient_size
@@ -654,22 +654,22 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         n_samples: int (default: None)
-            The number of samples that the structure matrix should be. If none, one code cycle will be used.
+            The number of samples that the structure matrix should be. If none, one stimulus cycle is used.
 
         Returns
         -------
         M: np.ndarray
             The structure matrix denoting event timings of shape (n_classes, transient_size, n_samples).
         """
-        # Repeat the codes to n_samples
-        if n_samples is None or self.codes.shape[1] == n_samples:
-            codes = self.codes
+        # Repeat the stimulus to n_samples
+        if n_samples is None or self.stimulus.shape[1] == n_samples:
+            stimulus = self.stimulus
         else:
-            n = int(np.ceil(n_samples / self.codes.shape[1]))
-            codes = np.tile(self.codes, (1, n))
+            n = int(np.ceil(n_samples / self.stimulus.shape[1]))
+            stimulus = np.tile(self.stimulus, (1, n))
 
         # Get structure matrices
-        E, self.events_ = event_matrix(codes, self.event, self.onset_event)
+        E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
         M = structure_matrix(E, int(self.transient_size * self.fs), self.amplitudes)
         return M[:, :, :n_samples]
 
@@ -679,7 +679,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         n_samples: int (default: None)
-            The number of samples requested. If None, one code cycle is given.
+            The number of samples requested. If None, one stimulus cycle is used.
 
         Returns
         -------
@@ -756,7 +756,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
         y: np.ndarray
             The vector of ground-truth labels of the trials in X of shape (n_trials). Note, these denote the index at
-            which to find the associated codes!
+            which to find the associated stimulus!
 
         Returns
         -------
@@ -793,15 +793,15 @@ class rCCA(BaseEstimator, ClassifierMixin):
             self.r_ = self._cca.w_y_
 
         # Set templates (start and wrapper)
-        M = self._get_M(2 * self.codes.shape[1])
+        M = self._get_M(2 * self.stimulus.shape[1])
         if self.ensemble:
             T = np.zeros((n_classes, M.shape[2]))
             for i_class in range(n_classes):
                 T[i_class, :] = np.sum(self._cca[i_class].transform(X=None, Y=M[[i_class], :, :])[1], axis=1)
         else:
             T = np.sum(self._cca.transform(X=None, Y=M)[1], axis=1)
-        self.Ts_ = T[:, :self.codes.shape[1]]
-        self.Tw_ = T[:, self.codes.shape[1]:]
+        self.Ts_ = T[:, :self.stimulus.shape[1]]
+        self.Tw_ = T[:, self.stimulus.shape[1]:]
 
         # Correct for raster latency
         if self.latency is not None:
@@ -822,33 +822,33 @@ class rCCA(BaseEstimator, ClassifierMixin):
         -------
         y: np.ndarray
             The vector of predicted labels of the trials in X of shape (n_trials). Note, these denote the index at which
-            to find the associated codes!
+            to find the associated stimulus!
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
         X = check_array(X, ensure_2d=False, allow_nd=True)
         return np.argmax(self.decision_function(X), axis=1)
 
-    def set_codes(self, codes):
-        """Set the codes and as such change the templates.
+    def set_stimulus(self, stimulus):
+        """Set the stimulus and as such change the templates.
 
         Parameters
         ----------
-        codes: np.ndarray
-            The pseudo-random noise-codes used for stimulation of shape (n_classes, n_samples). Should be sampled at fs
-            and one code-repetition is sufficient.
+        stimulus: np.ndarray
+            The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle
+            (i.e., stimulus-repetition) is sufficient.
         """
-        self.codes = codes
-        T = np.sum(self._cca.transform(X=None, Y=self._get_M(2 * self.codes.shape[1]))[1], axis=1)
-        self.Ts_ = T[:, :self.codes.shape[1]]
-        self.Tw_ = T[:, self.codes.shape[1]:]
+        self.stimulus = stimulus
+        T = np.sum(self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1], axis=1)
+        self.Ts_ = T[:, :self.stimulus.shape[1]]
+        self.Tw_ = T[:, self.stimulus.shape[1]:]
 
     def set_amplitudes(self, amplitudes):
-        """Set the codes and as such change the templates.
+        """Set the amplitudes of the stimulus and as such change the templates.
 
         Parameters
         ----------
         amplitudes: np.ndarray
-            The amplitudes of the stimulation of shape (n_classes, n_samples). Should be sampled at fs similar to codes.
+            The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.
         """
         self.amplitudes = amplitudes
-        self.set_codes(self.codes)
+        self.set_stimuus(self.stimulus)

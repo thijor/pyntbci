@@ -95,7 +95,7 @@ for i_subject in range(n_subjects):
         X_tst, y_tst = X[folds == i_fold, :, :, :], y[folds == i_fold]
 
         # Setup classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event=event, transient_size=transient_size,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, transient_size=transient_size,
                                         onset_event=onset_event)
         fbrcca = pyntbci.classifiers.FilterBank(estimator=rcca, gating="mean")
 
@@ -111,7 +111,7 @@ for i_subject in range(n_subjects):
         # Loop individual pass-bands
         for i_band in range(n_bands):
             # Setup classifier
-            rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event=event, transient_size=transient_size,
+            rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, transient_size=transient_size,
                                             onset_event=onset_event)
 
             # Train classifier

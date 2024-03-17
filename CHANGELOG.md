@@ -1,5 +1,19 @@
 # Changelog
 
+## Version 1.0.0
+
+### Added
+
+- 
+
+### Changed
+
+- Variable `codes` is renamed to `stimulus`.
+
+### Fixed
+
+- 
+
 ## Version 0.2.5
 
 ### Added
@@ -11,6 +25,7 @@
 - On, off and onoff events for rCCA
 
 ### Changed
+
 - CCA separate computation for Cxx, Cyy and Cxy
 - CCA separate estimators for Cxx and Cyy
 

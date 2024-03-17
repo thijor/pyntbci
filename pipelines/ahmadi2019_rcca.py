@@ -104,7 +104,7 @@ plt.xlabel("label")
 plt.ylabel("count")
 plt.title("Single-trial labels")
 
-# Visualize codes
+# Visualize stimuli
 Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
 plt.figure(figsize=(15, 8))
 plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
@@ -169,7 +169,7 @@ for i_subject in range(n_subjects):
         X_tst, y_tst = X[folds == i_fold, :, :], y[folds == i_fold]
 
         # Train classifier
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
         rcca.fit(X_trn, y_trn)
 
         # Apply classifier

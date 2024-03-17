@@ -34,7 +34,7 @@ __license__ = "BSD"
 __version__ = "0.2.5"
 
 from pyntbci import classifiers
-from pyntbci import codes
+from pyntbci import stimulus
 from pyntbci import plotting
 from pyntbci import stopping
 from pyntbci import transformers

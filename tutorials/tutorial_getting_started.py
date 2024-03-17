@@ -39,9 +39,9 @@ seaborn.set_context("paper", font_scale=1.5)
 # The data
 # --------
 # The dataset consists of: (1) The EEG data X that is a matrix of k trials, c channels, and m samples; (2) The labels y
-# that is a vector of k trials; (3) The pseudo-random noise-codes V that is a matrix of n codes and m samples. Note, the
-# codes are upsampled to the EEG sampling frequency and contain only one code-cycle. During a trial, however, the codes
-# were repeated 2 times (2 code cycles).
+# that is a vector of k trials; (3) The pseudo-random noise-codes V that is a matrix of stimuli with n classes and m
+# samples. Note, the stimuli are upsampled to the EEG sampling frequency and contain only one stimulus-cycle. During a
+# trial, however, the stimuli were repeated 2 times (2 stimulus cycles).
 
 # Path to pyntbci (to read the tutorial data and standard cap files)
 path = os.path.join(os.path.dirname(pyntbci.__file__))
@@ -92,7 +92,7 @@ plt.ylabel("count")
 plt.title("Single-trial labels")
 plt.tight_layout()
 
-# Visualize codes
+# Visualize stimuli
 Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
 plt.figure(figsize=(15, 8))
 plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
@@ -173,7 +173,7 @@ plt.tight_layout()
 # Reconvolution CCA
 # -----------------
 # The full reconvolution CCA (rCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
-# `pyntbci.classifiers.rCCA`. All it needs are the binary sequences `codes`, the sampling frequency `fs`, the event
+# `pyntbci.classifiers.rCCA`. All it needs are the binary sequences `stimulus`, the sampling frequency `fs`, the event
 # definition `event`, the transient response size `trainsient_size` and whether or not to include an event for the onset
 # of a trial `onset_event`.
 #
@@ -185,7 +185,7 @@ plt.tight_layout()
 
 # Perform CCA decomposition with duration event
 transient_size = 0.3  # 300 ms responses
-rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=transient_size, onset_event=True)
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=transient_size, onset_event=True)
 rcca.fit(X, y)
 print("w: ", rcca.w_.shape, "(channels)")
 print("r: ", rcca.r_.shape, "(transient_size*events)")
@@ -229,7 +229,7 @@ for i_fold in range(n_folds):
     X_tst, y_tst = X[folds == i_fold, ...], y[folds == i_fold]
 
     # rCCA
-    rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="contrast", transient_size=0.3, onset_event=True)
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="contrast", transient_size=0.3, onset_event=True)
     rcca.fit(X_trn, y_trn)
     yh_tst = rcca.predict(X_tst)
     accuracy[0, i_fold] = np.mean(yh_tst == y_tst)
@@ -276,7 +276,7 @@ for i_fold in range(n_folds):
     # Loop trials for the learning curve
     for i_trial in range(n_trials * (n_folds - 1)):
         # rCCA
-        rcca = pyntbci.classifiers.rCCA(codes=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", transient_size=0.3, onset_event=True)
         rcca.fit(X_trn[:1 + i_trial, ...], y_trn[:1 + i_trial])
         yh_tst = rcca.predict(X_tst)
         accuracy[0, i_trial, i_fold] = np.mean(yh_tst == y_tst)
