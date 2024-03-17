@@ -100,69 +100,7 @@ class TestECCA(unittest.TestCase):
         self.assertEqual(y.shape, yh.shape)
 
 
-class TestRCCA(unittest.TestCase):
-
-    def test_rcca_shape(self):
-        fs = 1000
-        encoding_length = 0.3
-        X = np.random.rand(111, 64, 2 * fs)
-        y = np.random.choice(5, 111)
-        V = np.random.rand(5, fs) > 0.5
-
-        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length)
-        rcca.fit(X, y)
-        self.assertEqual(rcca.w_.size, X.shape[1])
-        self.assertEqual(rcca.r_.size, int(2 * encoding_length * fs))
-        self.assertEqual(rcca.Ts_.shape[0], V.shape[0])
-        self.assertEqual(rcca.Tw_.shape[0], V.shape[0])
-        self.assertEqual(rcca.Ts_.shape[1], V.shape[1])
-        self.assertEqual(rcca.Tw_.shape[1], V.shape[1])
-
-        yh = rcca.predict(X)
-        self.assertEqual(yh.shape, y.shape)
-
-    def test_rcca_score_metric(self):
-        fs = 1000
-        encoding_length = 0.3
-        X = np.random.rand(111, 64, 2 * fs)
-        y = np.random.choice(5, 111)
-        V = np.random.rand(5, fs) > 0.5
-
-        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="correlation")
-        rcca.fit(X, y)
-        yh = rcca.predict(X)
-        self.assertEqual(y.shape, yh.shape)
-
-        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="euclidean")
-        rcca.fit(X, y)
-        yh = rcca.predict(X)
-        self.assertEqual(y.shape, yh.shape)
-
-        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="inner")
-        rcca.fit(X, y)
-        yh = rcca.predict(X)
-        self.assertEqual(y.shape, yh.shape)
-
-        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length,
-                                        score_metric="correlation", ensemble=True)
-        rcca.fit(X, y)
-        yh = rcca.predict(X)
-        self.assertEqual(y.shape, yh.shape)
-
-        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="euclidean",
-                                        ensemble=True)
-        rcca.fit(X, y)
-        yh = rcca.predict(X)
-        self.assertEqual(y.shape, yh.shape)
-
-        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="inner",
-                                        ensemble=True)
-        rcca.fit(X, y)
-        yh = rcca.predict(X)
-        self.assertEqual(y.shape, yh.shape)
-
-
-class TestFilterBank(unittest.TestCase):
+class TestEnsemble(unittest.TestCase):
 
     def test_fbecca(self):
         fs = 1000
@@ -171,7 +109,7 @@ class TestFilterBank(unittest.TestCase):
         y = np.random.choice(5, 111)
 
         ecca = pyntbci.classifiers.eCCA(np.arange(5), fs, cycle_size)
-        fbecca = pyntbci.classifiers.FilterBank(ecca)
+        fbecca = pyntbci.classifiers.Ensemble(ecca)
         fbecca.fit(X, y)
         self.assertEqual(len(fbecca.models_), X.shape[3])
 
@@ -186,7 +124,7 @@ class TestFilterBank(unittest.TestCase):
         V = np.random.rand(5, fs) > 0.5
 
         rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size)
-        fbrcca = pyntbci.classifiers.FilterBank(rcca)
+        fbrcca = pyntbci.classifiers.Ensemble(rcca)
         fbrcca.fit(X, y)
         self.assertEqual(len(fbrcca.models_), X.shape[3])
 
@@ -281,6 +219,68 @@ class TestETRCA(unittest.TestCase):
 
         yh = etrca.predict(X)
         self.assertEqual(yh.shape, y.shape)
+
+
+class TestRCCA(unittest.TestCase):
+
+    def test_rcca_shape(self):
+        fs = 1000
+        encoding_length = 0.3
+        X = np.random.rand(111, 64, 2 * fs)
+        y = np.random.choice(5, 111)
+        V = np.random.rand(5, fs) > 0.5
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length)
+        rcca.fit(X, y)
+        self.assertEqual(rcca.w_.size, X.shape[1])
+        self.assertEqual(rcca.r_.size, int(2 * encoding_length * fs))
+        self.assertEqual(rcca.Ts_.shape[0], V.shape[0])
+        self.assertEqual(rcca.Tw_.shape[0], V.shape[0])
+        self.assertEqual(rcca.Ts_.shape[1], V.shape[1])
+        self.assertEqual(rcca.Tw_.shape[1], V.shape[1])
+
+        yh = rcca.predict(X)
+        self.assertEqual(yh.shape, y.shape)
+
+    def test_rcca_score_metric(self):
+        fs = 1000
+        encoding_length = 0.3
+        X = np.random.rand(111, 64, 2 * fs)
+        y = np.random.choice(5, 111)
+        V = np.random.rand(5, fs) > 0.5
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="correlation")
+        rcca.fit(X, y)
+        yh = rcca.predict(X)
+        self.assertEqual(y.shape, yh.shape)
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="euclidean")
+        rcca.fit(X, y)
+        yh = rcca.predict(X)
+        self.assertEqual(y.shape, yh.shape)
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="inner")
+        rcca.fit(X, y)
+        yh = rcca.predict(X)
+        self.assertEqual(y.shape, yh.shape)
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length,
+                                        score_metric="correlation", ensemble=True)
+        rcca.fit(X, y)
+        yh = rcca.predict(X)
+        self.assertEqual(y.shape, yh.shape)
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="euclidean",
+                                        ensemble=True)
+        rcca.fit(X, y)
+        yh = rcca.predict(X)
+        self.assertEqual(y.shape, yh.shape)
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, score_metric="inner",
+                                        ensemble=True)
+        rcca.fit(X, y)
+        yh = rcca.predict(X)
+        self.assertEqual(y.shape, yh.shape)
 
 
 if __name__ == "__main__":

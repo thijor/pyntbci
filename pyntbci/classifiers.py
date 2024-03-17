@@ -16,8 +16,9 @@ class eCCA(BaseEstimator, ClassifierMixin):
     Parameters
     ----------
     lags: np.ndarray
-        A vector of latencies in seconds per class relative to the first code if codes are circularly shifted versions
-        of the first code, or None if all codes are different or this circular shift feature should be ignored.
+        A vector of latencies in seconds per class relative to the first stimulus if stimuli are circularly shifted
+        versions of the first stimulus, or None if all stimuli are different or this circular shift feature should be
+        ignored.
     fs: int
         The sampling frequency of the EEG data in Hz.
     cycle_size: float (default: None)
@@ -270,6 +271,98 @@ class eCCA(BaseEstimator, ClassifierMixin):
         return np.argmax(self.decision_function(X), axis=1)
 
 
+class Ensemble(BaseEstimator, ClassifierMixin):
+    """Ensemble classifier. It wraps an ensemble classifier around another classifier object. The classifiers are
+    applied to each item in a databank separately. A gating function combines the outputs of the individual
+    classifications to arrive at a single final combined classification.
+
+    Parameters
+    ----------
+    estimator: BaseEstimator
+        The classifier object that is applied to each item in the databank.
+    gating: str (default: "mean")
+        The gating function that is used to combine the scores obtained from each individual classifiers. Options are:
+        mean, max.
+    """
+
+    def __init__(self, estimator, gating="mean"):
+        self.estimator = estimator
+        self.gating = gating
+
+    def decision_function(self, X):
+        """Applies the decision functions to each item in the databank to arrive at raw unthresholded classification
+        scores for X.
+
+        Parameters
+        ----------
+        X: np.ndarray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).
+
+        Returns
+        -------
+        scores: np.ndarray
+            The matrix of scores of shape (n_trials, n_classes).
+        """
+
+        # Get separate raw scores for each databank
+        scores = [
+            self.models_[i].decision_function(X[:, :, :, i])
+            for i in range(X.shape[3])]
+        scores = np.stack(scores, axis=2)
+
+        # Combine databanks
+        if self.gating == "mean":
+            return np.mean(scores, axis=2)
+        elif self.gating == "max":
+            return np.max(scores, axis=2)
+
+    def fit(self, X, y):
+        """The training procedure to apply an ensemble classifier on supervised EEG data.
+
+        Parameters
+        ----------
+        X: np.ndarray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).
+        y: np.ndarray
+            The vector of ground-truth labels of the trials in X of shape (n_trials). Note, these denote the index at
+            which to find the associated stimulus!
+
+        Returns
+        -------
+        self: Ensemble
+            An instance of the classifier.
+        """
+        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
+        y = y.astype(np.uint)
+        assert X.ndim == 4
+
+        # Fit separate model for each passband
+        self.models_ = [
+            copy.deepcopy(self.estimator).fit(X[:, :, :, i], y)
+            for i in range(X.shape[3])]
+
+        return self
+
+    def predict(self, X):
+        """The testing procedure to apply the ensemble classifier to novel EEG data.
+
+        Parameters
+        ----------
+        X: np.ndarray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).
+
+        Returns
+        -------
+        y: np.ndarray
+            The vector of predicted labels of the trials in X of shape (n_trials). Note, these denote the index at which
+            to find the associated stimulus!
+        """
+        check_is_fitted(self, ["models_"])
+        X = check_array(X, ensure_2d=False, allow_nd=True)
+        assert X.ndim == 4
+        return np.argmax(self.decision_function(X), axis=1)
+
+
 class eTRCA(BaseEstimator, ClassifierMixin):
     """ERP TRCA pipeline. It computes ERPs as templates for full sequences and performs a TRCA for spatial filtering
     [2]_.
@@ -277,8 +370,9 @@ class eTRCA(BaseEstimator, ClassifierMixin):
     Parameters
     ----------
     lags: np.ndarray
-        A vector of latencies in seconds per class relative to the first code if codes are circularly shifted versions
-        of the first code, or None if all codes are different or this circular shift feature should be ignored.
+        A vector of latencies in seconds per class relative to the first stimulus if stimuli are circularly shifted
+        versions of the first stimulus, or None if all stimuli are different or this circular shift feature should be
+        ignored.
     fs: int
         The sampling frequency of the EEG data in Hz.
     cycle_size: float (default: None)
@@ -488,95 +582,6 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["w_", "T_"])
         X = check_array(X, ensure_2d=False, allow_nd=True)
-        return np.argmax(self.decision_function(X), axis=1)
-
-
-class FilterBank(BaseEstimator, ClassifierMixin):
-    """Filterbank pipeline. It wraps a filterbank around a classifier object, where the classifier is combined to each
-    passband in the filterbank separately, and a gating function combines the outputs.
-
-    Parameters
-    ----------
-    estimator: BaseEstimator
-        The classifier object that is applied to each of the passbands in the filterbank.
-    gating: str (default: "mean")
-        The gating function that is used to combine the scores obtained from each of the passbands: mean, max.
-    """
-
-    def __init__(self, estimator, gating="mean"):
-        self.estimator = estimator
-        self.gating = gating
-
-    def decision_function(self, X):
-        """Applies the routines to arrive at raw unthresholded classification scores for X.
-
-        Parameters
-        ----------
-        X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_passbands).
-
-        Returns
-        -------
-        scores: np.ndarray
-            The matrix of scores of shape (n_trials, n_classes).
-        """
-
-        # Get separate raw scores for each passband
-        scores = [
-            self.models_[i].decision_function(X[:, :, :, i])
-            for i in range(X.shape[3])]
-        scores = np.stack(scores, axis=2)
-
-        # Combine passbands
-        if self.gating == "mean":
-            return np.mean(scores, axis=2)
-        elif self.gating == "max":
-            return np.max(scores, axis=2)
-
-    def fit(self, X, y):
-        """The training procedure to apply a filterbank on supervised EEG data.
-
-        Parameters
-        ----------
-        X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_passbands).
-        y: np.ndarray
-            The vector of ground-truth labels of the trials in X of shape (n_trials). Note, these denote the index at
-            which to find the associated codes!
-
-        Returns
-        -------
-        self: FilterBank
-            An instance of the classifier.
-        """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
-        y = y.astype(np.uint)
-        assert X.ndim == 4
-
-        # Fit separate model for each passband
-        self.models_ = [
-            copy.deepcopy(self.estimator).fit(X[:, :, :, i], y)
-            for i in range(X.shape[3])]
-
-        return self
-
-    def predict(self, X):
-        """The testing procedure to apply the filterbank to novel EEG data.
-
-        Parameters
-        ----------
-        X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_passbands).
-
-        Returns
-        -------
-        y: np.ndarray
-            The vector of predicted labels of the trials in X of shape (n_trials). Note, these denote the index at which
-            to find the associated codes!
-        """
-        check_is_fitted(self, ["models_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
-        assert X.ndim == 4
         return np.argmax(self.decision_function(X), axis=1)
 
 

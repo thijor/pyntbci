@@ -68,9 +68,9 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
 
-        # TODO: pyntbci.classifier.BayesStopping does not yet work with pyntbci.classifiers.FilterBank
-        # N.B. FilterBank does not implement _apply_w and _get_T
-        assert not isinstance(self.estimator, pyntbci.classifiers.FilterBank), "Not yet implemented for FilterBank!"
+        # TODO: pyntbci.classifier.BayesStopping does not yet work with pyntbci.classifiers.Ensemble
+        # N.B. Ensemble does not implement _apply_w and _get_T
+        assert not isinstance(self.estimator, pyntbci.classifiers.Ensemble), "Not yet implemented for Ensemble!"
 
         # Fit estimator
         self.estimator.fit(X, y)
