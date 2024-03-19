@@ -304,4 +304,4 @@ plt.legend()
 plt.title("Learning curve")
 plt.tight_layout()
 
-plt.show()
+# plt.show()

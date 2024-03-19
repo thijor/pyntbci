@@ -8,6 +8,16 @@ import pyntbci
 class TestCorrelation(unittest.TestCase):
 
     def test_correlation_shape(self):
+        A = np.random.rand(100)
+        B = np.random.rand(100)
+        rho = pyntbci.utilities.correlation(A, B)
+        self.assertEqual(rho.shape, (1, 1))
+
+        A = np.random.rand(1, 100)
+        B = np.random.rand(1, 100)
+        rho = pyntbci.utilities.correlation(A, B)
+        self.assertEqual(rho.shape, (1, 1))
+
         A = np.random.rand(17, 100)
         B = np.random.rand(23, 100)
         rho = pyntbci.utilities.correlation(A, B)
@@ -140,6 +150,25 @@ class TestEventMatrix(unittest.TestCase):
             self.assertEqual(E.shape[1], len(events))
 
 
+class TestEuclidean(unittest.TestCase):
+
+    def test_euclidean_shape(self):
+        A = np.random.rand(100)
+        B = np.random.rand(100)
+        euc = pyntbci.utilities.euclidean(A, B)
+        self.assertEqual(euc.shape, (1, 1))
+
+        A = np.random.rand(1, 100)
+        B = np.random.rand(1, 100)
+        euc = pyntbci.utilities.euclidean(A, B)
+        self.assertEqual(euc.shape, (1, 1))
+
+        A = np.random.rand(17, 100)
+        B = np.random.rand(23, 100)
+        euc = pyntbci.utilities.euclidean(A, B)
+        self.assertEqual(euc.shape, (17, 23))
+
+
 class TestFilterbank(unittest.TestCase):
 
     def test_filterbank_passband_incorrect(self):
@@ -239,6 +268,34 @@ class TestFilterbank(unittest.TestCase):
         gstop = [20, 30, 40]  # too many
         self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, gstop=gstop)
 
+
+class TestITR(unittest.TestCase):
+
+    def test_itr_scalar(self):
+        n = 32
+        p = 0.9618
+        t = 1.05 + 0.85
+        itr = pyntbci.utilities.itr(n, p, t)
+        self.assertEqual(int(itr), 144)
+
+        n = 32
+        p = 1.0
+        t = 1.05 + 0.85
+        itr = pyntbci.utilities.itr(n, p, t)
+        self.assertEqual(int(itr), 157)
+
+        n = 32
+        p = 0.0
+        t = 1.05 + 0.85
+        itr = pyntbci.utilities.itr(n, p, t)
+        self.assertEqual(int(itr), 1)
+
+    def test_itr_list(self):
+        n = 32
+        p = np.random.rand(7)
+        t = np.random.rand(7) * 5
+        itr = pyntbci.utilities.itr(n, p, t)
+        self.assertEqual(itr.size, 7)
 
 if __name__ == "__main__":
     unittest.main()
