@@ -275,19 +275,19 @@ class TestITR(unittest.TestCase):
         n = 32
         p = 0.9618
         t = 1.05 + 0.85
-        itr = pyntbci.utilities.itr(n, p, t)
+        itr = pyntbci.utilities.itr(n, p, t)[0]
         self.assertEqual(int(itr), 144)
 
         n = 32
         p = 1.0
         t = 1.05 + 0.85
-        itr = pyntbci.utilities.itr(n, p, t)
+        itr = pyntbci.utilities.itr(n, p, t)[0]
         self.assertEqual(int(itr), 157)
 
         n = 32
         p = 0.0
         t = 1.05 + 0.85
-        itr = pyntbci.utilities.itr(n, p, t)
+        itr = pyntbci.utilities.itr(n, p, t)[0]
         self.assertEqual(int(itr), 1)
 
     def test_itr_list(self):
