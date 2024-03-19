@@ -2,6 +2,9 @@ import numpy as np
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
 
 
+EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe")
+
+
 def correct_latency(X, y, latency, fs, axis=-1):
     """Correct for a latency in the data. This is done by shifting data according to the class-specific latencies.
 
@@ -122,6 +125,82 @@ def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=F
             raise NotImplementedError
         cov_new = cov_obs + cov_old * ((n_new - n_obs - 1) / (n_new - 1))
     return n_new, avg_new, cov_new
+
+
+def decoding_matrix(data, length, stride=1):
+    """
+    Make a decoding matrix for the data (backward / decoding model), that included phase-shifted data per channel to
+    learn a spatio-spectral filter.
+
+    Parameters
+    ----------
+    data
+    length
+    stride
+
+    Returns
+    -------
+
+    """
+    n_trials, n_channels, n_samples = data.shape
+    n_windows = int(length / stride)
+
+    # Create Toeplitz structure
+    Z = np.zeros((n_trials, n_windows, n_channels, n_samples), dtype=data.dtype)
+    Z[:, 0, :, :] = data
+    for i_window in range(1, n_windows):
+        Z[:, i_window, :, :] = np.roll(Z[:, i_window - 1, :, :], -stride, axis=2)
+        Z[:, i_window, :, -stride:] = 0
+
+    # Reshape to channel-prime
+    Z = Z.reshape((n_trials, n_windows * n_channels, n_samples))
+    return Z
+
+
+def encoding_matrix(stimulus, length, stride=1, amplitude=None):
+    """
+    Make a Toeplits-like shifting structure for the stimulus (forward / encoding model).
+
+    Parameters
+    ----------
+    stimulus
+    length
+    stride
+    amplitude
+
+    Returns
+    -------
+
+    """
+    n_classes, n_events, n_samples = stimulus.shape
+
+    if isinstance(length, int):
+        length = n_events * [length]
+    elif isinstance(length, list) or isinstance(length, tuple):
+        assert len(length) == n_events, "len(encoding_length) does not match S.shape[1]."
+    else:
+        raise Exception("encoding_length should be (int, list, tuple).")
+
+    # Create encoding window per event
+    Z = []
+    for i_event in range(n_events):
+
+        # Add amplitude information
+        if amplitude is not None:
+            stimulus[:, i_event, :] *= amplitude
+
+        # Create Toeplitz structure
+        n_windows = int(length[i_event] / stride)
+        Y = np.zeros((n_classes, n_windows, n_samples), dtype=stimulus.dtype)
+        Y[:, 0, :] = stimulus[:, i_event, :]
+        for i_window in range(1, n_windows):
+            Y[:, i_window, :] = np.roll(Y[:, i_window - 1, :], stride, axis=1)
+            Y[:, i_window, :stride] = 0
+        Z.append(Y)
+
+    # Concatenate matrices per event
+    Z = np.concatenate(Z, axis=1)
+    return Z
 
 
 def euclidean(A, B):
@@ -385,56 +464,6 @@ def itr(n, p, t):
     p[p <= 0] = np.finfo(p.dtype).eps
     b = np.log2(n) + p * np.log2(p) + (1 - p) * np.log2((1 - p) / (n - 1))
     return b * (60 / t)
-
-
-def structure_matrix(E, encoding_length, amplitudes=None):
-    """Translate an event matrix to a structure matrix.
-
-    Parameters
-    ----------
-    E: np.ndarray
-        An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).
-    encoding_length: int | list
-        The length of the transient response(s) for each of the events in samples.
-    amplitudes: np.ndarray
-        An amplitude matrix to in/decrease the presence of events over the time-course of codes, of shape (n_codes,
-        n_samples).
-
-    Returns
-    -------
-    M: np.ndarray
-        The structure matrix denoting event timings of shape (n_codes, encoding_length, n_samples).
-    """
-    n_codes, n_events, n_samples = E.shape
-
-    if isinstance(encoding_length, int):
-        encoding_length = n_events * [encoding_length]
-    elif isinstance(encoding_length, list) or isinstance(encoding_length, tuple):
-        assert len(encoding_length) == n_events, "len(encoding_length) does not match E.shape[0]."
-    else:
-        raise Exception("encoding_length should be (int, list, tuple).")
-
-    # Create structure matrix
-    M = []
-    for i_event in range(n_events):
-
-        # Add amplitude information
-        if amplitudes is not None:
-            E[:, i_event, :] *= amplitudes
-
-        # Create Toeplitz structure
-        tmp = np.zeros((n_codes, encoding_length[i_event], n_samples))
-        tmp[:, 0, :] = E[:, i_event, :]
-        for i_sample in range(1, encoding_length[i_event]):
-            tmp[:, i_sample, :] = np.roll(tmp[:, i_sample - 1, :], 1, axis=1)
-            tmp[:, i_sample, 0] = 0
-
-        M.append(tmp)
-
-    # Concatenate structure matrices
-    M = np.concatenate(M, axis=1)
-
-    return M
 
 
 def trials_to_epochs(X, y, codes, epoch_size, step_size):

@@ -4,27 +4,31 @@
 
 ### Added
 
-- 
+- Variable `decoding_length` of `rCCA` in `classifier` controlling the length of a learned spectral filter
+- Variable `decoding_stride` of `rCCA` in `classifier` controlling the stride of a learned spectral filter
+- Function `decoding_matrix` in `utilities` to phase-shit the EEG data maintaining channel-prime ordering
+- Variable `encoding_stride` of `rCCA` in `classifier` controlling the stride of a learned temporal response
 
 ### Changed
 
 - Variable `codes` of `rCCA` in `classifiers` is renamed to `stimulus`
 - Variable `transient_size` of `rCCA` in `classifiers` is renamed to `encoding_length`
 - Class `FilterBank` in `classifiers`, is renamed to `Ensemble`
+- Function `structure_matrix` in `utilities` is renamed to `encoding_matrix`
 
 ### Fixed
 
 - 
 
-## Version 0.2.5
+## Version 0.2.5 (29-02-2024)
 
 ### Added
 
-- Events time-series plot
-- (Running) covariance in utilities
-- CCA covariance estimator
-- CCA cumulative covariance
-- On, off and onoff events for rCCA
+- Function `eventplot` in `plotting` to plot an event matrix
+- Variable `running` of `covariance` in `utilities` to do incremental running covariance updates
+- Variable `running` of `CCA` in `transformers` to use a running covariance for CCA 
+- Variable `cov_estimator_x` and `cov_estimator_x` of `rCCA` in `classifiers` to change the covariance estimator 
+- Event definitions "on", "off" and "onoff" for `event_matrix` in `utilities`
 
 ### Changed
 

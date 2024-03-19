@@ -64,40 +64,80 @@ class TestCovariance(unittest.TestCase):
         self.assertTrue(np.allclose(cov, np.cov(X.T), atol=1e-6))
 
 
+class TestDecodingMatrix(unittest.TestCase):
+
+    def test_decoding_matrix_shape(self):
+        decoding_length = 31
+        X = np.random.rand(17, 11, 1234)
+        Z = pyntbci.utilities.decoding_matrix(X, decoding_length)
+        self.assertEqual(Z.shape[0], X.shape[0])  # trials
+        self.assertEqual(Z.shape[1], decoding_length * X.shape[1])  # filter length(s)
+        self.assertEqual(Z.shape[2], X.shape[2])  # samples
+
+    def test_decoding_matrix_stride(self):
+        decoding_length = 31
+        decoding_stride = 7
+        X = np.random.rand(17, 11, 1234)
+        Z = pyntbci.utilities.decoding_matrix(X, decoding_length, decoding_stride)
+        self.assertEqual(Z.shape[0], X.shape[0])  # trials
+        self.assertEqual(Z.shape[1], int(decoding_length / decoding_stride) * X.shape[1])  # filter length(s)
+        self.assertEqual(Z.shape[2], X.shape[2])  # samples
+
+    def test_decoding_matrix_channels_prime(self):
+        decoding_length = 31
+        decoding_stride = 1
+        X = np.random.rand(17, 11, 1234)
+        Z = pyntbci.utilities.decoding_matrix(X, decoding_length, decoding_stride)
+        self.assertTrue(np.all(Z[:, :11, :].flatten() == X.flatten()))
+        for i in range(1, decoding_length):
+            self.assertTrue(np.all(Z[:, i * 11:(1 + i) * 11, :-i].flatten() == X[:, :, i:].flatten()))
+
+
+class TestEncodingMatrix(unittest.TestCase):
+
+    def test_encoding_matrix_shape(self):
+        encoding_length = 31
+        S = np.random.rand(17, 1234) > 0.5
+        E = pyntbci.utilities.event_matrix(S, event="dur")[0]
+        M = pyntbci.utilities.encoding_matrix(E, encoding_length)
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], encoding_length * E.shape[1])  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+    def test_encoding_matrix_stride(self):
+        encoding_length = 31
+        encoding_stride = 7
+        S = np.random.rand(17, 1234) > 0.5
+        E = pyntbci.utilities.event_matrix(S, event="dur")[0]
+        M = pyntbci.utilities.encoding_matrix(E, encoding_length, encoding_stride)
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], int(encoding_length / encoding_stride) * E.shape[1])  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+    def test_encoding_matrix_encoding_length_list(self):
+        encoding_length = (31, 41)
+        S = np.random.rand(17, 123) > 0.5
+        E = pyntbci.utilities.event_matrix(S, event="refe")[0]
+        M = pyntbci.utilities.encoding_matrix(E, encoding_length)
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], sum(encoding_length))  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+
 class TestEventMatrix(unittest.TestCase):
 
     def test_event_matrix_shape(self):
-        V = np.random.rand(17, 123) > 0.5
-        E = pyntbci.utilities.event_matrix(V, event="duration")[0]
-        self.assertEqual(V.shape[0], E.shape[0])
-        self.assertEqual(V.shape[1], E.shape[2])
+        S = np.random.rand(17, 123) > 0.5
+        E, events = pyntbci.utilities.event_matrix(S, event="dur")
+        self.assertEqual(E.shape[0], S.shape[0])  # classes
+        self.assertEqual(E.shape[1], len(events))  # events
+        self.assertEqual(E.shape[2], S.shape[1])  # samples
 
-    def test_number_of_events(self):
-        V = np.random.rand(17, 123) > 0.5
-        for event in ["id", "on", "off", "onoff", "dur", "re", "fe", "refe"]:
-            E, events = pyntbci.utilities.event_matrix(V, event=event)
+    def test_events(self):
+        S = np.random.rand(17, 123) > 0.5
+        for event in pyntbci.utilities.EVENTS:
+            E, events = pyntbci.utilities.event_matrix(S, event=event)
             self.assertEqual(E.shape[1], len(events))
-
-
-class TestStructureMatrix(unittest.TestCase):
-
-    def test_structure_matrix_shape(self):
-        transient_size = 31
-        V = np.random.rand(17, 123) > 0.5
-        E = pyntbci.utilities.event_matrix(V, event="dur")[0]
-        M = pyntbci.utilities.structure_matrix(E, transient_size)
-        self.assertEqual(M.shape[0], V.shape[0])
-        self.assertEqual(M.shape[2], V.shape[1])
-        self.assertEqual(M.shape[1], transient_size * E.shape[1])
-
-    def test_structure_matrix_transient_size_list(self):
-        transient_size = (31, 41)
-        V = np.random.rand(17, 123) > 0.5
-        E = pyntbci.utilities.event_matrix(V, event="refe")[0]
-        M = pyntbci.utilities.structure_matrix(E, transient_size)
-        self.assertEqual(M.shape[0], V.shape[0])
-        self.assertEqual(M.shape[2], V.shape[1])
-        self.assertEqual(M.shape[1], sum(transient_size))
 
 
 class TestFilterbank(unittest.TestCase):

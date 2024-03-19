@@ -6,7 +6,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
 from pyntbci.transformers import CCA, TRCA
-from pyntbci.utilities import correct_latency, correlation, euclidean, event_matrix, structure_matrix
+from pyntbci.utilities import correct_latency, correlation, decoding_matrix, encoding_matrix, euclidean, event_matrix
 
 
 class eCCA(BaseEstimator, ClassifierMixin):
@@ -598,10 +598,18 @@ class rCCA(BaseEstimator, ClassifierMixin):
         The sampling frequency of the EEG data in Hz.
     event: str (default: "duration")
         The event definition to map stimulus to events.
-    encoding_length: float | list (default: 0.3)
-        The length of the transient response(s) for each of the events in seconds.
     onset_event: bool (default: False)
         Whether or not to add an event for the onset of stimulation. Added as last event.
+    decoding_length: float (default: None)
+        The length of the spectral filter for each data channel in seconds. If None, no phase-shifting is performed and
+        thus no (spatio-)spectral filter is learned.
+    decoding_stride: float (default: None)
+        The stride of the spectral filter for each data channel in seconds. If None, no phase-shifting is performed and
+        thus no (spatio-)spectral filter is learned. If None, 1 sample is used.
+    encoding_length: float | list (default: 0.3)
+        The length of the transient response(s) for each of the events in seconds.
+    encoding_stride: float | list (default: None)
+        The stride of the transient response(s) for each of the events in seconds. If None, 1 sample is used.
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean.
     lx: float | list (default: None)
@@ -636,14 +644,17 @@ class rCCA(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
 
-    def __init__(self, stimulus, fs, event="duration", encoding_length=0.3, onset_event=False,
-                 score_metric="correlation", lx=None, ly=None, latency=None, ensemble=False, amplitudes=None,
-                 cov_estimator_x=None, cov_estimator_m=None):
+    def __init__(self, stimulus, fs, event="duration", onset_event=False, decoding_length=None, decoding_stride=None,
+                 encoding_length=0.3, encoding_stride=None, score_metric="correlation", lx=None, ly=None, latency=None,
+                 ensemble=False, amplitudes=None, cov_estimator_x=None, cov_estimator_m=None):
         self.stimulus = stimulus
         self.fs = fs
         self.event = event
-        self.encoding_length = encoding_length
         self.onset_event = onset_event
+        self.decoding_length = decoding_length
+        self.decoding_stride = decoding_stride
+        self.encoding_length = encoding_length
+        self.encoding_stride = encoding_stride
         self.score_metric = score_metric
         self.lx = lx
         self.ly = ly
@@ -673,9 +684,14 @@ class rCCA(BaseEstimator, ClassifierMixin):
             n = int(np.ceil(n_samples / self.stimulus.shape[1]))
             stimulus = np.tile(self.stimulus, (1, n))
 
+        if self.encoding_stride is None:
+            stride = 1  # a single sample
+        else:
+            stride = int(self.encoding_stride * self.fs)
+
         # Get structure matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
-        M = structure_matrix(E, int(self.encoding_length * self.fs), self.amplitudes)
+        M = encoding_matrix(E, int(self.encoding_length * self.fs), stride, self.amplitudes)
         return M[:, :, :n_samples]
 
     def _get_T(self, n_samples=None):
@@ -716,6 +732,14 @@ class rCCA(BaseEstimator, ClassifierMixin):
         scores: np.ndarray
             The matrix of scores of shape (n_trials, n_classes).
         """
+        # Set decoding window
+        if self.decoding_length is not None:
+            if self.decoding_stride is None:
+                stride = 1  # a single sample
+            else:
+                stride = int(self.decoding_stride * self.fs)
+            X = decoding_matrix(X, int(self.decoding_length * self.fs), stride)
+
         # Set templates to trial length
         T = self._get_T(X.shape[2])
 
@@ -774,9 +798,17 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         # Correct for raster latency
         if self.latency is not None:
-            X = correct_latency(X, y, -self.latency, self.fs, axis=-1)
+            X = correct_latency(X, y, -self.latency, self.fs, axis=2)
 
-        # Get structure matrix
+        # Set decoding window
+        if self.decoding_length is not None:
+            if self.decoding_stride is None:
+                stride = 1  # a single sample
+            else:
+                stride = int(self.decoding_stride * self.fs)
+            X = decoding_matrix(X, int(self.decoding_length * self.fs), stride)
+
+        # Get encoding window
         M = self._get_M(X.shape[2])
 
         # Fit w and r

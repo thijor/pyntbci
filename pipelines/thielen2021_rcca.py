@@ -156,7 +156,7 @@ plt.tight_layout()
 
 # Create structure matrix
 encoding_length = int(0.3 * fs)  # 300 ms responses
-M = pyntbci.utilities.structure_matrix(E, encoding_length)
+M = pyntbci.utilities.encoding_matrix(E, encoding_length)
 print("M: shape:", M.shape, "(classes x encoding_length*events x samples)")
 
 # Plot structure matrix
