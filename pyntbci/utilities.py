@@ -6,7 +6,7 @@ EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe")
 
 
 def correct_latency(X, y, latency, fs, axis=-1):
-    """Correct for a latency in the data. This is done by shifting data according to the class-specific latencies.
+    """Correct for a latency in data. This is done by shifting data according to the class-specific latencies.
 
     Parameters
     ----------
@@ -74,12 +74,12 @@ def correlation(A, B):
 
 
 def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=False):
-    """
+    """Compute the covariance matrix.
 
     Parameters
     ----------
     X: np.ndarray
-        Data matrix of shape (n_samples, n_features.)
+        Data matrix of shape (n_samples, n_features).
     n_old: int (default: 0)
         Number of already observed samples.
     avg_old: np.ndarray (default: None)
@@ -128,49 +128,57 @@ def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=F
 
 
 def decoding_matrix(data, length, stride=1):
-    """
-    Make a decoding matrix for the data (backward / decoding model), that included phase-shifted data per channel to
-    learn a spatio-spectral filter.
+    """Make a Hankel-like decoding matrix. Used to phase-shift the data (i.e., backward / decoding model), to learn a
+    spatio-spectral filter (i.e., a spectral filter per channel).
 
     Parameters
     ----------
-    data
-    length
-    stride
+    data: np.ndarray
+        Data matrix of shape (n_trials, n_channels, n_samples).
+    length: int
+        The length in samples of the spectral filter, i.e., the number of phase-shifted data per channel.
+    stride: int (default: 1)
+        The step size in samples over the length of the spectral filter.
 
     Returns
     -------
-
+    dmatrix: np.ndarray
+        Decoding matrix of shape (n_trials, n_channels * length / stride, n_samples).
     """
     n_trials, n_channels, n_samples = data.shape
     n_windows = int(length / stride)
 
     # Create Toeplitz structure
-    Z = np.zeros((n_trials, n_windows, n_channels, n_samples), dtype=data.dtype)
-    Z[:, 0, :, :] = data
+    dmatrix = np.zeros((n_trials, n_windows, n_channels, n_samples), dtype=data.dtype)
+    dmatrix[:, 0, :, :] = data
     for i_window in range(1, n_windows):
-        Z[:, i_window, :, :] = np.roll(Z[:, i_window - 1, :, :], -stride, axis=2)
-        Z[:, i_window, :, -stride:] = 0
+        dmatrix[:, i_window, :, :] = np.roll(dmatrix[:, i_window - 1, :, :], -stride, axis=2)
+        dmatrix[:, i_window, :, -stride:] = 0
 
     # Reshape to channel-prime
-    Z = Z.reshape((n_trials, n_windows * n_channels, n_samples))
-    return Z
+    dmatrix = dmatrix.reshape((n_trials, n_windows * n_channels, n_samples))
+    return dmatrix
 
 
 def encoding_matrix(stimulus, length, stride=1, amplitude=None):
-    """
-    Make a Toeplits-like shifting structure for the stimulus (forward / encoding model).
+    """Make a Toeplitz-like encoding matrix. Used to phase-shift the stimulus (forward / encoding model), per event to
+    learn a (or several) temporal filter(s). Also called a "structure matrix" or "design matrix".
 
     Parameters
     ----------
-    stimulus
-    length
-    stride
-    amplitude
-
+    stimulus: np.ndarray
+        Stimulus matrix of shape (n_classes, n_events, n_samples).
+    length: int | list
+        The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If a list is
+        provided, it denotes the length per event.
+    stride: int (default: 1)
+        The step size in samples over the length of the temporal filter.
+    amplitude: np.ndarray (default: None)
+        Amplitude information to embed in the encoding matrix of shape (n_classes, n_samples). If None, it is ignored.
     Returns
     -------
-
+    ematrix: np.ndarray
+        Encoding matrix of shape (n_trials, n_channels * length / stride, n_samples).
     """
     n_classes, n_events, n_samples = stimulus.shape
 
@@ -182,7 +190,7 @@ def encoding_matrix(stimulus, length, stride=1, amplitude=None):
         raise Exception("encoding_length should be (int, list, tuple).")
 
     # Create encoding window per event
-    Z = []
+    ematrix = []
     for i_event in range(n_events):
 
         # Add amplitude information
@@ -191,16 +199,16 @@ def encoding_matrix(stimulus, length, stride=1, amplitude=None):
 
         # Create Toeplitz structure
         n_windows = int(length[i_event] / stride)
-        Y = np.zeros((n_classes, n_windows, n_samples), dtype=stimulus.dtype)
-        Y[:, 0, :] = stimulus[:, i_event, :]
+        tmp = np.zeros((n_classes, n_windows, n_samples), dtype=stimulus.dtype)
+        tmp[:, 0, :] = stimulus[:, i_event, :]
         for i_window in range(1, n_windows):
-            Y[:, i_window, :] = np.roll(Y[:, i_window - 1, :], stride, axis=1)
-            Y[:, i_window, :stride] = 0
-        Z.append(Y)
+            tmp[:, i_window, :] = np.roll(tmp[:, i_window - 1, :], stride, axis=1)
+            tmp[:, i_window, :stride] = 0
+        ematrix.append(tmp)
 
     # Concatenate matrices per event
-    Z = np.concatenate(Z, axis=1)
-    return Z
+    ematrix = np.concatenate(ematrix, axis=1)
+    return ematrix
 
 
 def euclidean(A, B):
@@ -232,17 +240,18 @@ def euclidean(A, B):
     return scores
 
 
-def event_matrix(V, event, onset_event=False):
-    """Translate codes to an event matrix.
+def event_matrix(stimulus, event, onset_event=False):
+    """Make an event matrix. The event matrix describes the onset of events in a stimulus sequence, given a particular
+    event definition.
 
     Parameters
     ----------
-    V: np.ndarray
-        The noise-tags (i.e., pseudo-random noise-codes) used for stimulation of shape (n_codes, n_samples). Note, this
-        can be any continuous time-series per code, it is not limited to binary codes.
+    stimulus: np.ndarray
+        The stimulus used for stimulation of shape (n_stims, n_samples). Note, this can be any continuous time-series
+        per stimulus, it is not limited to binary sequences.
     event: str
         The event type to perform the transformation of codes to events with:
-            "id" | "identity": the events are continuous, the code itself.
+            "id" | "identity": the events are continuous, the stimulus itself.
             "dur" | "duration": each run-length of the same value is an event (e.g., 1, 11, 111, etc.).
             "re" | "rise" | "risingedge": each transition of a lower to a higher value is an event (e.g., 01).
             "fe" | "fall" | "fallingedge": each transition of a higher to a lower value is an event (i.e., 10).
@@ -253,42 +262,42 @@ def event_matrix(V, event, onset_event=False):
 
     Returns
     -------
-    E: np.ndarray
-        An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).
-    events: tuple
-        A tuple of event descriptors of shape (n_events).
+    events: np.ndarray
+        An event matrix of zeros and ones denoting the onsets of events of shape (n_stims, n_events, n_samples).
+    labels: tuple
+        A tuple of event labels of shape (n_events).
     """
-    if V.ndim == 1:
-        V = V[np.newaxis, :]
-    n_codes, n_samples = V.shape
+    if stimulus.ndim == 1:
+        stimulus = stimulus[np.newaxis, :]
+    n_stims, n_samples = stimulus.shape
 
     if event == "id" or event == "identity":
-        E = V[:, np.newaxis, :]
-        events = ("id",)
+        events = stimulus[:, np.newaxis, :]
+        labels = ("id",)
 
     elif event == "on":
-        E = V[:, np.newaxis, :] > 0
-        events = ("on",)
+        events = stimulus[:, np.newaxis, :] > 0
+        labels = ("on",)
 
     elif event == "off":
-        E = V[:, np.newaxis, :] == 0
-        events = ("off",)
+        events = stimulus[:, np.newaxis, :] == 0
+        labels = ("off",)
 
     elif event == "onoff":
-        on = V > 0
-        off = V == 0
-        E = np.concatenate((on[:, np.newaxis, :], off[:, np.newaxis, :]), axis=1)
-        events = ("on", "off")
+        on = stimulus > 0
+        off = stimulus == 0
+        events = np.concatenate((on[:, np.newaxis, :], off[:, np.newaxis, :]), axis=1)
+        labels = ("on", "off")
 
     elif event == "dur" or event == "duration":
 
         # Get rising and falling edges
-        diff = np.diff(V, axis=1)
+        diff = np.diff(stimulus, axis=1)
         change = diff != 0
 
         # Create event dictionary
-        E = dict()
-        for i_code in range(n_codes):
+        events = dict()
+        for i_code in range(n_stims):
 
             # Get rising and falling edge locations
             idx = 1 + np.concatenate(([-1], np.where(change[i_code, :])[0], [n_samples - 1]))
@@ -297,54 +306,54 @@ def event_matrix(V, event, onset_event=False):
             durations = np.diff(idx)
 
             # Ignore inactive periods
-            durations = durations[V[i_code, idx[:-1]] > 0]
-            idx = idx[:-1][V[i_code, idx[:-1]] > 0]
+            durations = durations[stimulus[i_code, idx[:-1]] > 0]
+            idx = idx[:-1][stimulus[i_code, idx[:-1]] > 0]
 
             # Fill out durations in dictionary
             unique_durations = np.unique(durations)
             for duration in unique_durations:
-                if duration not in E:
-                    E[duration] = np.zeros((n_codes, n_samples), dtype="bool_")
-                E[duration][i_code, idx] = durations == duration
+                if duration not in events:
+                    events[duration] = np.zeros((n_stims, n_samples), dtype="bool_")
+                events[duration][i_code, idx] = durations == duration
 
         # Extract unique events (sorted numerically or alphabetically)
-        events = tuple(sorted(E.keys()))
+        labels = tuple(sorted(events.keys()))
 
         # Convert dictionary to event matrix
-        E = np.array([E[duration] for duration in events]).transpose((1, 0, 2)).astype("bool_")
+        events = np.array([events[duration] for duration in labels]).transpose((1, 0, 2)).astype("bool_")
 
     # Get rising edges as event
     elif event == "re" or event == "rise" or event == "risingedge":
-        diff = np.diff(np.concatenate((np.zeros((n_codes, 1)), V), axis=1), axis=1)
+        diff = np.diff(np.concatenate((np.zeros((n_stims, 1)), stimulus), axis=1), axis=1)
         rise = diff > 0
-        E = rise[:, np.newaxis, :]
-        events = ("rise",)
+        events = rise[:, np.newaxis, :]
+        labels = ("rise",)
 
     # Get falling edges as event
     elif event == "fe" or event == "fall" or event == "fallingedge":
-        diff = np.diff(np.concatenate((np.zeros((n_codes, 1)), V), axis=1), axis=1)
+        diff = np.diff(np.concatenate((np.zeros((n_stims, 1)), stimulus), axis=1), axis=1)
         fall = diff < 0
-        E = fall[:, np.newaxis, :]
-        events = ("fall",)
+        events = fall[:, np.newaxis, :]
+        labels = ("fall",)
 
     # Get rising and falling edges as separate events
     elif event == "refe" or event == "risefall" or event == "risingedgefallingedge" or event == "contrast":
-        diff = np.diff(np.concatenate((np.zeros((n_codes, 1)), V), axis=1), axis=1)
+        diff = np.diff(np.concatenate((np.zeros((n_stims, 1)), stimulus), axis=1), axis=1)
         rise = diff > 0
         fall = diff < 0
-        E = np.concatenate((rise[:, np.newaxis, :], fall[:, np.newaxis, :]), axis=1)
-        events = ("rise", "fall")
+        events = np.concatenate((rise[:, np.newaxis, :], fall[:, np.newaxis, :]), axis=1)
+        labels = ("rise", "fall")
 
     else:
         raise Exception(f"Unknown event: {event}.")
 
     # Add onset response as separate event
     if onset_event:
-        E = np.concatenate((E, np.zeros((n_codes, 1, n_samples))), axis=1)
-        E[:, -1, 0] = 1
-        events += ("onset",)
+        events = np.concatenate((events, np.zeros((n_stims, 1, n_samples))), axis=1)
+        events[:, -1, 0] = 1
+        labels += ("onset",)
 
-    return E.astype("float32"), events
+    return events.astype("float32"), labels
 
 
 def filterbank(X, passbands, fs, tmin=None, ftype="butterworth", N=None, stopbands=None, gpass=3.0, gstop=40.0):
@@ -443,7 +452,7 @@ def filterbank(X, passbands, fs, tmin=None, ftype="butterworth", N=None, stopban
 
 
 def itr(n, p, t):
-    """Compute the information-transfer rate.
+    """Compute the information-transfer rate (ITR).
 
     Parameters
     ----------

@@ -7,7 +7,7 @@ from pyntbci.utilities import covariance
 
 
 class CCA(BaseEstimator, TransformerMixin):
-    """Canonical correlation analysis. Maximizes the correlation between two variables in their projected spaces.
+    """Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.
     Here, CCA is implemented as the SVD of (cross)covariance matrices [1]_.
 
     Parameters
@@ -310,10 +310,10 @@ class CCA(BaseEstimator, TransformerMixin):
 
 
 class TRCA(BaseEstimator, TransformerMixin):
-    """Task related component analysis. Maximizes the intra-class covariances, i.e., the intra-class consistenty [2]_.
-    TRCA was applied to (SSVEP) BCI [3]_. Alternative implementations, also used as example for this code, see Matlab
-    code in [2]_ for the original, Matlab code in [4]_ for the SSVEP BCI introduction, and two Python implementation in
-    MOABB [5]_, and MEEGKit [6]_.
+    """Task related component analysis (TRCA). Maximizes the intra-class covariances, i.e., the intra-class consistenty
+    [2]_. TRCA was applied to (SSVEP) BCI [3]_. Alternative implementations, also used as example for this code, see
+    Matlab code in [2]_ for the original, Matlab code in [4]_ for the SSVEP BCI introduction, and two Python
+    implementation in MOABB [5]_, and MEEGKit [6]_.
 
     Parameters
     ----------

@@ -52,7 +52,7 @@ def eventplot(S, E, fs, ax=None, upsample=20, plotfs=True, events=None):
     for i in range(n_events):
         ax.plot(np.arange(n_samples * upsample) / (upsample * fs), -1.5 * (1 + i) + E[i, :])
 
-    # Plot samplerate
+    # Plot sampling rate
     if plotfs:
         for i in range(1 + int(n_samples)):
             ax.axvline(i / fs, c="k", alpha=0.1)

@@ -10,7 +10,7 @@ from pyntbci.utilities import correct_latency, correlation, decoding_matrix, enc
 
 
 class eCCA(BaseEstimator, ClassifierMixin):
-    """ERP CCA pipeline. Also called the "reference" method [1]_. It computes ERPs as templates for full sequences and
+    """ERP CCA classifier. Also called the "reference" method [1]_. It computes ERPs as templates for full sequences and
     performs a CCA for spatial filtering.
 
     Parameters
@@ -364,7 +364,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
 
 class eTRCA(BaseEstimator, ClassifierMixin):
-    """ERP TRCA pipeline. It computes ERPs as templates for full sequences and performs a TRCA for spatial filtering
+    """ERP TRCA classifier. It computes ERPs as templates for full sequences and performs a TRCA for spatial filtering
     [2]_.
 
     Parameters
@@ -586,7 +586,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
 
 class rCCA(BaseEstimator, ClassifierMixin):
-    """Reconvolution CCA pipeline. It performs a spatial and temporal decomposition (reconvolution [3]_) within a
+    """Reconvolution CCA classifier. It performs a spatial and temporal decomposition (reconvolution [3]_) within a
     CCA [4]_ to perform spatial filtering as well as template prediction [5]_.
 
     Parameters

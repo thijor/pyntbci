@@ -298,8 +298,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
 
 class MarginStopping(BaseEstimator, ClassifierMixin):
-    """
-    Margin dynamic stopping. Learns threshold margins (difference between best and second best score) to stop at
+    """Margin dynamic stopping. Learns threshold margins (difference between best and second best score) to stop at
     such that a targeted accuracy is reached [3]_.
 
     Parameters

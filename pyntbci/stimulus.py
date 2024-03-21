@@ -51,7 +51,7 @@ def is_de_bruijn_sequence(stimulus, k=2, n=6):
 
 
 def is_gold_code(stimulus):
-    """Check whether the stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function
+    """Check whether a stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function
     [4]_. If the length of the linear feedback shift register m is even:
     * 1/(2^n−1) 
     * −(2^{(n+2)/2}+1)/(2^n−1)
@@ -153,7 +153,7 @@ def is_m_sequence(stimulus):
     
 
 def make_apa_sequence():
-    """Generate an almost perfect auto-correlation sequence. APA sequence [7]_ examples are taken from [8]_.
+    """Make an almost perfect auto-correlation (APA) sequence. APA sequence [7]_ examples are taken from [8]_.
 
     Returns
     -------
@@ -177,7 +177,7 @@ def make_apa_sequence():
 
 
 def make_de_bruijn_sequence(k=2, n=6, seed=None):
-    """Generate a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.
+    """Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.
 
     Parameters
     ----------
@@ -224,7 +224,7 @@ def make_de_bruijn_sequence(k=2, n=6, seed=None):
 
 
 def make_golay_sequence():
-    """Generate complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.
+    """Make complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.
 
     Returns
     -------
@@ -249,8 +249,8 @@ def make_golay_sequence():
 
 
 def make_gold_codes(poly1=(1, 0, 0, 0, 0, 1), poly2=(1, 1, 0, 0, 1, 1), seed1=None, seed2=None):
-    """Generate a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a
-    preferred pair of m-sequences.
+    """Make a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a preferred
+    pair of m-sequences.
     
     Parameters
     ----------
@@ -289,7 +289,7 @@ def make_gold_codes(poly1=(1, 0, 0, 0, 0, 1), poly2=(1, 1, 0, 0, 1, 1), seed1=No
 
 
 def make_m_sequence(poly=(1, 0, 0, 0, 0, 1), base=2, seed=None):
-    """Generate a maximum length sequence. Maximum length sequence, or m-sequence [14]_.
+    """Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.
     
     Parameters
     ----------
