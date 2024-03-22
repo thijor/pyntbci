@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classifiers &mdash; PyntBCI 0.2.5 documentation</title>
+  <title>Classifiers &mdash; PyntBCI 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=cb850272"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             PyntBCI
           </a>
               <div class="version">
-                0.2.5
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -55,7 +55,9 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.transformers">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.utilities">Utilities</a></li>
@@ -89,17 +91,17 @@
 <span id="classifiers"></span><h1>Classifiers<a class="headerlink" href="#module-pyntbci.classifiers" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
-<td><p>ERP CCA pipeline.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(stimulus, fs[, event, onset_event, ...])</p></td>
+<td><p>Reconvolution CCA classifier.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
-<td><p>ERP TRCA pipeline.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
+<td><p>ERP CCA classifier.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(stimulus, fs[, event, encoding_length, ...])</p></td>
-<td><p>Reconvolution CCA pipeline.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
+<td><p>ERP TRCA classifier.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.FilterBank.html#pyntbci.classifiers.FilterBank" title="pyntbci.classifiers.FilterBank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilterBank</span></code></a>(estimator[, gating])</p></td>
-<td><p>Filterbank pipeline.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble" title="pyntbci.classifiers.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(estimator, gating)</p></td>
+<td><p>Ensemble classifier.</p></td>
 </tr>
 </tbody>
 </table>

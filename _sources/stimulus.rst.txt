@@ -1,5 +1,5 @@
-Codes
-=====
+Stimulus
+========
 
 .. automodule:: pyntbci.stimulus
 

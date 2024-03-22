@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.classifiers.rCCA &mdash; PyntBCI 0.2.5 documentation</title>
+  <title>pyntbci.classifiers.rCCA &mdash; PyntBCI 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,14 +19,14 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=cb850272"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.classifiers.FilterBank" href="pyntbci.classifiers.FilterBank.html" />
-    <link rel="prev" title="pyntbci.classifiers.eTRCA" href="pyntbci.classifiers.eTRCA.html" /> 
+    <link rel="next" title="pyntbci.classifiers.eCCA" href="pyntbci.classifiers.eCCA.html" />
+    <link rel="prev" title="API Reference" href="../api.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                0.2.5
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -57,7 +57,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
@@ -92,8 +94,8 @@
 <h1>pyntbci.classifiers.rCCA<a class="headerlink" href="#pyntbci-classifiers-rcca" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyntbci.classifiers.rCCA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.classifiers.</span></span><span class="sig-name descname"><span class="pre">rCCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'duration'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'correlation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA" title="Link to this definition"></a></dt>
-<dd><p>Reconvolution CCA pipeline. It performs a spatial and temporal decomposition (reconvolution <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>) within a
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.classifiers.</span></span><span class="sig-name descname"><span class="pre">rCCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'duration'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoding_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoding_stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'correlation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gating</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA" title="Link to this definition"></a></dt>
+<dd><p>Reconvolution CCA classifier. It performs a spatial and temporal decomposition (reconvolution <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>) within a
 CCA <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> to perform spatial filtering as well as template prediction <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -102,8 +104,13 @@ CCA <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-notere
 (i.e., stimulus-repetition) is sufficient.</p></li>
 <li><p><strong>fs</strong> (<em>int</em>) – The sampling frequency of the EEG data in Hz.</p></li>
 <li><p><strong>event</strong> (<em>str</em><em> (</em><em>default: &quot;duration&quot;</em><em>)</em>) – The event definition to map stimulus to events.</p></li>
-<li><p><strong>encoding_length</strong> (<em>float</em><em> | </em><em>list</em><em> (</em><em>default: 0.3</em><em>)</em>) – The length of the transient response(s) for each of the events in seconds.</p></li>
 <li><p><strong>onset_event</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether or not to add an event for the onset of stimulation. Added as last event.</p></li>
+<li><p><strong>decoding_length</strong> (<em>float</em><em> (</em><em>default: None</em><em>)</em>) – The length of the spectral filter for each data channel in seconds. If None, no phase-shifting is performed and
+thus no (spatio-)spectral filter is learned.</p></li>
+<li><p><strong>decoding_stride</strong> (<em>float</em><em> (</em><em>default: None</em><em>)</em>) – The stride of the spectral filter for each data channel in seconds. If None, no phase-shifting is performed and
+thus no (spatio-)spectral filter is learned. If None, 1 sample is used.</p></li>
+<li><p><strong>encoding_length</strong> (<em>float</em><em> | </em><em>list</em><em> (</em><em>default: 0.3</em><em>)</em>) – The length of the transient response(s) for each of the events in seconds.</p></li>
+<li><p><strong>encoding_stride</strong> (<em>float</em><em> | </em><em>list</em><em> (</em><em>default: None</em><em>)</em>) – The stride of the transient response(s) for each of the events in seconds. If None, 1 sample is used.</p></li>
 <li><p><strong>score_metric</strong> (<em>str</em><em> (</em><em>default: &quot;correlation&quot;</em><em>)</em>) – Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean.</p></li>
 <li><p><strong>lx</strong> (<em>float</em><em> | </em><em>list</em><em> (</em><em>default: None</em><em>)</em>) – Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
 None, no regularization is applied.</p></li>
@@ -117,6 +124,8 @@ for.</p></li>
 empirical covariance is used.</p></li>
 <li><p><strong>cov_estimator_m</strong> (<em>object</em><em> (</em><em>default: None</em><em>)</em>) – Estimator object with a fit method that estimates a covariance matrix of the stimulus structure matrix. If None,
 a custom empirical covariance is used.</p></li>
+<li><p><strong>n_components</strong> (<em>int</em><em> (</em><em>default: 1</em><em>)</em>) – The number of CCA components to use.</p></li>
+<li><p><strong>gating</strong> (<em>BaseEstimator</em><em> (</em><em>default: None</em><em>)</em>) – The gating function that is used to combine the scores obtained from each individual component.</p></li>
 </ul>
 </dd>
 </dl>
@@ -267,8 +276,8 @@ sub-estimator of a meta-estimator, e.g. used inside a
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.classifiers.eTRCA.html" class="btn btn-neutral float-left" title="pyntbci.classifiers.eTRCA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.classifiers.FilterBank.html" class="btn btn-neutral float-right" title="pyntbci.classifiers.FilterBank" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../api.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.classifiers.eCCA.html" class="btn btn-neutral float-right" title="pyntbci.classifiers.eCCA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

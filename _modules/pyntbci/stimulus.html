@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.stimulus &mdash; PyntBCI 0.2.5 documentation</title>
+  <title>pyntbci.stimulus &mdash; PyntBCI 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=cb850272"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                0.2.5
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -54,7 +54,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.transformers">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.utilities">Utilities</a></li>
@@ -143,7 +145,7 @@
 <div class="viewcode-block" id="is_gold_code">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.is_gold_code.html#pyntbci.stimulus.is_gold_code">[docs]</a>
 <span class="k">def</span> <span class="nf">is_gold_code</span><span class="p">(</span><span class="n">stimulus</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether the stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function</span>
 <span class="sd">    [4]_. If the length of the linear feedback shift register m is even:</span>
 <span class="sd">    * 1/(2^n−1) </span>
 <span class="sd">    * −(2^{(n+2)/2}+1)/(2^n−1)</span>
@@ -251,7 +253,7 @@
 <div class="viewcode-block" id="make_apa_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_apa_sequence.html#pyntbci.stimulus.make_apa_sequence">[docs]</a>
 <span class="k">def</span> <span class="nf">make_apa_sequence</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate an almost perfect auto-correlation sequence. APA sequence [7]_ examples are taken from [8]_.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an almost perfect auto-correlation (APA) sequence. APA sequence [7]_ examples are taken from [8]_.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -278,7 +280,7 @@
 <div class="viewcode-block" id="make_de_bruijn_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_de_bruijn_sequence.html#pyntbci.stimulus.make_de_bruijn_sequence">[docs]</a>
 <span class="k">def</span> <span class="nf">make_de_bruijn_sequence</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -328,7 +330,7 @@
 <div class="viewcode-block" id="make_golay_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_golay_sequence.html#pyntbci.stimulus.make_golay_sequence">[docs]</a>
 <span class="k">def</span> <span class="nf">make_golay_sequence</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -356,8 +358,8 @@
 <div class="viewcode-block" id="make_gold_codes">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_gold_codes.html#pyntbci.stimulus.make_gold_codes">[docs]</a>
 <span class="k">def</span> <span class="nf">make_gold_codes</span><span class="p">(</span><span class="n">poly1</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">poly2</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">seed1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a</span>
-<span class="sd">    preferred pair of m-sequences.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a preferred</span>
+<span class="sd">    pair of m-sequences.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -367,7 +369,7 @@
 <span class="sd">    poly2: tuple (default: (1, 1, 0, 0, 1, 1))</span>
 <span class="sd">        The feedback tap points defined by the primitive polynomial.</span>
 <span class="sd">        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).</span>
-<span class="sd">    seed1: list (efault: None)</span>
+<span class="sd">    seed1: list (default: None)</span>
 <span class="sd">        Seed for the initial register for poly1. None leads to an all zero initial register.</span>
 <span class="sd">    seed2: list (default: None)</span>
 <span class="sd">        Seed for the initial register for poly1. None leads to an all zero initial register.</span>
@@ -399,7 +401,7 @@
 <div class="viewcode-block" id="make_m_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_m_sequence.html#pyntbci.stimulus.make_m_sequence">[docs]</a>
 <span class="k">def</span> <span class="nf">make_m_sequence</span><span class="p">(</span><span class="n">poly</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a maximum length sequence. Maximum length sequence, or m-sequence [14]_.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

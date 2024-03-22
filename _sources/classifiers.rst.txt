@@ -9,7 +9,7 @@ Classifiers
     :toctree: generated/
     :template: class.rst
 
+    rCCA
     eCCA
     eTRCA
-    rCCA
-    FilterBank
+    Ensemble

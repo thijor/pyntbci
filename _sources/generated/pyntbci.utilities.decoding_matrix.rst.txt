@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.decoding_matrix
+=================================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: decoding_matrix
+
+.. include:: pyntbci.utilities.decoding_matrix.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

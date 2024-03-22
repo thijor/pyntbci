@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities.event_matrix &mdash; PyntBCI 0.2.5 documentation</title>
+  <title>pyntbci.utilities.event_matrix &mdash; PyntBCI 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,14 +19,14 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=cb850272"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.utilities.structure_matrix" href="pyntbci.utilities.structure_matrix.html" />
-    <link rel="prev" title="pyntbci.utilities.euclidean" href="pyntbci.utilities.euclidean.html" /> 
+    <link rel="next" title="pyntbci.utilities.correct_latency" href="pyntbci.utilities.correct_latency.html" />
+    <link rel="prev" title="pyntbci.utilities.encoding_matrix" href="pyntbci.utilities.encoding_matrix.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                0.2.5
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -57,7 +57,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
@@ -92,15 +94,16 @@
 <h1>pyntbci.utilities.event_matrix<a class="headerlink" href="#pyntbci-utilities-event-matrix" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyntbci.utilities.event_matrix">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">event_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/utilities.html#event_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.event_matrix" title="Link to this definition"></a></dt>
-<dd><p>Translate codes to an event matrix.</p>
+<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">event_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/utilities.html#event_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.event_matrix" title="Link to this definition"></a></dt>
+<dd><p>Make an event matrix. The event matrix describes the onset of events in a stimulus sequence, given a particular
+event definition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>V</strong> (<em>np.ndarray</em>) – The noise-tags (i.e., pseudo-random noise-codes) used for stimulation of shape (n_codes, n_samples). Note, this
-can be any continuous time-series per code, it is not limited to binary codes.</p></li>
+<li><p><strong>stimulus</strong> (<em>np.ndarray</em>) – The stimulus used for stimulation of shape (n_stims, n_samples). Note, this can be any continuous time-series
+per stimulus, it is not limited to binary sequences.</p></li>
 <li><p><strong>event</strong> (<em>str</em>) – <dl class="simple">
-<dt>The event type to perform the transformation of codes to events with:</dt><dd><p>”id” | “identity”: the events are continuous, the code itself.
+<dt>The event type to perform the transformation of codes to events with:</dt><dd><p>”id” | “identity”: the events are continuous, the stimulus itself.
 “dur” | “duration”: each run-length of the same value is an event (e.g., 1, 11, 111, etc.).
 “re” | “rise” | “risingedge”: each transition of a lower to a higher value is an event (e.g., 01).
 “fe” | “fall” | “fallingedge”: each transition of a higher to a lower value is an event (i.e., 10).
@@ -114,8 +117,8 @@ falling edges (i.e., 01 and 10).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>E</strong> (<em>np.ndarray</em>) – An event matrix of zeros and ones denoting the onsets of events of shape (n_codes, n_events, n_samples).</p></li>
-<li><p><strong>events</strong> (<em>tuple</em>) – A tuple of event descriptors of shape (n_events).</p></li>
+<li><p><strong>events</strong> (<em>np.ndarray</em>) – An event matrix of zeros and ones denoting the onsets of events of shape (n_stims, n_events, n_samples).</p></li>
+<li><p><strong>labels</strong> (<em>tuple</em>) – A tuple of event labels of shape (n_events).</p></li>
 </ul>
 </p>
 </dd>
@@ -128,8 +131,8 @@ falling edges (i.e., 01 and 10).</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.utilities.euclidean.html" class="btn btn-neutral float-left" title="pyntbci.utilities.euclidean" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.utilities.structure_matrix.html" class="btn btn-neutral float-right" title="pyntbci.utilities.structure_matrix" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.utilities.encoding_matrix.html" class="btn btn-neutral float-left" title="pyntbci.utilities.encoding_matrix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.utilities.correct_latency.html" class="btn btn-neutral float-right" title="pyntbci.utilities.correct_latency" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

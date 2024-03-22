@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Codes &mdash; PyntBCI 0.2.5 documentation</title>
+  <title>Stimulus &mdash; PyntBCI 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=cb850272"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             PyntBCI
           </a>
               <div class="version">
-                0.2.5
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -55,7 +55,9 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.transformers">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.utilities">Utilities</a></li>
@@ -75,7 +77,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Codes</li>
+      <li class="breadcrumb-item active">Stimulus</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/stimulus.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -86,29 +88,29 @@
            <div itemprop="articleBody">
              
   <section id="module-pyntbci.stimulus">
-<span id="codes"></span><h1>Codes<a class="headerlink" href="#module-pyntbci.stimulus" title="Link to this heading"></a></h1>
+<span id="stimulus"></span><h1>Stimulus<a class="headerlink" href="#module-pyntbci.stimulus" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_apa_sequence.html#pyntbci.stimulus.make_apa_sequence" title="pyntbci.stimulus.make_apa_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_apa_sequence</span></code></a>()</p></td>
-<td><p>Generate an almost perfect auto-correlation sequence.</p></td>
+<td><p>Make an almost perfect auto-correlation (APA) sequence.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_de_bruijn_sequence.html#pyntbci.stimulus.make_de_bruijn_sequence" title="pyntbci.stimulus.make_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_de_bruijn_sequence</span></code></a>([k, n, seed])</p></td>
-<td><p>Generate a de Bruijn sequence.</p></td>
+<td><p>Make a de Bruijn sequence.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_golay_sequence.html#pyntbci.stimulus.make_golay_sequence" title="pyntbci.stimulus.make_golay_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_golay_sequence</span></code></a>()</p></td>
-<td><p>Generate complementary Golay sequences.</p></td>
+<td><p>Make complementary Golay sequences.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_gold_codes.html#pyntbci.stimulus.make_gold_codes" title="pyntbci.stimulus.make_gold_codes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_gold_codes</span></code></a>([poly1, poly2, seed1, seed2])</p></td>
-<td><p>Generate a set of Gold codes.</p></td>
+<td><p>Make a set of Gold codes.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_m_sequence.html#pyntbci.stimulus.make_m_sequence" title="pyntbci.stimulus.make_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_m_sequence</span></code></a>([poly, base, seed])</p></td>
-<td><p>Generate a maximum length sequence.</p></td>
+<td><p>Make a maximum length sequence.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.is_de_bruijn_sequence.html#pyntbci.stimulus.is_de_bruijn_sequence" title="pyntbci.stimulus.is_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_de_bruijn_sequence</span></code></a>(stimulus[, k, n])</p></td>
 <td><p>Check whether a stimulus is a de Bruijn sequence.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.is_gold_code.html#pyntbci.stimulus.is_gold_code" title="pyntbci.stimulus.is_gold_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_gold_code</span></code></a>(stimulus)</p></td>
-<td><p>Check whether the stimulus is a Gold code.</p></td>
+<td><p>Check whether a stimulus is a Gold code.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.is_m_sequence.html#pyntbci.stimulus.is_m_sequence" title="pyntbci.stimulus.is_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_m_sequence</span></code></a>(stimulus)</p></td>
 <td><p>Check whether a stimulus is an m-sequence.</p></td>

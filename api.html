@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Reference &mdash; PyntBCI 0.2.5 documentation</title>
+  <title>API Reference &mdash; PyntBCI 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
@@ -19,13 +19,13 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=cb850272"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pyntbci.classifiers.eCCA" href="generated/pyntbci.classifiers.eCCA.html" />
+    <link rel="next" title="pyntbci.classifiers.rCCA" href="generated/pyntbci.classifiers.rCCA.html" />
     <link rel="prev" title="Dynamic stopping" href="examples/dynamic_stopping.html" /> 
 </head>
 
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                0.2.5
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -57,15 +57,32 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.classifiers">Classifiers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html">pyntbci.classifiers.rCCA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html">pyntbci.classifiers.eCCA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html">pyntbci.classifiers.eTRCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html">pyntbci.classifiers.rCCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.FilterBank.html">pyntbci.classifiers.FilterBank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html">pyntbci.classifiers.Ensemble</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.gating">Gating</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.gating.AggregateGate.html">pyntbci.gating.AggregateGate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.gating.DifferenceGate.html">pyntbci.gating.DifferenceGate</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.plotting">Plotting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.plotting.eventplot.html">pyntbci.plotting.eventplot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.plotting.topoplot.html">pyntbci.plotting.topoplot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.stimulus">Stimulus</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.make_apa_sequence.html">pyntbci.stimulus.make_apa_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.make_de_bruijn_sequence.html">pyntbci.stimulus.make_de_bruijn_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.make_golay_sequence.html">pyntbci.stimulus.make_golay_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.make_gold_codes.html">pyntbci.stimulus.make_gold_codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.make_m_sequence.html">pyntbci.stimulus.make_m_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.is_de_bruijn_sequence.html">pyntbci.stimulus.is_de_bruijn_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.is_gold_code.html">pyntbci.stimulus.is_gold_code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.is_m_sequence.html">pyntbci.stimulus.is_m_sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.modulate.html">pyntbci.stimulus.modulate</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.stopping">Stopping</a><ul>
@@ -82,8 +99,9 @@
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.utilities">Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.correlation.html">pyntbci.utilities.correlation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.euclidean.html">pyntbci.utilities.euclidean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.decoding_matrix.html">pyntbci.utilities.decoding_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.encoding_matrix.html">pyntbci.utilities.encoding_matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html">pyntbci.utilities.event_matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.structure_matrix.html">pyntbci.utilities.structure_matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html">pyntbci.utilities.correct_latency</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html">pyntbci.utilities.filterbank</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html">pyntbci.utilities.trials_to_epochs</a></li>
@@ -123,17 +141,30 @@
 <span id="classifiers"></span><h1>Classifiers<a class="headerlink" href="#module-pyntbci.classifiers" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
-<td><p>ERP CCA pipeline.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(stimulus, fs[, event, onset_event, ...])</p></td>
+<td><p>Reconvolution CCA classifier.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
-<td><p>ERP TRCA pipeline.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
+<td><p>ERP CCA classifier.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(stimulus, fs[, event, encoding_length, ...])</p></td>
-<td><p>Reconvolution CCA pipeline.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
+<td><p>ERP TRCA classifier.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.FilterBank.html#pyntbci.classifiers.FilterBank" title="pyntbci.classifiers.FilterBank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilterBank</span></code></a>(estimator[, gating])</p></td>
-<td><p>Filterbank pipeline.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble" title="pyntbci.classifiers.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(estimator, gating)</p></td>
+<td><p>Ensemble classifier.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.gating">
+<span id="gating"></span><h1>Gating<a class="headerlink" href="#module-pyntbci.gating" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.gating.AggregateGate.html#pyntbci.gating.AggregateGate" title="pyntbci.gating.AggregateGate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregateGate</span></code></a>([aggregate])</p></td>
+<td><p>Gate described by an aggregate function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.gating.DifferenceGate.html#pyntbci.gating.DifferenceGate" title="pyntbci.gating.DifferenceGate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DifferenceGate</span></code></a>(estimator)</p></td>
+<td><p>Gate described by classification of difference scores.</p></td>
 </tr>
 </tbody>
 </table>
@@ -145,8 +176,42 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.plotting.eventplot.html#pyntbci.plotting.eventplot" title="pyntbci.plotting.eventplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eventplot</span></code></a>(S, E, fs[, ax, upsample, plotfs, ...])</p></td>
 <td><p>Plot the event time-series.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.plotting.topoplot.html#pyntbci.plotting.topoplot" title="pyntbci.plotting.topoplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topoplot</span></code></a>(z, locfile[, cbar, ax, iso])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.plotting.topoplot.html#pyntbci.plotting.topoplot" title="pyntbci.plotting.topoplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topoplot</span></code></a>(z, locfile[, cbar, ax, iso, chan])</p></td>
 <td><p>Plot a topoplot.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.stimulus">
+<span id="stimulus"></span><h1>Stimulus<a class="headerlink" href="#module-pyntbci.stimulus" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_apa_sequence.html#pyntbci.stimulus.make_apa_sequence" title="pyntbci.stimulus.make_apa_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_apa_sequence</span></code></a>()</p></td>
+<td><p>Make an almost perfect auto-correlation (APA) sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_de_bruijn_sequence.html#pyntbci.stimulus.make_de_bruijn_sequence" title="pyntbci.stimulus.make_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_de_bruijn_sequence</span></code></a>([k, n, seed])</p></td>
+<td><p>Make a de Bruijn sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_golay_sequence.html#pyntbci.stimulus.make_golay_sequence" title="pyntbci.stimulus.make_golay_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_golay_sequence</span></code></a>()</p></td>
+<td><p>Make complementary Golay sequences.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_gold_codes.html#pyntbci.stimulus.make_gold_codes" title="pyntbci.stimulus.make_gold_codes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_gold_codes</span></code></a>([poly1, poly2, seed1, seed2])</p></td>
+<td><p>Make a set of Gold codes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.make_m_sequence.html#pyntbci.stimulus.make_m_sequence" title="pyntbci.stimulus.make_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_m_sequence</span></code></a>([poly, base, seed])</p></td>
+<td><p>Make a maximum length sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.is_de_bruijn_sequence.html#pyntbci.stimulus.is_de_bruijn_sequence" title="pyntbci.stimulus.is_de_bruijn_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_de_bruijn_sequence</span></code></a>(stimulus[, k, n])</p></td>
+<td><p>Check whether a stimulus is a de Bruijn sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.is_gold_code.html#pyntbci.stimulus.is_gold_code" title="pyntbci.stimulus.is_gold_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_gold_code</span></code></a>(stimulus)</p></td>
+<td><p>Check whether a stimulus is a Gold code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.is_m_sequence.html#pyntbci.stimulus.is_m_sequence" title="pyntbci.stimulus.is_m_sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_m_sequence</span></code></a>(stimulus)</p></td>
+<td><p>Check whether a stimulus is an m-sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.modulate.html#pyntbci.stimulus.modulate" title="pyntbci.stimulus.modulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modulate</span></code></a>(stimulus)</p></td>
+<td><p>Modulate a stimulus.</p></td>
 </tr>
 </tbody>
 </table>
@@ -172,10 +237,10 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA" title="pyntbci.transformers.CCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CCA</span></code></a>(n_components[, lx, ly, estimator_x, ...])</p></td>
-<td><p>Canonical correlation analysis.</p></td>
+<td><p>Canonical correlation analysis (CCA).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.transformers.TRCA.html#pyntbci.transformers.TRCA" title="pyntbci.transformers.TRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TRCA</span></code></a>(n_components)</p></td>
-<td><p>Task related component analysis.</p></td>
+<td><p>Task related component analysis (TRCA).</p></td>
 </tr>
 </tbody>
 </table>
@@ -190,23 +255,26 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean" title="pyntbci.utilities.euclidean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euclidean</span></code></a>(A, B)</p></td>
 <td><p>Compute the Euclidean distance.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix" title="pyntbci.utilities.event_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event_matrix</span></code></a>(V, event[, onset_event])</p></td>
-<td><p>Translate codes to an event matrix.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.decoding_matrix.html#pyntbci.utilities.decoding_matrix" title="pyntbci.utilities.decoding_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decoding_matrix</span></code></a>(data, length[, stride])</p></td>
+<td><p>Make a Hankel-like decoding matrix.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.structure_matrix.html#pyntbci.utilities.structure_matrix" title="pyntbci.utilities.structure_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">structure_matrix</span></code></a>(E, encoding_length[, ...])</p></td>
-<td><p>Translate an event matrix to a structure matrix.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.encoding_matrix.html#pyntbci.utilities.encoding_matrix" title="pyntbci.utilities.encoding_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encoding_matrix</span></code></a>(stimulus, length[, stride, ...])</p></td>
+<td><p>Make a Toeplitz-like encoding matrix.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency" title="pyntbci.utilities.correct_latency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_latency</span></code></a>(X, y, latency, fs[, axis])</p></td>
-<td><p>Correct for a latency in the data.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix" title="pyntbci.utilities.event_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event_matrix</span></code></a>(stimulus, event[, onset_event])</p></td>
+<td><p>Make an event matrix.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank" title="pyntbci.utilities.filterbank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filterbank</span></code></a>(X, passbands, fs[, tmin, ftype, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency" title="pyntbci.utilities.correct_latency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_latency</span></code></a>(X, y, latency, fs[, axis])</p></td>
+<td><p>Correct for a latency in data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank" title="pyntbci.utilities.filterbank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filterbank</span></code></a>(X, passbands, fs[, tmin, ftype, ...])</p></td>
 <td><p>Apply a filterbank.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
 <td><p>Slice trials to epochs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
-<td><p>Compute the information-transfer rate.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
+<td><p>Compute the information-transfer rate (ITR).</p></td>
 </tr>
 </tbody>
 </table>
@@ -217,7 +285,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="examples/dynamic_stopping.html" class="btn btn-neutral float-left" title="Dynamic stopping" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="generated/pyntbci.classifiers.eCCA.html" class="btn btn-neutral float-right" title="pyntbci.classifiers.eCCA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="generated/pyntbci.classifiers.rCCA.html" class="btn btn-neutral float-right" title="pyntbci.classifiers.rCCA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

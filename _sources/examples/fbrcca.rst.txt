@@ -87,7 +87,7 @@ Analyse multiple participants
 In this section, we directly apply FBrCCA and compare it to a single-band rCCA using the pass-bands defined in the
 filterbank.
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-152
+.. GENERATED FROM PYTHON SOURCE LINES 45-153
 
 .. code-block:: Python
 
@@ -143,7 +143,8 @@ filterbank.
             # Setup classifier
             rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                             onset_event=onset_event)
-            fbrcca = pyntbci.classifiers.FilterBank(estimator=rcca, gating="mean")
+            gate = pyntbci.gating.AggregateGate("mean")
+            fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gating=gate)
 
             # Train classifier
             fbrcca.fit(X_trn, y_trn)
@@ -222,7 +223,7 @@ filterbank.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 1.894 seconds)
+   **Total running time of the script:** (0 minutes 57.753 seconds)
 
 
 .. _sphx_glr_download_examples_fbrcca.py:

@@ -286,7 +286,7 @@ the responses to each of the events. However, one could also set different lengt
 
     # Create structure matrix
     encoding_length = int(0.3 * fs)  # 300 ms responses
-    M = pyntbci.utilities.structure_matrix(E, encoding_length)
+    M = pyntbci.utilities.encoding_matrix(E, encoding_length)
     print("M: shape:", M.shape, "(classes x encoding_length*events x samples)")
 
     # Plot structure matrix
@@ -702,7 +702,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 7.282 seconds)
+   **Total running time of the script:** (1 minutes 58.559 seconds)
 
 
 .. _sphx_glr_download_examples_rcca.py:

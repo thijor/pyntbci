@@ -11,8 +11,9 @@ Utilities
 
     correlation
     euclidean
+    decoding_matrix
+    encoding_matrix
     event_matrix
-    structure_matrix
     correct_latency
     filterbank
     trials_to_epochs

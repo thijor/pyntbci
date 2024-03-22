@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Utilities &mdash; PyntBCI 0.2.5 documentation</title>
+  <title>Utilities &mdash; PyntBCI 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=cb850272"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             PyntBCI
           </a>
               <div class="version">
-                0.2.5
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -55,7 +55,9 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.stopping">Stopping</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.transformers">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.utilities">Utilities</a></li>
@@ -95,23 +97,26 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean" title="pyntbci.utilities.euclidean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euclidean</span></code></a>(A, B)</p></td>
 <td><p>Compute the Euclidean distance.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix" title="pyntbci.utilities.event_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event_matrix</span></code></a>(V, event[, onset_event])</p></td>
-<td><p>Translate codes to an event matrix.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.decoding_matrix.html#pyntbci.utilities.decoding_matrix" title="pyntbci.utilities.decoding_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decoding_matrix</span></code></a>(data, length[, stride])</p></td>
+<td><p>Make a Hankel-like decoding matrix.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.structure_matrix.html#pyntbci.utilities.structure_matrix" title="pyntbci.utilities.structure_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">structure_matrix</span></code></a>(E, encoding_length[, ...])</p></td>
-<td><p>Translate an event matrix to a structure matrix.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.encoding_matrix.html#pyntbci.utilities.encoding_matrix" title="pyntbci.utilities.encoding_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encoding_matrix</span></code></a>(stimulus, length[, stride, ...])</p></td>
+<td><p>Make a Toeplitz-like encoding matrix.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency" title="pyntbci.utilities.correct_latency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_latency</span></code></a>(X, y, latency, fs[, axis])</p></td>
-<td><p>Correct for a latency in the data.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix" title="pyntbci.utilities.event_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event_matrix</span></code></a>(stimulus, event[, onset_event])</p></td>
+<td><p>Make an event matrix.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank" title="pyntbci.utilities.filterbank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filterbank</span></code></a>(X, passbands, fs[, tmin, ftype, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency" title="pyntbci.utilities.correct_latency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_latency</span></code></a>(X, y, latency, fs[, axis])</p></td>
+<td><p>Correct for a latency in data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank" title="pyntbci.utilities.filterbank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filterbank</span></code></a>(X, passbands, fs[, tmin, ftype, ...])</p></td>
 <td><p>Apply a filterbank.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
 <td><p>Slice trials to epochs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
-<td><p>Compute the information-transfer rate.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
+<td><p>Compute the information-transfer rate (ITR).</p></td>
 </tr>
 </tbody>
 </table>

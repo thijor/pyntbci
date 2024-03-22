@@ -1,0 +1,12 @@
+﻿pyntbci.gating.AggregateGate
+============================
+
+.. currentmodule:: pyntbci.gating
+
+.. autofunction:: AggregateGate
+
+.. include:: pyntbci.gating.AggregateGate.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
