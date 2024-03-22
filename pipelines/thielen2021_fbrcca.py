@@ -97,7 +97,8 @@ for i_subject in range(n_subjects):
         # Setup classifier
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event)
-        fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gating="mean")
+        gate = pyntbci.gating.AggregateGate("mean")
+        fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gating=gate)
 
         # Train classifier
         fbrcca.fit(X_trn, y_trn)
