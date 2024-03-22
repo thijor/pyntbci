@@ -66,7 +66,7 @@ def eventplot(S, E, fs, ax=None, upsample=20, plotfs=True, events=None):
         ax.set_yticks(-1.5 * np.arange(0, 1 + n_events) + 0.5, ("stimulus",) + events)
 
 
-def topoplot(z, locfile, cbar=False, ax=None, iso=False):
+def topoplot(z, locfile, cbar=False, ax=None, iso=False, chan=True):
     """Plot a topoplot. The values at each electrode are interpolated on an outline of a head using an electrode
     position file (loc file).
 
@@ -82,6 +82,8 @@ def topoplot(z, locfile, cbar=False, ax=None, iso=False):
         Axes to plot in. A new one is made when None.
     iso: bool (default: False)
         Whether or not to add iso lines.
+    chan: bool (default: True)
+        Whether or not to plot the channel positions.
     """
     assert locfile[-4:] == ".loc", "The topoplot function accepts .loc files only."
 
@@ -140,7 +142,8 @@ def topoplot(z, locfile, cbar=False, ax=None, iso=False):
         ax.contour(xi, yi, zi, 15, colors="grey", zorder=3)
 
     # Add data points
-    ax.scatter(xy[:-4, 0], xy[:-4, 1], marker="o", c="k", s=15, zorder=4)
+    if chan:
+        ax.scatter(xy[:-4, 0], xy[:-4, 1], marker="o", c="k", s=15, zorder=4)
 
     # Add color bar
     if cbar:

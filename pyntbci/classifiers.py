@@ -24,7 +24,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
     cycle_size: float (default: None)
         The time that one cycle of the code takes in seconds. If None, takes the full data length.
     template_metric: str (default: "mean")
-        Metric to use to compute templates: mean, median, OCSM.
+        Metric to use to compute templates: mean, median, OCSVM.
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean,
         inner.
@@ -280,14 +280,19 @@ class Ensemble(BaseEstimator, ClassifierMixin):
     ----------
     estimator: BaseEstimator
         The classifier object that is applied to each item in the databank.
-    gating: str (default: "mean")
-        The gating function that is used to combine the scores obtained from each individual classifiers. Options are:
-        mean, max.
+    gating: BaseEstimator
+        The gating function that is used to combine the scores obtained from each individual classifiers.
     """
 
-    def __init__(self, estimator, gating="mean"):
+    def __init__(self, estimator, gating):
         self.estimator = estimator
         self.gating = gating
+
+    def _compute_scores(self, X):
+        scores = [
+            self.models_[i].decision_function(X[:, :, :, i])
+            for i in range(X.shape[3])]
+        return np.stack(scores, axis=2)
 
     def decision_function(self, X):
         """Applies the decision functions to each item in the databank to arrive at raw unthresholded classification
@@ -303,18 +308,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         scores: np.ndarray
             The matrix of scores of shape (n_trials, n_classes).
         """
-
-        # Get separate raw scores for each databank
-        scores = [
-            self.models_[i].decision_function(X[:, :, :, i])
-            for i in range(X.shape[3])]
-        scores = np.stack(scores, axis=2)
-
-        # Combine databanks
-        if self.gating == "mean":
-            return np.mean(scores, axis=2)
-        elif self.gating == "max":
-            return np.max(scores, axis=2)
+        return self.gating.decision_function(self._compute_scores(X))
 
     def fit(self, X, y):
         """The training procedure to apply an ensemble classifier on supervised EEG data.
@@ -336,10 +330,13 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         y = y.astype(np.uint)
         assert X.ndim == 4
 
-        # Fit separate model for each passband
+        # Fit separate models for each databank
         self.models_ = [
             copy.deepcopy(self.estimator).fit(X[:, :, :, i], y)
             for i in range(X.shape[3])]
+
+        # Fit gating
+        self.gating.fit(self._compute_scores(X), y)
 
         return self
 
@@ -359,8 +356,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["models_"])
         X = check_array(X, ensure_2d=False, allow_nd=True)
-        assert X.ndim == 4
-        return np.argmax(self.decision_function(X), axis=1)
+        return self.gating.predict(self._compute_scores(X))
 
 
 class eTRCA(BaseEstimator, ClassifierMixin):
@@ -378,7 +374,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
     cycle_size: float (default: None)
         The time that one cycle of the code takes in seconds. If None, takes the full data length.
     template_metric: str (default: "mean")
-        Metric to use to compute templates: mean, median, OCSM.
+        Metric to use to compute templates: mean, median, OCSVM.
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean,
         inner.
@@ -631,6 +627,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
     cov_estimator_m: object (default: None)
         Estimator object with a fit method that estimates a covariance matrix of the stimulus structure matrix. If None,
         a custom empirical covariance is used.
+    n_components: int (default: 1)
+        The number of CCA components to use.
+    gating: BaseEstimator (default: None)
+        The gating function that is used to combine the scores obtained from each individual component.
 
     References
     ----------
@@ -646,7 +646,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     def __init__(self, stimulus, fs, event="duration", onset_event=False, decoding_length=None, decoding_stride=None,
                  encoding_length=0.3, encoding_stride=None, score_metric="correlation", lx=None, ly=None, latency=None,
-                 ensemble=False, amplitudes=None, cov_estimator_x=None, cov_estimator_m=None):
+                 ensemble=False, amplitudes=None, cov_estimator_x=None, cov_estimator_m=None, n_components=1,
+                 gating=None):
         self.stimulus = stimulus
         self.fs = fs
         self.event = event
@@ -663,6 +664,53 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.amplitudes = amplitudes
         self.cov_estimator_x = cov_estimator_x
         self.cov_estimator_m = cov_estimator_m
+        self.n_components = n_components
+        self.gating = gating
+
+    def _compute_scores(self, X):
+        # Set decoding window
+        if self.decoding_length is not None:
+            if self.decoding_stride is None:
+                stride = 1  # a single sample
+            else:
+                stride = int(self.decoding_stride * self.fs)
+            X = decoding_matrix(X, int(self.decoding_length * self.fs), stride)
+
+        # Set templates to trial length
+        T = self._get_T(X.shape[2])
+
+        # Compute scores
+        scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
+        if self.ensemble:
+            for i_class in range(T.shape[0]):
+                Xi = self._cca[i_class].transform(X=X)[0]
+                for i_component in range(self.n_components):
+                    if self.score_metric == "correlation":
+                        scores[:, i_class, i_component] = correlation(Xi[:, i_component, :],
+                                                                      T[i_class, i_component, :])[:, 0]
+                    elif self.score_metric == "euclidean":
+                        scores[:, i_class, i_component] = 1 / (1 + euclidean(Xi[:, i_component, :],
+                                                                             T[i_class, i_component, :]))[:, 0]
+                    elif self.score_metric == "inner":
+                        scores[:, i_class, i_component] = np.inner(Xi[:, i_component, :],
+                                                                   T[i_class, i_component, :])
+                    else:
+                        raise Exception(f"Unknown score metric: {self.score_metric}")
+
+        else:
+            X = self._cca.transform(X=X)[0]
+            for i_component in range(self.n_components):
+                if self.score_metric == "correlation":
+                    scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
+                elif self.score_metric == "euclidean":
+                    scores[:, :, i_component] = 1 / (
+                                1 + euclidean(X[:, i_component, :], T[:, i_component, :]))  # conversion to similarity
+                elif self.score_metric == "inner":
+                    scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
+                else:
+                    raise Exception(f"Unknown score metric: {self.score_metric}")
+
+        return scores
 
     def _get_M(self, n_samples=None):
         """Get the structure matrix of a particular length.
@@ -705,18 +753,18 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Returns
         -------
         T: np.ndarray
-            The templates of shape (n_classes, n_samples).
+            The templates of shape (n_classes, n_components, n_samples).
         """
-        if n_samples is None or self.Ts_.shape[1] == n_samples:
+        if n_samples is None or self.Ts_.shape[2] == n_samples:
             T = self.Ts_
         else:
-            n = int(np.ceil(n_samples / self.Ts_.shape[1]))
+            n = int(np.ceil(n_samples / self.Ts_.shape[2]))
             if (n - 1) > 1:
-                Tw = np.tile(self.Tw_, (1, (n - 1)))
+                Tw = np.tile(self.Tw_, (1, 1, (n - 1)))
             else:
                 Tw = self.Tw_
-            T = np.concatenate((self.Ts_, Tw), axis=1)[:, :n_samples]
-        T -= T.mean(axis=1, keepdims=True)
+            T = np.concatenate((self.Ts_, Tw), axis=2)[:, :, :n_samples]
+        T -= T.mean(axis=2, keepdims=True)
         return T
 
     def decision_function(self, X):
@@ -732,49 +780,15 @@ class rCCA(BaseEstimator, ClassifierMixin):
         scores: np.ndarray
             The matrix of scores of shape (n_trials, n_classes).
         """
-        # Set decoding window
-        if self.decoding_length is not None:
-            if self.decoding_stride is None:
-                stride = 1  # a single sample
+        check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
+        X = check_array(X, ensure_2d=False, allow_nd=True)
+        if self.gating is None:
+            if self.n_components == 1:
+                return self._compute_scores(X)[:, :, 0]  # selects the single component
             else:
-                stride = int(self.decoding_stride * self.fs)
-            X = decoding_matrix(X, int(self.decoding_length * self.fs), stride)
-
-        # Set templates to trial length
-        T = self._get_T(X.shape[2])
-
-        if self.ensemble:
-            scores = np.zeros((X.shape[0], T.shape[0]))
-            for i_class in range(T.shape[0]):
-
-                # Spatially filter data
-                Xi = np.sum(self._cca[i_class].transform(X=X)[0], axis=1)
-
-                # Scoring
-                if self.score_metric == "correlation":
-                    scores[:, i_class] = correlation(Xi, T[i_class, :])[:, 0]
-                elif self.score_metric == "euclidean":
-                    scores[:, i_class] = 1 / (1 + euclidean(Xi, T[i_class, :]))[:, 0]  # conversion to similarity
-                elif self.score_metric == "inner":
-                    scores[:, i_class] = np.inner(Xi, T[i_class, :])
-                else:
-                    raise Exception(f"Unknown score metric: {self.score_metric}")
-
+                raise Exception("A gating function must be specified when n_components > 1")
         else:
-            # Spatially filter data
-            X = np.sum(self._cca.transform(X=X)[0], axis=1)
-
-            # Scoring
-            if self.score_metric == "correlation":
-                scores = correlation(X, T)
-            elif self.score_metric == "euclidean":
-                scores = 1 / (1 + euclidean(X, T))  # conversion to similarity
-            elif self.score_metric == "inner":
-                scores = np.inner(X, T)
-            else:
-                raise Exception(f"Unknown score metric: {self.score_metric}")
-
-        return scores
+            return self.gating.decision_function(self._compute_scores(X))
 
     def fit(self, X, y):
         """The training procedure to fit a rCCA on supervised EEG data.
@@ -813,18 +827,18 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         # Fit w and r
         if self.ensemble:
-            self.w_ = np.zeros((X.shape[1], n_classes))
-            self.r_ = np.zeros((M.shape[1], n_classes))
+            self.w_ = np.zeros((X.shape[1], self.n_components, n_classes))
+            self.r_ = np.zeros((M.shape[1], self.n_components, n_classes))
             self._cca = []
             for i_class in range(n_classes):
-                self._cca.append(CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator_x,
-                                     estimator_y=self.cov_estimator_m))
+                self._cca.append(CCA(n_components=self.n_components, lx=self.lx, ly=self.ly,
+                                     estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m))
                 self._cca[i_class].fit(X[y == i_class, :, :], np.tile(M[[i_class], :, :], (np.sum(y == i_class), 1, 1)))
-                self.w_[:, i_class] = self._cca[i_class].w_x_.flatten()
-                self.r_[:, i_class] = self._cca[i_class].w_y_.flatten()
+                self.w_[:, :, i_class] = self._cca[i_class].w_x_
+                self.r_[:, :, i_class] = self._cca[i_class].w_y_
         else:
-            self._cca = CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator_x,
-                            estimator_y=self.cov_estimator_m)
+            self._cca = CCA(n_components=self.n_components, lx=self.lx, ly=self.ly,
+                            estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m)
             self._cca.fit(X, M[y, :, :])
             self.w_ = self._cca.w_x_
             self.r_ = self._cca.w_y_
@@ -832,18 +846,22 @@ class rCCA(BaseEstimator, ClassifierMixin):
         # Set templates (start and wrapper)
         M = self._get_M(2 * self.stimulus.shape[1])
         if self.ensemble:
-            T = np.zeros((n_classes, M.shape[2]))
+            T = np.zeros((n_classes, self.n_components, M.shape[2]))
             for i_class in range(n_classes):
-                T[i_class, :] = np.sum(self._cca[i_class].transform(X=None, Y=M[[i_class], :, :])[1], axis=1)
+                T[i_class, :, :] = self._cca[i_class].transform(X=None, Y=M[[i_class], :, :])[1]
         else:
-            T = np.sum(self._cca.transform(X=None, Y=M)[1], axis=1)
-        self.Ts_ = T[:, :self.stimulus.shape[1]]
-        self.Tw_ = T[:, self.stimulus.shape[1]:]
+            T = self._cca.transform(X=None, Y=M)[1]
+        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
+        self.Tw_ = T[:, :, self.stimulus.shape[1]:]
 
         # Correct for raster latency
         if self.latency is not None:
-            self.Ts_ = correct_latency(self.Ts_, np.arange(len(self.latency)), self.latency, self.fs, axis=-1)
-            self.Tw_ = correct_latency(self.Tw_, np.arange(len(self.latency)), self.latency, self.fs, axis=-1)
+            self.Ts_ = correct_latency(self.Ts_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+            self.Tw_ = correct_latency(self.Tw_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+
+        # Fit gating
+        if self.gating is not None:
+            self.gating.fit(self._compute_scores(X), y)
 
         return self
 
@@ -863,7 +881,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
         X = check_array(X, ensure_2d=False, allow_nd=True)
-        return np.argmax(self.decision_function(X), axis=1)
+        if self.gating is None:
+            return np.argmax(self.decision_function(X), axis=1)
+        else:
+            return self.gating.predict(self._compute_scores(X))
 
     def set_stimulus(self, stimulus):
         """Set the stimulus and as such change the templates.
@@ -875,9 +896,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
             (i.e., stimulus-repetition) is sufficient.
         """
         self.stimulus = stimulus
-        T = np.sum(self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1], axis=1)
-        self.Ts_ = T[:, :self.stimulus.shape[1]]
-        self.Tw_ = T[:, self.stimulus.shape[1]:]
+        T = self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1]
+        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
+        self.Tw_ = T[:, :, self.stimulus.shape[1]:]
 
     def set_amplitudes(self, amplitudes):
         """Set the amplitudes of the stimulus and as such change the templates.
@@ -888,4 +909,4 @@ class rCCA(BaseEstimator, ClassifierMixin):
             The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.
         """
         self.amplitudes = amplitudes
-        self.set_stimuus(self.stimulus)
+        self.set_stimulus(self.stimulus)

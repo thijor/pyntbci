@@ -382,7 +382,7 @@ def filterbank(X, passbands, fs, tmin=None, ftype="butterworth", N=None, stopban
     gpass: float | list (default: 3.0)
         The maximum loss in the passband (dB). If a list is provided, it is the gpass for each passband. Only used if
         N=None.
-    gstop: float | list (fedault: 30.0)
+    gstop: float | list (default: 30.0)
         The minimum attenuation in the stopband (dB). If a list is provided, it is the gstop for each stopband. Only
         used if N=None.
 

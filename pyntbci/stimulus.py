@@ -260,7 +260,7 @@ def make_gold_codes(poly1=(1, 0, 0, 0, 0, 1), poly2=(1, 1, 0, 0, 1, 1), seed1=No
     poly2: tuple (default: (1, 1, 0, 0, 1, 1))
         The feedback tap points defined by the primitive polynomial.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
-    seed1: list (efault: None)
+    seed1: list (default: None)
         Seed for the initial register for poly1. None leads to an all zero initial register.
     seed2: list (default: None)
         Seed for the initial register for poly1. None leads to an all zero initial register.

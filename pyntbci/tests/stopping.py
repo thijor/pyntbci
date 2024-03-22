@@ -9,12 +9,13 @@ class TestBayesStopping(unittest.TestCase):
     def test_bayes_rcca(self):
         fs = 1000
         segment_time = 0.1
-        transient_size = 0.3
+        encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)
         y = np.random.choice(5, 111)
         V = np.random.rand(5, fs) > 0.5
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size, score_metric="inner")
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length,
+                                        score_metric="inner")
         stop = pyntbci.stopping.BayesStopping(rcca, segment_time, fs)
         stop.fit(X, y)
 
@@ -34,12 +35,12 @@ class TestBetaStopping(unittest.TestCase):
 
     def test_beta_rcca(self):
         fs = 1000
-        transient_size = 0.3
+        encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)
         y = np.random.choice(5, 111)
         V = np.random.rand(5, fs) > 0.5
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length)
         stop = pyntbci.stopping.BetaStopping(rcca)
         stop.fit(X, y)
 
@@ -52,12 +53,12 @@ class TestMarginStopping(unittest.TestCase):
     def test_margin_rcca(self):
         fs = 1000
         segment_time = 0.1
-        transient_size = 0.3
+        encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)
         y = np.random.choice(5, 111)
         V = np.random.rand(5, fs) > 0.5
 
-        rcca = pyntbci.classifiers.rCCA(V, fs, "refe", transient_size)
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length)
         stop = pyntbci.stopping.MarginStopping(rcca, segment_time, fs)
         stop.fit(X, y)
 

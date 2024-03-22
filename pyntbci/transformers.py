@@ -269,9 +269,9 @@ class CCA(BaseEstimator, TransformerMixin):
         X, Y = self._transform_X2D(X, Y)
 
         if X is not None:
-            X = X.reshape((n_trials, self.n_components, n_samples))
+            X = X.reshape((n_trials, n_samples, self.n_components)).transpose(0, 2, 1)
         if Y is not None:
-            Y = Y.reshape((n_trials, self.n_components, n_samples))
+            Y = Y.reshape((n_trials, n_samples, self.n_components)).transpose(0, 2, 1)
 
         return X, Y
 
@@ -310,7 +310,7 @@ class CCA(BaseEstimator, TransformerMixin):
 
 
 class TRCA(BaseEstimator, TransformerMixin):
-    """Task related component analysis (TRCA). Maximizes the intra-class covariances, i.e., the intra-class consistenty
+    """Task related component analysis (TRCA). Maximizes the intra-class covariances, i.e., the intra-class consistency
     [2]_. TRCA was applied to (SSVEP) BCI [3]_. Alternative implementations, also used as example for this code, see
     Matlab code in [2]_ for the original, Matlab code in [4]_ for the SSVEP BCI introduction, and two Python
     implementation in MOABB [5]_, and MEEGKit [6]_.

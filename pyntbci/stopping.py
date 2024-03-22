@@ -83,6 +83,11 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         T = self.estimator._get_T(n_samples)
         n_classes = T.shape[0]
 
+        # TODO: pyntbci.classifier.BayesStopping does not work with multi-component templates
+        # N.B. Ensemble assumes n-components=1
+        assert T.shape[1] == 1, "Not yet implemented for multiple components!"
+        T = T[:, 0, :]  # remove singular dimension
+
         # Obtain alpha from least squares
         model = LinearRegression()
         model.fit(T[y, :].reshape(-1, 1), X.reshape(-1, 1))
@@ -232,7 +237,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
     def fit(self, X, y):
         """The training procedure to fit the dynamic procedure on supervised EEG data. Note, BetaStopping itself does
-        notrequire training, it only trains the estimator.
+        not require training, it only trains the estimator.
 
         Parameters
         ----------

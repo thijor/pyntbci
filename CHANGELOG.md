@@ -8,6 +8,9 @@
 - Variable `decoding_stride` of `rCCA` in `classifier` controlling the stride of a learned spectral filter
 - Function `decoding_matrix` in `utilities` to phase-shit the EEG data maintaining channel-prime ordering
 - Variable `encoding_stride` of `rCCA` in `classifier` controlling the stride of a learned temporal response
+- Module `gating` with gating functions, for instance for multi-component or filterbank analysis
+- Variable `gating` of `rCCA` in `classifier` to deal with multiple CCA components
+- Variable `gating` of `Ensemble` in `classifier`, for example to deal with a filterbank
 
 ### Changed
 
@@ -18,7 +21,7 @@
 
 ### Fixed
 
-- 
+- Several documentation issues
 
 ## Version 0.2.5 (29-02-2024)
 

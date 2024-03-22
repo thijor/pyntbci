@@ -15,6 +15,8 @@ Available modules
 -----------------
 classifiers
     Core classification models.
+classifiers
+    Core gating functions.
 plotting
     Basic functions to visualize data.
 stimulus
@@ -33,9 +35,4 @@ __credits__ = "Radboud University; Donders Institute for Brain, Cognition and Be
 __license__ = "BSD"
 __version__ = "0.2.5"
 
-from pyntbci import classifiers
-from pyntbci import stimulus
-from pyntbci import plotting
-from pyntbci import stopping
-from pyntbci import transformers
-from pyntbci import utilities
+from pyntbci import classifiers, gating, plotting, stimulus, stopping, transformers, utilities
