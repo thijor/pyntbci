@@ -20,12 +20,12 @@ class CCA(BaseEstimator, TransformerMixin):
     ly: float | list (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
         None, no regularization is applied.
-    estimator_x: object (Default: None)
-        An object that estimates a covariance matrix for X using a fit method. If None, a custom implementation of the
-        empirical covariance is used.
-    estimator_y
-        An object that estimates a covariance matrix for Y using a fit method. If None, a custom implementation of the
-        empirical covariance is used.
+    estimator_x: BaseEstimator (Default: None)
+        A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom
+        implementation of the empirical covariance is used.
+    estimator_y: BaseEstimator (Default: None)
+        A BaseEstimator object that estimates a covariance matrix for Y using a fit method. If None, a custom
+        implementation of the empirical covariance is used.
     running: bool (default: False)
         If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
         track of previous data to update a running average and covariance for the CCA.

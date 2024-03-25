@@ -621,12 +621,12 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
     amplitudes: np.ndarray
         The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.
-    cov_estimator_x: object (default: None)
-        Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
-        empirical covariance is used.
-    cov_estimator_m: object (default: None)
-        Estimator object with a fit method that estimates a covariance matrix of the stimulus structure matrix. If None,
-        a custom empirical covariance is used.
+    cov_estimator_x: BaseEstimator (default: None)
+        A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data, the decoding
+        matrix. If None, a custom empirical covariance is used.
+    cov_estimator_m: BaseEstimator (default: None)
+        A BaseEstimator object with a fit method that estimates a covariance matrix of the stimulus encoding matrix. If
+        None, a custom empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
     gating: BaseEstimator (default: None)
@@ -713,17 +713,17 @@ class rCCA(BaseEstimator, ClassifierMixin):
         return scores
 
     def _get_M(self, n_samples=None):
-        """Get the structure matrix of a particular length.
+        """Get the encoding matrix of a particular length.
 
         Parameters
         ----------
         n_samples: int (default: None)
-            The number of samples that the structure matrix should be. If none, one stimulus cycle is used.
+            The number of samples that the encoding matrix should be. If none, one stimulus cycle is used.
 
         Returns
         -------
         M: np.ndarray
-            The structure matrix denoting event timings of shape (n_classes, transient_size, n_samples).
+            The encoding matrix denoting event timings of shape (n_classes, encoding_length, n_samples).
         """
         # Repeat the stimulus to n_samples
         if n_samples is None or self.stimulus.shape[1] == n_samples:
@@ -737,7 +737,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         else:
             stride = int(self.encoding_stride * self.fs)
 
-        # Get structure matrices
+        # Get encoding matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
         M = encoding_matrix(E, int(self.encoding_length * self.fs), stride, self.amplitudes)
         return M[:, :, :n_samples]
