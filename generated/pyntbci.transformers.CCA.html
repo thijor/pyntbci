@@ -105,10 +105,10 @@ Here, CCA is implemented as the SVD of (cross)covariance matrices <a class="foot
 None, no regularization is applied.</p></li>
 <li><p><strong>ly</strong> (<em>float</em><em> | </em><em>list</em><em> (</em><em>default: None</em><em>)</em>) – Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
 None, no regularization is applied.</p></li>
-<li><p><strong>estimator_x</strong> (<em>object</em><em> (</em><em>Default: None</em><em>)</em>) – An object that estimates a covariance matrix for X using a fit method. If None, a custom implementation of the
-empirical covariance is used.</p></li>
-<li><p><strong>estimator_y</strong> – An object that estimates a covariance matrix for Y using a fit method. If None, a custom implementation of the
-empirical covariance is used.</p></li>
+<li><p><strong>estimator_x</strong> (<em>BaseEstimator</em><em> (</em><em>Default: None</em><em>)</em>) – A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom
+implementation of the empirical covariance is used.</p></li>
+<li><p><strong>estimator_y</strong> (<em>BaseEstimator</em><em> (</em><em>Default: None</em><em>)</em>) – A BaseEstimator object that estimates a covariance matrix for Y using a fit method. If None, a custom
+implementation of the empirical covariance is used.</p></li>
 <li><p><strong>running</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
 track of previous data to update a running average and covariance for the CCA.</p></li>
 </ul>

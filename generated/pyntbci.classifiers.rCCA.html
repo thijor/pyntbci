@@ -120,10 +120,10 @@ no regularization is applied.</p></li>
 for.</p></li>
 <li><p><strong>ensemble</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.</p></li>
 <li><p><strong>amplitudes</strong> (<em>np.ndarray</em>) – The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.</p></li>
-<li><p><strong>cov_estimator_x</strong> (<em>object</em><em> (</em><em>default: None</em><em>)</em>) – Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
-empirical covariance is used.</p></li>
-<li><p><strong>cov_estimator_m</strong> (<em>object</em><em> (</em><em>default: None</em><em>)</em>) – Estimator object with a fit method that estimates a covariance matrix of the stimulus structure matrix. If None,
-a custom empirical covariance is used.</p></li>
+<li><p><strong>cov_estimator_x</strong> (<em>BaseEstimator</em><em> (</em><em>default: None</em><em>)</em>) – A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data, the decoding
+matrix. If None, a custom empirical covariance is used.</p></li>
+<li><p><strong>cov_estimator_m</strong> (<em>BaseEstimator</em><em> (</em><em>default: None</em><em>)</em>) – A BaseEstimator object with a fit method that estimates a covariance matrix of the stimulus encoding matrix. If
+None, a custom empirical covariance is used.</p></li>
 <li><p><strong>n_components</strong> (<em>int</em><em> (</em><em>default: 1</em><em>)</em>) – The number of CCA components to use.</p></li>
 <li><p><strong>gating</strong> (<em>BaseEstimator</em><em> (</em><em>default: None</em><em>)</em>) – The gating function that is used to combine the scores obtained from each individual component.</p></li>
 </ul>

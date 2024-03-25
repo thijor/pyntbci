@@ -748,12 +748,12 @@
 <span class="sd">        Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.</span>
 <span class="sd">    amplitudes: np.ndarray</span>
 <span class="sd">        The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.</span>
-<span class="sd">    cov_estimator_x: object (default: None)</span>
-<span class="sd">        Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom</span>
-<span class="sd">        empirical covariance is used.</span>
-<span class="sd">    cov_estimator_m: object (default: None)</span>
-<span class="sd">        Estimator object with a fit method that estimates a covariance matrix of the stimulus structure matrix. If None,</span>
-<span class="sd">        a custom empirical covariance is used.</span>
+<span class="sd">    cov_estimator_x: BaseEstimator (default: None)</span>
+<span class="sd">        A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data, the decoding</span>
+<span class="sd">        matrix. If None, a custom empirical covariance is used.</span>
+<span class="sd">    cov_estimator_m: BaseEstimator (default: None)</span>
+<span class="sd">        A BaseEstimator object with a fit method that estimates a covariance matrix of the stimulus encoding matrix. If</span>
+<span class="sd">        None, a custom empirical covariance is used.</span>
 <span class="sd">    n_components: int (default: 1)</span>
 <span class="sd">        The number of CCA components to use.</span>
 <span class="sd">    gating: BaseEstimator (default: None)</span>
@@ -840,17 +840,17 @@
         <span class="k">return</span> <span class="n">scores</span>
 
     <span class="k">def</span> <span class="nf">_get_M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the structure matrix of a particular length.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the encoding matrix of a particular length.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        n_samples: int (default: None)</span>
-<span class="sd">            The number of samples that the structure matrix should be. If none, one stimulus cycle is used.</span>
+<span class="sd">            The number of samples that the encoding matrix should be. If none, one stimulus cycle is used.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        M: np.ndarray</span>
-<span class="sd">            The structure matrix denoting event timings of shape (n_classes, transient_size, n_samples).</span>
+<span class="sd">            The encoding matrix denoting event timings of shape (n_classes, encoding_length, n_samples).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Repeat the stimulus to n_samples</span>
         <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
@@ -864,7 +864,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">stride</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
 
-        <span class="c1"># Get structure matrices</span>
+        <span class="c1"># Get encoding matrices</span>
         <span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_</span> <span class="o">=</span> <span class="n">event_matrix</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span><span class="p">)</span>
         <span class="n">M</span> <span class="o">=</span> <span class="n">encoding_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
