@@ -11,6 +11,7 @@ Utilities
 
     correlation
     euclidean
+    covariance
     decoding_matrix
     encoding_matrix
     event_matrix
