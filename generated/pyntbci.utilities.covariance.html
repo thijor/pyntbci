@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities.euclidean &mdash; PyntBCI 1.0.1 documentation</title>
+  <title>pyntbci.utilities.covariance &mdash; PyntBCI 1.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -25,8 +25,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.utilities.covariance" href="pyntbci.utilities.covariance.html" />
-    <link rel="prev" title="pyntbci.utilities.correlation" href="pyntbci.utilities.correlation.html" /> 
+    <link rel="next" title="pyntbci.utilities.decoding_matrix" href="pyntbci.utilities.decoding_matrix.html" />
+    <link rel="prev" title="pyntbci.utilities.euclidean" href="pyntbci.utilities.euclidean.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -80,9 +80,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">pyntbci.utilities.euclidean</li>
+      <li class="breadcrumb-item active">pyntbci.utilities.covariance</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/pyntbci.utilities.euclidean.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pyntbci.utilities.covariance.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -90,24 +90,32 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pyntbci-utilities-euclidean">
-<h1>pyntbci.utilities.euclidean<a class="headerlink" href="#pyntbci-utilities-euclidean" title="Link to this heading"></a></h1>
+  <section id="pyntbci-utilities-covariance">
+<h1>pyntbci.utilities.covariance<a class="headerlink" href="#pyntbci-utilities-covariance" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyntbci.utilities.euclidean">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">euclidean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/utilities.html#euclidean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.euclidean" title="Link to this definition"></a></dt>
-<dd><p>Compute the Euclidean distance. Computed between two sets of variables.</p>
+<dt class="sig sig-object py" id="pyntbci.utilities.covariance">
+<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_old</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_old</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_old</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">running</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/utilities.html#covariance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.covariance" title="Link to this definition"></a></dt>
+<dd><p>Compute the covariance matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>A</strong> (<em>np.ndarray</em>) – The first set of variables of shape (n_A, n_samples).</p></li>
-<li><p><strong>B</strong> (<em>np.ndarray</em>) – The second set of variables of shape (n_B, n_samples).</p></li>
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – Data matrix of shape (n_samples, n_features).</p></li>
+<li><p><strong>n_old</strong> (<em>int</em><em> (</em><em>default: 0</em><em>)</em>) – Number of already observed samples.</p></li>
+<li><p><strong>avg_old</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Already observed average of shape (n_features).</p></li>
+<li><p><strong>cov_old</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Already observed covariance of shape (n_features, n_features).</p></li>
+<li><p><strong>estimator</strong> (<em>object</em><em> (</em><em>default: None</em><em>)</em>) – An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the
+empirical covariance is used.</p></li>
+<li><p><strong>running</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether or not to use a running covariance. If False, the covariance matrix is computed instantaneously using
+only X, such that n_old, avg_old, and cov_old are not used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scores</strong> – The correlation matrix of shape (n_A, n_B).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>n_new</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>avg_new</strong> (<em>np.ndarray</em>) – The average of shape (1, n_features).</p></li>
+<li><p><strong>cov_new</strong> (<em>np.ndarray</em>) – The covariance of shape (n_features, n_features).</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -118,8 +126,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.utilities.correlation.html" class="btn btn-neutral float-left" title="pyntbci.utilities.correlation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.utilities.covariance.html" class="btn btn-neutral float-right" title="pyntbci.utilities.covariance" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.utilities.euclidean.html" class="btn btn-neutral float-left" title="pyntbci.utilities.euclidean" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.utilities.decoding_matrix.html" class="btn btn-neutral float-right" title="pyntbci.utilities.decoding_matrix" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

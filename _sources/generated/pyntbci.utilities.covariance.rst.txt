@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.covariance
+============================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: covariance
+
+.. include:: pyntbci.utilities.covariance.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
