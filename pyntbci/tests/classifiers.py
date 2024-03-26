@@ -307,6 +307,61 @@ class TestRCCA(unittest.TestCase):
         yh = rcca.predict(X)
         self.assertEqual(y.shape, yh.shape)
 
+    def test_rcca_set_stimulus(self):
+        fs = 1000
+        encoding_length = 0.3
+        X = np.random.rand(111, 64, 2 * fs)
+        y = np.random.choice(5, 111)
+        V = np.random.rand(5, 1 * fs) > 0.5
+        U = np.random.rand(7, 2 * fs) > 0.5
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length)
+        rcca.fit(X, y)
+
+        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        rcca.set_stimulus(U)
+        self.assertEqual(rcca.Ts_.shape, (U.shape[0], 1, U.shape[1]))
+        self.assertEqual(rcca.Tw_.shape, (U.shape[0], 1, U.shape[1]))
+
+    def test_rcca_set_amplitudes(self):
+        fs = 1000
+        encoding_length = 0.3
+        X = np.random.rand(111, 64, 2 * fs)
+        y = np.random.choice(5, 111)
+        V = np.random.rand(5, 1 * fs) > 0.5
+        A = np.random.rand(5, 2 * fs)
+        B = np.random.rand(5, 1 * fs)
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, amplitudes=A)
+        rcca.fit(X, y)
+
+        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        rcca.set_amplitudes(B)
+        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+
+    def test_rcca_set_stimulus_amplitudes(self):
+        fs = 1000
+        encoding_length = 0.3
+        X = np.random.rand(111, 64, 2 * fs)
+        y = np.random.choice(5, 111)
+        V = np.random.rand(5, 1 * fs) > 0.5
+        U = np.random.rand(7, 2 * fs) > 0.5
+        A = np.random.rand(5, 2 * fs)
+        B = np.random.rand(7, 1 * fs)
+
+        rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, amplitudes=A)
+        rcca.fit(X, y)
+
+        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        rcca.set_stimulus_amplitudes(U, B)
+        self.assertEqual(rcca.Ts_.shape, (U.shape[0], 1, U.shape[1]))
+        self.assertEqual(rcca.Tw_.shape, (U.shape[0], 1, U.shape[1]))
+
+
 
 if __name__ == "__main__":
     unittest.main()

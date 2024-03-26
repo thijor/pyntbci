@@ -588,8 +588,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
     Parameters
     ----------
     stimulus: np.ndarray
-        The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle
-        (i.e., stimulus-repetition) is sufficient.
+        The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
+        one stimulus-repetition) is sufficient.
     fs: int
         The sampling frequency of the EEG data in Hz.
     event: str (default: "duration")
@@ -620,7 +620,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
     ensemble: bool (default: False)
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
     amplitudes: np.ndarray
-        The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.
+        The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs.
     cov_estimator_x: BaseEstimator (default: None)
         A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data, the decoding
         matrix. If None, a custom empirical covariance is used.
@@ -732,6 +732,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
             n = int(np.ceil(n_samples / self.stimulus.shape[1]))
             stimulus = np.tile(self.stimulus, (1, n))
 
+        # Repeat the amplitudes to n_samples
+        if n_samples is None or self.amplitudes is None or self.amplitudes.shape[1] == n_samples:
+            amplitudes = self.amplitudes
+        else:
+            n = int(np.ceil(n_samples / self.amplitudes.shape[1]))
+            amplitudes = np.tile(self.amplitudes, (1, n))
+
         if self.encoding_stride is None:
             stride = 1  # a single sample
         else:
@@ -739,7 +746,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         # Get encoding matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
-        M = encoding_matrix(E, int(self.encoding_length * self.fs), stride, self.amplitudes)
+        M = encoding_matrix(E, int(self.encoding_length * self.fs), stride, amplitudes)
         return M[:, :, :n_samples]
 
     def _get_T(self, n_samples=None):
@@ -887,26 +894,41 @@ class rCCA(BaseEstimator, ClassifierMixin):
             return self.gating.predict(self._compute_scores(X))
 
     def set_stimulus(self, stimulus):
-        """Set the stimulus and as such change the templates.
+        """Set the stimulus, and as such change the templates.
 
         Parameters
         ----------
         stimulus: np.ndarray
-            The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs and one cycle
-            (i.e., stimulus-repetition) is sufficient.
+            The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
+            one stimulus-repetition) is sufficient. If None, it is not changed.
         """
-        self.stimulus = stimulus
-        T = self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1]
-        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
-        self.Tw_ = T[:, :, self.stimulus.shape[1]:]
+        self.set_stimulus_amplitudes(stimulus, self.amplitudes)
 
     def set_amplitudes(self, amplitudes):
-        """Set the amplitudes of the stimulus and as such change the templates.
+        """Set the amplitudes, and as such change the templates.
 
         Parameters
         ----------
         amplitudes: np.ndarray
-            The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs similar to stimulus.
+            The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs. If None, it is not
+            changed.
         """
+        self.set_stimulus_amplitudes(self.stimulus, amplitudes)
+
+    def set_stimulus_amplitudes(self, stimulus, amplitudes):
+        """Set the stimulus and/or the amplitudes, and as such change the templates.
+
+        Parameters
+        ----------
+        stimulus: np.ndarray
+            The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
+            one stimulus-repetition) is sufficient. If None, it is not changed.
+        amplitudes: np.ndarray
+            The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs. If None, it is not
+            changed.
+        """
+        self.stimulus = stimulus
         self.amplitudes = amplitudes
-        self.set_stimulus(self.stimulus)
+        T = self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1]
+        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
+        self.Tw_ = T[:, :, self.stimulus.shape[1]:]

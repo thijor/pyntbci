@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 1.0.1 (26-03-2024)
+
+### Added
+- `set_stimulus_amplitudes` for `rCCA` in `classifiers`
+
+### Changed
+
+### Fixed
+- Dependency between `stimulus` and `amplitudes` in `rCCA` of `classifiers`
+
 ## Version 1.0.0 (22-03-2024)
 
 ### Added
