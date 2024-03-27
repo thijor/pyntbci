@@ -178,7 +178,7 @@ def encoding_matrix(stimulus, length, stride=1, amplitude=None):
     Returns
     -------
     ematrix: np.ndarray
-        Encoding matrix of shape (n_trials, n_channels * length / stride, n_samples).
+        Encoding matrix of shape (n_classes, n_events * length / stride, n_samples).
     """
     n_classes, n_events, n_samples = stimulus.shape
 
