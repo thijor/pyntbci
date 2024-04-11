@@ -51,7 +51,7 @@ tmp = np.load(os.path.join(path, "data", "tutorial.npz"))
 X = tmp["X"]
 y = tmp["y"]
 V = tmp["V"]
-fs = tmp["fs"]
+fs = int(tmp["fs"])
 fr = 60
 print("X", X.shape, "(trials x channels x samples)")  # EEG
 print("y", y.shape, "(trials)")  # labels

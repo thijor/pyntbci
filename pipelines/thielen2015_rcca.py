@@ -55,7 +55,7 @@ V = tmp["V"]
 X_tst = tmp["X_test"]
 y_tst = tmp["y_test"]
 U = tmp["U"]
-fs = tmp["fs"]
+fs = int(tmp["fs"])
 fr = 120
 
 # Print data dimensions
@@ -173,7 +173,7 @@ for i_subject in range(n_subjects):
     # Load data
     fn = os.path.join(path, "derivatives", subject, f"{subject}_gdf.npz")
     tmp = np.load(fn)
-    fs = tmp["fs"]
+    fs = int(tmp["fs"])
     X_tst = tmp["X_test"][:n_trials, :, :int(trial_time * fs)]
     y_tst = tmp["y_test"][:n_trials]
     U = tmp["U"]

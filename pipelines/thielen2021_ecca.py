@@ -52,7 +52,7 @@ tmp = np.load(fn)
 X = tmp["X"]
 y = tmp["y"]
 V = tmp["V"]
-fs = tmp["fs"]
+fs = int(tmp["fs"])
 fr = 60
 print("X", X.shape, "(trials x channels x samples)")  # EEG
 print("y", y.shape, "(trials)")  # labels
@@ -318,7 +318,7 @@ for i_subject in range(n_subjects):
     # Load data
     fn = os.path.join(path, "derivatives", "offline", subject, f"{subject}_gdf.npz")
     tmp = np.load(fn)
-    fs = tmp["fs"]
+    fs = int(tmp["fs"])
     X = tmp["X"][:n_trials, :, :int(trialtime * fs)]
     y = tmp["y"][:n_trials]
     V = tmp["V"]

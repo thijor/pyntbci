@@ -79,7 +79,7 @@ for i_subject in range(n_subjects):
     # Load data
     fn = os.path.join(path, "derivatives", "offline", subject, f"{subject}_gdf.npz")
     tmp = np.load(fn)
-    fs = tmp["fs"]
+    fs = int(tmp["fs"])
     X = tmp["X"][:n_trials, :, :int(trialtime * fs)]
     y = tmp["y"][:n_trials]
     V = tmp["V"]
