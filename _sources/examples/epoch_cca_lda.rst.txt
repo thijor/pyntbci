@@ -102,7 +102,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     X = tmp["X"]
     y = tmp["y"]
     V = tmp["V"]
-    fs = tmp["fs"]
+    fs = int(tmp["fs"])
     fr = 60
     print("X", X.shape, "(trials x channels x samples)")  # EEG
     print("y", y.shape, "(trials)")  # labels
@@ -613,7 +613,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 8.629 seconds)
+   **Total running time of the script:** (0 minutes 9.055 seconds)
 
 
 .. _sphx_glr_download_examples_epoch_cca_lda.py:

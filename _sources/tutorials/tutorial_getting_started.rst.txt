@@ -87,7 +87,7 @@ trial, however, the stimuli were repeated 2 times (2 stimulus cycles).
     X = tmp["X"]
     y = tmp["y"]
     V = tmp["V"]
-    fs = tmp["fs"]
+    fs = int(tmp["fs"])
     fr = 60
     print("X", X.shape, "(trials x channels x samples)")  # EEG
     print("y", y.shape, "(trials)")  # labels
@@ -508,7 +508,7 @@ so-called learning curve, which shows the performance as a function of the amoun
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 29.661 seconds)
+   **Total running time of the script:** (0 minutes 45.827 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_getting_started.py:

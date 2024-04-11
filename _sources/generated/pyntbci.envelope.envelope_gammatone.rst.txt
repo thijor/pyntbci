@@ -1,0 +1,12 @@
+﻿pyntbci.envelope.envelope_gammatone
+===================================
+
+.. currentmodule:: pyntbci.envelope
+
+.. autofunction:: envelope_gammatone
+
+.. include:: pyntbci.envelope.envelope_gammatone.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

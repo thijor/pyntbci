@@ -65,6 +65,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
@@ -184,7 +185,7 @@ filterbank.</p>
     <span class="c1"># Load data</span>
     <span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;thielen2021_</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">.npz&quot;</span><span class="p">)</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-    <span class="n">fs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">]</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">])</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">][:</span><span class="n">n_trials</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">trialtime</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][:</span><span class="n">n_trials</span><span class="p">]</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">]</span>
@@ -266,7 +267,7 @@ rCCA 12.0-60.0: 0.92 +/- 0.04
 rCCA 30.0-60.0: 0.39 +/- 0.04
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 0.402 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 9.213 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-fbrcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/0d6ec0989ccfcbad1497538b456ab21e/fbrcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fbrcca.ipynb</span></code></a></p>

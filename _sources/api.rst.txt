@@ -2,6 +2,7 @@ API Reference
 =============
 
 .. include:: classifiers.rst
+.. include:: envelope.rst
 .. include:: gating.rst
 .. include:: plotting.rst
 .. include:: stimulus.rst

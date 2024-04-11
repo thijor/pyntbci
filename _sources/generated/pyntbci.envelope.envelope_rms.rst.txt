@@ -1,0 +1,12 @@
+﻿pyntbci.envelope.envelope_rms
+=============================
+
+.. currentmodule:: pyntbci.envelope
+
+.. autofunction:: envelope_rms
+
+.. include:: pyntbci.envelope.envelope_rms.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -65,6 +65,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
@@ -156,7 +157,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 <span class="n">X</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">]</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
 <span class="n">V</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">]</span>
-<span class="n">fs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">]</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">])</span>
 <span class="n">fr</span> <span class="o">=</span> <span class="mi">60</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials x channels x samples)&quot;</span><span class="p">)</span>  <span class="c1"># EEG</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials)&quot;</span><span class="p">)</span>  <span class="c1"># labels</span>
@@ -726,7 +727,7 @@ Additionally, the evaluation is performed on a single participant only.</p>
 <img src="../_images/sphx_glr_dynamic_stopping_011.png" srcset="../_images/sphx_glr_dynamic_stopping_011.png" alt="Comparison of dynamic stopping methods averaged across folds" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Comparison of dynamic stopping methods averaged across folds&#39;)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 18.102 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 19.353 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-dynamic-stopping-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/e6d03f3e62b6aaa70fbb647e28a129b9/dynamic_stopping.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">dynamic_stopping.ipynb</span></code></a></p>

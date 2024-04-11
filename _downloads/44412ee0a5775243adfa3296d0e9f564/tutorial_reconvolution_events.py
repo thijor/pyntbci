@@ -58,7 +58,7 @@ plt.tight_layout()
 # `fe` (falling edge), and `refe` (rising and falling edge, contrast). Here, we show what these decompositions look like
 # in more detail.
 
-events = ["id", "dur", "on", "off", "onoff", "re", "fe", "refe"]  # the event definitions
+events = pyntbci.utilities.EVENTS  # the event definitions
 i_class = 0  # the class to visualize
 
 for event in events:

@@ -76,7 +76,7 @@ for i_subject in range(n_subjects):
     # Load data
     fn = os.path.join(path, "data", f"thielen2021_{subject}.npz")
     tmp = np.load(fn)
-    fs = tmp["fs"]
+    fs = int(tmp["fs"])
     X = tmp["X"][:n_trials, :, :int(trialtime * fs)]
     y = tmp["y"][:n_trials]
     V = tmp["V"]

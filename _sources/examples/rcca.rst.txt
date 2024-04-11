@@ -97,7 +97,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     X = tmp["X"]
     y = tmp["y"]
     V = tmp["V"]
-    fs = tmp["fs"]
+    fs = int(tmp["fs"])
     fr = 60
     print("X", X.shape, "(trials x channels x samples)")  # EEG
     print("y", y.shape, "(trials)")  # labels
@@ -634,7 +634,7 @@ Analyse multiple participants
         # Load data
         fn = os.path.join(path, "data", f"thielen2021_{subject}.npz")
         tmp = np.load(fn)
-        fs = tmp["fs"]
+        fs = int(tmp["fs"])
         X = tmp["X"][:n_trials, :, :int(trialtime * fs)]
         y = tmp["y"][:n_trials]
         V = tmp["V"]
@@ -702,7 +702,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 0.057 seconds)
+   **Total running time of the script:** (2 minutes 33.517 seconds)
 
 
 .. _sphx_glr_download_examples_rcca.py:

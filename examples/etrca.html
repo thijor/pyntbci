@@ -65,6 +65,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gating">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
@@ -156,7 +157,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 <span class="n">X</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">]</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
 <span class="n">V</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">]</span>
-<span class="n">fs</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">]</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">])</span>
 <span class="n">fr</span> <span class="o">=</span> <span class="mi">60</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials x channels x samples)&quot;</span><span class="p">)</span>  <span class="c1"># EEG</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials)&quot;</span><span class="p">)</span>  <span class="c1"># labels</span>
@@ -502,7 +503,7 @@ need during testing to classify single-trials.</p>
 <img src="../_images/sphx_glr_etrca_008.png" srcset="../_images/sphx_glr_etrca_008.png" alt="Decoding performance full dataset" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Average accuracy: 0.73
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 16.264 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 13.913 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-etrca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/7bab6d21a7a703cf2852f1876e32612e/etrca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">etrca.ipynb</span></code></a></p>

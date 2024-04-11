@@ -125,7 +125,7 @@ filterbank.
         # Load data
         fn = os.path.join(path, "data", f"thielen2021_{subject}.npz")
         tmp = np.load(fn)
-        fs = tmp["fs"]
+        fs = int(tmp["fs"])
         X = tmp["X"][:n_trials, :, :int(trialtime * fs)]
         y = tmp["y"][:n_trials]
         V = tmp["V"]
@@ -223,7 +223,7 @@ filterbank.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 0.402 seconds)
+   **Total running time of the script:** (1 minutes 9.213 seconds)
 
 
 .. _sphx_glr_download_examples_fbrcca.py:
