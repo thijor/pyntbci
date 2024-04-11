@@ -4,6 +4,7 @@
 
 ### Added
 - `set_stimulus_amplitudes` for `rCCA` in `classifiers`
+- `envelope` module containing `envelope_gammatone` and `envelope_rms` functions
 
 ### Changed
 

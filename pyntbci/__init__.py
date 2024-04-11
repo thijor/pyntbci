@@ -35,4 +35,4 @@ __credits__ = "Radboud University; Donders Institute for Brain, Cognition and Be
 __license__ = "BSD"
 __version__ = "1.0.1"
 
-from pyntbci import classifiers, gating, plotting, stimulus, stopping, transformers, utilities
+from pyntbci import classifiers, envelope, gating, plotting, stimulus, stopping, transformers, utilities
