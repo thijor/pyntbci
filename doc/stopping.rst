@@ -11,4 +11,5 @@ Stopping
 
     BayesStopping
     BetaStopping
+    CriterionStopping
     MarginStopping

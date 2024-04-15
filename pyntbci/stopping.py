@@ -55,11 +55,9 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples). Note, must be full cycles, such that
-            n_samples % (cycle_size * fs) == 0.
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
         y: np.ndarray
-            The vector of ground-truth labels of the trials in X of shape (n_trials). These denote the index at which to
-            find the associated codes in latency!
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
 
         Returns
         -------
@@ -243,11 +241,9 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples). Note, must be full cycles, such that
-            n_samples % (cycle_size * fs) == 0.
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
         y: np.ndarray
-            The vector of ground-truth labels of the trials in X of shape (n_trials). These denote the index at which
-            to find the associated codes in latency!
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
 
         Returns
         -------
@@ -350,11 +346,9 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples). Note, must be full cycles, such that
-            n_samples % (cycle_size * fs) == 0.
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
         y: np.ndarray
-            The vector of ground-truth labels of the trials in X of shape (n_trials). These denote the index at
-            which to find the associated codes in latency!
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
 
         Returns
         -------
@@ -450,20 +444,54 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
 
 class CriterionStopping(BaseEstimator, ClassifierMixin):
+    """Criterion static stopping. Fits an optimal stopping time given some criterion to optimize.
 
-    def __init__(self, estimator, segment_time, fs, criterion="accuracy", optimization="max", target=None, n_folds=4,
+    Parameters
+    ----------
+    estimator: BaseEstimator
+        The classifier object that performs the classification.
+    segment_time: float
+        The size of a segment of data at which classification is performed ins seconds.
+    fs: int
+        The sampling frequency of the EEG data in Hz.
+    criterion: str (default: "accuracy")
+        The criterion to use.
+    optimization: str (default: "max)
+        The optimization to use.
+    n_folds: int (n_folds: 4)
+        The number of folds to evaluate the optimization.
+    target: float (default: None)
+        The targeted value for the criterion to optimize for.
+    smooth_width: int (default: None)
+        The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.
+    """
+
+    def __init__(self, estimator, segment_time, fs, criterion="accuracy", optimization="max", n_folds=4, target=None,
                  smooth_width=None):
         self.estimator = estimator
         self.segment_time = segment_time
         self.fs = fs
-        self.segment_time = segment_time
         self.criterion = criterion
         self.optimization = optimization
-        self.target = target
         self.n_folds = n_folds
+        self.target = target
         self.smooth_width = smooth_width
 
     def fit(self, X, y):
+        """The training procedure to fit the static procedure on supervised EEG data.
+
+        Parameters
+        ----------
+        X: np.ndarray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+        y: np.ndarray
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
+
+        Returns
+        -------
+        self: CriterionStopping
+            An instance of the stopping procedure.
+        """
         X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
 
@@ -504,7 +532,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
         # Smoothen
         if self.smooth_width is not None:
-            width = int((self.smooth_width - 1) / 2)
+            width = int((self.smooth_width * self.fs - 1) / 2)
             for i in range(scores.size):
                 start = np.max([0, i - width])
                 stop = np.min([i + width, scores.size])
@@ -523,6 +551,19 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
+        """The testing procedure to apply the estimator to novel EEG data using criterion static stopping.
+
+        Parameters
+        ----------
+        X: np.ndarray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+
+        Returns
+        -------
+        y: np.ndarray
+            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
+            trial cannot yet be stopped.
+        """
         check_is_fitted(self, ["stop_time_"])
         X = check_array(X, ensure_2d=False, allow_nd=True)
 
