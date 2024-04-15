@@ -203,7 +203,7 @@ for i_fold in range(n_folds):
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
     max_itr = pyntbci.stopping.CriterionStopping(rcca, segment_time, fs, criterion="itr", optimization="max",
-                                                 smooth_width=3)
+                                                 smooth_width=0.3)
     max_itr.fit(X_trn, y_trn)
 
     # Loop segments

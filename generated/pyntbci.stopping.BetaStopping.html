@@ -25,7 +25,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.stopping.MarginStopping" href="pyntbci.stopping.MarginStopping.html" />
+    <link rel="next" title="pyntbci.stopping.CriterionStopping" href="pyntbci.stopping.CriterionStopping.html" />
     <link rel="prev" title="pyntbci.stopping.BayesStopping" href="pyntbci.stopping.BayesStopping.html" /> 
 </head>
 
@@ -126,10 +126,8 @@ not require training, it only trains the estimator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>np.ndarray</em>) – The matrix of EEG data of shape (n_trials, n_channels, n_samples). Note, must be full cycles, such that
-n_samples % (cycle_size * fs) == 0.</p></li>
-<li><p><strong>y</strong> (<em>np.ndarray</em>) – The vector of ground-truth labels of the trials in X of shape (n_trials). These denote the index at which
-to find the associated codes in latency!</p></li>
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – The matrix of EEG data of shape (n_trials, n_channels, n_samples).</p></li>
+<li><p><strong>y</strong> (<em>np.ndarray</em>) – The vector of ground-truth labels of the trials in X of shape (n_trials).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -208,7 +206,7 @@ sub-estimator of a meta-estimator, e.g. used inside a
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="pyntbci.stopping.BayesStopping.html" class="btn btn-neutral float-left" title="pyntbci.stopping.BayesStopping" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.stopping.MarginStopping.html" class="btn btn-neutral float-right" title="pyntbci.stopping.MarginStopping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.stopping.CriterionStopping.html" class="btn btn-neutral float-right" title="pyntbci.stopping.CriterionStopping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

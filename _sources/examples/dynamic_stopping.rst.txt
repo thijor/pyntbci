@@ -327,7 +327,7 @@ Maximum ITR static stopping
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         max_itr = pyntbci.stopping.CriterionStopping(rcca, segment_time, fs, criterion="itr", optimization="max",
-                                                     smooth_width=3)
+                                                     smooth_width=0.3)
         max_itr.fit(X_trn, y_trn)
 
         # Loop segments
@@ -377,7 +377,7 @@ Maximum ITR static stopping
 
 
 .. image-sg:: /examples/images/sphx_glr_dynamic_stopping_005.png
-   :alt: Maximum ITR early stopping: avg acc 0.89 | avg dur 0.84 | avg itr 109.8
+   :alt: Maximum ITR early stopping: avg acc 0.17 | avg dur 0.24 | avg itr 14.5
    :srcset: /examples/images/sphx_glr_dynamic_stopping_005.png
    :class: sphx-glr-single-img
 
@@ -387,9 +387,9 @@ Maximum ITR static stopping
  .. code-block:: none
 
     Maximum ITR:
-            Accuracy: avg=0.89 with std=0.05
-            Duration: avg=0.84 with std=0.05
-            ITR: avg=109.8 with std=8.93
+            Accuracy: avg=0.17 with std=0.22
+            Duration: avg=0.24 with std=0.08
+            ITR: avg=14.5 with std=28.17
 
 
 
@@ -1100,7 +1100,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 46.684 seconds)
+   **Total running time of the script:** (1 minutes 5.865 seconds)
 
 
 .. _sphx_glr_download_examples_dynamic_stopping.py:

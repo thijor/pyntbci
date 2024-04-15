@@ -329,7 +329,7 @@ Channels: Fpz, T7, O1, POz, Oz, Iz, O2, T8
     <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
     <span class="n">max_itr</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">CriterionStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;itr&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
-                                                 <span class="n">smooth_width</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+                                                 <span class="n">smooth_width</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
     <span class="n">max_itr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
     <span class="c1"># Loop segments</span>
@@ -376,10 +376,10 @@ Channels: Fpz, T7, O1, POz, Oz, Iz, O2, T8
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_max_itr</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_max_itr</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_dynamic_stopping_005.png" srcset="../_images/sphx_glr_dynamic_stopping_005.png" alt="Maximum ITR early stopping: avg acc 0.89 | avg dur 0.84 | avg itr 109.8" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Maximum ITR:
-        Accuracy: avg=0.89 with std=0.05
-        Duration: avg=0.84 with std=0.05
-        ITR: avg=109.8 with std=8.93
+<img src="../_images/sphx_glr_dynamic_stopping_005.png" srcset="../_images/sphx_glr_dynamic_stopping_005.png" alt="Maximum ITR early stopping: avg acc 0.17 | avg dur 0.24 | avg itr 14.5" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Maximum ITR:
+        Accuracy: avg=0.17 with std=0.22
+        Duration: avg=0.24 with std=0.08
+        ITR: avg=14.5 with std=28.17
 </pre></div>
 </div>
 <p>Targeted accuracy static stopping</p>
@@ -939,7 +939,7 @@ Additionally, the evaluation is performed on a single participant only.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_dynamic_stopping_014.png" srcset="../_images/sphx_glr_dynamic_stopping_014.png" alt="Comparison of early stopping methods averaged across folds" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 46.684 seconds)</p>
+<img src="../_images/sphx_glr_dynamic_stopping_014.png" srcset="../_images/sphx_glr_dynamic_stopping_014.png" alt="Comparison of early stopping methods averaged across folds" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 5.865 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-dynamic-stopping-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/e6d03f3e62b6aaa70fbb647e28a129b9/dynamic_stopping.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">dynamic_stopping.ipynb</span></code></a></p>

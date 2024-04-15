@@ -149,11 +149,9 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: np.ndarray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). Note, must be full cycles, such that</span>
-<span class="sd">            n_samples % (cycle_size * fs) == 0.</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
 <span class="sd">        y: np.ndarray</span>
-<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials). These denote the index at which to</span>
-<span class="sd">            find the associated codes in latency!</span>
+<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -346,11 +344,9 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: np.ndarray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). Note, must be full cycles, such that</span>
-<span class="sd">            n_samples % (cycle_size * fs) == 0.</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
 <span class="sd">        y: np.ndarray</span>
-<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials). These denote the index at which</span>
-<span class="sd">            to find the associated codes in latency!</span>
+<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -462,11 +458,9 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: np.ndarray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). Note, must be full cycles, such that</span>
-<span class="sd">            n_samples % (cycle_size * fs) == 0.</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
 <span class="sd">        y: np.ndarray</span>
-<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials). These denote the index at</span>
-<span class="sd">            which to find the associated codes in latency!</span>
+<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -566,21 +560,59 @@
 
 
 
+<div class="viewcode-block" id="CriterionStopping">
+<a class="viewcode-back" href="../../generated/pyntbci.stopping.CriterionStopping.html#pyntbci.stopping.CriterionStopping">[docs]</a>
 <span class="k">class</span> <span class="nc">CriterionStopping</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Criterion static stopping. Fits an optimal stopping time given some criterion to optimize.</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator: BaseEstimator</span>
+<span class="sd">        The classifier object that performs the classification.</span>
+<span class="sd">    segment_time: float</span>
+<span class="sd">        The size of a segment of data at which classification is performed ins seconds.</span>
+<span class="sd">    fs: int</span>
+<span class="sd">        The sampling frequency of the EEG data in Hz.</span>
+<span class="sd">    criterion: str (default: &quot;accuracy&quot;)</span>
+<span class="sd">        The criterion to use.</span>
+<span class="sd">    optimization: str (default: &quot;max)</span>
+<span class="sd">        The optimization to use.</span>
+<span class="sd">    n_folds: int (n_folds: 4)</span>
+<span class="sd">        The number of folds to evaluate the optimization.</span>
+<span class="sd">    target: float (default: None)</span>
+<span class="sd">        The targeted value for the criterion to optimize for.</span>
+<span class="sd">    smooth_width: int (default: None)</span>
+<span class="sd">        The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">smooth_width</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span> <span class="o">=</span> <span class="n">optimization</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span> <span class="o">=</span> <span class="n">n_folds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">smooth_width</span> <span class="o">=</span> <span class="n">smooth_width</span>
 
+<div class="viewcode-block" id="CriterionStopping.fit">
+<a class="viewcode-back" href="../../generated/pyntbci.stopping.CriterionStopping.html#pyntbci.stopping.CriterionStopping.fit">[docs]</a>
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The training procedure to fit the static procedure on supervised EEG data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: np.ndarray</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">        y: np.ndarray</span>
+<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self: CriterionStopping</span>
+<span class="sd">            An instance of the stopping procedure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">y_numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint</span><span class="p">)</span>
 
@@ -621,7 +653,7 @@
 
         <span class="c1"># Smoothen</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth_width</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">smooth_width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">smooth_width</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">width</span><span class="p">])</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">i</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="n">scores</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
@@ -637,16 +669,34 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown optimization:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
+
+<div class="viewcode-block" id="CriterionStopping.predict">
+<a class="viewcode-back" href="../../generated/pyntbci.stopping.CriterionStopping.html#pyntbci.stopping.CriterionStopping.predict">[docs]</a>
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The testing procedure to apply the estimator to novel EEG data using criterion static stopping.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: np.ndarray</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y: np.ndarray</span>
+<span class="sd">            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the</span>
+<span class="sd">            trial cannot yet be stopped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;stop_time_&quot;</span><span class="p">])</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+</div>
+
 </pre></div>
 
            </div>
