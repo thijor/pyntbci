@@ -109,7 +109,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Dynamic stopping</div>
+      <div class="sphx-glr-thumbnail-title">Early stopping</div>
     </div>
 
 
