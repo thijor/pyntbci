@@ -1,73 +1,85 @@
 # Changelog
 
+## Version 1.0.2
+
+### Added
+
+- Added `envelope` module containing `envelope_gammatone` and `envelope_rms` functions
+
+### Changed
+
+
+### Fixed
+
+- Fixed variable `fs` of type np.ndarray instead of int in examples, tutorials, and pipelines 
+
 ## Version 1.0.1 (26-03-2024)
 
 ### Added
-- `set_stimulus_amplitudes` for `rCCA` in `classifiers`
-- `envelope` module containing `envelope_gammatone` and `envelope_rms` functions
+
+- Added `set_stimulus_amplitudes` for `rCCA` in `classifiers`
 
 ### Changed
 
 ### Fixed
-- Dependency between `stimulus` and `amplitudes` in `rCCA` of `classifiers`
+
+- Fixed dependency between `stimulus` and `amplitudes` in `rCCA` of `classifiers`
 
 ## Version 1.0.0 (22-03-2024)
 
 ### Added
 
-- Variable `decoding_length` of `rCCA` in `classifier` controlling the length of a learned spectral filter
-- Variable `decoding_stride` of `rCCA` in `classifier` controlling the stride of a learned spectral filter
-- Function `decoding_matrix` in `utilities` to phase-shit the EEG data maintaining channel-prime ordering
-- Variable `encoding_stride` of `rCCA` in `classifier` controlling the stride of a learned temporal response
-- Module `gating` with gating functions, for instance for multi-component or filterbank analysis
-- Variable `gating` of `rCCA` in `classifier` to deal with multiple CCA components
-- Variable `gating` of `Ensemble` in `classifier`, for example to deal with a filterbank
+- Added variable `decoding_length` of `rCCA` in `classifier` controlling the length of a learned spectral filter
+- Added variable `decoding_stride` of `rCCA` in `classifier` controlling the stride of a learned spectral filter
+- Added function `decoding_matrix` in `utilities` to phase-shit the EEG data maintaining channel-prime ordering
+- Added variable `encoding_stride` of `rCCA` in `classifier` controlling the stride of a learned temporal response
+- Added module `gating` with gating functions, for instance for multi-component or filterbank analysis
+- Added variable `gating` of `rCCA` in `classifier` to deal with multiple CCA components
+- Added variable `gating` of `Ensemble` in `classifier`, for example to deal with a filterbank
 
 ### Changed
 
-- Variable `codes` of `rCCA` in `classifiers` is renamed to `stimulus`
-- Variable `transient_size` of `rCCA` in `classifiers` is renamed to `encoding_length`
-- Class `FilterBank` in `classifiers`, is renamed to `Ensemble`
-- Function `structure_matrix` in `utilities` is renamed to `encoding_matrix`
+- Changed variable `codes` of `rCCA` in `classifiers` to `stimulus`
+- Changed variable `transient_size` of `rCCA` in `classifiers` to `encoding_length`
+- Changed class `FilterBank` in `classifiers` to `Ensemble`
+- Changed function `structure_matrix` in `utilities` to `encoding_matrix`
 
 ### Fixed
 
-- Several documentation issues
+- Fixed several documentation issues
 
 ## Version 0.2.5 (29-02-2024)
 
 ### Added
 
-- Function `eventplot` in `plotting` to plot an event matrix
-- Variable `running` of `covariance` in `utilities` to do incremental running covariance updates
-- Variable `running` of `CCA` in `transformers` to use a running covariance for CCA 
-- Variable `cov_estimator_x` and `cov_estimator_x` of `rCCA` in `classifiers` to change the covariance estimator 
-- Event definitions "on", "off" and "onoff" for `event_matrix` in `utilities`
+- Added function `eventplot` in `plotting` to visualize an event matrix
+- Added variable `running` of `covariance` in `utilities` to do incremental running covariance updates
+- Added variable `running` of `CCA` in `transformers` to use a running covariance for CCA 
+- Added variable `cov_estimator_x` and `cov_estimator_m` of `rCCA` in `classifiers` to change the covariance estimator 
+- Added event definitions "on", "off" and "onoff" for `event_matrix` in `utilities`
 
 ### Changed
 
-- CCA separate computation for Cxx, Cyy and Cxy
-- CCA separate estimators for Cxx and Cyy
+- Changed the CCA optimization to contain separate computations for Cxx, Cyy and Cxy
+- Changed the CCA to allow separate BaseEstimators for Cxx and Cyy
 
 ### Fixed
 
-- ITR calculation zero-division
+- Fixed zero-division in `itr` in `utilities` 
 
 ## Version 0.2.4
 
 ### Added
 
-- CCA cumulative/incremental average and covariance
-- Amplitudes (e.g. envelopes) in structure matrix
-- Maximum stopping time (`max_time`) for stopping methods
-- brainamp64.loc
-- A plt.show() in all examples
+- Added CCA cumulative/incremental average and covariance
+- Added `amplitudes` (e.g. envelopes) in `structure_matrix` of `utilities`
+- Added `max_time` to classes in `stopping` to allow a maximum stopping time for stopping methods
+- Added brainamp64.loc to capfiles
+- Added plt.show() in all examples
 
 ### Changed
 
 ### Fixed
-
-- ITR calculation zero-division
 
 ## Version 0.2.3
 
@@ -75,40 +87,41 @@
 
 ### Changed
 
-- Improved documentation
-- Improved example pipelines
-- Improved tutorial
+- Changed example pipelines to include more examples and explanation
+- Changed tutorial pipelines to include more examples and explanation
 
 ### Fixed
+
+- Fixed several documentation issues
 
 ## Version 0.2.2
 
 ### Added
 
-- TRCA transformer
-- eTRCA classifier
-- Ensemble (`ensemble`) option (i.e., a spatial filter per class) for classifiers
+- Added class `TRCA` to `transformers`
+- Added class `eTRCA` to `classifiers`
+- Added parameter `ensemble` to classes in `classifiers` to allow a separate spatial filter per class
 
 ### Changed
 
-- Package name change of PyNT to PyntBCI
-- Filterbank order optimized given parameters
+- Changed package name from PyNT to PyntBCI to avoid clash with existing pynt library
+- Changed filter order in `filterbank` of `utilities` to be optimized given input parameters
 
 ### Fixed
 
-- Issue causing novel events in M when "cutting cycles"
-- Correlation does not change mutable input variables
+- Fixed issue in `rCCA` of `classifiers` causing novel events in structure matrix when "cutting cycles"
+- Fixed `correlation` to not contain mutable input variables
 
 ## Version 0.2.1
 
 ### Added
 
-- Tests
-- Tutorial
+- Added `tests`
+- Added tutorials
 
 ### Changed
 
-- Non-binary events for rCCA
+- Changed `rCCA` to work with non-binary events instead of binary only
 
 ### Fixed
 
@@ -116,28 +129,28 @@
 
 ### Added
 
-- Dynamic stopping: margin, beta, Bayes
-- Inner score metric
+- Added dynamic stopping: classes `MarginStopping`, `BetaStopping`, and `BayesStopping` in module `stopping`
+- Added value inner for variable `score_metric` in 'classifiers'
 
 ### Changed
 
-- All data shapes: trials, channels, samples
-- All codes shapes: classes, samples
+- Changed all data shapes from (channels, samples, trials) to (trials, channels, samples)
+- Changed all codes shapes from (samples, classes) to (classes, samples)
 - Changed all decision functions to similarity, not distance (e.g., Euclidean), to always maximize
 
 ### Fixed
 
-- Zero-mean templates in eCCA and rCCA
+- Fixed zero-mean templates in `eCCA` and `rCCA` of `classifiers`
 
 ## Version 0.1.0
 
 ### Added
 
-- Filterbank classifier
+- Added `Filterbank` to `classifiers`
 
 ### Changed
 
-- Classifiers all have predict() and decision_function()
+- Changed classifiers all have `predict` and `decision_function` methods in `classifiers`
 
 ### Fixed
 
@@ -147,7 +160,7 @@
 
 ### Changed
 
-- CCA method changed from sklearn to covariance method
+- Changed CCA method from sklearn to custom covariance method
 
 ### Fixed
 
@@ -155,8 +168,8 @@
 
 ### Added
 
-- eCCA template metrics: average, median, OCSVM
-- eCCA spatial filter options: all channels or subset
+- Added `eCCA` template metrics: average, median, OCSVM
+- Added `eCCA` spatial filter options: all channels or subset
 
 ### Changed
 
@@ -166,9 +179,9 @@
 
 ### Added
 
-- CCA transformer
-- rCCA classifier
-- eCCA classifier
+- Added `CCA` in `transformers`
+- Added `rCCA` in `classifiers`
+- Added `eCCA` in `classifier`
 
 ### Changed
 
