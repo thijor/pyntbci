@@ -5,6 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
 import pyntbci.classifiers
+from pyntbci.utilities import itr
 
 
 class BayesStopping(BaseEstimator, ClassifierMixin):
@@ -446,3 +447,86 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             yh = self.estimator.predict(X)
 
         return yh
+
+
+class CriterionStopping(BaseEstimator, ClassifierMixin):
+
+    def __init__(self, estimator, segment_time, fs, criterion="accuracy", optimization="max", target=None, n_folds=4,
+                 smooth_width=None):
+        self.estimator = estimator
+        self.segment_time = segment_time
+        self.fs = fs
+        self.segment_time = segment_time
+        self.criterion = criterion
+        self.optimization = optimization
+        self.target = target
+        self.n_folds = n_folds
+        self.smooth_width = smooth_width
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
+        y = y.astype(np.uint)
+
+        n_trials = X.shape[0]
+        n_samples = X.shape[2]
+        n_segments = int(n_samples / int(self.segment_time * self.fs))
+
+        folds = np.arange(self.n_folds).repeat(np.ceil(n_trials / self.n_folds))[:n_trials]
+        scores = np.zeros((self.n_folds, n_segments))
+
+        for i_fold in range(self.n_folds):
+
+            X_trn = X[folds != i_fold, :, :]
+            X_tst = X[folds == i_fold, :, :]
+            y_trn = y[folds != i_fold]
+            y_tst = y[folds == i_fold]
+
+            # Fit estimator
+            self.estimator.fit(X_trn, y_trn)
+
+            for i_segment in range(n_segments):
+
+                # Predict labels for this segment
+                idx = (1 + i_segment) * int(self.segment_time * self.fs)
+                yh = self.estimator.predict(X_tst[:, :, :idx])
+
+                # Compute criterion
+                if self.criterion == "accuracy":
+                    scores[i_fold, i_segment] = np.mean(yh == y_tst)
+                elif self.criterion == "itr":
+                    # Note, the number of classes does not affect the optimum
+                    scores[i_fold, i_segment] = itr(10, np.mean(yh == y_tst), (1 + i_segment) * self.segment_time)
+                else:
+                    raise Exception("Unknown criterion:", self.criterion)
+
+        # Average folds
+        scores = scores.mean(axis=0)
+
+        # Smoothen
+        if self.smooth_width is not None:
+            width = int((self.smooth_width - 1) / 2)
+            for i in range(scores.size):
+                start = np.max([0, i - width])
+                stop = np.min([i + width, scores.size])
+                scores[i] = scores[start:stop].mean()
+
+        # Optimize the criterion
+        if self.optimization == "max":
+            self.stop_time_ = np.argmax(scores) * self.segment_time
+        elif self.optimization == "target":
+            if self.target is None:
+                raise Exception("For optimization target one should set the target")
+            self.stop_time_ = np.where(scores >= self.target)[0][0] * self.segment_time
+        else:
+            raise Exception("Unknown optimization:", self.optimization)
+
+        return self
+
+    def predict(self, X):
+        check_is_fitted(self, ["stop_time_"])
+        X = check_array(X, ensure_2d=False, allow_nd=True)
+
+        if X.shape[2] >= self.stop_time_ * self.fs:
+            return self.estimator.predict(X)
+        else:
+            return -1 * np.ones(X.shape[0])

@@ -5,6 +5,7 @@
 ### Added
 
 - Added `envelope` module containing `envelope_gammatone` and `envelope_rms` functions
+- Added `CriterionStopping` to `stopping` for some static stopping methods 
 
 ### Changed
 
