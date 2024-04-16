@@ -102,10 +102,10 @@ These examples demonstrate how to use PyntBCI.
 
 .. only:: html
 
-  .. image:: /examples/images/thumb/sphx_glr_dynamic_stopping_thumb.png
+  .. image:: /examples/images/thumb/sphx_glr_early_stopping_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_dynamic_stopping.py`
+  :ref:`sphx_glr_examples_early_stopping.py`
 
 .. raw:: html
 
@@ -126,7 +126,7 @@ These examples demonstrate how to use PyntBCI.
    /examples/epoch_cca_lda
    /examples/etrca
    /examples/rcca
-   /examples/dynamic_stopping
+   /examples/early_stopping
 
 
 .. only:: html
