@@ -299,6 +299,136 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         return yh
 
 
+class CriterionStopping(BaseEstimator, ClassifierMixin):
+    """Criterion static stopping. Fits an optimal stopping time given some criterion to optimize.
+
+    Parameters
+    ----------
+    estimator: BaseEstimator
+        The classifier object that performs the classification.
+    segment_time: float
+        The size of a segment of data at which classification is performed ins seconds.
+    fs: int
+        The sampling frequency of the EEG data in Hz.
+    criterion: str (default: "accuracy")
+        The criterion to use.
+    optimization: str (default: "max)
+        The optimization to use.
+    n_folds: int (n_folds: 4)
+        The number of folds to evaluate the optimization.
+    target: float (default: None)
+        The targeted value for the criterion to optimize for.
+    smooth_width: int (default: None)
+        The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.
+    """
+
+    def __init__(self, estimator, segment_time, fs, criterion="accuracy", optimization="max", n_folds=4, target=None,
+                 smooth_width=None):
+        self.estimator = estimator
+        self.segment_time = segment_time
+        self.fs = fs
+        self.criterion = criterion
+        self.optimization = optimization
+        self.n_folds = n_folds
+        self.target = target
+        self.smooth_width = smooth_width
+
+    def fit(self, X, y):
+        """The training procedure to fit the static procedure on supervised EEG data.
+
+        Parameters
+        ----------
+        X: np.ndarray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+        y: np.ndarray
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
+
+        Returns
+        -------
+        self: CriterionStopping
+            An instance of the stopping procedure.
+        """
+        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
+        y = y.astype(np.uint)
+
+        n_trials = X.shape[0]
+        n_samples = X.shape[2]
+        n_segments = int(n_samples / int(self.segment_time * self.fs))
+
+        folds = np.arange(self.n_folds).repeat(np.ceil(n_trials / self.n_folds))[:n_trials]
+        scores = np.zeros((self.n_folds, n_segments))
+
+        for i_fold in range(self.n_folds):
+
+            X_trn = X[folds != i_fold, :, :]
+            X_tst = X[folds == i_fold, :, :]
+            y_trn = y[folds != i_fold]
+            y_tst = y[folds == i_fold]
+
+            # Fit estimator
+            self.estimator.fit(X_trn, y_trn)
+
+            for i_segment in range(n_segments):
+
+                # Predict labels for this segment
+                idx = (1 + i_segment) * int(self.segment_time * self.fs)
+                yh = self.estimator.predict(X_tst[:, :, :idx])
+
+                # Compute criterion
+                if self.criterion == "accuracy":
+                    scores[i_fold, i_segment] = np.mean(yh == y_tst)
+                elif self.criterion == "itr":
+                    # Note, the number of classes does not affect the optimum
+                    scores[i_fold, i_segment] = itr(10, np.mean(yh == y_tst), (1 + i_segment) * self.segment_time)
+                else:
+                    raise Exception("Unknown criterion:", self.criterion)
+
+        # Average folds
+        scores = scores.mean(axis=0)
+
+        # Smoothen
+        if self.smooth_width is not None:
+            width = int(np.round((self.smooth_width / self.segment_time - 1) / 2))
+            for i in range(scores.size):
+                start = np.max([0, i - width])
+                stop = np.min([i + width, scores.size])
+                scores[i] = scores[start:stop].mean()
+
+        # Optimize the criterion
+        if self.optimization == "max":
+            self.stop_time_ = np.argmax(scores) * self.segment_time
+        elif self.optimization == "target":
+            if self.target is None:
+                raise Exception("For optimization target one should set the target")
+            self.stop_time_ = np.where(scores >= self.target)[0][0] * self.segment_time
+        else:
+            raise Exception("Unknown optimization:", self.optimization)
+
+        return self
+
+    def predict(self, X):
+        """The testing procedure to apply the estimator to novel EEG data using criterion static stopping.
+
+        Parameters
+        ----------
+        X: np.ndarray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+
+        Returns
+        -------
+        y: np.ndarray
+            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
+            trial cannot yet be stopped.
+        """
+        check_is_fitted(self, ["stop_time_"])
+        X = check_array(X, ensure_2d=False, allow_nd=True)
+
+        if X.shape[2] >= self.stop_time_ * self.fs:
+            return self.estimator.predict(X)
+        else:
+            return -1 * np.ones(X.shape[0])
+
+
 class MarginStopping(BaseEstimator, ClassifierMixin):
     """Margin dynamic stopping. Learns threshold margins (difference between best and second best score) to stop at
     such that a targeted accuracy is reached [3]_.
@@ -441,133 +571,3 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             yh = self.estimator.predict(X)
 
         return yh
-
-
-class CriterionStopping(BaseEstimator, ClassifierMixin):
-    """Criterion static stopping. Fits an optimal stopping time given some criterion to optimize.
-
-    Parameters
-    ----------
-    estimator: BaseEstimator
-        The classifier object that performs the classification.
-    segment_time: float
-        The size of a segment of data at which classification is performed ins seconds.
-    fs: int
-        The sampling frequency of the EEG data in Hz.
-    criterion: str (default: "accuracy")
-        The criterion to use.
-    optimization: str (default: "max)
-        The optimization to use.
-    n_folds: int (n_folds: 4)
-        The number of folds to evaluate the optimization.
-    target: float (default: None)
-        The targeted value for the criterion to optimize for.
-    smooth_width: int (default: None)
-        The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.
-    """
-
-    def __init__(self, estimator, segment_time, fs, criterion="accuracy", optimization="max", n_folds=4, target=None,
-                 smooth_width=None):
-        self.estimator = estimator
-        self.segment_time = segment_time
-        self.fs = fs
-        self.criterion = criterion
-        self.optimization = optimization
-        self.n_folds = n_folds
-        self.target = target
-        self.smooth_width = smooth_width
-
-    def fit(self, X, y):
-        """The training procedure to fit the static procedure on supervised EEG data.
-
-        Parameters
-        ----------
-        X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: np.ndarray
-            The vector of ground-truth labels of the trials in X of shape (n_trials).
-
-        Returns
-        -------
-        self: CriterionStopping
-            An instance of the stopping procedure.
-        """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
-        y = y.astype(np.uint)
-
-        n_trials = X.shape[0]
-        n_samples = X.shape[2]
-        n_segments = int(n_samples / int(self.segment_time * self.fs))
-
-        folds = np.arange(self.n_folds).repeat(np.ceil(n_trials / self.n_folds))[:n_trials]
-        scores = np.zeros((self.n_folds, n_segments))
-
-        for i_fold in range(self.n_folds):
-
-            X_trn = X[folds != i_fold, :, :]
-            X_tst = X[folds == i_fold, :, :]
-            y_trn = y[folds != i_fold]
-            y_tst = y[folds == i_fold]
-
-            # Fit estimator
-            self.estimator.fit(X_trn, y_trn)
-
-            for i_segment in range(n_segments):
-
-                # Predict labels for this segment
-                idx = (1 + i_segment) * int(self.segment_time * self.fs)
-                yh = self.estimator.predict(X_tst[:, :, :idx])
-
-                # Compute criterion
-                if self.criterion == "accuracy":
-                    scores[i_fold, i_segment] = np.mean(yh == y_tst)
-                elif self.criterion == "itr":
-                    # Note, the number of classes does not affect the optimum
-                    scores[i_fold, i_segment] = itr(10, np.mean(yh == y_tst), (1 + i_segment) * self.segment_time)
-                else:
-                    raise Exception("Unknown criterion:", self.criterion)
-
-        # Average folds
-        scores = scores.mean(axis=0)
-
-        # Smoothen
-        if self.smooth_width is not None:
-            width = int((self.smooth_width * self.fs - 1) / 2)
-            for i in range(scores.size):
-                start = np.max([0, i - width])
-                stop = np.min([i + width, scores.size])
-                scores[i] = scores[start:stop].mean()
-
-        # Optimize the criterion
-        if self.optimization == "max":
-            self.stop_time_ = np.argmax(scores) * self.segment_time
-        elif self.optimization == "target":
-            if self.target is None:
-                raise Exception("For optimization target one should set the target")
-            self.stop_time_ = np.where(scores >= self.target)[0][0] * self.segment_time
-        else:
-            raise Exception("Unknown optimization:", self.optimization)
-
-        return self
-
-    def predict(self, X):
-        """The testing procedure to apply the estimator to novel EEG data using criterion static stopping.
-
-        Parameters
-        ----------
-        X: np.ndarray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-
-        Returns
-        -------
-        y: np.ndarray
-            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
-            trial cannot yet be stopped.
-        """
-        check_is_fitted(self, ["stop_time_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
-
-        if X.shape[2] >= self.stop_time_ * self.fs:
-            return self.estimator.predict(X)
-        else:
-            return -1 * np.ones(X.shape[0])

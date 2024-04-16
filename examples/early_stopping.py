@@ -71,39 +71,6 @@ with open(capfile, "r") as fid:
         channels.append(line.split("\t")[-1].strip())
 print("Channels:", ", ".join(channels))
 
-# Visualize EEG data
-i_trial = 0  # the trial to visualize
-plt.figure(figsize=(15, 5))
-plt.plot(np.arange(0, n_samples) / fs, 25e-6 * np.arange(n_channels) + X[i_trial, :, :].T)
-plt.xlim([0, 1])  # limit to 1 second EEG data
-plt.yticks(25e-6 * np.arange(n_channels), channels)
-plt.xlabel("time [sec]")
-plt.ylabel("channel")
-plt.title(f"Single-trial multi-channel EEG time-series (trial {i_trial})")
-plt.tight_layout()
-
-# Visualize labels
-plt.figure(figsize=(15, 3))
-hist = np.histogram(y, bins=np.arange(n_classes + 1))[0]
-plt.bar(np.arange(n_classes), hist)
-plt.xticks(np.arange(n_classes))
-plt.xlabel("label")
-plt.ylabel("count")
-plt.title("Single-trial labels")
-plt.tight_layout()
-
-# Visualize stimuli
-Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
-plt.figure(figsize=(15, 8))
-plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
-for i in range(1 + int(V.shape[1] / (fs / fr))):
-    plt.axvline(i / fr, c="k", alpha=0.1)
-plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-plt.xlabel("time [sec]")
-plt.ylabel("code")
-plt.title("Code time-series")
-plt.tight_layout()
-
 # ##
 # Settings
 # --------
@@ -115,11 +82,11 @@ inter_trial_time = 1.0  # ITI in seconds for computing ITR
 n_samples = int(trial_time * fs)
 
 # Setup rCCA
-encoding_length = 0.3
-onset_event = True
+encoding_length = 0.3  # seconds
+onset_event = True  # an event modeling the onset of a trial
 
-# Set stopping
-segment_time = 0.1
+# Set size of increments of trials
+segment_time = 0.1  # seconds
 n_segments = int(trial_time / segment_time)
 
 # Set chronological cross-validation
@@ -128,6 +95,10 @@ folds = np.repeat(np.arange(n_folds), int(n_trials / n_folds))
 
 # %%
 # Maximum accuracy static stopping
+# --------------------------------
+# The "maximum accuracy" method is a static stopping method that learns one stopping time that given some training data
+# reaches the maximum classification accuracy. During testing, all trials will stop as soon as that time is reached,
+# hence static stopping.
 
 # Loop folds
 accuracy_max_acc = np.zeros(n_folds)
@@ -189,6 +160,10 @@ print(f"\tITR: avg={itr_max_acc.mean():.1f} with std={itr_max_acc.std():.2f}")
 
 # %%
 # Maximum ITR static stopping
+# ---------------------------
+# The "maximum ITR" method is a static stopping method that learns one stopping time that given some training data
+# reaches the maximum information-transfer rate (ITR). During testing, all trials will stop as soon as that time is
+# reached, hence static stopping.
 
 # Loop folds
 accuracy_max_itr = np.zeros(n_folds)
@@ -251,6 +226,10 @@ print(f"\tITR: avg={itr_max_itr.mean():.1f} with std={itr_max_itr.std():.2f}")
 
 # %%
 # Targeted accuracy static stopping
+# ---------------------------------
+# The "targeted accuracy" method is a static stopping method that learns one stopping time that given some training data
+# reaches a preset targeted accuracy. During testing, all trials will stop as soon as that time is reached, hence static
+# stopping.
 
 # Target accuracy
 target_p = 0.90 ** (1 / n_segments)
