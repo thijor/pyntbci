@@ -1039,7 +1039,7 @@ Additionally, the evaluation is performed on a single participant only.
     ax[1].legend(bbox_to_anchor=(1.0, 1.0))
     ax[0].set_title("Comparison of early stopping methods averaged across folds")
 
-    plt.show()
+    # plt.show()
 
 
 
@@ -1049,13 +1049,19 @@ Additionally, the evaluation is performed on a single participant only.
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    Text(0.5, 1.0, 'Comparison of early stopping methods averaged across folds')
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 46.356 seconds)
+   **Total running time of the script:** (0 minutes 46.762 seconds)
 
 
 .. _sphx_glr_download_examples_early_stopping.py:
