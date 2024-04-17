@@ -726,4 +726,4 @@ ax[2].set_ylabel("itr [bits/min]")
 ax[1].legend(bbox_to_anchor=(1.0, 1.0))
 ax[0].set_title("Comparison of early stopping methods averaged across folds")
 
-plt.show()
+# plt.show()

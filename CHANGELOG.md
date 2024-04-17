@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.0.2
+## Version 1.1.0 (17-04-2024)
 
 ### Added
 
@@ -9,10 +9,12 @@
 
 ### Changed
 
+- Changed default value of `encoding_length` in `rCCA` of `classifiers` of 0.3 to None, which is equivalent to 1 / fs
 
 ### Fixed
 
 - Fixed variable `fs` of type np.ndarray instead of int in examples, tutorials, and pipelines 
+- Fixed double call to `decoding_matrix` in `fit` of `rCCA` in `classifiers`
 
 ## Version 1.0.1 (26-03-2024)
 

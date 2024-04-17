@@ -597,15 +597,18 @@ class rCCA(BaseEstimator, ClassifierMixin):
     onset_event: bool (default: False)
         Whether or not to add an event for the onset of stimulation. Added as last event.
     decoding_length: float (default: None)
-        The length of the spectral filter for each data channel in seconds. If None, no phase-shifting is performed and
+        The length of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1
+        sample, such that no phase-shifting is performed.
         thus no (spatio-)spectral filter is learned.
     decoding_stride: float (default: None)
-        The stride of the spectral filter for each data channel in seconds. If None, no phase-shifting is performed and
-        thus no (spatio-)spectral filter is learned. If None, 1 sample is used.
-    encoding_length: float | list (default: 0.3)
-        The length of the transient response(s) for each of the events in seconds.
+        The stride of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1
+        sample, such that no stride is used.
+    encoding_length: float | list (default: None)
+        The length of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs,
+        equivalent to 1 sample, such that no phase-shifting is performed.
     encoding_stride: float | list (default: None)
-        The stride of the transient response(s) for each of the events in seconds. If None, 1 sample is used.
+        The stride of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs,
+        equivalent to 1 sample, such that no stride is used.
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean.
     lx: float | list (default: None)
@@ -645,17 +648,29 @@ class rCCA(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, stimulus, fs, event="duration", onset_event=False, decoding_length=None, decoding_stride=None,
-                 encoding_length=0.3, encoding_stride=None, score_metric="correlation", lx=None, ly=None, latency=None,
+                 encoding_length=None, encoding_stride=None, score_metric="correlation", lx=None, ly=None, latency=None,
                  ensemble=False, amplitudes=None, cov_estimator_x=None, cov_estimator_m=None, n_components=1,
                  gating=None):
         self.stimulus = stimulus
         self.fs = fs
         self.event = event
         self.onset_event = onset_event
-        self.decoding_length = decoding_length
-        self.decoding_stride = decoding_stride
-        self.encoding_length = encoding_length
-        self.encoding_stride = encoding_stride
+        if decoding_length is None:
+            self.decoding_length = 1 / fs
+        else:
+            self.decoding_length = decoding_length
+        if decoding_stride is None:
+            self.decoding_stride = 1 / fs
+        else:
+            self.decoding_stride = decoding_stride
+        if encoding_length is None:
+            self.encoding_length = 1 / fs
+        else:
+            self.encoding_length = encoding_length
+        if encoding_stride is None:
+            self.encoding_stride = 1 / fs
+        else:
+            self.encoding_stride = encoding_stride
         self.score_metric = score_metric
         self.lx = lx
         self.ly = ly
@@ -668,13 +683,6 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.gating = gating
 
     def _compute_scores(self, X):
-        # Set decoding window
-        if self.decoding_length is not None:
-            if self.decoding_stride is None:
-                stride = 1  # a single sample
-            else:
-                stride = int(self.decoding_stride * self.fs)
-            X = decoding_matrix(X, int(self.decoding_length * self.fs), stride)
 
         # Set templates to trial length
         T = self._get_T(X.shape[2])
@@ -739,14 +747,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
             n = int(np.ceil(n_samples / self.amplitudes.shape[1]))
             amplitudes = np.tile(self.amplitudes, (1, n))
 
-        if self.encoding_stride is None:
-            stride = 1  # a single sample
-        else:
-            stride = int(self.encoding_stride * self.fs)
-
         # Get encoding matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
-        M = encoding_matrix(E, int(self.encoding_length * self.fs), stride, amplitudes)
+        M = encoding_matrix(E, int(self.encoding_length * self.fs), int(self.encoding_stride * self.fs), amplitudes)
         return M[:, :, :n_samples]
 
     def _get_T(self, n_samples=None):
@@ -789,6 +792,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
         X = check_array(X, ensure_2d=False, allow_nd=True)
+
+        # Set decoding matrix
+        X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
+
+        # Compute scores
         if self.gating is None:
             if self.n_components == 1:
                 return self._compute_scores(X)[:, :, 0]  # selects the single component
@@ -821,13 +829,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
         if self.latency is not None:
             X = correct_latency(X, y, -self.latency, self.fs, axis=2)
 
-        # Set decoding window
-        if self.decoding_length is not None:
-            if self.decoding_stride is None:
-                stride = 1  # a single sample
-            else:
-                stride = int(self.decoding_stride * self.fs)
-            X = decoding_matrix(X, int(self.decoding_length * self.fs), stride)
+        # Set decoding matrix
+        X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
 
         # Get encoding window
         M = self._get_M(X.shape[2])
@@ -891,6 +894,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
         if self.gating is None:
             return np.argmax(self.decision_function(X), axis=1)
         else:
+            # Set decoding matrix
+            X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
             return self.gating.predict(self._compute_scores(X))
 
     def set_stimulus(self, stimulus):
