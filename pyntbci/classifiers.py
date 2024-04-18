@@ -229,7 +229,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
                 R = np.tile(T[i_class, :, :].T, (np.sum(y == i_class), 1))  # Concatenate templates
                 if self.cca_channels is not None:
                     R = R[:, self.cca_channels]
-                self._cca.append(CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator,
+                self._cca.append(CCA(n_components=1, gamma_x=self.lx, gamma_y=self.ly, estimator_x=self.cov_estimator,
                                      estimator_y=self.cov_estimator))
                 self._cca[i_class].fit(S, R)
                 self.w_[:, i_class] = self._cca[i_class].w_x_.flatten()
@@ -238,7 +238,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             R = np.reshape(T[y, :, :].transpose((0, 2, 1)), (-1, n_channels))  # Concatenate templates
             if self.cca_channels is not None:
                 R = R[:, self.cca_channels]
-            self._cca = CCA(n_components=1, lx=self.lx, ly=self.ly, estimator_x=self.cov_estimator,
+            self._cca = CCA(n_components=1, gamma_x=self.lx, gamma_y=self.ly, estimator_x=self.cov_estimator,
                             estimator_y=self.cov_estimator)
             self._cca.fit(S, R)
             self.w_ = self._cca.w_x_
@@ -611,12 +611,6 @@ class rCCA(BaseEstimator, ClassifierMixin):
         equivalent to 1 sample, such that no stride is used.
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean.
-    lx: float | list (default: None)
-        Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
-        None, no regularization is applied.
-    ly: float | list (default: None)
-        Regularization on the covariance matrix for CCA for all or each individual parameter along M (samples). If None,
-        no regularization is applied.
     latency: np.ndarray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
@@ -624,6 +618,12 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
     amplitudes: np.ndarray
         The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs.
+    gamma_x: float | list (default: None)
+        Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
+        None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
+    gamma_m: float | list (default: None)
+        Regularization on the covariance matrix for CCA for all or each individual parameter along M (samples). If None,
+        no regularization is applied. The gamma_m ranges from 0 (no regularization) to 1 (full regularization).
     cov_estimator_x: BaseEstimator (default: None)
         A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data, the decoding
         matrix. If None, a custom empirical covariance is used.
@@ -648,9 +648,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, stimulus, fs, event="duration", onset_event=False, decoding_length=None, decoding_stride=None,
-                 encoding_length=None, encoding_stride=None, score_metric="correlation", lx=None, ly=None, latency=None,
-                 ensemble=False, amplitudes=None, cov_estimator_x=None, cov_estimator_m=None, n_components=1,
-                 gating=None):
+                 encoding_length=None, encoding_stride=None, score_metric="correlation", latency=None, ensemble=False,
+                 amplitudes=None, gamma_x=None, gamma_m=None, cov_estimator_x=None, cov_estimator_m=None,
+                 n_components=1, gating=None):
         self.stimulus = stimulus
         self.fs = fs
         self.event = event
@@ -672,11 +672,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
         else:
             self.encoding_stride = encoding_stride
         self.score_metric = score_metric
-        self.lx = lx
-        self.ly = ly
         self.latency = latency
         self.ensemble = ensemble
         self.amplitudes = amplitudes
+        self.gamma_x = gamma_x
+        self.gamma_m = gamma_m
         self.cov_estimator_x = cov_estimator_x
         self.cov_estimator_m = cov_estimator_m
         self.n_components = n_components
@@ -841,13 +841,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
             self.r_ = np.zeros((M.shape[1], self.n_components, n_classes))
             self._cca = []
             for i_class in range(n_classes):
-                self._cca.append(CCA(n_components=self.n_components, lx=self.lx, ly=self.ly,
+                self._cca.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
                                      estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m))
                 self._cca[i_class].fit(X[y == i_class, :, :], np.tile(M[[i_class], :, :], (np.sum(y == i_class), 1, 1)))
                 self.w_[:, :, i_class] = self._cca[i_class].w_x_
                 self.r_[:, :, i_class] = self._cca[i_class].w_y_
         else:
-            self._cca = CCA(n_components=self.n_components, lx=self.lx, ly=self.ly,
+            self._cca = CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
                             estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m)
             self._cca.fit(X, M[y, :, :])
             self.w_ = self._cca.w_x_

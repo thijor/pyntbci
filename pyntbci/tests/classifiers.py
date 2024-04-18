@@ -361,6 +361,38 @@ class TestRCCA(unittest.TestCase):
         self.assertEqual(rcca.Ts_.shape, (U.shape[0], 1, U.shape[1]))
         self.assertEqual(rcca.Tw_.shape, (U.shape[0], 1, U.shape[1]))
 
+    def test_rcca_regularization(self):
+        fs = 250
+        encoding_length = 0.3
+        X = np.random.rand(111, 64, 2 * fs)
+        y = np.random.choice(5, 111)
+        V = np.random.rand(5, 1 * fs) > 0.5
+
+        rcca0 = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length)
+        rcca0.fit(X, y)
+
+        rcca1 = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length,
+                                         gamma_x=0, gamma_m=0)
+        rcca1.fit(X, y)
+        self.assertTrue(np.allclose(rcca0.w_, rcca1.w_))
+        self.assertTrue(np.allclose(rcca0.r_, rcca1.r_))
+        self.assertEqual(rcca0.w_.shape, rcca1.w_.shape)
+        self.assertEqual(rcca1.r_.shape, rcca1.r_.shape)
+
+        rcca1 = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length,
+                                          gamma_x=0.5, gamma_m=0.5)
+        rcca1.fit(X, y)
+        self.assertEqual(rcca0.w_.shape, rcca1.w_.shape)
+        self.assertEqual(rcca1.r_.shape, rcca1.r_.shape)
+
+        gamma_x = np.random.rand(64)
+        gamma_m = np.random.rand(int(2 * encoding_length * fs))
+        rcca1 = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length,
+                                          gamma_x=gamma_x, gamma_m=gamma_m)
+        rcca1.fit(X, y)
+        self.assertEqual(rcca0.w_.shape, rcca1.w_.shape)
+        self.assertEqual(rcca1.r_.shape, rcca1.r_.shape)
+
 
 
 if __name__ == "__main__":

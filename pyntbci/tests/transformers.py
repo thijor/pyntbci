@@ -118,6 +118,29 @@ class TestCCA(unittest.TestCase):
         self.assertTrue(np.allclose(cca_full.w_y_, cca_incr.w_y_))
         self.assertTrue(np.allclose(cca_full.rho_, cca_incr.rho_))
 
+    def test_regularization(self):
+        X = np.random.rand(2000, 17)
+        Y = np.random.rand(2000, 23)
+
+        cca0 = pyntbci.transformers.CCA(n_components=1)
+        cca0.fit(X, Y)
+
+        cca1 = pyntbci.transformers.CCA(n_components=1, gamma_x=0, gamma_y=0)
+        cca1.fit(X, Y)
+        self.assertTrue(np.allclose(cca0.w_x_, cca1.w_x_))
+        self.assertTrue(np.allclose(cca0.w_y_, cca1.w_y_))
+        self.assertEqual(cca0.w_x_.shape, cca1.w_x_.shape)
+        self.assertEqual(cca1.w_y_.shape, cca1.w_y_.shape)
+
+        cca1 = pyntbci.transformers.CCA(n_components=1, gamma_x=0.5, gamma_y=0.5)
+        cca1.fit(X, Y)
+        self.assertEqual(cca0.w_x_.shape, cca1.w_x_.shape)
+        self.assertEqual(cca1.w_y_.shape, cca1.w_y_.shape)
+
+        cca1 = pyntbci.transformers.CCA(n_components=1, gamma_x=np.random.rand(17), gamma_y=np.random.rand(23))
+        cca1.fit(X, Y)
+        self.assertEqual(cca0.w_x_.shape, cca1.w_x_.shape)
+        self.assertEqual(cca1.w_y_.shape, cca1.w_y_.shape)
 
 class TestTRCA(unittest.TestCase):
 

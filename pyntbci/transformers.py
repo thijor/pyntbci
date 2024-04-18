@@ -14,12 +14,12 @@ class CCA(BaseEstimator, TransformerMixin):
     ----------
     n_components: int
         The number of CCA components to use.
-    lx: float | list (default: None)
+    gamma_x: float | list (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_x. If
-        None, no regularization is applied.
-    ly: float | list (default: None)
+        None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
+    gamma_y: float | list (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
-        None, no regularization is applied.
+        None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
     estimator_x: BaseEstimator (Default: None)
         A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom
         implementation of the empirical covariance is used.
@@ -36,10 +36,10 @@ class CCA(BaseEstimator, TransformerMixin):
            distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14
     """
 
-    def __init__(self, n_components, lx=None, ly=None, estimator_x=None, estimator_y=None, running=False):
+    def __init__(self, n_components, gamma_x=None, gamma_y=None, estimator_x=None, estimator_y=None, running=False):
         self.n_components = n_components
-        self.lx = lx
-        self.ly = ly
+        self.gamma_x = gamma_x
+        self.gamma_y = gamma_y
         self.estimator_x = estimator_x
         self.estimator_y = estimator_y
         self.running = running
@@ -92,24 +92,24 @@ class CCA(BaseEstimator, TransformerMixin):
         Cxy = self.cov_xy_[:X.shape[1], X.shape[1]:]
 
         # Regularization
-        if self.lx is None:
-            lx = np.zeros((1, X.shape[1]))
-        elif isinstance(self.lx, int) or isinstance(self.lx, float):
-            lx = self.lx * np.ones((1, X.shape[1]))
-        elif np.array(self.lx).ndim == 1:
-            lx = np.array(self.lx)[np.newaxis, :]
-        else:
-            lx = self.lx
-        if self.ly is None:
-            ly = np.zeros((1, Y.shape[1]))
-        elif isinstance(self.ly, int) or isinstance(self.ly, float):
-            ly = self.ly * np.ones((1, Y.shape[1]))
-        elif np.array(self.ly).ndim == 1:
-            ly = np.array(self.ly)[np.newaxis, :]
-        else:
-            ly = self.ly
-        Cxx += lx @ np.eye(X.shape[1])
-        Cyy += ly @ np.eye(Y.shape[1])
+        if self.gamma_x is not None:
+            nu_x = np.trace(Cxx) / X.shape[1]
+            if isinstance(self.gamma_x, int) or isinstance(self.gamma_x, float):
+                gamma_x = self.gamma_x * np.ones((1, X.shape[1]))
+            elif np.array(self.gamma_x).ndim == 1:
+                gamma_x = np.array(self.gamma_x)[np.newaxis, :]
+            else:
+                gamma_x = self.gamma_x
+            Cxx = (1 - gamma_x) * Cxx + gamma_x * nu_x @ np.identity(X.shape[1])
+        if self.gamma_y is not None:
+            nu_y = np.trace(Cyy) / Y.shape[1]
+            if isinstance(self.gamma_y, int) or isinstance(self.gamma_y, float):
+                gamma_y = self.gamma_y * np.ones((1, Y.shape[1]))
+            elif np.array(self.gamma_y).ndim == 1:
+                gamma_y = np.array(self.gamma_y)[np.newaxis, :]
+            else:
+                gamma_y = self.gamma_y
+            Cyy = (1 - gamma_y) * Cyy + gamma_y * nu_y @ np.identity(Y.shape[1])
 
         # Inverse square root
         iCxx = np.real(inv(sqrtm(Cxx)))

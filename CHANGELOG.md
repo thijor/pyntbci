@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 1.2.0 (18-04-2024)
+
+### Added
+
+### Changed
+
+- Changed `lx` of `rCCA` in `classifiers` to `gamma_x`, which ranges between 0-1, such that the parameter represents shrinkage regularization
+- Changed `ly` of `rCCA` in `classifiers` to `gamma_m`, which ranges between 0-1, such that the parameter represents shrinkage regularization
+- Changed `lx` of `CCA` in `transformers` to `gamma_x`, which ranges between 0-1, such that the parameter represents shrinkage regularization
+- Changed `ly` of `CCA` in `transformers` to `gamma_y`, which ranges between 0-1, such that the parameter represents shrinkage regularization
+
+### Fixed
+
 ## Version 1.1.0 (17-04-2024)
 
 ### Added
