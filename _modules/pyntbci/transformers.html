@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.transformers &mdash; PyntBCI 1.1.0 documentation</title>
+  <title>pyntbci.transformers &mdash; PyntBCI 1.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../../_static/documentation_options.js?v=6efca38a"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -106,12 +106,12 @@
 <span class="sd">    ----------</span>
 <span class="sd">    n_components: int</span>
 <span class="sd">        The number of CCA components to use.</span>
-<span class="sd">    lx: float | list (default: None)</span>
+<span class="sd">    gamma_x: float | list (default: None)</span>
 <span class="sd">        Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_x. If</span>
-<span class="sd">        None, no regularization is applied.</span>
-<span class="sd">    ly: float | list (default: None)</span>
+<span class="sd">        None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).</span>
+<span class="sd">    gamma_y: float | list (default: None)</span>
 <span class="sd">        Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If</span>
-<span class="sd">        None, no regularization is applied.</span>
+<span class="sd">        None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).</span>
 <span class="sd">    estimator_x: BaseEstimator (Default: None)</span>
 <span class="sd">        A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom</span>
 <span class="sd">        implementation of the empirical covariance is used.</span>
@@ -128,10 +128,10 @@
 <span class="sd">           distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_components</span><span class="p">,</span> <span class="n">lx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_components</span><span class="p">,</span> <span class="n">gamma_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gamma_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">=</span> <span class="n">n_components</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lx</span> <span class="o">=</span> <span class="n">lx</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ly</span> <span class="o">=</span> <span class="n">ly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span> <span class="o">=</span> <span class="n">gamma_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span> <span class="o">=</span> <span class="n">gamma_y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator_x</span> <span class="o">=</span> <span class="n">estimator_x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator_y</span> <span class="o">=</span> <span class="n">estimator_y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="n">running</span>
@@ -184,24 +184,24 @@
         <span class="n">Cxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_xy_</span><span class="p">[:</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:]</span>
 
         <span class="c1"># Regularization</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">lx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lx</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lx</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-            <span class="n">lx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lx</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lx</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">lx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lx</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">lx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lx</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ly</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ly</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ly</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-            <span class="n">ly</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ly</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ly</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">ly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ly</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ly</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ly</span>
-        <span class="n">Cxx</span> <span class="o">+=</span> <span class="n">lx</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">Cyy</span> <span class="o">+=</span> <span class="n">ly</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nu_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cxx</span><span class="p">)</span> <span class="o">/</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">gamma_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">gamma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gamma_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span>
+            <span class="n">Cxx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_x</span><span class="p">)</span> <span class="o">*</span> <span class="n">Cxx</span> <span class="o">+</span> <span class="n">gamma_x</span> <span class="o">*</span> <span class="n">nu_x</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nu_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cyy</span><span class="p">)</span> <span class="o">/</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">gamma_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">gamma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gamma_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span>
+            <span class="n">Cyy</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_y</span><span class="p">)</span> <span class="o">*</span> <span class="n">Cyy</span> <span class="o">+</span> <span class="n">gamma_y</span> <span class="o">*</span> <span class="n">nu_y</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="c1"># Inverse square root</span>
         <span class="n">iCxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="n">sqrtm</span><span class="p">(</span><span class="n">Cxx</span><span class="p">)))</span>

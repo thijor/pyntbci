@@ -1061,7 +1061,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 45.145 seconds)
+   **Total running time of the script:** (0 minutes 46.752 seconds)
 
 
 .. _sphx_glr_download_examples_early_stopping.py:

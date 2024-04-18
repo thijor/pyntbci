@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**04:52.273** total execution time for 6 files **from examples**:
+**05:02.206** total execution time for 6 files **from examples**:
 
 .. container::
 
@@ -33,20 +33,20 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_examples_rcca.py` (``rcca.py``)
-     - 02:29.894
+     - 02:35.826
      - 0.0
    * - :ref:`sphx_glr_examples_fbrcca.py` (``fbrcca.py``)
-     - 01:08.654
+     - 01:10.488
      - 0.0
    * - :ref:`sphx_glr_examples_early_stopping.py` (``early_stopping.py``)
-     - 00:45.145
+     - 00:46.752
      - 0.0
    * - :ref:`sphx_glr_examples_etrca.py` (``etrca.py``)
-     - 00:13.965
+     - 00:14.275
      - 0.0
    * - :ref:`sphx_glr_examples_epoch_cca_lda.py` (``epoch_cca_lda.py``)
-     - 00:08.971
+     - 00:09.028
      - 0.0
    * - :ref:`sphx_glr_examples_ecca.py` (``ecca.py``)
-     - 00:05.643
+     - 00:05.837
      - 0.0
