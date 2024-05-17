@@ -10,6 +10,7 @@ These tutorials demonstrate how to get started using PyntBCI.
 
     <div class="sphx-glr-thumbnails">
 
+.. thumbnail-parent-div-open
 
 .. raw:: html
 
@@ -44,6 +45,8 @@ These tutorials demonstrate how to get started using PyntBCI.
       <div class="sphx-glr-thumbnail-title">Getting started</div>
     </div>
 
+
+.. thumbnail-parent-div-close
 
 .. raw:: html
 
