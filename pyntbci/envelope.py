@@ -7,7 +7,8 @@ def aud_space_bw(fmin, fmax, bw=1.0, scale="erb"):
     frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two
     consecutive values is bw on the auditory scale, and the points will be centered on the auditory scale between fmin
     and fmax.
-    Adapted from: https://www.amtoolbox.org/ audspacebw.m (Peter L. Søndergaard)
+
+    Adapted from LTFAT: https://ltfat.org/doc/auditory/audspacebw audspacebw.m (Peter L. Søndergaard)
 
     Parameters
     ----------
@@ -47,7 +48,8 @@ def aud_space_bw(fmin, fmax, bw=1.0, scale="erb"):
 
 def aud_to_freq(aud, scale="erb"):
     """Convert auditory units at the auditory scale to frequency (Hz).
-    Adapted from: https://www.amtoolbox.org/ audtofreq.m (Peter L. Søndergaard)
+
+    Adapted from LTFAT: https://ltfat.org/doc/auditory/audtofreq audtofreq.m (Peter L. Søndergaard)
 
     Parameters
     ----------
@@ -71,6 +73,8 @@ def aud_to_freq(aud, scale="erb"):
 def envelope_gammatone(audio, fs, fs_inter=8000, fs_target=32, power=0.6, lowpass=9.0, fmin=150.0, fmax=4000.0,
                        spacing=1.5):
     """Compute the envelope of audio using a gammatone filterbank.
+
+    Developed in collaboration with Hanneke Scheppink.
     Adapted from: https://zenodo.org/records/3377911 preprocess_data.m (Neetha Das)
     Deviations:
         - Use of gammatone filterbank from scipy
@@ -174,7 +178,8 @@ def erb_space_bw(fmin, fmax, bw=1):
     """Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
     frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two
     consecutive values is bw on ERB auditory scale, and the points will be centered on the scale between fmin and fmax.
-    Adapted from: https://www.amtoolbox.org/ erbspacebw.m (Peter L. Søndergaard)
+
+    Adapted from LTFAT: https://ltfat.org/doc/auditory/erbspacebw erbspacebw.m (Peter L. Søndergaard)
 
     Parameters
     ----------
@@ -196,7 +201,8 @@ def erb_space_bw(fmin, fmax, bw=1):
 
 def freq_to_aud(freq, scale="erb"):
     """Convert frequencies (Hz) to auditory units at the auditory scale.
-    Adapted from: https://www.amtoolbox.org/ freqtoaud.m (Peter L. Søndergaard)
+
+    Adapted from LTFAT: https://ltfat.org/doc/auditory/freqtoaud freqtoaud.m (Peter L. Søndergaard)
 
     Parameters
     ----------
