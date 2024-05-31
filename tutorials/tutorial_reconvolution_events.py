@@ -43,7 +43,7 @@ plt.plot(np.arange(Vup.shape[1]) / (20 * fr), 2 * np.arange(n_classes) + Vup.T)
 for i in range(1 + int(V.shape[1])):
     plt.axvline(i / fr, c="k", alpha=0.1)
 plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-plt.xlabel("time [sec]")
+plt.xlabel("time [s]")
 plt.ylabel("code")
 plt.title("Code time-series")
 plt.tight_layout()

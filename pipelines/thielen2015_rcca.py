@@ -88,7 +88,7 @@ i_trial = 0
 plt.figure(figsize=(15, 15))
 plt.plot(np.arange(0, n_samples) / fs, 25e-6 * np.arange(n_channels) + X_trn[i_trial, :, :].T)
 plt.yticks(25e-6 * np.arange(n_channels), channels)
-plt.xlabel("time [sec]")
+plt.xlabel("time [s]")
 plt.ylabel("channel")
 plt.title(f"Single-trial multi-channel EEG time-series (trial {i_trial})")
 
@@ -108,7 +108,7 @@ plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
 for i in range(1 + int(V.shape[1] / (fs / fr))):
     plt.axvline(i / fr, c="k", alpha=0.1)
 plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-plt.xlabel("time [sec]")
+plt.xlabel("time [s]")
 plt.ylabel("code")
 plt.title("Code time-series")
 
@@ -219,4 +219,4 @@ plt.tight_layout()
 # Print accuracy
 print(f"Average accuracy: {avg.mean():.2f}")
 
-plt.show()
+# plt.show()

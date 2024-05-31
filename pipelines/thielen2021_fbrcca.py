@@ -152,4 +152,4 @@ for i in range(1 + len(filterbank)):
         label = f"rCCA {filterbank[i - 1][0]:>4}-{filterbank[i - 1][1]:>4}"
     print(f"{label}: {np.mean(accuracy[-1, :, i]):.2f} +/- {np.std(accuracy[-1, :, i]):.2f}")
 
-plt.show()
+# plt.show()

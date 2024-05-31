@@ -79,7 +79,7 @@ plt.figure(figsize=(15, 5))
 plt.plot(np.arange(0, n_samples) / fs, 25e-6 * np.arange(n_channels) + X[i_trial, :, :].T)
 plt.xlim([0, 1])  # limit to 1 second EEG data
 plt.yticks(25e-6 * np.arange(n_channels), channels)
-plt.xlabel("time [sec]")
+plt.xlabel("time [s]")
 plt.ylabel("channel")
 plt.title(f"Single-trial multi-channel EEG time-series (trial {i_trial})")
 plt.tight_layout()
@@ -101,7 +101,7 @@ plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
 for i in range(1 + int(V.shape[1] / (fs / fr))):
     plt.axvline(i / fr, c="k", alpha=0.1)
 plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-plt.xlabel("time [sec]")
+plt.xlabel("time [s]")
 plt.ylabel("code")
 plt.title("Code time-series")
 plt.tight_layout()
@@ -168,7 +168,7 @@ for i_channel in range(n_channels):
     ax[i_channel].set_title(channels[i_channel])
     ax[i_channel].set_ylabel("amplitude [V]")
 ax[0].legend()
-ax[-1].set_xlabel("time [sec]")
+ax[-1].set_xlabel("time [s]")
 
 # Visualize spatial response at a particular time-point
 fig, ax = plt.subplots(1, 2, figsize=(15, 3))
