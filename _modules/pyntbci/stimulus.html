@@ -93,7 +93,11 @@
 
 <div class="viewcode-block" id="is_de_bruijn_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.is_de_bruijn_sequence.html#pyntbci.stimulus.is_de_bruijn_sequence">[docs]</a>
-<span class="k">def</span> <span class="nf">is_de_bruijn_sequence</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_de_bruijn_sequence</span><span class="p">(</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a stimulus is a de Bruijn sequence. A de Bruijn sequence [1]_ should contain all possible</span>
 <span class="sd">    substrings of the alphabet.</span>
 
@@ -145,7 +149,9 @@
 
 <div class="viewcode-block" id="is_gold_code">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.is_gold_code.html#pyntbci.stimulus.is_gold_code">[docs]</a>
-<span class="k">def</span> <span class="nf">is_gold_code</span><span class="p">(</span><span class="n">stimulus</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_gold_code</span><span class="p">(</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function</span>
 <span class="sd">    [4]_. If the length of the linear feedback shift register m is even:</span>
 <span class="sd">    * 1/(2^n−1) </span>
@@ -211,7 +217,9 @@
 
 <div class="viewcode-block" id="is_m_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.is_m_sequence.html#pyntbci.stimulus.is_m_sequence">[docs]</a>
-<span class="k">def</span> <span class="nf">is_m_sequence</span><span class="p">(</span><span class="n">stimulus</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_m_sequence</span><span class="p">(</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a stimulus is an m-sequence. An m-sequence [5]_ should have an auto-correlation function that is 1</span>
 <span class="sd">    at time-shift 0 and -1/n elsewhere [6]_.</span>
 
@@ -253,7 +261,8 @@
 
 <div class="viewcode-block" id="make_apa_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_apa_sequence.html#pyntbci.stimulus.make_apa_sequence">[docs]</a>
-<span class="k">def</span> <span class="nf">make_apa_sequence</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">make_apa_sequence</span><span class="p">(</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an almost perfect auto-correlation (APA) sequence. APA sequence [7]_ examples are taken from [8]_.</span>
 
 <span class="sd">    Returns</span>
@@ -280,7 +289,11 @@
 
 <div class="viewcode-block" id="make_de_bruijn_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_de_bruijn_sequence.html#pyntbci.stimulus.make_de_bruijn_sequence">[docs]</a>
-<span class="k">def</span> <span class="nf">make_de_bruijn_sequence</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">make_de_bruijn_sequence</span><span class="p">(</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.</span>
 
 <span class="sd">    Parameters</span>
@@ -289,7 +302,7 @@
 <span class="sd">        The size of the alphabet.</span>
 <span class="sd">    n: int (default: 6)</span>
 <span class="sd">        The order of the sequence.</span>
-<span class="sd">    seed: list (default: None)</span>
+<span class="sd">    seed: tuple (default: None)</span>
 <span class="sd">        Seed for the initial register. None leads to an all zero initial register.</span>
 
 <span class="sd">    Returns</span>
@@ -330,7 +343,8 @@
 
 <div class="viewcode-block" id="make_golay_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_golay_sequence.html#pyntbci.stimulus.make_golay_sequence">[docs]</a>
-<span class="k">def</span> <span class="nf">make_golay_sequence</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">make_golay_sequence</span><span class="p">(</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.</span>
 
 <span class="sd">    Returns</span>
@@ -358,7 +372,12 @@
 
 <div class="viewcode-block" id="make_gold_codes">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_gold_codes.html#pyntbci.stimulus.make_gold_codes">[docs]</a>
-<span class="k">def</span> <span class="nf">make_gold_codes</span><span class="p">(</span><span class="n">poly1</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">poly2</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">seed1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">make_gold_codes</span><span class="p">(</span>
+        <span class="n">poly1</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">poly2</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">seed1</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed2</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a preferred</span>
 <span class="sd">    pair of m-sequences.</span>
 <span class="sd">    </span>
@@ -370,9 +389,9 @@
 <span class="sd">    poly2: tuple (default: (1, 1, 0, 0, 1, 1))</span>
 <span class="sd">        The feedback tap points defined by the primitive polynomial.</span>
 <span class="sd">        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).</span>
-<span class="sd">    seed1: list (default: None)</span>
+<span class="sd">    seed1: tuple (default: None)</span>
 <span class="sd">        Seed for the initial register for poly1. None leads to an all zero initial register.</span>
-<span class="sd">    seed2: list (default: None)</span>
+<span class="sd">    seed2: tuple (default: None)</span>
 <span class="sd">        Seed for the initial register for poly1. None leads to an all zero initial register.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
@@ -401,7 +420,11 @@
 
 <div class="viewcode-block" id="make_m_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_m_sequence.html#pyntbci.stimulus.make_m_sequence">[docs]</a>
-<span class="k">def</span> <span class="nf">make_m_sequence</span><span class="p">(</span><span class="n">poly</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">make_m_sequence</span><span class="p">(</span>
+        <span class="n">poly</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">base</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -444,7 +467,9 @@
 
 <div class="viewcode-block" id="modulate">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.modulate.html#pyntbci.stimulus.modulate">[docs]</a>
-<span class="k">def</span> <span class="nf">modulate</span><span class="p">(</span><span class="n">stimulus</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">modulate</span><span class="p">(</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modulate a stimulus. Modulation is done by xoring with a double frequency bit-clock [15]_. This limits</span>
 <span class="sd">    low-frequency content as well as the event distribution (i.e., limits to shorter (only two) run-lengths).</span>
 <span class="sd">    </span>

@@ -92,7 +92,12 @@
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">filtfilt</span><span class="p">,</span> <span class="n">gammatone</span><span class="p">,</span> <span class="n">resample</span>
 
 
-<span class="k">def</span> <span class="nf">aud_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="s2">&quot;erb&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">aud_space_bw</span><span class="p">(</span>
+        <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
 <span class="sd">    frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two</span>
 <span class="sd">    consecutive values is bw on the auditory scale, and the points will be centered on the auditory scale between fmin</span>
@@ -136,7 +141,10 @@
     <span class="k">return</span> <span class="n">y</span>
 
 
-<span class="k">def</span> <span class="nf">aud_to_freq</span><span class="p">(</span><span class="n">aud</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="s2">&quot;erb&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">aud_to_freq</span><span class="p">(</span>
+        <span class="n">aud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert auditory units at the auditory scale to frequency (Hz).</span>
 
 <span class="sd">    Adapted from LTFAT: https://ltfat.org/doc/auditory/audtofreq audtofreq.m (Peter L. Søndergaard)</span>
@@ -162,8 +170,17 @@
 
 <div class="viewcode-block" id="envelope_gammatone">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.envelope_gammatone.html#pyntbci.envelope.envelope_gammatone">[docs]</a>
-<span class="k">def</span> <span class="nf">envelope_gammatone</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fs_inter</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">fs_target</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">power</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">lowpass</span><span class="o">=</span><span class="mf">9.0</span><span class="p">,</span> <span class="n">fmin</span><span class="o">=</span><span class="mf">150.0</span><span class="p">,</span> <span class="n">fmax</span><span class="o">=</span><span class="mf">4000.0</span><span class="p">,</span>
-                       <span class="n">spacing</span><span class="o">=</span><span class="mf">1.5</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">envelope_gammatone</span><span class="p">(</span>
+        <span class="n">audio</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
+        <span class="n">fs_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
+        <span class="n">lowpass</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">9.0</span><span class="p">,</span>
+        <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">150.0</span><span class="p">,</span>
+        <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4000.0</span><span class="p">,</span>
+        <span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the envelope of audio using a gammatone filterbank.</span>
 
 <span class="sd">    Developed in collaboration with Hanneke Scheppink.</span>
@@ -238,7 +255,12 @@
 
 <div class="viewcode-block" id="envelope_rms">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.envelope_rms.html#pyntbci.envelope.envelope_rms">[docs]</a>
-<span class="k">def</span> <span class="nf">envelope_rms</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fs_inter</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">fs_target</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">envelope_rms</span><span class="p">(</span>
+        <span class="n">audio</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
+        <span class="n">fs_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the envelope of the audio as the root mean square (RMS) of the signal.</span>
 
 <span class="sd">    Parameters</span>
@@ -270,7 +292,11 @@
 
 
 
-<span class="k">def</span> <span class="nf">erb_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">erb_space_bw</span><span class="p">(</span>
+        <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
 <span class="sd">    frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two</span>
 <span class="sd">    consecutive values is bw on ERB auditory scale, and the points will be centered on the scale between fmin and fmax.</span>
@@ -295,7 +321,10 @@
     <span class="k">return</span> <span class="n">y</span>
 
 
-<span class="k">def</span> <span class="nf">freq_to_aud</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="s2">&quot;erb&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">freq_to_aud</span><span class="p">(</span>
+        <span class="n">freq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert frequencies (Hz) to auditory units at the auditory scale.</span>
 
 <span class="sd">    Adapted from LTFAT: https://ltfat.org/doc/auditory/freqtoaud freqtoaud.m (Peter L. Søndergaard)</span>

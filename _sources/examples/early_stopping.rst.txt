@@ -220,7 +220,7 @@ hence static stopping.
     ax[2].hlines(np.mean(itr_max_acc), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"Maximum accuracy early stopping: avg acc {accuracy_max_acc.mean():.2f} | " +
                     f"avg dur {duration_max_acc.mean():.2f} | avg itr {itr_max_acc.mean():.1f}")
@@ -313,7 +313,7 @@ reached, hence static stopping.
     ax[2].hlines(np.mean(itr_max_itr), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"Maximum ITR early stopping: avg acc {accuracy_max_itr.mean():.2f} | " +
                     f"avg dur {duration_max_itr.mean():.2f} | avg itr {itr_max_itr.mean():.1f}")
@@ -409,7 +409,7 @@ stopping.
     ax[2].hlines(np.mean(itr_tgt_acc), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"Targeted accuracy early stopping: avg acc {accuracy_tgt_acc.mean():.2f} | " +
                     f"avg dur {duration_tgt_acc.mean():.2f} | avg itr {itr_tgt_acc.mean():.1f}")
@@ -472,7 +472,7 @@ References:
     # Plot dynamic stopping
     plt.figure(figsize=(15, 3))
     plt.plot(np.arange(1, 1 + margin.margins_.size) * segment_time, margin.margins_, c="k")
-    plt.xlabel("time [sec]")
+    plt.xlabel("time [s]")
     plt.ylabel("margin")
     plt.title("Margin dynamic stopping")
 
@@ -523,7 +523,7 @@ References:
     ax[2].hlines(np.mean(itr_margin), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"Margin dynamic stopping: avg acc {accuracy_margin.mean():.2f} | " +
                     f"avg dur {duration_margin.mean():.2f} | avg itr {itr_margin.mean():.1f}")
@@ -635,7 +635,7 @@ References:
     ax[2].hlines(np.mean(itr_beta), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"Beta dynamic stopping: avg acc {accuracy_beta.mean():.2f} | " +
                     f"avg dur {duration_beta.mean():.2f} | avg itr {itr_beta.mean():.1f}")
@@ -706,7 +706,7 @@ References:
     ax[1].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.pf_, label="pf")
     ax[1].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.pm_, label="pm")
     ax[1].legend()
-    ax[1].set_xlabel("time [sec]")
+    ax[1].set_xlabel("time [s]")
     ax[0].set_title("Bayesian dynamic stopping")
 
     # Loop folds
@@ -752,7 +752,7 @@ References:
     ax[2].hlines(np.mean(itr_bes0), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"BES0 dynamic stopping: avg acc {accuracy_bes0.mean():.2f} | " +
                     f"avg dur {duration_bes0.mean():.2f} | avg itr {itr_bes0.mean():.1f}")
@@ -862,7 +862,7 @@ References:
     ax[2].hlines(np.mean(itr_bes1), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"BES1 dynamic stopping: avg acc {accuracy_bes1.mean():.2f} | " +
                     f"avg dur {duration_bes1.mean():.2f} | avg itr {itr_bes1.mean():.1f}")
@@ -960,7 +960,7 @@ References:
     ax[2].hlines(np.mean(itr_bes2), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
     ax[2].set_xlabel("(test) fold")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[0].set_title(f"BES2 dynamic stopping: avg acc {accuracy_bes2.mean():.2f} | " +
                     f"avg dur {duration_bes2.mean():.2f} | avg itr {itr_bes2.mean():.1f}")
@@ -1034,7 +1034,7 @@ Additionally, the evaluation is performed on a single participant only.
     ax[2].set_xticks(np.arange(8), ["maxacc", "maxitr", "tgtacc", "margin", "beta", "bes0", "bes1", "bes2"])
     ax[2].set_xlabel("early stopping method")
     ax[0].set_ylabel("accuracy")
-    ax[1].set_ylabel("duration [sec]")
+    ax[1].set_ylabel("duration [s]")
     ax[2].set_ylabel("itr [bits/min]")
     ax[1].legend(bbox_to_anchor=(1.0, 1.0))
     ax[0].set_title("Comparison of early stopping methods averaged across folds")
@@ -1061,7 +1061,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 45.080 seconds)
+   **Total running time of the script:** (0 minutes 46.002 seconds)
 
 
 .. _sphx_glr_download_examples_early_stopping.py:

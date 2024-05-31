@@ -113,7 +113,7 @@ trial, however, the stimuli were repeated 2 times (2 stimulus cycles).
     plt.plot(np.arange(0, n_samples) / fs, 25e-6 * np.arange(n_channels) + X[i_trial, :, :].T)
     plt.xlim([0, 1])  # limit to 1 second EEG data
     plt.yticks(25e-6 * np.arange(n_channels), channels)
-    plt.xlabel("time [sec]")
+    plt.xlabel("time [s]")
     plt.ylabel("channel")
     plt.title(f"Single-trial multi-channel EEG time-series (trial {i_trial})")
     plt.tight_layout()
@@ -135,7 +135,7 @@ trial, however, the stimuli were repeated 2 times (2 stimulus cycles).
     for i in range(1 + int(V.shape[1] / (fs / fr))):
         plt.axvline(i / fr, c="k", alpha=0.1)
     plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-    plt.xlabel("time [sec]")
+    plt.xlabel("time [s]")
     plt.ylabel("code")
     plt.title("Code time-series")
     plt.tight_layout()
@@ -221,7 +221,7 @@ generalising over the length of a flash.
     plt.gca().set_aspect(10)
     plt.xticks(np.arange(0, E.shape[2], 60), np.arange(0, E.shape[2], 60) / fs)
     plt.yticks(np.arange(E.shape[1]), events)
-    plt.xlabel("time [sec]")
+    plt.xlabel("time [s]")
     plt.title(f"Event matrix (class {i_class})")
     plt.tight_layout()
 
@@ -285,7 +285,7 @@ the responses to each of the events. However, one could also set different lengt
     plt.imshow(M[i_class, :, :], cmap="gray")
     plt.xticks(np.arange(0, M.shape[2], 60), np.arange(0, M.shape[2], 60) / fs)
     plt.yticks(np.arange(0, E.shape[1] * encoding_length, 12), np.tile(np.arange(0, encoding_length, 12) / fs, E.shape[1]))
-    plt.xlabel("time [sec]")
+    plt.xlabel("time [s]")
     plt.ylabel(events[::-1])
     plt.title(f"Structure matrix (class {i_class})")
     plt.tight_layout()
@@ -343,7 +343,7 @@ Please note that the transient responses are concatenated in this temporal filte
     for i in range(len(rcca.events_)):
         ax[1].plot(np.arange(int(encoding_length * fs)) / fs, tmp[i, :])
     ax[1].legend(rcca.events_)
-    ax[1].set_xlabel("time [sec]")
+    ax[1].set_xlabel("time [s]")
     ax[1].set_ylabel("amplitude [a.u.]")
     ax[1].set_title("Transient responses")
     fig.tight_layout()
@@ -508,7 +508,7 @@ so-called learning curve, which shows the performance as a function of the amoun
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 46.147 seconds)
+   **Total running time of the script:** (0 minutes 46.645 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_getting_started.py:

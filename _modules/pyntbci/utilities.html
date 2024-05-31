@@ -89,6 +89,7 @@
              
   <h1>Source code for pyntbci.utilities</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sklearn.base</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">cheby1</span><span class="p">,</span> <span class="n">cheb1ord</span><span class="p">,</span> <span class="n">filtfilt</span>
 
 
@@ -97,7 +98,13 @@
 
 <div class="viewcode-block" id="correct_latency">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency">[docs]</a>
-<span class="k">def</span> <span class="nf">correct_latency</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">latency</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">correct_latency</span><span class="p">(</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">latency</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Correct for a latency in data. This is done by shifting data according to the class-specific latencies.</span>
 
 <span class="sd">    Parameters</span>
@@ -132,7 +139,10 @@
 
 <div class="viewcode-block" id="correlation">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.correlation.html#pyntbci.utilities.correlation">[docs]</a>
-<span class="k">def</span> <span class="nf">correlation</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">correlation</span><span class="p">(</span>
+        <span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the correlation coefficient. Computed between two sets of variables.</span>
 
 <span class="sd">    Parameters</span>
@@ -171,7 +181,14 @@
 
 <div class="viewcode-block" id="covariance">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.covariance.html#pyntbci.utilities.covariance">[docs]</a>
-<span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_old</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">avg_old</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cov_old</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">n_old</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">avg_old</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cov_old</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">estimator</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the covariance matrix.</span>
 
 <span class="sd">    Parameters</span>
@@ -228,7 +245,11 @@
 
 <div class="viewcode-block" id="decoding_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.decoding_matrix.html#pyntbci.utilities.decoding_matrix">[docs]</a>
-<span class="k">def</span> <span class="nf">decoding_matrix</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">decoding_matrix</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a Hankel-like decoding matrix. Used to phase-shift the data (i.e., backward / decoding model), to learn a</span>
 <span class="sd">    spatio-spectral filter (i.e., a spectral filter per channel).</span>
 
@@ -264,7 +285,12 @@
 
 <div class="viewcode-block" id="encoding_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.encoding_matrix.html#pyntbci.utilities.encoding_matrix">[docs]</a>
-<span class="k">def</span> <span class="nf">encoding_matrix</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">encoding_matrix</span><span class="p">(</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">amplitude</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a Toeplitz-like encoding matrix. Used to phase-shift the stimulus (forward / encoding model), per event to</span>
 <span class="sd">    learn a (or several) temporal filter(s). Also called a &quot;structure matrix&quot; or &quot;design matrix&quot;.</span>
 
@@ -318,7 +344,10 @@
 
 <div class="viewcode-block" id="euclidean">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean">[docs]</a>
-<span class="k">def</span> <span class="nf">euclidean</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">euclidean</span><span class="p">(</span>
+        <span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the Euclidean distance. Computed between two sets of variables.</span>
 
 <span class="sd">    Parameters</span>
@@ -350,7 +379,11 @@
 
 <div class="viewcode-block" id="event_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix">[docs]</a>
-<span class="k">def</span> <span class="nf">event_matrix</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">event_matrix</span><span class="p">(</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">onset_event</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an event matrix. The event matrix describes the onset of events in a stimulus sequence, given a particular</span>
 <span class="sd">    event definition.</span>
 
@@ -422,9 +455,9 @@
             <span class="c1"># Fill out durations in dictionary</span>
             <span class="n">unique_durations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">duration</span> <span class="ow">in</span> <span class="n">unique_durations</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">duration</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
-                    <span class="n">events</span><span class="p">[</span><span class="n">duration</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_stims</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bool_&quot;</span><span class="p">)</span>
-                <span class="n">events</span><span class="p">[</span><span class="n">duration</span><span class="p">][</span><span class="n">i_code</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">durations</span> <span class="o">==</span> <span class="n">duration</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+                    <span class="n">events</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">duration</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_stims</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bool_&quot;</span><span class="p">)</span>
+                <span class="n">events</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">duration</span><span class="p">)][</span><span class="n">i_code</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">durations</span> <span class="o">==</span> <span class="n">duration</span>
 
         <span class="c1"># Extract unique events (sorted numerically or alphabetically)</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
@@ -469,7 +502,17 @@
 
 <div class="viewcode-block" id="filterbank">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank">[docs]</a>
-<span class="k">def</span> <span class="nf">filterbank</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">passbands</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s2">&quot;butterworth&quot;</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stopbands</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="mf">40.0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">filterbank</span><span class="p">(</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">passbands</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">fs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ftype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;butterworth&quot;</span><span class="p">,</span>
+        <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stopbands</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gpass</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">gstop</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">40.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the</span>
 <span class="sd">    minimum loss in the stopband.</span>
 
@@ -477,8 +520,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    X: np.ndarray</span>
 <span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    passbands: list(list)</span>
-<span class="sd">        A list of lists with passbands defined as [lower, higher] cutoff in Hz.</span>
+<span class="sd">    passbands: tuple(tuple)</span>
+<span class="sd">        A tuple of tuples with passbands defined as (lower, higher) cutoff in Hz.</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling frequency of the EEG data in Hz.</span>
 <span class="sd">    tmin: float (default: None)</span>
@@ -489,9 +532,9 @@
 <span class="sd">    N: int | list (default: None)</span>
 <span class="sd">        The filter order. If a list is provided, it is the order for each passband. If None, the order is set given the</span>
 <span class="sd">        stopbands, gpass and gstop.</span>
-<span class="sd">    stopbands: list(list) (default: None)</span>
-<span class="sd">        A list of lists with a stopband for each passband defined as [lower, higher] cutoff in Hz. If None, the</span>
-<span class="sd">        stopbands default to [lower-2, higher+7] of the passbands. Only used if N=None.</span>
+<span class="sd">    stopbands: tuple(tuple) (default: None)</span>
+<span class="sd">        A tuple of tuples with a stopband for each passband defined as (lower, higher) cutoff in Hz. If None, the</span>
+<span class="sd">        stopbands default to (lower-2, higher+7) of the passbands. Only used if N=None.</span>
 <span class="sd">    gpass: float | list (default: 3.0)</span>
 <span class="sd">        The maximum loss in the passband (dB). If a list is provided, it is the gpass for each passband. Only used if</span>
 <span class="sd">        N=None.</span>
@@ -567,16 +610,20 @@
 
 <div class="viewcode-block" id="itr">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr">[docs]</a>
-<span class="k">def</span> <span class="nf">itr</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">itr</span><span class="p">(</span>
+        <span class="n">n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the information-transfer rate (ITR).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    n: int | np.ndarray:</span>
+<span class="sd">    n: np.ndarray:</span>
 <span class="sd">        The number of classes.</span>
-<span class="sd">    p: float | np.ndarray:</span>
+<span class="sd">    p: np.ndarray:</span>
 <span class="sd">        The decoding accuracy between 0 and 1.</span>
-<span class="sd">    t: float | np.ndarray:</span>
+<span class="sd">    t: np.ndarray:</span>
 <span class="sd">        The decoding time in seconds (including inter-trial time).</span>
 
 <span class="sd">    Returns</span>
@@ -594,7 +641,13 @@
 
 <div class="viewcode-block" id="trials_to_epochs">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs">[docs]</a>
-<span class="k">def</span> <span class="nf">trials_to_epochs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">codes</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">trials_to_epochs</span><span class="p">(</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">codes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">epoch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">step_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice trials to epochs.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>

@@ -123,7 +123,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     plt.plot(np.arange(0, n_samples) / fs, 25e-6 * np.arange(n_channels) + X[i_trial, :, :].T)
     plt.xlim([0, 1])  # limit to 1 second EEG data
     plt.yticks(25e-6 * np.arange(n_channels), channels)
-    plt.xlabel("time [sec]")
+    plt.xlabel("time [s]")
     plt.ylabel("channel")
     plt.title(f"Single-trial multi-channel EEG time-series (trial {i_trial})")
     plt.tight_layout()
@@ -145,7 +145,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     for i in range(1 + int(V.shape[1] / (fs / fr))):
         plt.axvline(i / fr, c="k", alpha=0.1)
     plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-    plt.xlabel("time [sec]")
+    plt.xlabel("time [s]")
     plt.ylabel("code")
     plt.title("Code time-series")
     plt.tight_layout()
@@ -365,7 +365,7 @@ training data they require to estimate their parameters.
     plt.plot(train_trials * trialtime, avg, linestyle='-', marker='o', label="eCCA")
     plt.fill_between(train_trials * trialtime, avg + std, avg - std, alpha=0.2, label="_eCCA")
     plt.axhline(1 / n_classes, color="k", linestyle="--", alpha=0.5, label="chance")
-    plt.xlabel("learning time [sec]")
+    plt.xlabel("learning time [s]")
     plt.ylabel("accuracy")
     plt.legend()
     plt.title("Learning curve")
@@ -446,7 +446,7 @@ need during testing to classify single-trials.
     std = itr.std(axis=0)
     ax[1].plot(segments, avg, linestyle='-', marker='o', label="eCCA")
     ax[1].fill_between(segments, avg + std, avg - std, alpha=0.2, label="_eCCA")
-    ax[1].set_xlabel("decoding time [sec]")
+    ax[1].set_xlabel("decoding time [s]")
     ax[0].set_ylabel("accuracy")
     ax[1].set_ylabel("ITR [bits/min]")
     ax[0].legend()
@@ -564,7 +564,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.716 seconds)
+   **Total running time of the script:** (0 minutes 5.648 seconds)
 
 
 .. _sphx_glr_download_examples_ecca.py:
