@@ -345,7 +345,7 @@ def event_matrix(
             # Fill out durations in dictionary
             unique_durations = np.unique(durations)
             for duration in unique_durations:
-                if duration not in events:
+                if str(duration) not in events:
                     events[str(duration)] = np.zeros((n_stims, n_samples), dtype="bool_")
                 events[str(duration)][i_code, idx] = durations == duration
 
