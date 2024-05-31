@@ -1,4 +1,5 @@
 import numpy as np
+import sklearn.base
 from scipy.linalg import eigh, inv, sqrtm, svd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
@@ -36,7 +37,15 @@ class CCA(BaseEstimator, TransformerMixin):
            distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14
     """
 
-    def __init__(self, n_components, gamma_x=None, gamma_y=None, estimator_x=None, estimator_y=None, running=False):
+    def __init__(
+            self,
+            n_components: int,
+            gamma_x: float = None,
+            gamma_y: float = None,
+            estimator_x: sklearn.base.BaseEstimator = None,
+            estimator_y: sklearn.base.BaseEstimator = None,
+            running: bool = False,
+    ) -> None:
         self.n_components = n_components
         self.gamma_x = gamma_x
         self.gamma_y = gamma_y
@@ -53,7 +62,11 @@ class CCA(BaseEstimator, TransformerMixin):
         self.avg_xy_ = None
         self.cov_xy_ = None
 
-    def _fit_X2D_Y2D(self, X, Y):
+    def _fit_X2D_Y2D(
+            self,
+            X: np.ndarray,
+            Y: np.ndarray,
+    ) -> None:
         """Fit the CCA for a 2D X data matrix and 2D Y data matrix.
 
         Parameters
@@ -126,7 +139,11 @@ class CCA(BaseEstimator, TransformerMixin):
         self.w_x_ = Wx[:, :self.n_components]
         self.w_y_ = Wy[:, :self.n_components]
 
-    def _fit_X3D_Y3D(self, X, Y):
+    def _fit_X3D_Y3D(
+            self,
+            X: np.ndarray,
+            Y: np.ndarray,
+    ) -> None:
         """Fit the CCA for a 3D X data matrix and 3D Y data matrix.
 
         Parameters
@@ -153,7 +170,11 @@ class CCA(BaseEstimator, TransformerMixin):
         # CCA
         self._fit_X2D_Y2D(X, Y)
 
-    def _fit_X3D_Y1D(self, X, Y):
+    def _fit_X3D_Y1D(
+            self,
+            X: np.ndarray,
+            Y: np.ndarray,
+    ) -> None:
         """Fit the CCA for a 3D X data matrix and 1D Y label vector.
 
         Parameters
@@ -180,7 +201,11 @@ class CCA(BaseEstimator, TransformerMixin):
         # CCA
         self._fit_X3D_Y3D(X, T[Y, :, :])
 
-    def fit(self, X, Y):
+    def fit(
+            self,
+            X: np.ndarray,
+            Y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """Fit the CCA in one of 3 ways: (1) X (data) is 3D and y (labels) is 1D, (2) X (data) is 3D and Y (data) is 3D,
         or (3) X (data) is 2D and Y (data) is 2D.
 
@@ -208,7 +233,11 @@ class CCA(BaseEstimator, TransformerMixin):
 
         return self
 
-    def _transform_X2D(self, X=None, Y=None):
+    def _transform_X2D(
+            self,
+            X: np.ndarray = None,
+            Y: np.ndarray = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Transform the 2D data matrix from feature space to component space.
 
         Parameters
@@ -238,7 +267,11 @@ class CCA(BaseEstimator, TransformerMixin):
 
         return X, Y
 
-    def _transform_X3D(self, X=None, Y=None):
+    def _transform_X3D(
+            self,
+            X: np.ndarray = None,
+            Y: np.ndarray = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Transform the 3D data matrix from feature space to component space.
 
         Parameters
@@ -275,7 +308,11 @@ class CCA(BaseEstimator, TransformerMixin):
 
         return X, Y
 
-    def transform(self, X=None, Y=None):
+    def transform(
+            self,
+            X: np.ndarray = None,
+            Y: np.ndarray = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Transform the data matrix from feature space to component space. Note, works with both 2D and 3D data, and
         can operate on both X and Y if both are not None, or on each separately if the other is None.
 
@@ -333,10 +370,16 @@ class TRCA(BaseEstimator, TransformerMixin):
     .. [6] https://github.com/nbara/python-meegkit/blob/master/meegkit/trca.py
     """
 
-    def __init__(self, n_components):
+    def __init__(
+            self,
+            n_components: int,
+    ) -> None:
         self.n_components = n_components
 
-    def _fit_X(self, X):
+    def _fit_X(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Fit TRCA without labels by computing one filter across all trials.
 
         Parameters
@@ -372,7 +415,11 @@ class TRCA(BaseEstimator, TransformerMixin):
         D, V = eigh(S, Q)
         return V[:, np.argsort(D)[::-1][:self.n_components]]
 
-    def _fit_X_y(self, X, y):
+    def _fit_X_y(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> np.ndarray:
         """Fit TRCA with labels by computing a filter across all trials of the same label, for each class.
 
         Parameters
@@ -399,7 +446,11 @@ class TRCA(BaseEstimator, TransformerMixin):
             W[:, :, i_class] = self._fit_X(X[y == classes[i_class], :, :])
         return W
 
-    def fit(self, X, y=None):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray = None,
+    ) -> sklearn.base.BaseEstimator:
         """Fit TRCA in one of 2 ways: (1) without labels (y=None) or with labels (y=vector). If no labels are provided,
         TRCA will compute one filter across all labels. If labels are provided, one filter will be computed for each of
         the classes.
@@ -423,7 +474,11 @@ class TRCA(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+            self,
+            X: np.ndarray,
+            y: np.ndarray = None,
+    ) -> np.ndarray:
         """Transform the data matrix from feature space to component space. Note, can operate on both X and y or just X.
         If X and y are provided, data are filtered with class-specific filters. If only X is provided and a multi-class
         filter was learned, all trials are filtered with all filters. If only one filter was learned, then only this

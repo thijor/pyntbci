@@ -1,10 +1,19 @@
+import matplotlib.axes
 from matplotlib.patches import Circle, Ellipse, Polygon
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 import numpy as np
 
 
-def eventplot(S, E, fs, ax=None, upsample=20, plotfs=True, events=None):
+def eventplot(
+        S: np.ndarray,
+        E: np.ndarray,
+        fs: int,
+        ax: matplotlib.axes.Axes = None,
+        upsample: int = 20,
+        plotfs: bool = True,
+        events: tuple[str] = None,
+) -> None:
     """
     Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events across
     time.
@@ -66,7 +75,14 @@ def eventplot(S, E, fs, ax=None, upsample=20, plotfs=True, events=None):
         ax.set_yticks(-1.5 * np.arange(0, 1 + n_events) + 0.5, ("stimulus",) + events)
 
 
-def topoplot(z, locfile, cbar=False, ax=None, iso=False, chan=True):
+def topoplot(
+        z: np.ndarray,
+        locfile: str,
+        cbar: bool = False,
+        ax: matplotlib.axes.Axes = None,
+        iso: bool = False,
+        chan: bool = True,
+) -> None:
     """Plot a topoplot. The values at each electrode are interpolated on an outline of a head using an electrode
     position file (loc file).
 

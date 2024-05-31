@@ -1,7 +1,11 @@
 import numpy as np
 
 
-def is_de_bruijn_sequence(stimulus, k=2, n=6):
+def is_de_bruijn_sequence(
+        stimulus: np.ndarray,
+        k: int = 2,
+        n: int = 6,
+) -> bool:
     """Check whether a stimulus is a de Bruijn sequence. A de Bruijn sequence [1]_ should contain all possible
     substrings of the alphabet.
 
@@ -50,7 +54,9 @@ def is_de_bruijn_sequence(stimulus, k=2, n=6):
     return True
 
 
-def is_gold_code(stimulus):
+def is_gold_code(
+        stimulus: np.ndarray,
+) -> bool:
     """Check whether a stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function
     [4]_. If the length of the linear feedback shift register m is even:
     * 1/(2^n−1) 
@@ -113,7 +119,9 @@ def is_gold_code(stimulus):
     return cond1 and cond2 and cond3 and cond4 and cond5
 
 
-def is_m_sequence(stimulus):
+def is_m_sequence(
+        stimulus: np.ndarray,
+) -> bool:
     """Check whether a stimulus is an m-sequence. An m-sequence [5]_ should have an auto-correlation function that is 1
     at time-shift 0 and -1/n elsewhere [6]_.
 
@@ -152,7 +160,8 @@ def is_m_sequence(stimulus):
     return cond1 and cond2 and cond3
     
 
-def make_apa_sequence():
+def make_apa_sequence(
+) -> np.ndarray:
     """Make an almost perfect auto-correlation (APA) sequence. APA sequence [7]_ examples are taken from [8]_.
 
     Returns
@@ -176,7 +185,11 @@ def make_apa_sequence():
     return stimulus
 
 
-def make_de_bruijn_sequence(k=2, n=6, seed=None):
+def make_de_bruijn_sequence(
+        k: int = 2,
+        n: int = 6,
+        seed: tuple[int] = None,
+) -> np.ndarray:
     """Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.
 
     Parameters
@@ -185,7 +198,7 @@ def make_de_bruijn_sequence(k=2, n=6, seed=None):
         The size of the alphabet.
     n: int (default: 6)
         The order of the sequence.
-    seed: list (default: None)
+    seed: tuple (default: None)
         Seed for the initial register. None leads to an all zero initial register.
 
     Returns
@@ -223,7 +236,8 @@ def make_de_bruijn_sequence(k=2, n=6, seed=None):
     return stimulus
 
 
-def make_golay_sequence():
+def make_golay_sequence(
+) -> np.ndarray:
     """Make complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.
 
     Returns
@@ -248,7 +262,12 @@ def make_golay_sequence():
     return stimulus
 
 
-def make_gold_codes(poly1=(1, 0, 0, 0, 0, 1), poly2=(1, 1, 0, 0, 1, 1), seed1=None, seed2=None):
+def make_gold_codes(
+        poly1: tuple[int] = (1, 0, 0, 0, 0, 1),
+        poly2: tuple[int] = (1, 1, 0, 0, 1, 1),
+        seed1: tuple[int] = None,
+        seed2: tuple[int] = None,
+) -> np.ndarray:
     """Make a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a preferred
     pair of m-sequences.
     
@@ -260,9 +279,9 @@ def make_gold_codes(poly1=(1, 0, 0, 0, 0, 1), poly2=(1, 1, 0, 0, 1, 1), seed1=No
     poly2: tuple (default: (1, 1, 0, 0, 1, 1))
         The feedback tap points defined by the primitive polynomial.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
-    seed1: list (default: None)
+    seed1: tuple (default: None)
         Seed for the initial register for poly1. None leads to an all zero initial register.
-    seed2: list (default: None)
+    seed2: tuple (default: None)
         Seed for the initial register for poly1. None leads to an all zero initial register.
         
     Returns
@@ -288,7 +307,11 @@ def make_gold_codes(poly1=(1, 0, 0, 0, 0, 1), poly2=(1, 1, 0, 0, 1, 1), seed1=No
     return stimulus
 
 
-def make_m_sequence(poly=(1, 0, 0, 0, 0, 1), base=2, seed=None):
+def make_m_sequence(
+        poly: tuple[int] = (1, 0, 0, 0, 0, 1),
+        base: int = 2,
+        seed: tuple[int] = None,
+) -> np.ndarray:
     """Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.
     
     Parameters
@@ -328,7 +351,9 @@ def make_m_sequence(poly=(1, 0, 0, 0, 0, 1), base=2, seed=None):
     return stimulus[np.newaxis, :]
 
 
-def modulate(stimulus):
+def modulate(
+        stimulus: np.ndarray,
+) -> np.ndarray:
     """Modulate a stimulus. Modulation is done by xoring with a double frequency bit-clock [15]_. This limits
     low-frequency content as well as the event distribution (i.e., limits to shorter (only two) run-lengths).
     

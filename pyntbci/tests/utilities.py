@@ -308,5 +308,6 @@ class TestITR(unittest.TestCase):
         itr = pyntbci.utilities.itr(n, p, t)
         self.assertEqual(itr.size, 7)
 
+
 if __name__ == "__main__":
     unittest.main()

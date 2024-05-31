@@ -1,6 +1,8 @@
 import copy
+from typing import Union
 
 import numpy as np
+import sklearn.base
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.svm import OneClassSVM
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
@@ -29,8 +31,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean,
         inner.
     cca_channels: list (default: None)
-        A list of channel indexes that need to be included in the estimation of a spatial filter at the template side of
-        the CCA, i.e. CCA(X, T[:, cca_channels, :]). If None is given, all channels are used.
+        A list of channel indexes that need to be included in the estimation of a spatial filter at the template side
+        of the CCA, i.e. CCA(X, T[:, cca_channels, :]). If None is given, all channels are used.
     lx: float | list (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
         None, no regularization is applied.
@@ -53,8 +55,20 @@ class eCCA(BaseEstimator, ClassifierMixin):
            review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf
     """
 
-    def __init__(self, lags, fs, cycle_size=None, template_metric="mean", score_metric="correlation", cca_channels=None,
-                 lx=None, ly=None, latency=None, ensemble=False, cov_estimator=None):
+    def __init__(
+            self,
+            lags: np.ndarray,
+            fs: int,
+            cycle_size: float = None,
+            template_metric: str = "mean",
+            score_metric: str = "correlation",
+            cca_channels: list = None,
+            lx: Union[float, list] = None,
+            ly: Union[float, list] = None,
+            latency: np.ndarray = None,
+            ensemble: bool = False,
+            cov_estimator: sklearn.base.BaseEstimator = None,
+    ) -> None:
         self.lags = lags
         self.fs = fs
         self.cycle_size = cycle_size
@@ -67,7 +81,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self.ensemble = ensemble
         self.cov_estimator = cov_estimator
 
-    def _fit_T(self, X):
+    def _fit_T(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Fit the templates.
 
         Parameters
@@ -95,7 +112,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
             raise Exception(f"Unknown template metric:", self.template_metric)
         return T
 
-    def _get_T(self, n_samples=None):
+    def _get_T(
+            self,
+            n_samples: int = None,
+    ) -> np.ndarray:
         """Get the templates.
 
         Parameters
@@ -116,7 +136,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
         T -= T.mean(axis=1, keepdims=True)
         return T
 
-    def decision_function(self, X):
+    def decision_function(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Applies the routines to arrive at raw unthresholded classification scores for X.
 
         Parameters
@@ -165,7 +188,11 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
         return scores
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit eCCA on supervised EEG data.
 
         Parameters
@@ -253,7 +280,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply eCCA to novel EEG data.
 
         Parameters
@@ -284,17 +314,27 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         The gating function that is used to combine the scores obtained from each individual classifiers.
     """
 
-    def __init__(self, estimator, gating):
+    def __init__(
+            self,
+            estimator: sklearn.base.BaseEstimator,
+            gating: sklearn.base.BaseEstimator,
+    ) -> None:
         self.estimator = estimator
         self.gating = gating
 
-    def _compute_scores(self, X):
+    def _compute_scores(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         scores = [
             self.models_[i].decision_function(X[:, :, :, i])
             for i in range(X.shape[3])]
         return np.stack(scores, axis=2)
 
-    def decision_function(self, X):
+    def decision_function(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Applies the decision functions to each item in the databank to arrive at raw unthresholded classification
         scores for X.
 
@@ -310,7 +350,11 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         """
         return self.gating.decision_function(self._compute_scores(X))
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to apply an ensemble classifier on supervised EEG data.
 
         Parameters
@@ -340,7 +384,10 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply the ensemble classifier to novel EEG data.
 
         Parameters
@@ -391,8 +438,16 @@ class eTRCA(BaseEstimator, ClassifierMixin):
            Engineering, 65(1), 104-112. doi: 10.1109/TBME.2017.2694818
     """
 
-    def __init__(self, lags, fs, cycle_size=None, template_metric="mean", score_metric="correlation", latency=None,
-                 ensemble=False):
+    def __init__(
+            self,
+            lags: np.ndarray,
+            fs: int,
+            cycle_size: float = None,
+            template_metric: str = "mean",
+            score_metric: str = "correlation",
+            latency: np.ndarray = None,
+            ensemble: bool = False,
+    ) -> None:
         self.lags = lags
         self.fs = fs
         self.cycle_size = cycle_size
@@ -401,7 +456,10 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         self.latency = latency
         self.ensemble = ensemble
 
-    def _fit_T(self, X):
+    def _fit_T(
+            self,
+            X: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """Fit the templates.
 
         Parameters
@@ -426,7 +484,10 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             raise Exception(f"Unknown template metric:", self.template_metric)
         return T
 
-    def _get_T(self, n_samples=None):
+    def _get_T(
+            self,
+            n_samples: int = None,
+    ) -> np.ndarray:
         """Get the templates.
 
         Parameters
@@ -447,7 +508,10 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         T -= T.mean(axis=1, keepdims=True)
         return T
 
-    def decision_function(self, X):
+    def decision_function(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Applies the routines to arrive at raw unthresholded classification scores for X.
 
         Parameters
@@ -492,7 +556,11 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             else:
                 raise Exception(f"Unknown score metric: {self.score_metric}")
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit eTRCA on supervised EEG data.
 
         Parameters
@@ -563,7 +631,10 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply eTRCA to novel EEG data.
 
         Parameters
@@ -647,10 +718,27 @@ class rCCA(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
 
-    def __init__(self, stimulus, fs, event="duration", onset_event=False, decoding_length=None, decoding_stride=None,
-                 encoding_length=None, encoding_stride=None, score_metric="correlation", latency=None, ensemble=False,
-                 amplitudes=None, gamma_x=None, gamma_m=None, cov_estimator_x=None, cov_estimator_m=None,
-                 n_components=1, gating=None):
+    def __init__(
+            self,
+            stimulus: np.ndarray,
+            fs: int,
+            event: str = "duration",
+            onset_event: bool = False,
+            decoding_length: float = None,
+            decoding_stride: float = None,
+            encoding_length: float = None,
+            encoding_stride: float = None,
+            score_metric: str = "correlation",
+            latency: np.ndarray = None,
+            ensemble: bool = False,
+            amplitudes: np.ndarray = None,
+            gamma_x: float = None,
+            gamma_m: float = None,
+            cov_estimator_x: sklearn.base.BaseEstimator = None,
+            cov_estimator_m: sklearn.base.BaseEstimator = None,
+            n_components: int = 1,
+            gating: sklearn.base.BaseEstimator = None,
+    ) -> None:
         self.stimulus = stimulus
         self.fs = fs
         self.event = event
@@ -682,7 +770,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.n_components = n_components
         self.gating = gating
 
-    def _compute_scores(self, X):
+    def _compute_scores(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
 
         # Set templates to trial length
         T = self._get_T(X.shape[2])
@@ -720,7 +811,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         return scores
 
-    def _get_M(self, n_samples=None):
+    def _get_M(
+            self,
+            n_samples: int = None,
+    ) -> np.ndarray:
         """Get the encoding matrix of a particular length.
 
         Parameters
@@ -752,7 +846,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         M = encoding_matrix(E, int(self.encoding_length * self.fs), int(self.encoding_stride * self.fs), amplitudes)
         return M[:, :, :n_samples]
 
-    def _get_T(self, n_samples=None):
+    def _get_T(
+            self,
+            n_samples: int = None,
+    ) -> np.ndarray:
         """Get the templates.
 
         Parameters
@@ -777,7 +874,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         T -= T.mean(axis=2, keepdims=True)
         return T
 
-    def decision_function(self, X):
+    def decision_function(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Applies the routines to arrive at raw unthresholded classification scores for X.
 
         Parameters
@@ -805,7 +905,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
         else:
             return self.gating.decision_function(self._compute_scores(X))
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit a rCCA on supervised EEG data.
 
         Parameters
@@ -875,7 +979,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply rCCA to novel EEG data.
 
         Parameters
@@ -898,7 +1005,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
             X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
             return self.gating.predict(self._compute_scores(X))
 
-    def set_stimulus(self, stimulus):
+    def set_stimulus(
+            self,
+            stimulus: np.ndarray,
+    ) -> None:
         """Set the stimulus, and as such change the templates.
 
         Parameters
@@ -909,7 +1019,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         """
         self.set_stimulus_amplitudes(stimulus, self.amplitudes)
 
-    def set_amplitudes(self, amplitudes):
+    def set_amplitudes(
+            self,
+            amplitudes: np.ndarray,
+    ) -> None:
         """Set the amplitudes, and as such change the templates.
 
         Parameters
@@ -920,7 +1033,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
         """
         self.set_stimulus_amplitudes(self.stimulus, amplitudes)
 
-    def set_stimulus_amplitudes(self, stimulus, amplitudes):
+    def set_stimulus_amplitudes(
+            self,
+            stimulus: np.ndarray,
+            amplitudes: np.ndarray,
+    ) -> None:
         """Set the stimulus and/or the amplitudes, and as such change the templates.
 
         Parameters

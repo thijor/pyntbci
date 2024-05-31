@@ -1,4 +1,5 @@
 import numpy as np
+import sklearn.base
 from scipy.stats import beta, norm
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.linear_model import LinearRegression
@@ -38,8 +39,17 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
            method for parallel stimulation evoked response BCIs.
     """
 
-    def __init__(self, estimator, segment_time, fs, method="bes0", cr=1.0, target_pf=0.05, target_pd=0.80,
-                 max_time=None):
+    def __init__(
+            self,
+            estimator: sklearn.base.BaseEstimator,
+            segment_time: float,
+            fs: int,
+            method: str = "bes0",
+            cr: float = 1.0,
+            target_pf: float = 0.05,
+            target_pd: float = 0.80,
+            max_time: float = None,
+    ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
         self.fs = fs
@@ -49,7 +59,11 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.target_pd = target_pd
         self.max_time = max_time
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
         Parameters
@@ -129,7 +143,10 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply the estimator to novel EEG data using Bayesian dynamic stopping.
 
         Parameters
@@ -226,7 +243,13 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
 
-    def __init__(self, estimator, target_p=0.95, fs=None, max_time=None):
+    def __init__(
+            self,
+            estimator: sklearn.base.BaseEstimator,
+            target_p: float = 0.95,
+            fs: int = None,
+            max_time: float = None,
+    ) -> None:
         self.estimator = estimator
         self.target_p = target_p
         self.fs = fs
@@ -234,7 +257,11 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         if self.max_time is not None:
             assert self.fs is not None, "If max_time is specified, then also fs should be specified."
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the dynamic procedure on supervised EEG data. Note, BetaStopping itself does
         not require training, it only trains the estimator.
 
@@ -252,8 +279,12 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         """
         # Fit estimator
         self.estimator.fit(X, y)
+        return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply the estimator to novel EEG data using beta dynamic stopping.
 
         Parameters
@@ -318,12 +349,21 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         The number of folds to evaluate the optimization.
     target: float (default: None)
         The targeted value for the criterion to optimize for.
-    smooth_width: int (default: None)
+    smooth_width: float (default: None)
         The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.
     """
 
-    def __init__(self, estimator, segment_time, fs, criterion="accuracy", optimization="max", n_folds=4, target=None,
-                 smooth_width=None):
+    def __init__(
+            self,
+            estimator: sklearn.base.BaseEstimator,
+            segment_time: float,
+            fs: int,
+            criterion: str = "accuracy",
+            optimization: str = "max",
+            n_folds: int = 4,
+            target: float = None,
+            smooth_width: float = None
+    ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
         self.fs = fs
@@ -333,7 +373,11 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         self.target = target
         self.smooth_width = smooth_width
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the static procedure on supervised EEG data.
 
         Parameters
@@ -406,7 +450,10 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply the estimator to novel EEG data using criterion static stopping.
 
         Parameters
@@ -459,8 +506,17 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
 
-    def __init__(self, estimator, segment_time, fs, target_p=0.95, margin_min=0.0, margin_max=1.0, margin_step=0.05,
-                 max_time=None):
+    def __init__(
+            self,
+            estimator: sklearn.base.BaseEstimator,
+            segment_time: float,
+            fs: int,
+            target_p: float = 0.95,
+            margin_min: float = 0.0,
+            margin_max: float = 1.0,
+            margin_step: float = 0.05,
+            max_time: float = None,
+    ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
         self.fs = fs
@@ -470,7 +526,11 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         self.margin_step = margin_step
         self.max_time = max_time
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
         Parameters
@@ -531,7 +591,10 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """The testing procedure to apply the estimator to novel EEG data using margin dynamic stopping.
 
         Parameters

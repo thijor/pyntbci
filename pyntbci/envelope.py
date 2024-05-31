@@ -2,7 +2,12 @@ import numpy as np
 from scipy.signal import butter, buttord, filtfilt, gammatone, resample
 
 
-def aud_space_bw(fmin, fmax, bw=1.0, scale="erb"):
+def aud_space_bw(
+        fmin: float,
+        fmax: float,
+        bw: float = 1.0,
+        scale: str = "erb",
+) -> np.ndarray:
     """Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
     frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two
     consecutive values is bw on the auditory scale, and the points will be centered on the auditory scale between fmin
@@ -46,7 +51,10 @@ def aud_space_bw(fmin, fmax, bw=1.0, scale="erb"):
     return y
 
 
-def aud_to_freq(aud, scale="erb"):
+def aud_to_freq(
+        aud: np.ndarray,
+        scale: str = "erb",
+) -> np.ndarray:
     """Convert auditory units at the auditory scale to frequency (Hz).
 
     Adapted from LTFAT: https://ltfat.org/doc/auditory/audtofreq audtofreq.m (Peter L. Søndergaard)
@@ -70,8 +78,17 @@ def aud_to_freq(aud, scale="erb"):
     return freq
 
 
-def envelope_gammatone(audio, fs, fs_inter=8000, fs_target=32, power=0.6, lowpass=9.0, fmin=150.0, fmax=4000.0,
-                       spacing=1.5):
+def envelope_gammatone(
+        audio: np.ndarray,
+        fs: int,
+        fs_inter: int = 8000,
+        fs_target: int = 32,
+        power: float = 0.6,
+        lowpass: float = 9.0,
+        fmin: float = 150.0,
+        fmax: float = 4000.0,
+        spacing: float = 1.5,
+) -> np.ndarray:
     """Compute the envelope of audio using a gammatone filterbank.
 
     Developed in collaboration with Hanneke Scheppink.
@@ -143,7 +160,12 @@ def envelope_gammatone(audio, fs, fs_inter=8000, fs_target=32, power=0.6, lowpas
     return envelope
 
 
-def envelope_rms(audio, fs, fs_inter=8000, fs_target=32):
+def envelope_rms(
+        audio: np.ndarray,
+        fs: int,
+        fs_inter: int = 8000,
+        fs_target: int = 32,
+) -> np.ndarray:
     """Compute the envelope of the audio as the root mean square (RMS) of the signal.
 
     Parameters
@@ -174,7 +196,11 @@ def envelope_rms(audio, fs, fs_inter=8000, fs_target=32):
     return envelope
 
 
-def erb_space_bw(fmin, fmax, bw=1):
+def erb_space_bw(
+        fmin: float,
+        fmax: float,
+        bw: float = 1.0,
+) -> np.ndarray:
     """Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
     frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two
     consecutive values is bw on ERB auditory scale, and the points will be centered on the scale between fmin and fmax.
@@ -199,7 +225,10 @@ def erb_space_bw(fmin, fmax, bw=1):
     return y
 
 
-def freq_to_aud(freq, scale="erb"):
+def freq_to_aud(
+        freq: np.ndarray,
+        scale: str = "erb",
+) -> np.ndarray:
     """Convert frequencies (Hz) to auditory units at the auditory scale.
 
     Adapted from LTFAT: https://ltfat.org/doc/auditory/freqtoaud freqtoaud.m (Peter L. Søndergaard)

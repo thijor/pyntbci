@@ -1,4 +1,5 @@
 import numpy as np
+import sklearn.base
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array
 
@@ -15,10 +16,16 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         The aggregate function to use. Options: mean, median, sum, min, max.
     """
 
-    def __init__(self, aggregate="mean"):
+    def __init__(
+            self,
+            aggregate: str = "mean"
+    ) -> None:
         self.aggregate = aggregate
 
-    def decision_function(self, X):
+    def decision_function(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Compute gated scores for X.
 
         Parameters
@@ -45,7 +52,11 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         else:
             raise Exception("Unknown aggregate function:", self.aggregate)
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """Fit an aggregate gate. Note, does not involve learning.
 
         Parameters
@@ -62,7 +73,10 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         """
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Predict the labels of X.
 
         Parameters
@@ -85,14 +99,20 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: BaseEstimator
+    estimator: sklearn.base.BaseEstimator
         The estimator used to classify difference scores.
     """
 
-    def __init__(self, estimator):
+    def __init__(
+            self,
+            estimator: sklearn.base.BaseEstimator,
+    ) -> None:
         self.estimator = estimator
 
-    def _compute_difference_scores(self, X):
+    def _compute_difference_scores(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Compute difference scores.
 
         Parameters
@@ -111,7 +131,10 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
                 Z.append(X[:, i, :] - X[:, j, :])
         return np.stack(Z, axis=1).reshape((X.shape[0], -1))
 
-    def decision_function(self, X):
+    def decision_function(
+            self,
+            X: np.ndarray
+    ) -> np.ndarray:
         """Compute gated scores for X.
 
         Parameters
@@ -127,7 +150,11 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         X = check_array(X, ensure_2d=False, allow_nd=True)
         return self.estimator.decision_function(self._compute_difference_scores(X))
 
-    def fit(self, X, y):
+    def fit(
+            self,
+            X: np.ndarray,
+            y: np.ndarray,
+    ) -> sklearn.base.BaseEstimator:
         """Fit a difference scores gate. Note, calibrates the estimator on difference scores.
 
         Parameters
@@ -146,7 +173,10 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         self.estimator.fit(self._compute_difference_scores(X), y)
         return self
 
-    def predict(self, X):
+    def predict(
+            self,
+            X: np.ndarray,
+    ) -> np.ndarray:
         """Predict the labels of X.
 
         Parameters

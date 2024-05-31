@@ -394,6 +394,5 @@ class TestRCCA(unittest.TestCase):
         self.assertEqual(rcca1.r_.shape, rcca1.r_.shape)
 
 
-
 if __name__ == "__main__":
     unittest.main()

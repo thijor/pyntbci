@@ -1,11 +1,18 @@
 import numpy as np
+import sklearn.base
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
 
 
 EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe")
 
 
-def correct_latency(X, y, latency, fs, axis=-1):
+def correct_latency(
+        X: np.ndarray,
+        y: np.ndarray,
+        latency: np.ndarray,
+        fs: int,
+        axis: int = -1,
+) -> np.ndarray:
     """Correct for a latency in data. This is done by shifting data according to the class-specific latencies.
 
     Parameters
@@ -37,7 +44,10 @@ def correct_latency(X, y, latency, fs, axis=-1):
     return Z
 
 
-def correlation(A, B):
+def correlation(
+        A: np.ndarray,
+        B: np.ndarray,
+) -> np.ndarray:
     """Compute the correlation coefficient. Computed between two sets of variables.
 
     Parameters
@@ -73,7 +83,14 @@ def correlation(A, B):
     return scores
 
 
-def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=False):
+def covariance(
+        X: np.ndarray,
+        n_old: int = 0,
+        avg_old: np.ndarray = None,
+        cov_old: np.ndarray = None,
+        estimator: sklearn.base.BaseEstimator = None,
+        running: bool = False,
+) -> tuple[int, np.ndarray, np.ndarray]:
     """Compute the covariance matrix.
 
     Parameters
@@ -127,7 +144,11 @@ def covariance(X, n_old=0, avg_old=None, cov_old=None, estimator=None, running=F
     return n_new, avg_new, cov_new
 
 
-def decoding_matrix(data, length, stride=1):
+def decoding_matrix(
+        data: np.ndarray,
+        length: int,
+        stride: int = 1,
+) -> np.ndarray:
     """Make a Hankel-like decoding matrix. Used to phase-shift the data (i.e., backward / decoding model), to learn a
     spatio-spectral filter (i.e., a spectral filter per channel).
 
@@ -160,7 +181,12 @@ def decoding_matrix(data, length, stride=1):
     return dmatrix
 
 
-def encoding_matrix(stimulus, length, stride=1, amplitude=None):
+def encoding_matrix(
+        stimulus: np.array,
+        length: int,
+        stride: int = 1,
+        amplitude: np.ndarray = None,
+) -> np.ndarray:
     """Make a Toeplitz-like encoding matrix. Used to phase-shift the stimulus (forward / encoding model), per event to
     learn a (or several) temporal filter(s). Also called a "structure matrix" or "design matrix".
 
@@ -211,7 +237,10 @@ def encoding_matrix(stimulus, length, stride=1, amplitude=None):
     return ematrix
 
 
-def euclidean(A, B):
+def euclidean(
+        A: np.ndarray,
+        B: np.ndarray,
+) -> np.ndarray:
     """Compute the Euclidean distance. Computed between two sets of variables.
 
     Parameters
@@ -240,7 +269,11 @@ def euclidean(A, B):
     return scores
 
 
-def event_matrix(stimulus, event, onset_event=False):
+def event_matrix(
+        stimulus: np.ndarray,
+        event: str,
+        onset_event: bool = False,
+) -> tuple[np.ndarray, tuple[str]]:
     """Make an event matrix. The event matrix describes the onset of events in a stimulus sequence, given a particular
     event definition.
 
@@ -313,8 +346,8 @@ def event_matrix(stimulus, event, onset_event=False):
             unique_durations = np.unique(durations)
             for duration in unique_durations:
                 if duration not in events:
-                    events[duration] = np.zeros((n_stims, n_samples), dtype="bool_")
-                events[duration][i_code, idx] = durations == duration
+                    events[str(duration)] = np.zeros((n_stims, n_samples), dtype="bool_")
+                events[str(duration)][i_code, idx] = durations == duration
 
         # Extract unique events (sorted numerically or alphabetically)
         labels = tuple(sorted(events.keys()))
@@ -356,7 +389,17 @@ def event_matrix(stimulus, event, onset_event=False):
     return events.astype("float32"), labels
 
 
-def filterbank(X, passbands, fs, tmin=None, ftype="butterworth", N=None, stopbands=None, gpass=3.0, gstop=40.0):
+def filterbank(
+        X: np.ndarray,
+        passbands: tuple[tuple[float, float]],
+        fs: float,
+        tmin: float = None,
+        ftype: str = "butterworth",
+        N: int = None,
+        stopbands: tuple[tuple[float, float]] = None,
+        gpass: float = 3.0,
+        gstop: float = 40.0,
+) -> np.ndarray:
     """Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the
     minimum loss in the stopband.
 
@@ -364,8 +407,8 @@ def filterbank(X, passbands, fs, tmin=None, ftype="butterworth", N=None, stopban
     ----------
     X: np.ndarray
         The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-    passbands: list(list)
-        A list of lists with passbands defined as [lower, higher] cutoff in Hz.
+    passbands: tuple(tuple)
+        A tuple of tuples with passbands defined as (lower, higher) cutoff in Hz.
     fs: int
         The sampling frequency of the EEG data in Hz.
     tmin: float (default: None)
@@ -376,9 +419,9 @@ def filterbank(X, passbands, fs, tmin=None, ftype="butterworth", N=None, stopban
     N: int | list (default: None)
         The filter order. If a list is provided, it is the order for each passband. If None, the order is set given the
         stopbands, gpass and gstop.
-    stopbands: list(list) (default: None)
-        A list of lists with a stopband for each passband defined as [lower, higher] cutoff in Hz. If None, the
-        stopbands default to [lower-2, higher+7] of the passbands. Only used if N=None.
+    stopbands: tuple(tuple) (default: None)
+        A tuple of tuples with a stopband for each passband defined as (lower, higher) cutoff in Hz. If None, the
+        stopbands default to (lower-2, higher+7) of the passbands. Only used if N=None.
     gpass: float | list (default: 3.0)
         The maximum loss in the passband (dB). If a list is provided, it is the gpass for each passband. Only used if
         N=None.
@@ -451,16 +494,20 @@ def filterbank(X, passbands, fs, tmin=None, ftype="butterworth", N=None, stopban
     return Xf
 
 
-def itr(n, p, t):
+def itr(
+        n: np.ndarray,
+        p: np.ndarray,
+        t: np.ndarray,
+) -> np.ndarray:
     """Compute the information-transfer rate (ITR).
 
     Parameters
     ----------
-    n: int | np.ndarray:
+    n: np.ndarray:
         The number of classes.
-    p: float | np.ndarray:
+    p: np.ndarray:
         The decoding accuracy between 0 and 1.
-    t: float | np.ndarray:
+    t: np.ndarray:
         The decoding time in seconds (including inter-trial time).
 
     Returns
@@ -475,7 +522,13 @@ def itr(n, p, t):
     return b * (60 / t)
 
 
-def trials_to_epochs(X, y, codes, epoch_size, step_size):
+def trials_to_epochs(
+        X: np.ndarray,
+        y: np.ndarray,
+        codes: np.ndarray,
+        epoch_size: int,
+        step_size: int,
+) -> tuple[np.ndarray, np.ndarray]:
     """Slice trials to epochs.
     
     Parameters
