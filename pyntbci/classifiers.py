@@ -736,8 +736,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
         The weight vector representing a spatial filter of shape (n_channels, n_components).
     r_: np.ndarray
         The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components).
-    T_: np.ndarray
-        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).
+    Ts_: np.ndarray
+        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components) for
+        stimulus cycle 1 (i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).
+    Tw_: np.ndarray
+        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components) for
+        stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of
+        previous cycles).
 
     References
     ----------
@@ -752,7 +757,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
     """
     w_: np.ndarray
     r_: np.ndarray
-    T_: np.ndarray
+    Ts_: np.ndarray
+    Tw_: np.ndarray
 
     def __init__(
             self,
@@ -898,15 +904,15 @@ class rCCA(BaseEstimator, ClassifierMixin):
         T: np.ndarray
             The templates of shape (n_classes, n_components, n_samples).
         """
-        if n_samples is None or self._Ts.shape[2] == n_samples:
-            T = self._Ts
+        if n_samples is None or self.Ts_.shape[2] == n_samples:
+            T = self.Ts_
         else:
-            n = int(np.ceil(n_samples / self._Ts.shape[2]))
+            n = int(np.ceil(n_samples / self.Ts_.shape[2]))
             if (n - 1) > 1:
-                Tw = np.tile(self._Tw, (1, 1, (n - 1)))
+                Tw = np.tile(self.Tw_, (1, 1, (n - 1)))
             else:
-                Tw = self._Tw
-            T = np.concatenate((self._Ts, Tw), axis=2)[:, :, :n_samples]
+                Tw = self.Tw_
+            T = np.concatenate((self.Ts_, Tw), axis=2)[:, :, :n_samples]
         T -= T.mean(axis=2, keepdims=True)
         return T
 
@@ -1001,13 +1007,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
                 T[i_class, :, :] = self._cca[i_class].transform(X=None, Y=M[[i_class], :, :])[1]
         else:
             T = self._cca.transform(X=None, Y=M)[1]
-        self._Ts = T[:, :, :self.stimulus.shape[1]]
-        self._Tw = T[:, :, self.stimulus.shape[1]:]
+        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
+        self.Tw_ = T[:, :, self.stimulus.shape[1]:]
 
         # Correct for raster latency
         if self.latency is not None:
-            self._Ts = correct_latency(self._Ts, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
-            self._Tw = correct_latency(self._Tw, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+            self.Ts_ = correct_latency(self.Ts_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+            self.Tw_ = correct_latency(self.Tw_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
 
         # Fit gating
         if self.gating is not None:
@@ -1088,5 +1094,5 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.stimulus = stimulus
         self.amplitudes = amplitudes
         T = self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1]
-        self._Ts = T[:, :, :self.stimulus.shape[1]]
-        self._Tw = T[:, :, self.stimulus.shape[1]:]
+        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
+        self.Tw_ = T[:, :, self.stimulus.shape[1]:]
