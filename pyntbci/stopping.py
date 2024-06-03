@@ -21,8 +21,8 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         The size of a segment of data at which classification is performed ins seconds.
     fs: int
         The sampling frequency of the EEG data in Hz.
-    method: str (default: "bes0")
-        The method to use for Bayesian dynamic stopping: bes0, bes1, bes2.
+    method: str (default: "bds0")
+        The method to use for Bayesian dynamic stopping: bds0, bds1, bds2.
     cr: float (default: 1.0)
         The cost ratio.
     target_pf: float (default: 0.05)
@@ -44,7 +44,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             estimator: sklearn.base.BaseEstimator,
             segment_time: float,
             fs: int,
-            method: str = "bes0",
+            method: str = "bds0",
             cr: float = 1.0,
             target_pf: float = 0.05,
             target_pd: float = 0.80,
@@ -170,11 +170,11 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
             # Check if stopped
             i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
-            if self.method == "bes0":
+            if self.method == "bds0":
                 # Stop if eta threshold of this segment is reached
                 not_stopped = np.max(scores, axis=1) <= self.eta_[i_segment]
 
-            elif self.method == "bes1":
+            elif self.method == "bds1":
                 # Change target pf/pd with min/max of learned pf/pd
                 if np.min(self.pf_) > self.target_pf:
                     self.target_pf = np.min(self.pf_)
@@ -189,7 +189,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
                 c3 = self.pm_[i_segment] >= (1 - self.target_pd)
                 not_stopped = np.logical_or(np.logical_or(c1, c2), c3)
 
-            elif self.method == "bes2":
+            elif self.method == "bds2":
                 # Change target pf/pd with min/max of learned pf/pd
                 if np.min(self.pf_) > self.target_pf:
                     self.target_pf = np.min(self.pf_)

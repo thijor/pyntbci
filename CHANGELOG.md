@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 1.3.0
+
+### Added
+
+### Changed
+- Changed "bes" to "bds" in `BayesStopping` in `stopping` in line with publication 
+
+### Fixed
+
 ## Version 1.2.0 (18-04-2024)
 
 ### Added
