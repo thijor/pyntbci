@@ -31,11 +31,47 @@ class CCA(BaseEstimator, TransformerMixin):
         If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
         track of previous data to update a running average and covariance for the CCA.
 
+    Attributes
+    ----------
+    w_x_: np.ndarray
+        The weight vector to project X of shape (n_features_x, n_components).
+    w_y_: np.ndarray
+        The weight vector to project Y of shape (n_features_y, n_components).
+    n_x_: int
+        The number of samples used to estimate avg_x_ and cov_x.
+    avg_x_: np.ndarray
+        The (running) average of X of shape (n_features_x).
+    cov_x_: np.ndarray
+        The (running) covariance of X of shape (n_features_x, n_features_x).
+    n_y_: int
+        The number of samples used to estimate avg_y_ and cov_y.
+    avg_y_: np.ndarray
+        The (running) average of Y of shape (n_features_y).
+    cov_y_: np.ndarray
+        The (running) covariance of Y of shape (n_features_y, n_features_y).
+    n_xy_: int
+        The number of samples used to estimate avg_xy_ and cov_xy.
+    avg_xy_: np.ndarray
+        The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).
+    cov_xy_: np.ndarray
+        The (running) crosscovariance of X and Y of shape (n_features_x, n_features_y).
+
     References
     ----------
     .. [1] Hotelling, H. (1992). Relations between two sets of variates. In Breakthroughs in statistics: methodology and
            distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14
     """
+    w_x_: np.ndarray
+    w_y_: np.ndarray
+    n_x_: int = 0
+    avg_x_: np.ndarray = None
+    cov_x_: np.ndarray = None
+    n_y_: int = 0
+    avg_y_: np.ndarray = None
+    cov_y_: np.ndarray = None
+    n_xy_: int = 0
+    avg_xy_: np.ndarray = None
+    cov_xy_: np.ndarray = None
 
     def __init__(
             self,
@@ -52,15 +88,6 @@ class CCA(BaseEstimator, TransformerMixin):
         self.estimator_x = estimator_x
         self.estimator_y = estimator_y
         self.running = running
-        self.n_x_ = 0
-        self.avg_x_ = None
-        self.cov_x_ = None
-        self.n_y_ = 0
-        self.avg_y_ = None
-        self.cov_y_ = None
-        self.n_xy_ = 0
-        self.avg_xy_ = None
-        self.cov_xy_ = None
 
     def _fit_X2D_Y2D(
             self,
@@ -357,6 +384,11 @@ class TRCA(BaseEstimator, TransformerMixin):
     n_components: int
         The number of TRCA components to use.
 
+    Attributes
+    ----------
+    w_: np.ndarray
+        The weight vector to project X of shape (n_features, n_components).
+
     References
     ----------
     .. [2] Tanaka, H., Katura, T., & Sato, H. (2013). Task-related component analysis for functional neuroimaging and
@@ -369,6 +401,7 @@ class TRCA(BaseEstimator, TransformerMixin):
     .. [5] https://github.com/NeuroTechX/moabb/blob/develop/moabb/pipelines/classification.py
     .. [6] https://github.com/nbara/python-meegkit/blob/master/meegkit/trca.py
     """
+    w_: np.ndarray
 
     def __init__(
             self,

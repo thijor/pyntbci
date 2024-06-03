@@ -48,12 +48,21 @@ class eCCA(BaseEstimator, ClassifierMixin):
         Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
         empirical covariance is used.
 
+    Attributes
+    ----------
+    w_: np.ndarray
+        The weight vector representing a spatial filter of shape (n_channels, n_components).
+    T_: np.ndarray
+        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).
+
     References
     ----------
     .. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R.
            (2021). Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature
            review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf
     """
+    w_: np.ndarray
+    T_: np.ndarray
 
     def __init__(
             self,
@@ -308,11 +317,17 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: BaseEstimator
+    estimator: sklearn.base.BaseEstimator
         The classifier object that is applied to each item in the databank.
-    gating: BaseEstimator
+    gating: sklearn.base.BaseEstimator
         The gating function that is used to combine the scores obtained from each individual classifiers.
+
+    Attributes
+    ----------
+    models_: list[sklearn.base.BaseEstimator]
+        A list containing all models learned for each of the databanks.
     """
+    models_: list[sklearn.base.BaseEstimator]
 
     def __init__(
             self,
@@ -431,12 +446,21 @@ class eTRCA(BaseEstimator, ClassifierMixin):
     ensemble: bool (default: False)
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
 
+    Attributes
+    ----------
+    w_: np.ndarray
+        The weight vector representing a spatial filter of shape (n_channels, n_components).
+    T_: np.ndarray
+        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).
+
     References
     ----------
     .. [2] Nakanishi, M., Wang, Y., Chen, X., Wang, Y. T., Gao, X., & Jung, T. P. (2017). Enhancing detection of SSVEPs
            for a high-speed brain speller using task-related component analysis. IEEE Transactions on Biomedical
            Engineering, 65(1), 104-112. doi: 10.1109/TBME.2017.2694818
     """
+    w_: np.ndarray
+    T_: np.ndarray
 
     def __init__(
             self,
@@ -706,6 +730,15 @@ class rCCA(BaseEstimator, ClassifierMixin):
     gating: BaseEstimator (default: None)
         The gating function that is used to combine the scores obtained from each individual component.
 
+    Attributes
+    ----------
+    w_: np.ndarray
+        The weight vector representing a spatial filter of shape (n_channels, n_components).
+    r_: np.ndarray
+        The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components).
+    T_: np.ndarray
+        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).
+
     References
     ----------
     .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
@@ -717,6 +750,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
            code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
            056007. doi: 10.1088/1741-2552/abecef
     """
+    w_: np.ndarray
+    r_: np.ndarray
+    T_: np.ndarray
 
     def __init__(
             self,
@@ -862,15 +898,15 @@ class rCCA(BaseEstimator, ClassifierMixin):
         T: np.ndarray
             The templates of shape (n_classes, n_components, n_samples).
         """
-        if n_samples is None or self.Ts_.shape[2] == n_samples:
-            T = self.Ts_
+        if n_samples is None or self._Ts.shape[2] == n_samples:
+            T = self._Ts
         else:
-            n = int(np.ceil(n_samples / self.Ts_.shape[2]))
+            n = int(np.ceil(n_samples / self._Ts.shape[2]))
             if (n - 1) > 1:
-                Tw = np.tile(self.Tw_, (1, 1, (n - 1)))
+                Tw = np.tile(self._Tw, (1, 1, (n - 1)))
             else:
-                Tw = self.Tw_
-            T = np.concatenate((self.Ts_, Tw), axis=2)[:, :, :n_samples]
+                Tw = self._Tw
+            T = np.concatenate((self._Ts, Tw), axis=2)[:, :, :n_samples]
         T -= T.mean(axis=2, keepdims=True)
         return T
 
@@ -965,13 +1001,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
                 T[i_class, :, :] = self._cca[i_class].transform(X=None, Y=M[[i_class], :, :])[1]
         else:
             T = self._cca.transform(X=None, Y=M)[1]
-        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
-        self.Tw_ = T[:, :, self.stimulus.shape[1]:]
+        self._Ts = T[:, :, :self.stimulus.shape[1]]
+        self._Tw = T[:, :, self.stimulus.shape[1]:]
 
         # Correct for raster latency
         if self.latency is not None:
-            self.Ts_ = correct_latency(self.Ts_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
-            self.Tw_ = correct_latency(self.Tw_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+            self._Ts = correct_latency(self._Ts, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+            self._Tw = correct_latency(self._Tw, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
 
         # Fit gating
         if self.gating is not None:
@@ -1052,5 +1088,5 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.stimulus = stimulus
         self.amplitudes = amplitudes
         T = self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1]
-        self.Ts_ = T[:, :, :self.stimulus.shape[1]]
-        self.Tw_ = T[:, :, self.stimulus.shape[1]:]
+        self._Ts = T[:, :, :self.stimulus.shape[1]]
+        self._Tw = T[:, :, self.stimulus.shape[1]:]

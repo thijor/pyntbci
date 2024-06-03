@@ -33,11 +33,41 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
         it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
 
+    Attributes
+    ----------
+    alpha_: float
+        The scaling parameter between observed and predicted responses.
+    sigma_: float
+        The standard deviation of the noise.
+    b0_: np.ndarray
+        The mean of the non-target Gaussian distribution of shape (n_segments).
+    b1_: np.ndarray
+        The mean of the target Gaussian distribution of shape (n_segments).
+    s0_: np.ndarray
+        The standard deviation of the non-target Gaussian distribution of shape (n_segments).
+    s1_: np.ndarray
+        The standard deviation of the target Gaussian distribution of shape (n_segments).
+    eta_: np.ndarray
+        The decision boundary of shape (n_segments).
+    pf_: np.ndarray
+        The predicted probability of a false detection of shape (n_segments).
+    pm_: np.ndarray
+        The predicted probability of a miss of shape (n_segments).
+
     References
     ----------
-    .. [1] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping
-           method for parallel stimulation evoked response BCIs.
+    .. [1] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked response
+           brain-computer interfacing
     """
+    alpha_: float
+    sigma_: float
+    b0_: np.ndarray
+    b1_: np.ndarray
+    s0_: np.ndarray
+    s1_: np.ndarray
+    eta_: np.ndarray
+    pf_: np.ndarray
+    pm_: np.ndarray
 
     def __init__(
             self,
@@ -236,6 +266,9 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
         it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
 
+    Attributes
+    ----------
+
     References
     ----------
     .. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
@@ -351,7 +384,13 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         The targeted value for the criterion to optimize for.
     smooth_width: float (default: None)
         The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.
+
+    Attributes
+    ----------
+    stop_time_: float
+        The trained static stopping time.
     """
+    stop_time_: np.ndarray
 
     def __init__(
             self,
@@ -500,11 +539,17 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
         it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
 
+    Attributes
+    ----------
+    margins_: np.ndarray
+        The trained stopping margins of shape (n_segments).
+
     References
     ----------
     .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
+    margins_: np.ndarray
 
     def __init__(
             self,

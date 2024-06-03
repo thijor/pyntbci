@@ -14,6 +14,9 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
     ----------
     aggregate: str (default: "mean")
         The aggregate function to use. Options: mean, median, sum, min, max.
+
+    Attributes
+    ----------
     """
 
     def __init__(
@@ -101,6 +104,9 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
     ----------
     estimator: sklearn.base.BaseEstimator
         The estimator used to classify difference scores.
+
+    Attributes
+    ----------
     """
 
     def __init__(

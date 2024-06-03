@@ -237,8 +237,8 @@ class TestRCCA(unittest.TestCase):
         rcca.fit(X, y)
         self.assertEqual(rcca.w_.shape, (X.shape[1], 1))
         self.assertEqual(rcca.r_.shape, (int(2 * encoding_length * fs), 1))
-        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (V.shape[0], 1, V.shape[1]))
 
         yh = rcca.predict(X)
         self.assertEqual(yh.shape, y.shape)
@@ -258,8 +258,8 @@ class TestRCCA(unittest.TestCase):
         rcca.fit(X, y)
         self.assertEqual(rcca.w_.shape, (X.shape[1], n_components))
         self.assertEqual(rcca.r_.shape, (int(2 * encoding_length * fs), n_components))
-        self.assertEqual(rcca.Ts_.shape, (V.shape[0], n_components, V.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (V.shape[0], n_components, V.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (V.shape[0], n_components, V.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (V.shape[0], n_components, V.shape[1]))
 
         yh = rcca.predict(X)
         self.assertEqual(yh.shape, y.shape)
@@ -318,11 +318,11 @@ class TestRCCA(unittest.TestCase):
         rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length)
         rcca.fit(X, y)
 
-        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (V.shape[0], 1, V.shape[1]))
         rcca.set_stimulus(U)
-        self.assertEqual(rcca.Ts_.shape, (U.shape[0], 1, U.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (U.shape[0], 1, U.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (U.shape[0], 1, U.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (U.shape[0], 1, U.shape[1]))
 
     def test_rcca_set_amplitudes(self):
         fs = 1000
@@ -336,11 +336,11 @@ class TestRCCA(unittest.TestCase):
         rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, amplitudes=A)
         rcca.fit(X, y)
 
-        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (V.shape[0], 1, V.shape[1]))
         rcca.set_amplitudes(B)
-        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (V.shape[0], 1, V.shape[1]))
 
     def test_rcca_set_stimulus_amplitudes(self):
         fs = 1000
@@ -355,11 +355,11 @@ class TestRCCA(unittest.TestCase):
         rcca = pyntbci.classifiers.rCCA(V, fs, event="refe", encoding_length=encoding_length, amplitudes=A)
         rcca.fit(X, y)
 
-        self.assertEqual(rcca.Ts_.shape, (V.shape[0], 1, V.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (V.shape[0], 1, V.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (V.shape[0], 1, V.shape[1]))
         rcca.set_stimulus_amplitudes(U, B)
-        self.assertEqual(rcca.Ts_.shape, (U.shape[0], 1, U.shape[1]))
-        self.assertEqual(rcca.Tw_.shape, (U.shape[0], 1, U.shape[1]))
+        self.assertEqual(rcca._Ts.shape, (U.shape[0], 1, U.shape[1]))
+        self.assertEqual(rcca._Tw.shape, (U.shape[0], 1, U.shape[1]))
 
     def test_rcca_regularization(self):
         fs = 250
