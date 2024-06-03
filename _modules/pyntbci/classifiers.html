@@ -140,12 +140,21 @@
 <span class="sd">        Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom</span>
 <span class="sd">        empirical covariance is used.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w_: np.ndarray</span>
+<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">    T_: np.ndarray</span>
+<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    .. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., &amp; Hornero, R.</span>
 <span class="sd">           (2021). Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature</span>
 <span class="sd">           review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">T_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -412,11 +421,17 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    estimator: BaseEstimator</span>
+<span class="sd">    estimator: sklearn.base.BaseEstimator</span>
 <span class="sd">        The classifier object that is applied to each item in the databank.</span>
-<span class="sd">    gating: BaseEstimator</span>
+<span class="sd">    gating: sklearn.base.BaseEstimator</span>
 <span class="sd">        The gating function that is used to combine the scores obtained from each individual classifiers.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    models_: list[sklearn.base.BaseEstimator]</span>
+<span class="sd">        A list containing all models learned for each of the databanks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">models_</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -547,12 +562,21 @@
 <span class="sd">    ensemble: bool (default: False)</span>
 <span class="sd">        Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w_: np.ndarray</span>
+<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">    T_: np.ndarray</span>
+<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    .. [2] Nakanishi, M., Wang, Y., Chen, X., Wang, Y. T., Gao, X., &amp; Jung, T. P. (2017). Enhancing detection of SSVEPs</span>
 <span class="sd">           for a high-speed brain speller using task-related component analysis. IEEE Transactions on Biomedical</span>
 <span class="sd">           Engineering, 65(1), 104-112. doi: 10.1109/TBME.2017.2694818</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">T_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -834,6 +858,20 @@
 <span class="sd">    gating: BaseEstimator (default: None)</span>
 <span class="sd">        The gating function that is used to combine the scores obtained from each individual component.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w_: np.ndarray</span>
+<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">    r_: np.ndarray</span>
+<span class="sd">        The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components).</span>
+<span class="sd">    Ts_: np.ndarray</span>
+<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components) for</span>
+<span class="sd">        stimulus cycle 1 (i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).</span>
+<span class="sd">    Tw_: np.ndarray</span>
+<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components) for</span>
+<span class="sd">        stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of</span>
+<span class="sd">        previous cycles).</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    .. [3] Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:</span>
@@ -845,6 +883,10 @@
 <span class="sd">           code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),</span>
 <span class="sd">           056007. doi: 10.1088/1741-2552/abecef</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">r_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">Ts_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">Tw_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>

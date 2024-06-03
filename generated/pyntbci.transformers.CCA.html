@@ -115,6 +115,127 @@ track of previous data to update a running average and covariance for the CCA.</
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.w_x_">
+<span class="sig-name descname"><span class="pre">w_x_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.w_x_" title="Link to this definition"></a></dt>
+<dd><p>The weight vector to project X of shape (n_features_x, n_components).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.w_y_">
+<span class="sig-name descname"><span class="pre">w_y_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.w_y_" title="Link to this definition"></a></dt>
+<dd><p>The weight vector to project Y of shape (n_features_y, n_components).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.n_x_">
+<span class="sig-name descname"><span class="pre">n_x_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.n_x_" title="Link to this definition"></a></dt>
+<dd><p>The number of samples used to estimate <a href="#id3"><span class="problematic" id="id4">avg_x_</span></a> and cov_x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.avg_x_">
+<span class="sig-name descname"><span class="pre">avg_x_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.avg_x_" title="Link to this definition"></a></dt>
+<dd><p>The (running) average of X of shape (n_features_x).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.cov_x_">
+<span class="sig-name descname"><span class="pre">cov_x_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.cov_x_" title="Link to this definition"></a></dt>
+<dd><p>The (running) covariance of X of shape (n_features_x, n_features_x).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.n_y_">
+<span class="sig-name descname"><span class="pre">n_y_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.n_y_" title="Link to this definition"></a></dt>
+<dd><p>The number of samples used to estimate <a href="#id5"><span class="problematic" id="id6">avg_y_</span></a> and cov_y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.avg_y_">
+<span class="sig-name descname"><span class="pre">avg_y_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.avg_y_" title="Link to this definition"></a></dt>
+<dd><p>The (running) average of Y of shape (n_features_y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.cov_y_">
+<span class="sig-name descname"><span class="pre">cov_y_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.cov_y_" title="Link to this definition"></a></dt>
+<dd><p>The (running) covariance of Y of shape (n_features_y, n_features_y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.n_xy_">
+<span class="sig-name descname"><span class="pre">n_xy_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.n_xy_" title="Link to this definition"></a></dt>
+<dd><p>The number of samples used to estimate <a href="#id7"><span class="problematic" id="id8">avg_xy_</span></a> and cov_xy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.avg_xy_">
+<span class="sig-name descname"><span class="pre">avg_xy_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.avg_xy_" title="Link to this definition"></a></dt>
+<dd><p>The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.transformers.CCA.cov_xy_">
+<span class="sig-name descname"><span class="pre">cov_xy_</span></span><a class="headerlink" href="#pyntbci.transformers.CCA.cov_xy_" title="Link to this definition"></a></dt>
+<dd><p>The (running) crosscovariance of X and Y of shape (n_features_x, n_features_y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">

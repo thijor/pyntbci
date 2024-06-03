@@ -123,11 +123,47 @@
 <span class="sd">        If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps</span>
 <span class="sd">        track of previous data to update a running average and covariance for the CCA.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w_x_: np.ndarray</span>
+<span class="sd">        The weight vector to project X of shape (n_features_x, n_components).</span>
+<span class="sd">    w_y_: np.ndarray</span>
+<span class="sd">        The weight vector to project Y of shape (n_features_y, n_components).</span>
+<span class="sd">    n_x_: int</span>
+<span class="sd">        The number of samples used to estimate avg_x_ and cov_x.</span>
+<span class="sd">    avg_x_: np.ndarray</span>
+<span class="sd">        The (running) average of X of shape (n_features_x).</span>
+<span class="sd">    cov_x_: np.ndarray</span>
+<span class="sd">        The (running) covariance of X of shape (n_features_x, n_features_x).</span>
+<span class="sd">    n_y_: int</span>
+<span class="sd">        The number of samples used to estimate avg_y_ and cov_y.</span>
+<span class="sd">    avg_y_: np.ndarray</span>
+<span class="sd">        The (running) average of Y of shape (n_features_y).</span>
+<span class="sd">    cov_y_: np.ndarray</span>
+<span class="sd">        The (running) covariance of Y of shape (n_features_y, n_features_y).</span>
+<span class="sd">    n_xy_: int</span>
+<span class="sd">        The number of samples used to estimate avg_xy_ and cov_xy.</span>
+<span class="sd">    avg_xy_: np.ndarray</span>
+<span class="sd">        The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).</span>
+<span class="sd">    cov_xy_: np.ndarray</span>
+<span class="sd">        The (running) crosscovariance of X and Y of shape (n_features_x, n_features_y).</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    .. [1] Hotelling, H. (1992). Relations between two sets of variates. In Breakthroughs in statistics: methodology and</span>
 <span class="sd">           distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w_x_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">w_y_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">n_x_</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">avg_x_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cov_x_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">n_y_</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">avg_y_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cov_y_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">n_xy_</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">avg_xy_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cov_xy_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -144,15 +180,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator_x</span> <span class="o">=</span> <span class="n">estimator_x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator_y</span> <span class="o">=</span> <span class="n">estimator_y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="n">running</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_x_</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avg_x_</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cov_x_</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_y_</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avg_y_</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cov_y_</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_xy_</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avg_xy_</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cov_xy_</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_fit_X2D_Y2D</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -458,6 +485,11 @@
 <span class="sd">    n_components: int</span>
 <span class="sd">        The number of TRCA components to use.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w_: np.ndarray</span>
+<span class="sd">        The weight vector to project X of shape (n_features, n_components).</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    .. [2] Tanaka, H., Katura, T., &amp; Sato, H. (2013). Task-related component analysis for functional neuroimaging and</span>
@@ -470,6 +502,7 @@
 <span class="sd">    .. [5] https://github.com/NeuroTechX/moabb/blob/develop/moabb/pipelines/classification.py</span>
 <span class="sd">    .. [6] https://github.com/nbara/python-meegkit/blob/master/meegkit/trca.py</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>

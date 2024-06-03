@@ -95,7 +95,7 @@
 <h1>pyntbci.stopping.BayesStopping<a class="headerlink" href="#pyntbci-stopping-bayesstopping" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.stopping.</span></span><span class="sig-name descname"><span class="pre">BayesStopping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segment_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bes0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_pf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_pd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/stopping.html#BayesStopping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.stopping.BayesStopping" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.stopping.</span></span><span class="sig-name descname"><span class="pre">BayesStopping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segment_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bds0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_pf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_pd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/stopping.html#BayesStopping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.stopping.BayesStopping" title="Link to this definition"></a></dt>
 <dd><p>Bayesian dynamic stopping. Fits Gaussian distributions for target and non-target responses, and calculates a
 stopping threshold using these and a cost criterion <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <dl class="field-list simple">
@@ -104,7 +104,7 @@ stopping threshold using these and a cost criterion <a class="footnote-reference
 <li><p><strong>estimator</strong> (<em>BaseEstimator</em>) – The classifier object that performs the classification.</p></li>
 <li><p><strong>segment_time</strong> (<em>float</em>) – The size of a segment of data at which classification is performed ins seconds.</p></li>
 <li><p><strong>fs</strong> (<em>int</em>) – The sampling frequency of the EEG data in Hz.</p></li>
-<li><p><strong>method</strong> (<em>str</em><em> (</em><em>default: &quot;bes0&quot;</em><em>)</em>) – The method to use for Bayesian dynamic stopping: bes0, bes1, bes2.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em> (</em><em>default: &quot;bds0&quot;</em><em>)</em>) – The method to use for Bayesian dynamic stopping: bds0, bds1, bds2.</p></li>
 <li><p><strong>cr</strong> (<em>float</em><em> (</em><em>default: 1.0</em><em>)</em>) – The cost ratio.</p></li>
 <li><p><strong>target_pf</strong> (<em>float</em><em> (</em><em>default: 0.05</em><em>)</em>) – The targeted probability for error.</p></li>
 <li><p><strong>target_pd</strong> (<em>float</em><em> (</em><em>default: 0.80</em><em>)</em>) – The targeted probability for detection.</p></li>
@@ -113,12 +113,111 @@ it cannot stop, otherwise it will emit a classification regardless of the certai
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.alpha_">
+<span class="sig-name descname"><span class="pre">alpha_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.alpha_" title="Link to this definition"></a></dt>
+<dd><p>The scaling parameter between observed and predicted responses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.sigma_">
+<span class="sig-name descname"><span class="pre">sigma_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.sigma_" title="Link to this definition"></a></dt>
+<dd><p>The standard deviation of the noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.b0_">
+<span class="sig-name descname"><span class="pre">b0_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.b0_" title="Link to this definition"></a></dt>
+<dd><p>The mean of the non-target Gaussian distribution of shape (n_segments).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.b1_">
+<span class="sig-name descname"><span class="pre">b1_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.b1_" title="Link to this definition"></a></dt>
+<dd><p>The mean of the target Gaussian distribution of shape (n_segments).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.s0_">
+<span class="sig-name descname"><span class="pre">s0_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.s0_" title="Link to this definition"></a></dt>
+<dd><p>The standard deviation of the non-target Gaussian distribution of shape (n_segments).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.s1_">
+<span class="sig-name descname"><span class="pre">s1_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.s1_" title="Link to this definition"></a></dt>
+<dd><p>The standard deviation of the target Gaussian distribution of shape (n_segments).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.eta_">
+<span class="sig-name descname"><span class="pre">eta_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.eta_" title="Link to this definition"></a></dt>
+<dd><p>The decision boundary of shape (n_segments).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.pf_">
+<span class="sig-name descname"><span class="pre">pf_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.pf_" title="Link to this definition"></a></dt>
+<dd><p>The predicted probability of a false detection of shape (n_segments).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.pm_">
+<span class="sig-name descname"><span class="pre">pm_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.pm_" title="Link to this definition"></a></dt>
+<dd><p>The predicted probability of a miss of shape (n_segments).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>Ahmadi, S., Thielen, J., Farquhar, J., &amp; Desain, P. (in prep.) A model driven Bayesian dynamic stopping
-method for parallel stimulation evoked response BCIs.</p>
+<p>Ahmadi, S., Desain, P. &amp; Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked response
+brain-computer interfacing</p>
 </aside>
 </aside>
 <dl class="py method">

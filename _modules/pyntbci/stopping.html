@@ -113,8 +113,8 @@
 <span class="sd">        The size of a segment of data at which classification is performed ins seconds.</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling frequency of the EEG data in Hz.</span>
-<span class="sd">    method: str (default: &quot;bes0&quot;)</span>
-<span class="sd">        The method to use for Bayesian dynamic stopping: bes0, bes1, bes2.</span>
+<span class="sd">    method: str (default: &quot;bds0&quot;)</span>
+<span class="sd">        The method to use for Bayesian dynamic stopping: bds0, bds1, bds2.</span>
 <span class="sd">    cr: float (default: 1.0)</span>
 <span class="sd">        The cost ratio.</span>
 <span class="sd">    target_pf: float (default: 0.05)</span>
@@ -125,18 +125,48 @@
 <span class="sd">        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if</span>
 <span class="sd">        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    alpha_: float</span>
+<span class="sd">        The scaling parameter between observed and predicted responses.</span>
+<span class="sd">    sigma_: float</span>
+<span class="sd">        The standard deviation of the noise.</span>
+<span class="sd">    b0_: np.ndarray</span>
+<span class="sd">        The mean of the non-target Gaussian distribution of shape (n_segments).</span>
+<span class="sd">    b1_: np.ndarray</span>
+<span class="sd">        The mean of the target Gaussian distribution of shape (n_segments).</span>
+<span class="sd">    s0_: np.ndarray</span>
+<span class="sd">        The standard deviation of the non-target Gaussian distribution of shape (n_segments).</span>
+<span class="sd">    s1_: np.ndarray</span>
+<span class="sd">        The standard deviation of the target Gaussian distribution of shape (n_segments).</span>
+<span class="sd">    eta_: np.ndarray</span>
+<span class="sd">        The decision boundary of shape (n_segments).</span>
+<span class="sd">    pf_: np.ndarray</span>
+<span class="sd">        The predicted probability of a false detection of shape (n_segments).</span>
+<span class="sd">    pm_: np.ndarray</span>
+<span class="sd">        The predicted probability of a miss of shape (n_segments).</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] Ahmadi, S., Thielen, J., Farquhar, J., &amp; Desain, P. (in prep.) A model driven Bayesian dynamic stopping</span>
-<span class="sd">           method for parallel stimulation evoked response BCIs.</span>
+<span class="sd">    .. [1] Ahmadi, S., Desain, P. &amp; Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked response</span>
+<span class="sd">           brain-computer interfacing</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alpha_</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">sigma_</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">b0_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">b1_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">s0_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">s1_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">eta_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">pf_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">pm_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">estimator</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">,</span>
             <span class="n">segment_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-            <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bes0&quot;</span><span class="p">,</span>
+            <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bds0&quot;</span><span class="p">,</span>
             <span class="n">cr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="n">target_pf</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
             <span class="n">target_pd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.80</span><span class="p">,</span>
@@ -267,11 +297,11 @@
 
             <span class="c1"># Check if stopped</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bes0&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bds0&quot;</span><span class="p">:</span>
                 <span class="c1"># Stop if eta threshold of this segment is reached</span>
                 <span class="n">not_stopped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span>
 
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bes1&quot;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bds1&quot;</span><span class="p">:</span>
                 <span class="c1"># Change target pf/pd with min/max of learned pf/pd</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span>
@@ -286,7 +316,7 @@
                 <span class="n">c3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span><span class="p">)</span>
                 <span class="n">not_stopped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">),</span> <span class="n">c3</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bes2&quot;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bds2&quot;</span><span class="p">:</span>
                 <span class="c1"># Change target pf/pd with min/max of learned pf/pd</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span>
@@ -336,6 +366,9 @@
 <span class="sd">    max_time: float (default: None)</span>
 <span class="sd">        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if</span>
 <span class="sd">        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -461,7 +494,13 @@
 <span class="sd">        The targeted value for the criterion to optimize for.</span>
 <span class="sd">    smooth_width: float (default: None)</span>
 <span class="sd">        The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stop_time_: float</span>
+<span class="sd">        The trained static stopping time.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stop_time_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -619,11 +658,17 @@
 <span class="sd">        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if</span>
 <span class="sd">        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    margins_: np.ndarray</span>
+<span class="sd">        The trained stopping margins of shape (n_segments).</span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    .. [3] Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:</span>
 <span class="sd">           re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">margins_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
