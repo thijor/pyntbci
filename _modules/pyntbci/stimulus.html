@@ -292,7 +292,7 @@
 <span class="k">def</span> <span class="nf">make_de_bruijn_sequence</span><span class="p">(</span>
         <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
         <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
-        <span class="n">seed</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.</span>
 
@@ -302,7 +302,7 @@
 <span class="sd">        The size of the alphabet.</span>
 <span class="sd">    n: int (default: 6)</span>
 <span class="sd">        The order of the sequence.</span>
-<span class="sd">    seed: tuple (default: None)</span>
+<span class="sd">    seed: list (default: None)</span>
 <span class="sd">        Seed for the initial register. None leads to an all zero initial register.</span>
 
 <span class="sd">    Returns</span>
@@ -373,26 +373,26 @@
 <div class="viewcode-block" id="make_gold_codes">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_gold_codes.html#pyntbci.stimulus.make_gold_codes">[docs]</a>
 <span class="k">def</span> <span class="nf">make_gold_codes</span><span class="p">(</span>
-        <span class="n">poly1</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-        <span class="n">poly2</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-        <span class="n">seed1</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">seed2</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">poly1</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">poly2</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed1</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed2</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a preferred</span>
 <span class="sd">    pair of m-sequences.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    poly1: tuple (default: (1, 0, 0, 0, 0, 1))</span>
-<span class="sd">        The feedback tap points defined by the primitive polynomial.</span>
+<span class="sd">    poly1: list (default: None)</span>
+<span class="sd">        The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.</span>
 <span class="sd">        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).</span>
-<span class="sd">    poly2: tuple (default: (1, 1, 0, 0, 1, 1))</span>
-<span class="sd">        The feedback tap points defined by the primitive polynomial.</span>
+<span class="sd">    poly2: list (default: None)</span>
+<span class="sd">        The feedback tap points defined by a primitive polynomial. If None, [1, 1, 0, 0, 1, 1] is used.</span>
 <span class="sd">        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).</span>
-<span class="sd">    seed1: tuple (default: None)</span>
-<span class="sd">        Seed for the initial register for poly1. None leads to an all zero initial register.</span>
-<span class="sd">    seed2: tuple (default: None)</span>
-<span class="sd">        Seed for the initial register for poly1. None leads to an all zero initial register.</span>
+<span class="sd">    seed1: list (default: None)</span>
+<span class="sd">        Seed for the initial shift register of poly1. If None, an all zero initial register is used.</span>
+<span class="sd">    seed2: list (default: None)</span>
+<span class="sd">        Seed for the initial shift register of poly2. If None, an all zero initial register is used.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -404,6 +404,10 @@
 <span class="sd">    .. [13] Gold, R. (1967). Optimal binary sequences for spread spectrum multiplexing (Corresp.). IEEE Transactions on</span>
 <span class="sd">            information theory, 13(4), 619-621.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">poly1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">poly1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">poly2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">poly2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">poly1</span><span class="p">))</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;The poly1 is not binary.&quot;</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">poly2</span><span class="p">))</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;The poly2 is not binary.&quot;</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">poly1</span><span class="p">)</span>
@@ -421,22 +425,22 @@
 <div class="viewcode-block" id="make_m_sequence">
 <a class="viewcode-back" href="../../generated/pyntbci.stimulus.make_m_sequence.html#pyntbci.stimulus.make_m_sequence">[docs]</a>
 <span class="k">def</span> <span class="nf">make_m_sequence</span><span class="p">(</span>
-        <span class="n">poly</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">poly</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">base</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="n">seed</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    poly: tuple (default: (1, 0, 0, 0, 0, 1))</span>
-<span class="sd">        The feedback tap points defined by the primitive polynomial.</span>
+<span class="sd">    poly: list (default: None)</span>
+<span class="sd">        The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.</span>
 <span class="sd">        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).</span>
 <span class="sd">    base: int (default: 2)</span>
 <span class="sd">        The base of the sequence (related to the Galois Field), i.e. base 2 generates a binary sequence, base 3 a</span>
 <span class="sd">        tertiary sequence, etc.</span>
 <span class="sd">    seed: list (default: None)</span>
-<span class="sd">        The seed for the initial register. None leads to an all zero initial register.</span>
+<span class="sd">        The seed for the initial shift register. If None, an all zero initial register is used.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -447,6 +451,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    .. [14] Golomb, S. W. (1967). Shift register sequences. Holden-Day. Inc., San Fransisco.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">poly</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">poly</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
     <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">poly</span> <span class="o">&lt;</span> <span class="n">base</span><span class="p">),</span> <span class="s2">&quot;All values in the polynomial should be smaller than the base.&quot;</span>

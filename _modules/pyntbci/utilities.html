@@ -88,7 +88,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyntbci.utilities</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sklearn.base</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">cheby1</span><span class="p">,</span> <span class="n">cheb1ord</span><span class="p">,</span> <span class="n">filtfilt</span>
 
@@ -287,7 +289,7 @@
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.encoding_matrix.html#pyntbci.utilities.encoding_matrix">[docs]</a>
 <span class="k">def</span> <span class="nf">encoding_matrix</span><span class="p">(</span>
         <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">length</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
         <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">amplitude</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -298,7 +300,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    stimulus: np.ndarray</span>
 <span class="sd">        Stimulus matrix of shape (n_classes, n_events, n_samples).</span>
-<span class="sd">    length: int | list</span>
+<span class="sd">    length: int | list[int]</span>
 <span class="sd">        The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If a list is</span>
 <span class="sd">        provided, it denotes the length per event.</span>
 <span class="sd">    stride: int (default: 1)</span>
@@ -317,7 +319,7 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;len(encoding_length) does not match S.shape[1].&quot;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;encoding_length should be (int, list, tuple).&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;encoding_length should be int, list[int], or tuple[int].&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create encoding window per event</span>
     <span class="n">ematrix</span> <span class="o">=</span> <span class="p">[]</span>
@@ -504,14 +506,14 @@
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank">[docs]</a>
 <span class="k">def</span> <span class="nf">filterbank</span><span class="p">(</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">passbands</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">passbands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ftype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;butterworth&quot;</span><span class="p">,</span>
-        <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">stopbands</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">gpass</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
-        <span class="n">gstop</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">40.0</span><span class="p">,</span>
+        <span class="n">N</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stopbands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gpass</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">gstop</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">40.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the</span>
 <span class="sd">    minimum loss in the stopband.</span>
@@ -520,8 +522,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    X: np.ndarray</span>
 <span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    passbands: tuple(tuple)</span>
-<span class="sd">        A tuple of tuples with passbands defined as (lower, higher) cutoff in Hz.</span>
+<span class="sd">    passbands: list[tuple[float, float]]</span>
+<span class="sd">        A list of tuples with passbands defined as (lower, higher) cutoff in Hz.</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling frequency of the EEG data in Hz.</span>
 <span class="sd">    tmin: float (default: None)</span>
@@ -529,16 +531,16 @@
 <span class="sd">        no data will be cut away.</span>
 <span class="sd">    ftype: str (default: &quot;butterworth&quot;)</span>
 <span class="sd">        The filter type: &quot;butterworth&quot; | &quot;chebyshev1&quot;</span>
-<span class="sd">    N: int | list (default: None)</span>
+<span class="sd">    N: int | list[int] (default: None)</span>
 <span class="sd">        The filter order. If a list is provided, it is the order for each passband. If None, the order is set given the</span>
 <span class="sd">        stopbands, gpass and gstop.</span>
-<span class="sd">    stopbands: tuple(tuple) (default: None)</span>
+<span class="sd">    stopbands: list[tuple[float, float]] (default: None)</span>
 <span class="sd">        A tuple of tuples with a stopband for each passband defined as (lower, higher) cutoff in Hz. If None, the</span>
 <span class="sd">        stopbands default to (lower-2, higher+7) of the passbands. Only used if N=None.</span>
-<span class="sd">    gpass: float | list (default: 3.0)</span>
+<span class="sd">    gpass: float | list[float] (default: 3.0)</span>
 <span class="sd">        The maximum loss in the passband (dB). If a list is provided, it is the gpass for each passband. Only used if</span>
 <span class="sd">        N=None.</span>
-<span class="sd">    gstop: float | list (default: 30.0)</span>
+<span class="sd">    gstop: float | list[float] (default: 30.0)</span>
 <span class="sd">        The minimum attenuation in the stopband (dB). If a list is provided, it is the gstop for each stopband. Only</span>
 <span class="sd">        used if N=None.</span>
 
@@ -611,19 +613,19 @@
 <div class="viewcode-block" id="itr">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr">[docs]</a>
 <span class="k">def</span> <span class="nf">itr</span><span class="p">(</span>
-        <span class="n">n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">p</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the information-transfer rate (ITR).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    n: np.ndarray:</span>
+<span class="sd">    n: int | np.ndarray:</span>
 <span class="sd">        The number of classes.</span>
-<span class="sd">    p: np.ndarray:</span>
+<span class="sd">    p: float | np.ndarray:</span>
 <span class="sd">        The decoding accuracy between 0 and 1.</span>
-<span class="sd">    t: np.ndarray:</span>
+<span class="sd">    t: float | np.ndarray:</span>
 <span class="sd">        The decoding time in seconds (including inter-trial time).</span>
 
 <span class="sd">    Returns</span>

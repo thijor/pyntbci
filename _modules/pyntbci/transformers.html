@@ -93,6 +93,7 @@
 <span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">eigh</span><span class="p">,</span> <span class="n">inv</span><span class="p">,</span> <span class="n">sqrtm</span><span class="p">,</span> <span class="n">svd</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">check_X_y</span><span class="p">,</span> <span class="n">check_array</span><span class="p">,</span> <span class="n">check_is_fitted</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="n">covariance</span>
 
@@ -107,10 +108,10 @@
 <span class="sd">    ----------</span>
 <span class="sd">    n_components: int</span>
 <span class="sd">        The number of CCA components to use.</span>
-<span class="sd">    gamma_x: float | list (default: None)</span>
+<span class="sd">    gamma_x: float | list[float] | np.ndarray (default: None)</span>
 <span class="sd">        Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_x. If</span>
 <span class="sd">        None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).</span>
-<span class="sd">    gamma_y: float | list (default: None)</span>
+<span class="sd">    gamma_y: float | list[float] | np.ndarray (default: None)</span>
 <span class="sd">        Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If</span>
 <span class="sd">        None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).</span>
 <span class="sd">    estimator_x: BaseEstimator (Default: None)</span>
@@ -146,7 +147,7 @@
 <span class="sd">    avg_xy_: np.ndarray</span>
 <span class="sd">        The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).</span>
 <span class="sd">    cov_xy_: np.ndarray</span>
-<span class="sd">        The (running) crosscovariance of X and Y of shape (n_features_x, n_features_y).</span>
+<span class="sd">        The (running) cross-covariance of X and Y of shape (n_features_x, n_features_y).</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -168,8 +169,8 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-            <span class="n">gamma_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">gamma_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gamma_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gamma_y</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">estimator_x</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">estimator_y</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
