@@ -3,6 +3,7 @@ import sklearn.base
 from scipy.linalg import eigh, inv, sqrtm, svd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from typing import Union
 
 from pyntbci.utilities import covariance
 
@@ -15,10 +16,10 @@ class CCA(BaseEstimator, TransformerMixin):
     ----------
     n_components: int
         The number of CCA components to use.
-    gamma_x: float | list (default: None)
+    gamma_x: float | list[float] | np.ndarray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_x. If
         None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
-    gamma_y: float | list (default: None)
+    gamma_y: float | list[float] | np.ndarray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
         None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
     estimator_x: BaseEstimator (Default: None)
@@ -54,7 +55,7 @@ class CCA(BaseEstimator, TransformerMixin):
     avg_xy_: np.ndarray
         The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).
     cov_xy_: np.ndarray
-        The (running) crosscovariance of X and Y of shape (n_features_x, n_features_y).
+        The (running) cross-covariance of X and Y of shape (n_features_x, n_features_y).
 
     References
     ----------
@@ -76,8 +77,8 @@ class CCA(BaseEstimator, TransformerMixin):
     def __init__(
             self,
             n_components: int,
-            gamma_x: float = None,
-            gamma_y: float = None,
+            gamma_x: Union[float, list[float], np.ndarray] = None,
+            gamma_y: Union[float, list[float], np.ndarray] = None,
             estimator_x: sklearn.base.BaseEstimator = None,
             estimator_y: sklearn.base.BaseEstimator = None,
             running: bool = False,

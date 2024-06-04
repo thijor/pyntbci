@@ -142,6 +142,7 @@ class TestCCA(unittest.TestCase):
         self.assertEqual(cca0.w_x_.shape, cca1.w_x_.shape)
         self.assertEqual(cca1.w_y_.shape, cca1.w_y_.shape)
 
+
 class TestTRCA(unittest.TestCase):
 
     def test_X(self):

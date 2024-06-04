@@ -19,7 +19,7 @@ class TestDeBruijnSequence(unittest.TestCase):
         code = pyntbci.stimulus.make_de_bruijn_sequence(k=k, n=n)
         self.assertEqual(np.unique(code).size, 2)
 
-    def test_code_is_msequence(self):
+    def test_code_is_m_sequence(self):
         k = 2
         n = 6
         code = pyntbci.stimulus.make_de_bruijn_sequence(k=k, n=n)
@@ -53,21 +53,21 @@ class TestGolaySequence(unittest.TestCase):
 class TestGoldCodes(unittest.TestCase):
 
     def test_codes_shape(self):
-        poly1 = (1, 0, 0, 0, 0, 1)
-        poly2 = (1, 1, 0, 0, 1, 1)
+        poly1 = [1, 0, 0, 0, 0, 1]
+        poly2 = [1, 1, 0, 0, 1, 1]
         codes = pyntbci.stimulus.make_gold_codes(poly1=poly1, poly2=poly2)
         self.assertEqual(codes.shape[0], 2**len(poly1)-1)
         self.assertEqual(codes.shape[1], 2 ** len(poly1) - 1)
 
     def test_codes_elements(self):
-        poly1 = (1, 0, 0, 0, 0, 1)
-        poly2 = (1, 1, 0, 0, 1, 1)
+        poly1 = [1, 0, 0, 0, 0, 1]
+        poly2 = [1, 1, 0, 0, 1, 1]
         codes = pyntbci.stimulus.make_gold_codes(poly1=poly1, poly2=poly2)
         self.assertEqual(np.unique(codes.flatten()).size, 2)
 
-    def test_codes_is_goldcode(self):
-        poly1 = (1, 0, 0, 0, 0, 1)
-        poly2 = (1, 1, 0, 0, 1, 1)
+    def test_codes_is_gold_code(self):
+        poly1 = [1, 0, 0, 0, 0, 1]
+        poly2 = [1, 1, 0, 0, 1, 1]
         codes = pyntbci.stimulus.make_gold_codes(poly1=poly1, poly2=poly2)
         self.assertTrue(pyntbci.stimulus.is_gold_code(codes))
 
@@ -76,20 +76,20 @@ class TestMSequence(unittest.TestCase):
 
     def test_code_shape(self):
         base = 2
-        poly = (1, 0, 0, 0, 0, 1)
+        poly = [1, 0, 0, 0, 0, 1]
         code = pyntbci.stimulus.make_m_sequence(poly=poly, base=base)
         self.assertEqual(code.shape[0], 1)
         self.assertEqual(code.shape[1], base ** len(poly) - 1)
 
     def test_code_elements(self):
         base = 2
-        poly = (1, 0, 0, 0, 0, 1)
+        poly = [1, 0, 0, 0, 0, 1]
         code = pyntbci.stimulus.make_m_sequence(poly=poly, base=base)
         self.assertEqual(np.unique(code).size, 2)
 
-    def test_code_is_msequence(self):
+    def test_code_is_m_sequence(self):
         base = 2
-        poly = (1, 0, 0, 0, 0, 1)
+        poly = [1, 0, 0, 0, 0, 1]
         code = pyntbci.stimulus.make_m_sequence(poly=poly, base=base)
         self.assertTrue(pyntbci.stimulus.is_m_sequence(code))
 

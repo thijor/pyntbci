@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 import sklearn.base
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
@@ -183,7 +185,7 @@ def decoding_matrix(
 
 def encoding_matrix(
         stimulus: np.array,
-        length: int,
+        length: Union[int, list[int]],
         stride: int = 1,
         amplitude: np.ndarray = None,
 ) -> np.ndarray:
@@ -194,7 +196,7 @@ def encoding_matrix(
     ----------
     stimulus: np.ndarray
         Stimulus matrix of shape (n_classes, n_events, n_samples).
-    length: int | list
+    length: int | list[int]
         The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If a list is
         provided, it denotes the length per event.
     stride: int (default: 1)
@@ -213,7 +215,7 @@ def encoding_matrix(
     elif isinstance(length, list) or isinstance(length, tuple):
         assert len(length) == n_events, "len(encoding_length) does not match S.shape[1]."
     else:
-        raise Exception("encoding_length should be (int, list, tuple).")
+        raise Exception("encoding_length should be int, list[int], or tuple[int].")
 
     # Create encoding window per event
     ematrix = []
@@ -391,14 +393,14 @@ def event_matrix(
 
 def filterbank(
         X: np.ndarray,
-        passbands: tuple[tuple[float, float]],
+        passbands: list[tuple[float, float]],
         fs: float,
         tmin: float = None,
         ftype: str = "butterworth",
-        N: int = None,
-        stopbands: tuple[tuple[float, float]] = None,
-        gpass: float = 3.0,
-        gstop: float = 40.0,
+        N: Union[int, list[int]] = None,
+        stopbands: list[tuple[float, float]] = None,
+        gpass: Union[float, list[float]] = 3.0,
+        gstop: Union[float, list[float]] = 40.0,
 ) -> np.ndarray:
     """Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the
     minimum loss in the stopband.
@@ -407,8 +409,8 @@ def filterbank(
     ----------
     X: np.ndarray
         The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-    passbands: tuple(tuple)
-        A tuple of tuples with passbands defined as (lower, higher) cutoff in Hz.
+    passbands: list[tuple[float, float]]
+        A list of tuples with passbands defined as (lower, higher) cutoff in Hz.
     fs: int
         The sampling frequency of the EEG data in Hz.
     tmin: float (default: None)
@@ -416,16 +418,16 @@ def filterbank(
         no data will be cut away.
     ftype: str (default: "butterworth")
         The filter type: "butterworth" | "chebyshev1"
-    N: int | list (default: None)
+    N: int | list[int] (default: None)
         The filter order. If a list is provided, it is the order for each passband. If None, the order is set given the
         stopbands, gpass and gstop.
-    stopbands: tuple(tuple) (default: None)
+    stopbands: list[tuple[float, float]] (default: None)
         A tuple of tuples with a stopband for each passband defined as (lower, higher) cutoff in Hz. If None, the
         stopbands default to (lower-2, higher+7) of the passbands. Only used if N=None.
-    gpass: float | list (default: 3.0)
+    gpass: float | list[float] (default: 3.0)
         The maximum loss in the passband (dB). If a list is provided, it is the gpass for each passband. Only used if
         N=None.
-    gstop: float | list (default: 30.0)
+    gstop: float | list[float] (default: 30.0)
         The minimum attenuation in the stopband (dB). If a list is provided, it is the gstop for each stopband. Only
         used if N=None.
 
@@ -495,19 +497,19 @@ def filterbank(
 
 
 def itr(
-        n: np.ndarray,
-        p: np.ndarray,
-        t: np.ndarray,
+        n: Union[int, np.ndarray],
+        p: Union[float, np.ndarray],
+        t: Union[float, np.ndarray],
 ) -> np.ndarray:
     """Compute the information-transfer rate (ITR).
 
     Parameters
     ----------
-    n: np.ndarray:
+    n: int | np.ndarray:
         The number of classes.
-    p: np.ndarray:
+    p: float | np.ndarray:
         The decoding accuracy between 0 and 1.
-    t: np.ndarray:
+    t: float | np.ndarray:
         The decoding time in seconds (including inter-trial time).
 
     Returns

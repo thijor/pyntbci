@@ -90,7 +90,7 @@ class TestDecodingMatrix(unittest.TestCase):
     def test_decoding_matrix_shape(self):
         decoding_length = 31
         X = np.random.rand(17, 11, 1234)
-        Z = pyntbci.utilities.decoding_matrix(X, decoding_length)
+        Z = pyntbci.utilities.decoding_matrix(data=X, length=decoding_length)
         self.assertEqual(Z.shape[0], X.shape[0])  # trials
         self.assertEqual(Z.shape[1], decoding_length * X.shape[1])  # filter length(s)
         self.assertEqual(Z.shape[2], X.shape[2])  # samples
@@ -99,7 +99,7 @@ class TestDecodingMatrix(unittest.TestCase):
         decoding_length = 31
         decoding_stride = 7
         X = np.random.rand(17, 11, 1234)
-        Z = pyntbci.utilities.decoding_matrix(X, decoding_length, decoding_stride)
+        Z = pyntbci.utilities.decoding_matrix(data=X, length=decoding_length, stride=decoding_stride)
         self.assertEqual(Z.shape[0], X.shape[0])  # trials
         self.assertEqual(Z.shape[1], int(decoding_length / decoding_stride) * X.shape[1])  # filter length(s)
         self.assertEqual(Z.shape[2], X.shape[2])  # samples
@@ -108,7 +108,7 @@ class TestDecodingMatrix(unittest.TestCase):
         decoding_length = 31
         decoding_stride = 1
         X = np.random.rand(17, 11, 1234)
-        Z = pyntbci.utilities.decoding_matrix(X, decoding_length, decoding_stride)
+        Z = pyntbci.utilities.decoding_matrix(data=X, length=decoding_length, stride=decoding_stride)
         self.assertTrue(np.all(Z[:, :11, :].flatten() == X.flatten()))
         for i in range(1, decoding_length):
             self.assertTrue(np.all(Z[:, i * 11:(1 + i) * 11, :-i].flatten() == X[:, :, i:].flatten()))
@@ -119,8 +119,8 @@ class TestEncodingMatrix(unittest.TestCase):
     def test_encoding_matrix_shape(self):
         encoding_length = 31
         S = np.random.rand(17, 1234) > 0.5
-        E = pyntbci.utilities.event_matrix(S, event="dur")[0]
-        M = pyntbci.utilities.encoding_matrix(E, encoding_length)
+        E = pyntbci.utilities.event_matrix(stimulus=S, event="dur")[0]
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=encoding_length)
         self.assertEqual(M.shape[0], S.shape[0])  # classes
         self.assertEqual(M.shape[1], encoding_length * E.shape[1])  # response length(s)
         self.assertEqual(M.shape[2], S.shape[1])  # samples
@@ -129,17 +129,17 @@ class TestEncodingMatrix(unittest.TestCase):
         encoding_length = 31
         encoding_stride = 7
         S = np.random.rand(17, 1234) > 0.5
-        E = pyntbci.utilities.event_matrix(S, event="dur")[0]
-        M = pyntbci.utilities.encoding_matrix(E, encoding_length, encoding_stride)
+        E = pyntbci.utilities.event_matrix(stimulus=S, event="dur")[0]
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=encoding_length, stride=encoding_stride)
         self.assertEqual(M.shape[0], S.shape[0])  # classes
         self.assertEqual(M.shape[1], int(encoding_length / encoding_stride) * E.shape[1])  # response length(s)
         self.assertEqual(M.shape[2], S.shape[1])  # samples
 
     def test_encoding_matrix_encoding_length_list(self):
-        encoding_length = (31, 41)
+        encoding_length = [31, 41]
         S = np.random.rand(17, 123) > 0.5
-        E = pyntbci.utilities.event_matrix(S, event="refe")[0]
-        M = pyntbci.utilities.encoding_matrix(E, encoding_length)
+        E = pyntbci.utilities.event_matrix(stimulus=S, event="refe")[0]
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=encoding_length)
         self.assertEqual(M.shape[0], S.shape[0])  # classes
         self.assertEqual(M.shape[1], sum(encoding_length))  # response length(s)
         self.assertEqual(M.shape[2], S.shape[1])  # samples
@@ -149,7 +149,7 @@ class TestEventMatrix(unittest.TestCase):
 
     def test_event_matrix_shape(self):
         S = np.random.rand(17, 123) > 0.5
-        E, events = pyntbci.utilities.event_matrix(S, event="dur")
+        E, events = pyntbci.utilities.event_matrix(stimulus=S, event="dur")
         self.assertEqual(E.shape[0], S.shape[0])  # classes
         self.assertEqual(E.shape[1], len(events))  # events
         self.assertEqual(E.shape[2], S.shape[1])  # samples
@@ -157,7 +157,7 @@ class TestEventMatrix(unittest.TestCase):
     def test_events(self):
         S = np.random.rand(17, 123) > 0.5
         for event in pyntbci.utilities.EVENTS:
-            E, events = pyntbci.utilities.event_matrix(S, event=event)
+            E, events = pyntbci.utilities.event_matrix(stimulus=S, event=event)
             self.assertEqual(E.shape[1], len(events))
 
 
@@ -191,7 +191,7 @@ class TestFilterbank(unittest.TestCase):
     def test_filterbank_passband(self):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [[1, 10]]
+        passbands = [(1, 10)]
         X_filtered = pyntbci.utilities.filterbank(X, passbands, fs)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
@@ -200,7 +200,7 @@ class TestFilterbank(unittest.TestCase):
     def test_filterbank_passbands(self):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [[1, 10], [11, 20]]
+        passbands = [(1, 10), (11, 20)]
         X_filtered = pyntbci.utilities.filterbank(X, passbands, fs)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
@@ -209,7 +209,7 @@ class TestFilterbank(unittest.TestCase):
     def test_filterbank_tmin(self):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [[1, 10], [11, 20]]
+        passbands = [(1, 10), (11, 20)]
         tmin = 0.1
         X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, tmin=tmin)
         self.assertEqual(X_filtered.ndim, 4)
@@ -221,7 +221,8 @@ class TestFilterbank(unittest.TestCase):
     def test_filterbank_passbands_order(self):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
-        X_filtered = pyntbci.utilities.filterbank(X, [[1, 10], [11, 20]], fs, N=6)
+        passbands = [(1, 10), (11, 20)]
+        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, N=6)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
         self.assertEqual(X_filtered.shape[-1], 2)
@@ -229,7 +230,8 @@ class TestFilterbank(unittest.TestCase):
     def test_filterbank_passbands_chebyshev1(self):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
-        X_filtered = pyntbci.utilities.filterbank(X, [[1, 10], [11, 20]], fs, ftype="chebyshev1")
+        passbands = [(1, 10), (11, 20)]
+        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, ftype="chebyshev1")
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
         self.assertEqual(X_filtered.shape[-1], 2)
@@ -237,7 +239,8 @@ class TestFilterbank(unittest.TestCase):
     def test_filterbank_passbands_chebyshev1_order(self):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
-        X_filtered = pyntbci.utilities.filterbank(X, [[1, 10], [11, 20]], fs, ftype="chebyshev1", N=6)
+        passbands = [(1, 10), (11, 20)]
+        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, ftype="chebyshev1", N=6)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
         self.assertEqual(X_filtered.shape[-1], 2)
@@ -246,22 +249,22 @@ class TestFilterbank(unittest.TestCase):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
 
-        passbands = [[1, 10], [11, 20]]
-        stopbands = [[0.1, 15]]  # too few
+        passbands = [(1, 10), (11, 20)]
+        stopbands = [(0.1, 15)]  # too few
         self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, stopbands=stopbands)
 
-        passbands = [[1, 10], [11, 20]]
-        stopbands = [[0.1, 15], [10, 21], [30, 40]]  # too many
+        passbands = [(1, 10), (11, 20)]
+        stopbands = [(0.1, 15), (10, 21), (30, 40)]  # too many
         self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, stopbands=stopbands)
 
-        passbands = [[1, 10], [11, 20]]
-        stopbands = [[2, 11], [10, 21]]  # wrong first stopband
+        passbands = [(1, 10), (11, 20)]
+        stopbands = [(2, 11), (10, 21)]  # wrong first stopband
         self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, stopbands=stopbands)
 
     def test_filterbank_gpass_gstop(self):
         fs = 256
         X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [[1, 10], [11, 20]]
+        passbands = [(1, 10), (11, 20)]
         gpass = [2, 3]
         gstop = [20, 30]
         X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, gpass=gpass, gstop=gstop)

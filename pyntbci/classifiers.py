@@ -17,7 +17,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    lags: np.ndarray
+    lags: None | np.ndarray
         A vector of latencies in seconds per class relative to the first stimulus if stimuli are circularly shifted
         versions of the first stimulus, or None if all stimuli are different or this circular shift feature should be
         ignored.
@@ -30,15 +30,15 @@ class eCCA(BaseEstimator, ClassifierMixin):
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean,
         inner.
-    cca_channels: list (default: None)
+    cca_channels: list[int] (default: None)
         A list of channel indexes that need to be included in the estimation of a spatial filter at the template side
         of the CCA, i.e. CCA(X, T[:, cca_channels, :]). If None is given, all channels are used.
-    lx: float | list (default: None)
+    gamma_x: float | list[float] | np.ndarray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
-        None, no regularization is applied.
-    ly: float | list (default: None)
-        Regularization on the covariance matrix for CCA for all or each individual parameter along T (channels). If
-        None, no regularization is applied.
+        None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
+    gamma_y: float | list[float] | np.ndarray (default: None)
+        Regularization on the covariance matrix for CCA for all or each individual parameter along Y (channels). If
+        None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
     latency: np.ndarray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
@@ -66,14 +66,14 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     def __init__(
             self,
-            lags: np.ndarray,
+            lags: Union[None, np.ndarray],
             fs: int,
             cycle_size: float = None,
             template_metric: str = "mean",
             score_metric: str = "correlation",
-            cca_channels: list = None,
-            lx: Union[float, list] = None,
-            ly: Union[float, list] = None,
+            cca_channels: list[int] = None,
+            gamma_x: Union[float, list[float], np.ndarray] = None,
+            gamma_y: Union[float, list[float], np.ndarray] = None,
             latency: np.ndarray = None,
             ensemble: bool = False,
             cov_estimator: sklearn.base.BaseEstimator = None,
@@ -84,8 +84,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self.template_metric = template_metric
         self.score_metric = score_metric
         self.cca_channels = cca_channels
-        self.lx = lx
-        self.ly = ly
+        self.gamma_x = gamma_x
+        self.gamma_y = gamma_y
         self.latency = latency
         self.ensemble = ensemble
         self.cov_estimator = cov_estimator
@@ -265,8 +265,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
                 R = np.tile(T[i_class, :, :].T, (np.sum(y == i_class), 1))  # Concatenate templates
                 if self.cca_channels is not None:
                     R = R[:, self.cca_channels]
-                self._cca.append(CCA(n_components=1, gamma_x=self.lx, gamma_y=self.ly, estimator_x=self.cov_estimator,
-                                     estimator_y=self.cov_estimator))
+                self._cca.append(CCA(n_components=1, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
+                                     estimator_x=self.cov_estimator, estimator_y=self.cov_estimator))
                 self._cca[i_class].fit(S, R)
                 self.w_[:, i_class] = self._cca[i_class].w_x_.flatten()
         else:
@@ -274,7 +274,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             R = np.reshape(T[y, :, :].transpose((0, 2, 1)), (-1, n_channels))  # Concatenate templates
             if self.cca_channels is not None:
                 R = R[:, self.cca_channels]
-            self._cca = CCA(n_components=1, gamma_x=self.lx, gamma_y=self.ly, estimator_x=self.cov_estimator,
+            self._cca = CCA(n_components=1, gamma_x=self.gamma_x, gamma_y=self.gamma_y, estimator_x=self.cov_estimator,
                             estimator_y=self.cov_estimator)
             self._cca.fit(S, R)
             self.w_ = self._cca.w_x_
@@ -427,7 +427,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    lags: np.ndarray
+    lags: None | np.ndarray
         A vector of latencies in seconds per class relative to the first stimulus if stimuli are circularly shifted
         versions of the first stimulus, or None if all stimuli are different or this circular shift feature should be
         ignored.
@@ -464,7 +464,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     def __init__(
             self,
-            lags: np.ndarray,
+            lags: Union[None, np.ndarray],
             fs: int,
             cycle_size: float = None,
             template_metric: str = "mean",
@@ -698,10 +698,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
     decoding_stride: float (default: None)
         The stride of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1
         sample, such that no stride is used.
-    encoding_length: float | list (default: None)
+    encoding_length: float | list[float] (default: None)
         The length of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs,
         equivalent to 1 sample, such that no phase-shifting is performed.
-    encoding_stride: float | list (default: None)
+    encoding_stride: float | list[float] (default: None)
         The stride of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs,
         equivalent to 1 sample, such that no stride is used.
     score_metric: str (default: "correlation")
@@ -713,10 +713,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
     amplitudes: np.ndarray
         The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs.
-    gamma_x: float | list (default: None)
+    gamma_x: float | list[float] | np.ndarray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
         None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
-    gamma_m: float | list (default: None)
+    gamma_m: float | list[float] np.ndarray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along M (samples). If None,
         no regularization is applied. The gamma_m ranges from 0 (no regularization) to 1 (full regularization).
     cov_estimator_x: BaseEstimator (default: None)
@@ -768,14 +768,14 @@ class rCCA(BaseEstimator, ClassifierMixin):
             onset_event: bool = False,
             decoding_length: float = None,
             decoding_stride: float = None,
-            encoding_length: float = None,
-            encoding_stride: float = None,
+            encoding_length: Union[float, list[float]] = None,
+            encoding_stride: Union[float, list[float]] = None,
             score_metric: str = "correlation",
             latency: np.ndarray = None,
             ensemble: bool = False,
             amplitudes: np.ndarray = None,
-            gamma_x: float = None,
-            gamma_m: float = None,
+            gamma_x: Union[float, list[float], np.ndarray] = None,
+            gamma_m: Union[float, list[float], np.ndarray] = None,
             cov_estimator_x: sklearn.base.BaseEstimator = None,
             cov_estimator_m: sklearn.base.BaseEstimator = None,
             n_components: int = 1,

@@ -5,7 +5,8 @@
 ### Added
 
 ### Changed
-- Changed "bes" to "bds" in `BayesStopping` in `stopping` in line with publication 
+- Changed "bes" to "bds" in `BayesStopping` in `stopping` in line with publication
+- Changed `lx` and `ly` to `gamma_x` and `gamma_y` iof `eCCA` in `classifiers` 
 
 ### Fixed
 

@@ -188,7 +188,7 @@ def make_apa_sequence(
 def make_de_bruijn_sequence(
         k: int = 2,
         n: int = 6,
-        seed: tuple[int] = None,
+        seed: list[int] = None,
 ) -> np.ndarray:
     """Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.
 
@@ -198,7 +198,7 @@ def make_de_bruijn_sequence(
         The size of the alphabet.
     n: int (default: 6)
         The order of the sequence.
-    seed: tuple (default: None)
+    seed: list (default: None)
         Seed for the initial register. None leads to an all zero initial register.
 
     Returns
@@ -263,26 +263,26 @@ def make_golay_sequence(
 
 
 def make_gold_codes(
-        poly1: tuple[int] = (1, 0, 0, 0, 0, 1),
-        poly2: tuple[int] = (1, 1, 0, 0, 1, 1),
-        seed1: tuple[int] = None,
-        seed2: tuple[int] = None,
+        poly1: list[int] = None,
+        poly2: list[int] = None,
+        seed1: list[int] = None,
+        seed2: list[int] = None,
 ) -> np.ndarray:
     """Make a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a preferred
     pair of m-sequences.
     
     Parameters
     ----------
-    poly1: tuple (default: (1, 0, 0, 0, 0, 1))
-        The feedback tap points defined by the primitive polynomial.
+    poly1: list (default: None)
+        The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
-    poly2: tuple (default: (1, 1, 0, 0, 1, 1))
-        The feedback tap points defined by the primitive polynomial.
+    poly2: list (default: None)
+        The feedback tap points defined by a primitive polynomial. If None, [1, 1, 0, 0, 1, 1] is used.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
-    seed1: tuple (default: None)
-        Seed for the initial register for poly1. None leads to an all zero initial register.
-    seed2: tuple (default: None)
-        Seed for the initial register for poly1. None leads to an all zero initial register.
+    seed1: list (default: None)
+        Seed for the initial shift register of poly1. If None, an all zero initial register is used.
+    seed2: list (default: None)
+        Seed for the initial shift register of poly2. If None, an all zero initial register is used.
         
     Returns
     -------
@@ -294,6 +294,10 @@ def make_gold_codes(
     .. [13] Gold, R. (1967). Optimal binary sequences for spread spectrum multiplexing (Corresp.). IEEE Transactions on
             information theory, 13(4), 619-621.
     """
+    if poly1 is None:
+        poly1 = [1, 0, 0, 0, 0, 1]
+    if poly2 is None:
+        poly2 = [1, 1, 0, 0, 1, 1]
     assert np.unique(np.array(poly1)).size == 2, "The poly1 is not binary."
     assert np.unique(np.array(poly2)).size == 2, "The poly2 is not binary."
     n = len(poly1)
@@ -308,22 +312,22 @@ def make_gold_codes(
 
 
 def make_m_sequence(
-        poly: tuple[int] = (1, 0, 0, 0, 0, 1),
+        poly: list[int] = None,
         base: int = 2,
-        seed: tuple[int] = None,
+        seed: list[int] = None,
 ) -> np.ndarray:
     """Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.
     
     Parameters
     ----------
-    poly: tuple (default: (1, 0, 0, 0, 0, 1))
-        The feedback tap points defined by the primitive polynomial.
+    poly: list (default: None)
+        The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
     base: int (default: 2)
         The base of the sequence (related to the Galois Field), i.e. base 2 generates a binary sequence, base 3 a
         tertiary sequence, etc.
     seed: list (default: None)
-        The seed for the initial register. None leads to an all zero initial register.
+        The seed for the initial shift register. If None, an all zero initial register is used.
         
     Returns
     -------
@@ -334,6 +338,8 @@ def make_m_sequence(
     ----------
     .. [14] Golomb, S. W. (1967). Shift register sequences. Holden-Day. Inc., San Fransisco.
     """
+    if poly is None:
+        poly = [1, 0, 0, 0, 0, 1]
     n = len(poly)
     poly = np.array(poly)
     assert np.all(poly < base), "All values in the polynomial should be smaller than the base."
