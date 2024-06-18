@@ -1,5 +1,5 @@
-Gating
-======
+Gates
+=====
 
 .. automodule:: pyntbci.gates
 
