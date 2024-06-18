@@ -112,17 +112,17 @@ plt.tight_layout()
 # Some general settings for the following sections
 
 # Set trial duration
-trialtime = 4.2  # limit trials to a certain duration in seconds
-intertrialtime = 1.0  # ITI in seconds for computing ITR
-n_samples = int(trialtime * fs)
+trial_time = 4.2  # limit trials to a certain duration in seconds
+inter_trial_time = 1.0  # ITI in seconds for computing ITR
+n_samples = int(trial_time * fs)
 
 # Setup rCCA
 encoding_length = 0.3
 onset_event = True
 
 # Set stopping
-segmenttime = 0.1
-n_segments = int(trialtime / segmenttime)
+segment_time = 0.1
+n_segments = int(trial_time / segment_time)
 
 # Set chronological cross-validation
 n_folds = 5
@@ -145,12 +145,12 @@ target_p = 0.95 ** (1 / n_segments)
 # Fit classifier
 rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                 onset_event=onset_event, score_metric="correlation")
-margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p, max_time=trialtime)
+margin = pyntbci.stopping.MarginStopping(rcca, segment_time, fs, target_p=target_p, max_time=trial_time)
 margin.fit(X, y)
 
 # Plot dynamic stopping
 plt.figure(figsize=(15, 3))
-plt.plot(np.arange(1, 1 + margin.margins_.size) * segmenttime, margin.margins_, c="k")
+plt.plot(np.arange(1, 1 + margin.margins_.size) * segment_time, margin.margins_, c="k")
 plt.xlabel("time [s]")
 plt.ylabel("margin")
 plt.title("Margin dynamic stopping")
@@ -167,7 +167,7 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
-    margin = pyntbci.stopping.MarginStopping(rcca, segmenttime, fs, target_p=target_p)
+    margin = pyntbci.stopping.MarginStopping(rcca, segment_time, fs, target_p=target_p)
     margin.fit(X_trn, y_trn)
 
     # Loop segments
@@ -176,12 +176,12 @@ for i_fold in range(n_folds):
     for i_segment in range(n_segments):
 
         # Apply template-matching classifier
-        tmp = margin.predict(X_tst[:, :, :int((1 + i_segment) * segmenttime * fs)])
+        tmp = margin.predict(X_tst[:, :, :int((1 + i_segment) * segment_time * fs)])
 
         # Check stopped
         idx = np.logical_and(tmp >= 0, dur_tst == 0)
         yh_tst[idx] = tmp[idx]
-        dur_tst[idx] = (1 + i_segment) * segmenttime
+        dur_tst[idx] = (1 + i_segment) * segment_time
         if np.all(dur_tst > 0):
             break
 
@@ -190,7 +190,7 @@ for i_fold in range(n_folds):
     duration_margin[i_fold] = np.mean(dur_tst)
 
 # Compute ITR
-itr_margin = pyntbci.utilities.itr(n_classes, accuracy_margin, duration_margin + intertrialtime)
+itr_margin = pyntbci.utilities.itr(n_classes, accuracy_margin, duration_margin + inter_trial_time)
 
 # Plot accuracy (over folds)
 fig, ax = plt.subplots(3, 1, figsize=(15, 8), sharex=True)
@@ -239,7 +239,7 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
-    beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trialtime)
+    beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time)
     beta.fit(X, y)
 
     # Loop segments
@@ -248,12 +248,12 @@ for i_fold in range(n_folds):
     for i_segment in range(n_segments):
 
         # Apply template-matching classifier
-        tmp = beta.predict(X_tst[:, :, :int((1 + i_segment) * segmenttime * fs)])
+        tmp = beta.predict(X_tst[:, :, :int((1 + i_segment) * segment_time * fs)])
 
         # Check stopped
         idx = np.logical_and(tmp >= 0, dur_tst == 0)
         yh_tst[idx] = tmp[idx]
-        dur_tst[idx] = (1 + i_segment) * segmenttime
+        dur_tst[idx] = (1 + i_segment) * segment_time
         if np.all(dur_tst > 0):
             break
 
@@ -262,7 +262,7 @@ for i_fold in range(n_folds):
     duration_beta[i_fold] = np.mean(dur_tst)
 
 # Compute ITR
-itr_beta = pyntbci.utilities.itr(n_classes, accuracy_beta, duration_beta + intertrialtime)
+itr_beta = pyntbci.utilities.itr(n_classes, accuracy_beta, duration_beta + inter_trial_time)
 
 # Plot accuracy (over folds)
 fig, ax = plt.subplots(3, 1, figsize=(15, 8), sharex=True)
@@ -286,10 +286,10 @@ print(f"\tDuration: avg={duration_beta.mean():.2f} with std={duration_beta.std()
 print(f"\tITR: avg={itr_beta.mean():.1f} with std={itr_beta.std():.2f}")
 
 # %%
-# Bayesian dynamic stopping (BES0)
+# Bayesian dynamic stopping (BDS0)
 # --------------------------------
 # The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-# threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
+# threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.
 #
 # References:
 # .. [5] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
@@ -301,28 +301,28 @@ cr = 1.0
 # Fit classifier
 rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                 onset_event=onset_event, score_metric="inner")
-bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, cr=cr, max_time=trialtime)
+bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, cr=cr, max_time=trial_time)
 bayes.fit(X, y)
 
 # Plot dynamic stopping
 fig, ax = plt.subplots(2, 1, figsize=(15, 4), sharex=True)
-ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.eta_, c="k", label="eta")
-ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.alpha_ * bayes.b0_, "--b", label="b0")
-ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.alpha_ * bayes.b1_, "--g", label="b1")
-ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.alpha_ * bayes.b0_ - bayes.s0_, "b")
-ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.alpha_ * bayes.b1_ - bayes.s1_, "g")
-ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.alpha_ * bayes.b0_ + bayes.s0_, "b")
-ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.alpha_ * bayes.b1_ + bayes.s1_, "g")
+ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.eta_, c="k", label="eta")
+ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.alpha_ * bayes.b0_, "--b", label="b0")
+ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.alpha_ * bayes.b1_, "--g", label="b1")
+ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.alpha_ * bayes.b0_ - bayes.s0_, "b")
+ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.alpha_ * bayes.b1_ - bayes.s1_, "g")
+ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.alpha_ * bayes.b0_ + bayes.s0_, "b")
+ax[0].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.alpha_ * bayes.b1_ + bayes.s1_, "g")
 ax[0].legend()
-ax[1].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.pf_, label="pf")
-ax[1].plot(np.arange(1, 1 + bayes.eta_.size) * segmenttime, bayes.pm_, label="pm")
+ax[1].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.pf_, label="pf")
+ax[1].plot(np.arange(1, 1 + bayes.eta_.size) * segment_time, bayes.pm_, label="pm")
 ax[1].legend()
 ax[1].set_xlabel("time [s]")
 ax[0].set_title("Bayesian dynamic stopping")
 
 # Loop folds
-accuracy_bes0 = np.zeros(n_folds)
-duration_bes0 = np.zeros(n_folds)
+accuracy_bds0 = np.zeros(n_folds)
+duration_bds0 = np.zeros(n_folds)
 for i_fold in range(n_folds):
 
     # Split data to train and valid set
@@ -332,53 +332,53 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
-    bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes0", cr=cr, max_time=trialtime)
+    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds0", cr=cr, max_time=trial_time)
     bayes.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
     yh_tst = np.zeros(X_tst.shape[0])
     dur_tst = np.zeros(X_tst.shape[0])
     for i_segment in range(n_segments):
-        tmp = bayes.predict(X_tst[:, :, :int((1 + i_segment) * segmenttime * fs)])
+        tmp = bayes.predict(X_tst[:, :, :int((1 + i_segment) * segment_time * fs)])
         idx = np.logical_and(tmp >= 0, dur_tst == 0)
         yh_tst[idx] = tmp[idx]
-        dur_tst[idx] = (1 + i_segment) * segmenttime
+        dur_tst[idx] = (1 + i_segment) * segment_time
         if np.all(dur_tst > 0):
             break
 
     # Compute accuracy
-    accuracy_bes0[i_fold] = np.mean(yh_tst == y_tst)
-    duration_bes0[i_fold] = np.mean(dur_tst)
+    accuracy_bds0[i_fold] = np.mean(yh_tst == y_tst)
+    duration_bds0[i_fold] = np.mean(dur_tst)
 
 # Compute ITR
-itr_bes0 = pyntbci.utilities.itr(n_classes, accuracy_bes0, duration_bes0 + intertrialtime)
+itr_bds0 = pyntbci.utilities.itr(n_classes, accuracy_bds0, duration_bds0 + inter_trial_time)
 
 # Plot accuracy (over folds)
 fig, ax = plt.subplots(3, 1, figsize=(15, 8), sharex=True)
-ax[0].bar(np.arange(n_folds), accuracy_bes0)
-ax[0].hlines(np.mean(accuracy_bes0), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
-ax[1].bar(np.arange(n_folds), duration_bes0)
-ax[1].hlines(np.mean(duration_bes0), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
-ax[2].bar(np.arange(n_folds), itr_bes0)
-ax[2].hlines(np.mean(itr_bes0), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[0].bar(np.arange(n_folds), accuracy_bds0)
+ax[0].hlines(np.mean(accuracy_bds0), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[1].bar(np.arange(n_folds), duration_bds0)
+ax[1].hlines(np.mean(duration_bds0), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[2].bar(np.arange(n_folds), itr_bds0)
+ax[2].hlines(np.mean(itr_bds0), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
 ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [s]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"BES0 dynamic stopping: avg acc {accuracy_bes0.mean():.2f} | " +
-                f"avg dur {duration_bes0.mean():.2f} | avg itr {itr_bes0.mean():.1f}")
+ax[0].set_title(f"BDS0 dynamic stopping: avg acc {accuracy_bds0.mean():.2f} | " +
+                f"avg dur {duration_bds0.mean():.2f} | avg itr {itr_bds0.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
-print("BES0:")
-print(f"\tAccuracy: avg={accuracy_bes0.mean():.2f} with std={accuracy_bes0.std():.2f}")
-print(f"\tDuration: avg={duration_bes0.mean():.2f} with std={duration_bes0.std():.2f}")
-print(f"\tITR: avg={itr_bes0.mean():.1f} with std={itr_bes0.std():.2f}")
+print("BDS0:")
+print(f"\tAccuracy: avg={accuracy_bds0.mean():.2f} with std={accuracy_bds0.std():.2f}")
+print(f"\tDuration: avg={duration_bds0.mean():.2f} with std={duration_bds0.std():.2f}")
+print(f"\tITR: avg={itr_bds0.mean():.1f} with std={itr_bds0.std():.2f}")
 
 # %%
-# Bayesian dynamic stopping (BES1)
+# Bayesian dynamic stopping (BDS1)
 # --------------------------------
 # The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-# threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
+# threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.
 #
 # References:
 # .. [6] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
@@ -390,8 +390,8 @@ target_pf = 0.05
 target_pd = 0.80
 
 # Loop folds
-accuracy_bes1 = np.zeros(n_folds)
-duration_bes1 = np.zeros(n_folds)
+accuracy_bds1 = np.zeros(n_folds)
+duration_bds1 = np.zeros(n_folds)
 for i_fold in range(n_folds):
 
     # Split data to train and valid set
@@ -401,54 +401,54 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
-    bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes1", cr=cr, target_pf=target_pf,
-                                           target_pd=target_pd, max_time=trialtime)
+    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds1", cr=cr, target_pf=target_pf,
+                                           target_pd=target_pd, max_time=trial_time)
     bayes.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
     yh_tst = np.zeros(X_tst.shape[0])
     dur_tst = np.zeros(X_tst.shape[0])
     for i_segment in range(n_segments):
-        tmp = bayes.predict(X_tst[:, :, :int((1 + i_segment) * segmenttime * fs)])
+        tmp = bayes.predict(X_tst[:, :, :int((1 + i_segment) * segment_time * fs)])
         idx = np.logical_and(tmp >= 0, dur_tst == 0)
         yh_tst[idx] = tmp[idx]
-        dur_tst[idx] = (1 + i_segment) * segmenttime
+        dur_tst[idx] = (1 + i_segment) * segment_time
         if np.all(dur_tst > 0):
             break
 
     # Compute accuracy
-    accuracy_bes1[i_fold] = np.mean(yh_tst == y_tst)
-    duration_bes1[i_fold] = np.mean(dur_tst)
+    accuracy_bds1[i_fold] = np.mean(yh_tst == y_tst)
+    duration_bds1[i_fold] = np.mean(dur_tst)
 
 # Compute ITR
-itr_bes1 = pyntbci.utilities.itr(n_classes, accuracy_bes1, duration_bes1 + intertrialtime)
+itr_bds1 = pyntbci.utilities.itr(n_classes, accuracy_bds1, duration_bds1 + inter_trial_time)
 
 # Plot accuracy (over folds)
 fig, ax = plt.subplots(3, 1, figsize=(15, 8), sharex=True)
-ax[0].bar(np.arange(n_folds), accuracy_bes1)
-ax[0].hlines(np.mean(accuracy_bes1), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
-ax[1].bar(np.arange(n_folds), duration_bes1)
-ax[1].hlines(np.mean(duration_bes1), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
-ax[2].bar(np.arange(n_folds), itr_bes1)
-ax[2].hlines(np.mean(itr_bes1), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[0].bar(np.arange(n_folds), accuracy_bds1)
+ax[0].hlines(np.mean(accuracy_bds1), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[1].bar(np.arange(n_folds), duration_bds1)
+ax[1].hlines(np.mean(duration_bds1), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[2].bar(np.arange(n_folds), itr_bds1)
+ax[2].hlines(np.mean(itr_bds1), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
 ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [s]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"BES1 dynamic stopping: avg acc {accuracy_bes1.mean():.2f} | " +
-                f"avg dur {duration_bes1.mean():.2f} | avg itr {itr_bes1.mean():.1f}")
+ax[0].set_title(f"BDS1 dynamic stopping: avg acc {accuracy_bds1.mean():.2f} | " +
+                f"avg dur {duration_bds1.mean():.2f} | avg itr {itr_bds1.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
-print("BES1:")
-print(f"\tAccuracy: avg={accuracy_bes1.mean():.2f} with std={accuracy_bes1.std():.2f}")
-print(f"\tDuration: avg={duration_bes1.mean():.2f} with std={duration_bes1.std():.2f}")
-print(f"\tITR: avg={itr_bes1.mean():.1f} with std={itr_bes1.std():.2f}")
+print("BDS1:")
+print(f"\tAccuracy: avg={accuracy_bds1.mean():.2f} with std={accuracy_bds1.std():.2f}")
+print(f"\tDuration: avg={duration_bds1.mean():.2f} with std={duration_bds1.std():.2f}")
+print(f"\tITR: avg={itr_bds1.mean():.1f} with std={itr_bds1.std():.2f}")
 
 # %%
-# Bayesian dynamic stopping (BES2)
+# Bayesian dynamic stopping (BDS2)
 # --------------------------------
 # The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-# threshold using these and a cost criterion. This method comes in three flavours: bes0, bes1, and bes2.
+# threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.
 #
 # References:
 # .. [7] Ahmadi, S., Thielen, J., Farquhar, J., & Desain, P. (in prep.) A model driven Bayesian dynamic stopping method
@@ -460,8 +460,8 @@ target_pf = 0.05
 target_pd = 0.80
 
 # Loop folds
-accuracy_bes2 = np.zeros(n_folds)
-duration_bes2 = np.zeros(n_folds)
+accuracy_bds2 = np.zeros(n_folds)
+duration_bds2 = np.zeros(n_folds)
 for i_fold in range(n_folds):
 
     # Split data to train and valid set
@@ -471,48 +471,48 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
-    bayes = pyntbci.stopping.BayesStopping(rcca, segmenttime, fs, method="bes2", cr=cr, target_pf=target_pf,
-                                           target_pd=target_pd, max_time=trialtime)
+    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds2", cr=cr, target_pf=target_pf,
+                                           target_pd=target_pd, max_time=trial_time)
     bayes.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
     yh_tst = np.zeros(X_tst.shape[0])
     dur_tst = np.zeros(X_tst.shape[0])
     for i_segment in range(n_segments):
-        tmp = bayes.predict(X_tst[:, :, :int((1 + i_segment) * segmenttime * fs)])
+        tmp = bayes.predict(X_tst[:, :, :int((1 + i_segment) * segment_time * fs)])
         idx = np.logical_and(tmp >= 0, dur_tst == 0)
         yh_tst[idx] = tmp[idx]
-        dur_tst[idx] = (1 + i_segment) * segmenttime
+        dur_tst[idx] = (1 + i_segment) * segment_time
         if np.all(dur_tst > 0):
             break
 
     # Compute accuracy
-    accuracy_bes2[i_fold] = np.mean(yh_tst == y_tst)
-    duration_bes2[i_fold] = np.mean(dur_tst)
+    accuracy_bds2[i_fold] = np.mean(yh_tst == y_tst)
+    duration_bds2[i_fold] = np.mean(dur_tst)
 
 # Compute ITR
-itr_bes2 = pyntbci.utilities.itr(n_classes, accuracy_bes2, duration_bes2 + intertrialtime)
+itr_bds2 = pyntbci.utilities.itr(n_classes, accuracy_bds2, duration_bds2 + inter_trial_time)
 
 # Plot accuracy (over folds)
 fig, ax = plt.subplots(3, 1, figsize=(15, 8), sharex=True)
-ax[0].bar(np.arange(n_folds), accuracy_bes2)
-ax[0].hlines(np.mean(accuracy_bes2), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
-ax[1].bar(np.arange(n_folds), duration_bes2)
-ax[1].hlines(np.mean(duration_bes2), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
-ax[2].bar(np.arange(n_folds), itr_bes2)
-ax[2].hlines(np.mean(itr_bes2), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[0].bar(np.arange(n_folds), accuracy_bds2)
+ax[0].hlines(np.mean(accuracy_bds2), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[1].bar(np.arange(n_folds), duration_bds2)
+ax[1].hlines(np.mean(duration_bds2), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
+ax[2].bar(np.arange(n_folds), itr_bds2)
+ax[2].hlines(np.mean(itr_bds2), -.5, n_folds - 0.5, linestyle='--', color="k", alpha=0.5)
 ax[2].set_xlabel("(test) fold")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [s]")
 ax[2].set_ylabel("itr [bits/min]")
-ax[0].set_title(f"BES2 dynamic stopping: avg acc {accuracy_bes2.mean():.2f} | " +
-                f"avg dur {duration_bes2.mean():.2f} | avg itr {itr_bes2.mean():.1f}")
+ax[0].set_title(f"BDS2 dynamic stopping: avg acc {accuracy_bds2.mean():.2f} | " +
+                f"avg dur {duration_bds2.mean():.2f} | avg itr {itr_bds2.mean():.1f}")
 
 # Print accuracy (average and standard deviation over folds)
-print("BES2:")
-print(f"\tAccuracy: avg={accuracy_bes2.mean():.2f} with std={accuracy_bes2.std():.2f}")
-print(f"\tDuration: avg={duration_bes2.mean():.2f} with std={duration_bes2.std():.2f}")
-print(f"\tITR: avg={itr_bes2.mean():.1f} with std={itr_bes2.std():.2f}")
+print("BDS2:")
+print(f"\tAccuracy: avg={accuracy_bds2.mean():.2f} with std={accuracy_bds2.std():.2f}")
+print(f"\tDuration: avg={duration_bds2.mean():.2f} with std={duration_bds2.std():.2f}")
+print(f"\tITR: avg={itr_bds2.mean():.1f} with std={itr_bds2.std():.2f}")
 
 # %%
 # Overall comparison
@@ -525,20 +525,20 @@ width = 0.8
 fig, ax = plt.subplots(3, 1, figsize=(15, 8), sharex=True)
 ax[0].bar(0, accuracy_margin.mean(), width=width, yerr=accuracy_margin.std(), label="margin")
 ax[0].bar(1, accuracy_beta.mean(), width=width, yerr=accuracy_beta.std(), label="beta")
-ax[0].bar(2, accuracy_bes0.mean(), width=width, yerr=accuracy_bes0.std(), label="bes0")
-ax[0].bar(3, accuracy_bes1.mean(), width=width, yerr=accuracy_bes1.std(), label="bes1")
-ax[0].bar(4, accuracy_bes2.mean(), width=width, yerr=accuracy_bes2.std(), label="bes2")
+ax[0].bar(2, accuracy_bds0.mean(), width=width, yerr=accuracy_bds0.std(), label="bds0")
+ax[0].bar(3, accuracy_bds1.mean(), width=width, yerr=accuracy_bds1.std(), label="bds1")
+ax[0].bar(4, accuracy_bds2.mean(), width=width, yerr=accuracy_bds2.std(), label="bds2")
 ax[1].bar(0, duration_margin.mean(), width=width, yerr=duration_margin.std(), label="margin")
 ax[1].bar(1, duration_beta.mean(), width=width, yerr=duration_beta.std(), label="beta")
-ax[1].bar(2, duration_bes0.mean(), width=width, yerr=duration_bes0.std(), label="bes0")
-ax[1].bar(3, duration_bes1.mean(), width=width, yerr=duration_bes1.std(), label="bes1")
-ax[1].bar(4, duration_bes2.mean(), width=width, yerr=duration_bes2.std(), label="bes2")
+ax[1].bar(2, duration_bds0.mean(), width=width, yerr=duration_bds0.std(), label="bds0")
+ax[1].bar(3, duration_bds1.mean(), width=width, yerr=duration_bds1.std(), label="bds1")
+ax[1].bar(4, duration_bds2.mean(), width=width, yerr=duration_bds2.std(), label="bds2")
 ax[2].bar(0, itr_margin.mean(), width=width, yerr=itr_margin.std(), label="margin")
 ax[2].bar(1, itr_beta.mean(), width=width, yerr=itr_beta.std(), label="beta")
-ax[2].bar(2, itr_bes0.mean(), width=width, yerr=itr_bes0.std(), label="bes0")
-ax[2].bar(3, itr_bes1.mean(), width=width, yerr=itr_bes1.std(), label="bes1")
-ax[2].bar(4, itr_bes2.mean(), width=width, yerr=itr_bes2.std(), label="bes2")
-ax[2].set_xticks(np.arange(5), ["margin", "beta", "bes0", "bes1", "bes2"])
+ax[2].bar(2, itr_bds0.mean(), width=width, yerr=itr_bds0.std(), label="bds0")
+ax[2].bar(3, itr_bds1.mean(), width=width, yerr=itr_bds1.std(), label="bds1")
+ax[2].bar(4, itr_bds2.mean(), width=width, yerr=itr_bds2.std(), label="bds2")
+ax[2].set_xticks(np.arange(5), ["margin", "beta", "bds0", "bds1", "bds2"])
 ax[2].set_xlabel("dynamic stopping method")
 ax[0].set_ylabel("accuracy")
 ax[1].set_ylabel("duration [s]")
