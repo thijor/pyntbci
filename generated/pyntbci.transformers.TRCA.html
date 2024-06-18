@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.transformers.TRCA &mdash; PyntBCI 1.2.0 documentation</title>
+  <title>pyntbci.transformers.TRCA &mdash; PyntBCI 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=6efca38a"></script>
+        <script src="../_static/documentation_options.js?v=1f29e9d3"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.2.0
+                1.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -58,7 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gating">Gating</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
@@ -95,14 +95,14 @@
 <h1>pyntbci.transformers.TRCA<a class="headerlink" href="#pyntbci-transformers-trca" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyntbci.transformers.TRCA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.transformers.</span></span><span class="sig-name descname"><span class="pre">TRCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/transformers.html#TRCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.TRCA" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.transformers.</span></span><span class="sig-name descname"><span class="pre">TRCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/transformers.html#TRCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.TRCA" title="Link to this definition"></a></dt>
 <dd><p>Task related component analysis (TRCA). Maximizes the intra-class covariances, i.e., the intra-class consistency
 <a class="footnote-reference brackets" href="#id7" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. TRCA was applied to (SSVEP) BCI <a class="footnote-reference brackets" href="#id8" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>. Alternative implementations, also used as example for this code, see
 Matlab code in <a class="footnote-reference brackets" href="#id7" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> for the original, Matlab code in <a class="footnote-reference brackets" href="#id9" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> for the SSVEP BCI introduction, and two Python
 implementation in MOABB <a class="footnote-reference brackets" href="#id10" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>, and MEEGKit <a class="footnote-reference brackets" href="#id11" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n_components</strong> (<em>int</em>) – The number of TRCA components to use.</p>
+<dd class="field-odd"><p><strong>n_components</strong> (<em>int</em><em> (</em><em>default: 1</em><em>)</em>) – The number of TRCA components to use.</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -146,22 +146,20 @@ Engineering, 65(1), 104-112. doi: 10.1109/TBME.2017.2694818</p>
 </aside>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyntbci.transformers.TRCA.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BaseEstimator</span></span></span><a class="reference internal" href="../_modules/pyntbci/transformers.html#TRCA.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.TRCA.fit" title="Link to this definition"></a></dt>
-<dd><p>Fit TRCA in one of 2 ways: (1) without labels (y=None) or with labels (y=vector). If no labels are provided,
-TRCA will compute one filter across all labels. If labels are provided, one filter will be computed for each of
-the classes.</p>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/pyntbci/transformers.html#TRCA.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.TRCA.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit TRCA.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>np.ndarray</em>) – Data matrix of shape (n_trials, n_features, n_samples) or (n_samples, n_features).</p></li>
-<li><p><strong>y</strong> (<em>np.ndarray</em>) – Label vector of shape (n_trials,).</p></li>
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – Data matrix of shape (n_trials, n_features, n_samples).</p></li>
+<li><p><strong>y</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Not used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>self</strong> – An instance of the transformer.</p>
+<dd class="field-even"><p><strong>w</strong> – The learned weights of shape (n_features, n_components).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pyntbci.transformers.TRCA" title="pyntbci.transformers.TRCA">TRCA</a></p>
+<dd class="field-odd"><p>np.ndarray:</p>
 </dd>
 </dl>
 </dd></dl>
@@ -177,13 +175,11 @@ filter is applied.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>X</strong> (<em>np.ndarray</em>) – Data matrix of shape (n_trials, n_features, n_samples).</p></li>
-<li><p><strong>y</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Label vector of shape (n_trials,). Can be None.</p></li>
+<li><p><strong>y</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Not used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>X</strong> – Projected data matrix of shape (n_trials, n_components, n_samples) if X and y were provided, of shape
-(n_trials, n_components, n_samples, n_classes) if y=None and multi-class filters were learned, and
-(n_trials, n_components, n_samples) if y=None and one pooled filter was learned.</p>
+<dd class="field-even"><p><strong>X</strong> – Projected data matrix of shape (n_trials, n_components, n_samples).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>

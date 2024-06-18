@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.classifiers &mdash; PyntBCI 1.2.0 documentation</title>
+  <title>pyntbci.classifiers &mdash; PyntBCI 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=6efca38a"></script>
+        <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.2.0
+                1.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -55,7 +55,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.classifiers">Classifiers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.gating">Gating</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.gates">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stopping">Stopping</a></li>
@@ -139,13 +139,16 @@
 <span class="sd">    cov_estimator: object (default: None)</span>
 <span class="sd">        Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom</span>
 <span class="sd">        empirical covariance is used.</span>
+<span class="sd">    n_components: int (default: 1)</span>
+<span class="sd">        The number of CCA components to use.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    w_: np.ndarray</span>
-<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the</span>
+<span class="sd">        shape is (n_channels, n_components, n_classes).</span>
 <span class="sd">    T_: np.ndarray</span>
-<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).</span>
+<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_components, n_samples).</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -169,6 +172,7 @@
             <span class="n">latency</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">ensemble</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
             <span class="n">cov_estimator</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lags</span> <span class="o">=</span> <span class="n">lags</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
@@ -181,6 +185,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="o">=</span> <span class="n">latency</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span> <span class="o">=</span> <span class="n">ensemble</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator</span> <span class="o">=</span> <span class="n">cov_estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">=</span> <span class="n">n_components</span>
 
     <span class="k">def</span> <span class="nf">_fit_T</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -213,37 +218,13 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown template metric:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_metric</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">T</span>
 
-    <span class="k">def</span> <span class="nf">_get_T</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the templates.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        n_samples: int (default: None)</span>
-<span class="sd">            The number of samples requested. If None, one code cycle is given.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        T: np.ndarray</span>
-<span class="sd">            The templates of shape (n_classes, n_samples).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))[:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
-        <span class="n">T</span> <span class="o">-=</span> <span class="n">T</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">T</span>
-
 <div class="viewcode-block" id="eCCA.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA.decision_function">[docs]</a>
     <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the routines to arrive at raw unthresholded classification scores for X.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the classifier to get classification scores for X.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -253,41 +234,43 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scores: np.ndarray</span>
-<span class="sd">            The matrix of scores of shape (n_trials, n_classes).</span>
+<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;T_&quot;</span><span class="p">])</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="c1"># Set templates to trial length</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_T</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_T</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
+        <span class="c1"># Compute scores</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
             <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-
-                <span class="c1"># Apply spatial filter</span>
                 <span class="n">Xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-                <span class="c1"># Scoring</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">Xi</span><span class="p">,</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:])[:,</span> <span class="mi">0</span><span class="p">]</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">Xi</span><span class="p">,</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># conversion to similarity</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">Xi</span><span class="p">,</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                      <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])[:,</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                             <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                   <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Apply spatial filter</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-            <span class="c1"># Scoring</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">))</span>  <span class="c1"># conversion to similarity</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">scores</span></div>
 
@@ -355,36 +338,63 @@
 
         <span class="c1"># Fit CCA</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
                 <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">))</span>  <span class="c1"># Concatenate trials</span>
                 <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># Concatenate templates</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_channels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">R</span> <span class="o">=</span> <span class="n">R</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_channels</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gamma_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="n">gamma_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">gamma_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="n">gamma_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span>
                                      <span class="n">estimator_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator</span><span class="p">,</span> <span class="n">estimator_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">w_x_</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">w_x_</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">))</span>  <span class="c1"># Concatenate trials</span>
             <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">))</span>  <span class="c1"># Concatenate templates</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_channels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">R</span> <span class="o">=</span> <span class="n">R</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_channels</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span> <span class="o">=</span> <span class="n">CCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gamma_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="n">gamma_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="n">estimator_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator</span><span class="p">,</span>
-                            <span class="n">estimator_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span> <span class="o">=</span> <span class="n">CCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">gamma_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="n">gamma_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span>
+                            <span class="n">estimator_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator</span><span class="p">,</span> <span class="n">estimator_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">w_x_</span>
 
         <span class="c1"># Spatially filter templates</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">T_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">T_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">T</span><span class="p">[[</span><span class="n">i_class</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:])[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">T_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">T_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">T</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="eCCA.get_T">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA.get_T">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_T</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the templates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples: int (default: None)</span>
+<span class="sd">            The number of samples requested. If None, one code cycle is given.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        T: np.ndarray</span>
+<span class="sd">            The templates of shape (n_classes, n_components, n_samples).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
+        <span class="n">T</span> <span class="o">-=</span> <span class="n">T</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">T</span></div>
 
 
 <div class="viewcode-block" id="eCCA.predict">
@@ -403,7 +413,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y: np.ndarray</span>
-<span class="sd">            The vector of predicted labels of the trials in X of shape (n_trials).</span>
+<span class="sd">            The predicted labels of shape (n_trials, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;T_&quot;</span><span class="p">])</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -423,8 +433,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    estimator: sklearn.base.BaseEstimator</span>
 <span class="sd">        The classifier object that is applied to each item in the databank.</span>
-<span class="sd">    gating: sklearn.base.BaseEstimator</span>
-<span class="sd">        The gating function that is used to combine the scores obtained from each individual classifiers.</span>
+<span class="sd">    gate: sklearn.base.BaseEstimator</span>
+<span class="sd">        The gate that is used to combine the scores obtained from each individual estimator.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -436,19 +446,10 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">estimator</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">,</span>
-            <span class="n">gating</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">,</span>
+            <span class="n">gate</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gating</span> <span class="o">=</span> <span class="n">gating</span>
-
-    <span class="k">def</span> <span class="nf">_compute_scores</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])]</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate</span> <span class="o">=</span> <span class="n">gate</span>
 
 <div class="viewcode-block" id="Ensemble.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble.decision_function">[docs]</a>
@@ -456,8 +457,7 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the decision functions to each item in the databank to arrive at raw unthresholded classification</span>
-<span class="sd">        scores for X.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the classifier to get classification scores for X.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -469,7 +469,10 @@
 <span class="sd">        scores: np.ndarray</span>
 <span class="sd">            The matrix of scores of shape (n_trials, n_classes).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gating</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_scores</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Ensemble.fit">
@@ -504,7 +507,10 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])]</span>
 
         <span class="c1"># Fit gating</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gating</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_scores</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -530,7 +536,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;models_&quot;</span><span class="p">])</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gating</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_scores</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
 </div>
 
 
@@ -565,7 +571,8 @@
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    w_: np.ndarray</span>
-<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the</span>
+<span class="sd">        shape is (n_channels, n_components, n_classes).</span>
 <span class="sd">    T_: np.ndarray</span>
 <span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).</span>
 
@@ -587,6 +594,7 @@
             <span class="n">score_metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;correlation&quot;</span><span class="p">,</span>
             <span class="n">latency</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">ensemble</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lags</span> <span class="o">=</span> <span class="n">lags</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
@@ -595,6 +603,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">=</span> <span class="n">score_metric</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="o">=</span> <span class="n">latency</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span> <span class="o">=</span> <span class="n">ensemble</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">=</span> <span class="n">n_components</span>
 
     <span class="k">def</span> <span class="nf">_fit_T</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -624,37 +633,13 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown template metric:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_metric</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">T</span>
 
-    <span class="k">def</span> <span class="nf">_get_T</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the templates.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        n_samples: int (default: None)</span>
-<span class="sd">            The number of samples requested. If None, one code cycle is given.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        T: np.ndarray</span>
-<span class="sd">            The templates of shape (n_classes, n_samples).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))[:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
-        <span class="n">T</span> <span class="o">-=</span> <span class="n">T</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">T</span>
-
 <div class="viewcode-block" id="eTRCA.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.decision_function">[docs]</a>
     <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the routines to arrive at raw unthresholded classification scores for X.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the classifier to get classification scores for X.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -664,39 +649,44 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scores: np.ndarray</span>
-<span class="sd">            The matrix of scores of shape (n_trials, n_classes).</span>
+<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Apply spatial filter</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;T_&quot;</span><span class="p">])</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Set templates to trial length</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_T</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_T</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
-        <span class="c1"># Scoring</span>
+        <span class="c1"># Compute scores</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
-            <span class="n">n_trials</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">n_classes</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">Xi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                      <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])[:,</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                             <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                   <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i_class</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:])[:,</span> <span class="mi">0</span><span class="p">]</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i_class</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))</span>
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i_class</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:])</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">scores</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+        <span class="k">return</span> <span class="n">scores</span></div>
 
 
 <div class="viewcode-block" id="eTRCA.fit">
@@ -726,22 +716,34 @@
         <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="c1"># Correct for raster latency</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">)</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">correct_latency</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Learn spatial filter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span> <span class="o">=</span> <span class="n">TRCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TRCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">w_</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span> <span class="o">=</span> <span class="n">TRCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">w_</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">w_</span>
 
         <span class="c1"># Spatially filter data</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">Z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
+                <span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Z</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
+            <span class="k">del</span> <span class="n">Z</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="c1"># Synchronize all classes</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -753,8 +755,10 @@
             <span class="n">cycle_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cycle_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">n_samples</span> <span class="o">%</span> <span class="n">cycle_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;X must be full cycles.&quot;</span>
             <span class="n">n_cycles</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="n">cycle_size</span><span class="p">)</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_trials</span> <span class="o">*</span> <span class="n">n_cycles</span><span class="p">,</span> <span class="n">cycle_size</span><span class="p">))</span>
-            <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">n_cycles</span><span class="p">,</span> <span class="n">cycle_size</span><span class="p">))</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_trials</span> <span class="o">*</span> <span class="n">n_cycles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">cycle_size</span><span class="p">))</span>
+            <span class="n">n_trials</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">n_cycles</span><span class="p">)</span>
 
         <span class="c1"># Compute templates</span>
@@ -762,19 +766,46 @@
             <span class="c1"># Compute a template per class separately</span>
             <span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
             <span class="n">n_classes</span> <span class="o">=</span> <span class="n">classes</span><span class="o">.</span><span class="n">size</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
-                <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_T</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">classes</span><span class="p">[</span><span class="n">i_class</span><span class="p">],</span> <span class="p">:])</span>
+                <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_T</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">classes</span><span class="p">[</span><span class="n">i_class</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Compute a template for latency 0 and shift for all others</span>
             <span class="n">n_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lags</span><span class="p">)</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_T</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">n_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_T</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">n_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">correct_latency</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">T</span> <span class="o">=</span> <span class="n">correct_latency</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">T_</span> <span class="o">=</span> <span class="n">T</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="eTRCA.get_T">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.get_T">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_T</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the templates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples: int (default: None)</span>
+<span class="sd">            The number of samples requested. If None, one code cycle is given.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        T: np.ndarray</span>
+<span class="sd">            The templates of shape (n_classes, n_samples).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
+        <span class="n">T</span> <span class="o">-=</span> <span class="n">T</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">T</span></div>
 
 
 <div class="viewcode-block" id="eTRCA.predict">
@@ -793,7 +824,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y: np.ndarray</span>
-<span class="sd">            The vector of predicted labels of the trials in X of shape (n_trials).</span>
+<span class="sd">            The predicted labels of shape (n_trials, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;T_&quot;</span><span class="p">])</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -855,20 +886,20 @@
 <span class="sd">        None, a custom empirical covariance is used.</span>
 <span class="sd">    n_components: int (default: 1)</span>
 <span class="sd">        The number of CCA components to use.</span>
-<span class="sd">    gating: BaseEstimator (default: None)</span>
-<span class="sd">        The gating function that is used to combine the scores obtained from each individual component.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    w_: np.ndarray</span>
-<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">        The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the</span>
+<span class="sd">        shape is (n_channels, n_components, n_classes).</span>
 <span class="sd">    r_: np.ndarray</span>
-<span class="sd">        The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components).</span>
+<span class="sd">        The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components). If</span>
+<span class="sd">        ensemble=True, then the shape is (n_events * n_event_samples, n_components, n_classes).</span>
 <span class="sd">    Ts_: np.ndarray</span>
-<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components) for</span>
+<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for</span>
 <span class="sd">        stimulus cycle 1 (i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).</span>
 <span class="sd">    Tw_: np.ndarray</span>
-<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_samples, n_components) for</span>
+<span class="sd">        The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for</span>
 <span class="sd">        stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of</span>
 <span class="sd">        previous cycles).</span>
 
@@ -907,7 +938,6 @@
             <span class="n">cov_estimator_x</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">cov_estimator_m</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">gating</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
@@ -938,48 +968,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator_x</span> <span class="o">=</span> <span class="n">cov_estimator_x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cov_estimator_m</span> <span class="o">=</span> <span class="n">cov_estimator_m</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">=</span> <span class="n">n_components</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gating</span> <span class="o">=</span> <span class="n">gating</span>
-
-    <span class="k">def</span> <span class="nf">_compute_scores</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-
-        <span class="c1"># Set templates to trial length</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_T</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-
-        <span class="c1"># Compute scores</span>
-        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                <span class="n">Xi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
-                                                                      <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])[:,</span> <span class="mi">0</span><span class="p">]</span>
-                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
-                                                                             <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>
-                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
-                                                                   <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span>
-                                <span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))</span>  <span class="c1"># conversion to similarity</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">scores</span>
 
     <span class="k">def</span> <span class="nf">_get_M</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -1016,41 +1004,13 @@
         <span class="n">M</span> <span class="o">=</span> <span class="n">encoding_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="n">amplitudes</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_get_T</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the templates.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        n_samples: int (default: None)</span>
-<span class="sd">            The number of samples requested. If None, one stimulus cycle is used.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        T: np.ndarray</span>
-<span class="sd">            The templates of shape (n_classes, n_components, n_samples).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">Tw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">Tw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="p">,</span> <span class="n">Tw</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
-        <span class="n">T</span> <span class="o">-=</span> <span class="n">T</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">T</span>
-
 <div class="viewcode-block" id="rCCA.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.decision_function">[docs]</a>
     <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the routines to arrive at raw unthresholded classification scores for X.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the classifier to get classification scores for X.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1060,7 +1020,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scores: np.ndarray</span>
-<span class="sd">            The matrix of scores of shape (n_trials, n_classes).</span>
+<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;r_&quot;</span><span class="p">,</span> <span class="s2">&quot;Ts_&quot;</span><span class="p">,</span> <span class="s2">&quot;Tw_&quot;</span><span class="p">])</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1068,14 +1028,40 @@
         <span class="c1"># Set decoding matrix</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">decoding_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
 
+        <span class="c1"># Set templates to trial length</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_T</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
         <span class="c1"># Compute scores</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gating</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_scores</span><span class="p">(</span><span class="n">X</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># selects the single component</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;A gating function must be specified when n_components &gt; 1&quot;</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">Xi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                      <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])[:,</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                             <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span>
+                                                                   <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gating</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_scores</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">scores</span></div>
 
 
 <div class="viewcode-block" id="rCCA.fit">
@@ -1148,11 +1134,38 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span> <span class="o">=</span> <span class="n">correct_latency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span> <span class="o">=</span> <span class="n">correct_latency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="c1"># Fit gating</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gating</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gating</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_scores</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
-
         <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="rCCA.get_T">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.get_T">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_T</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the templates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples: int (default: None)</span>
+<span class="sd">            The number of samples requested. If None, one stimulus cycle is used.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        T: np.ndarray</span>
+<span class="sd">            The templates of shape (n_classes, n_components, n_samples).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Tw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Tw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Tw_</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="p">,</span> <span class="n">Tw</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
+        <span class="n">T</span> <span class="o">-=</span> <span class="n">T</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">T</span></div>
 
 
 <div class="viewcode-block" id="rCCA.predict">
@@ -1171,17 +1184,11 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y: np.ndarray</span>
-<span class="sd">            The vector of predicted labels of the trials in X of shape (n_trials). Note, these denote the index at which</span>
-<span class="sd">            to find the associated stimulus!</span>
+<span class="sd">            The predicted labels of shape (n_trials, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;r_&quot;</span><span class="p">,</span> <span class="s2">&quot;Ts_&quot;</span><span class="p">,</span> <span class="s2">&quot;Tw_&quot;</span><span class="p">])</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gating</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Set decoding matrix</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">decoding_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gating</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_scores</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="rCCA.set_stimulus">

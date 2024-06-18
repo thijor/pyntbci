@@ -108,9 +108,9 @@ filterbank.
     # Set filterbank (see pyntbci.utilities.filterbank)
     tmin = 0  # seconds before trial onset that could catch filter artefacts and is cut off after the filterbank
     filterbank = [  # passbands with lower and higher cutoffs in Hz
-        [1.0, 60.0],
-        [12.0, 60.0],
-        [30.0, 60.0]]
+        (1.0, 60.0),
+        (12.0, 60.0),
+        (30.0, 60.0)]
     ftype = "chebyshev1"  # filter type
     gpass = 3  # maximum attenuation in the passband in dB
     gstop = 20  # minimum attenuation in the stopband in dB
@@ -143,8 +143,8 @@ filterbank.
             # Setup classifier
             rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                             onset_event=onset_event)
-            gate = pyntbci.gating.AggregateGate("mean")
-            fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gating=gate)
+            gate = pyntbci.gates.AggregateGate("mean")
+            fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gate=gate)
 
             # Train classifier
             fbrcca.fit(X_trn, y_trn)
@@ -165,7 +165,7 @@ filterbank.
                 rcca.fit(X_trn[:, :, :, i_band], y_trn)
 
                 # Apply classifier
-                yh_tst = rcca.predict(X_tst[:, :, :, i_band])
+                yh_tst = rcca.predict(X_tst[:, :, :, i_band])[:, 0]  # select component
 
                 # Compute accuracy
                 accuracy_rcca[i_subject, i_fold, i_band] = np.mean(yh_tst == y_tst)
@@ -223,7 +223,7 @@ filterbank.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 7.022 seconds)
+   **Total running time of the script:** (1 minutes 14.613 seconds)
 
 
 .. _sphx_glr_download_examples_fbrcca.py:

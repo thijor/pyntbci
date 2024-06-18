@@ -3,7 +3,7 @@ API Reference
 
 .. include:: classifiers.rst
 .. include:: envelope.rst
-.. include:: gating.rst
+.. include:: gates.rst
 .. include:: plotting.rst
 .. include:: stimulus.rst
 .. include:: stopping.rst

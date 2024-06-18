@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classifiers &mdash; PyntBCI 1.3.0 documentation</title>
+  <title>Gating &mdash; PyntBCI 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
@@ -78,9 +78,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Classifiers</li>
+      <li class="breadcrumb-item active">Gating</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/classifiers.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/gates.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -88,21 +88,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-pyntbci.classifiers">
-<span id="classifiers"></span><h1>Classifiers<a class="headerlink" href="#module-pyntbci.classifiers" title="Link to this heading"></a></h1>
+  <section id="module-pyntbci.gates">
+<span id="gating"></span><h1>Gating<a class="headerlink" href="#module-pyntbci.gates" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(stimulus, fs[, event, onset_event, ...])</p></td>
-<td><p>Reconvolution CCA classifier.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.gates.AggregateGate.html#pyntbci.gates.AggregateGate" title="pyntbci.gates.AggregateGate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregateGate</span></code></a>([aggregate])</p></td>
+<td><p>Gate described by an aggregate function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
-<td><p>ERP CCA classifier.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
-<td><p>ERP TRCA classifier.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble" title="pyntbci.classifiers.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(estimator, gate)</p></td>
-<td><p>Ensemble classifier.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.gates.DifferenceGate.html#pyntbci.gates.DifferenceGate" title="pyntbci.gates.DifferenceGate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DifferenceGate</span></code></a>(estimator)</p></td>
+<td><p>Gate described by classification of difference scores.</p></td>
 </tr>
 </tbody>
 </table>

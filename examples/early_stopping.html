@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Early stopping &mdash; PyntBCI 1.2.0 documentation</title>
+  <title>Early stopping &mdash; PyntBCI 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=6efca38a"></script>
+        <script src="../_static/documentation_options.js?v=1f29e9d3"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.2.0
+                1.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -66,7 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gating">Gating</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gating</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
@@ -193,6 +193,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 <span class="c1"># Setup rCCA</span>
 <span class="n">encoding_length</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># seconds</span>
 <span class="n">onset_event</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># an event modeling the onset of a trial</span>
+<span class="n">event</span> <span class="o">=</span> <span class="s2">&quot;refe&quot;</span>
 
 <span class="c1"># Set size of increments of trials</span>
 <span class="n">segment_time</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># seconds</span>
@@ -227,7 +228,7 @@ hence static stopping.</p>
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
     <span class="n">max_acc</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">CriterionStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">)</span>
     <span class="n">max_acc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
@@ -276,10 +277,10 @@ hence static stopping.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_max_acc</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_max_acc</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_early_stopping_001.png" srcset="../_images/sphx_glr_early_stopping_001.png" alt="Maximum accuracy early stopping: avg acc 1.00 | avg dur 1.30 | avg itr 112.7" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Maximum accuracy:
+<img src="../_images/sphx_glr_early_stopping_001.png" srcset="../_images/sphx_glr_early_stopping_001.png" alt="Maximum accuracy early stopping: avg acc 1.00 | avg dur 1.26 | avg itr 114.9" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Maximum accuracy:
         Accuracy: avg=1.00 with std=0.00
-        Duration: avg=1.30 with std=0.00
-        ITR: avg=112.7 with std=0.00
+        Duration: avg=1.26 with std=0.08
+        ITR: avg=114.9 with std=4.30
 </pre></div>
 </div>
 </section>
@@ -298,7 +299,7 @@ reached, hence static stopping.</p>
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
     <span class="n">max_itr</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">CriterionStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;itr&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
                                                  <span class="n">smooth_width</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
@@ -373,7 +374,7 @@ stopping.</p>
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
     <span class="n">tgt_acc</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">CriterionStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">,</span>
                                                  <span class="n">target</span><span class="o">=</span><span class="n">target_p</span><span class="p">)</span>
@@ -423,10 +424,10 @@ stopping.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_tgt_acc</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_tgt_acc</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_early_stopping_003.png" srcset="../_images/sphx_glr_early_stopping_003.png" alt="Targeted accuracy early stopping: avg acc 1.00 | avg dur 1.30 | avg itr 112.7" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Targeted accuracy:
+<img src="../_images/sphx_glr_early_stopping_003.png" srcset="../_images/sphx_glr_early_stopping_003.png" alt="Targeted accuracy early stopping: avg acc 1.00 | avg dur 1.26 | avg itr 114.9" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Targeted accuracy:
         Accuracy: avg=1.00 with std=0.00
-        Duration: avg=1.30 with std=0.00
-        ITR: avg=112.7 with std=0.00
+        Duration: avg=1.26 with std=0.08
+        ITR: avg=114.9 with std=4.30
 </pre></div>
 </div>
 </section>
@@ -447,7 +448,7 @@ doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 <span class="n">target_p</span> <span class="o">=</span> <span class="mf">0.90</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_segments</span><span class="p">)</span>
 
 <span class="c1"># Fit classifier</span>
-<span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+<span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                 <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
 <span class="n">margin</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">MarginStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="n">target_p</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">trial_time</span><span class="p">)</span>
 <span class="n">margin</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -469,7 +470,7 @@ doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
     <span class="n">margin</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">MarginStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="n">target_p</span><span class="p">)</span>
     <span class="n">margin</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
@@ -520,12 +521,12 @@ doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 </div>
 <ul class="sphx-glr-horizontal">
 <li><img src="../_images/sphx_glr_early_stopping_004.png" srcset="../_images/sphx_glr_early_stopping_004.png" alt="Margin dynamic stopping" class = "sphx-glr-multi-img"/></li>
-<li><img src="../_images/sphx_glr_early_stopping_005.png" srcset="../_images/sphx_glr_early_stopping_005.png" alt="Margin dynamic stopping: avg acc 0.97 | avg dur 0.77 | avg itr 137.0" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_early_stopping_005.png" srcset="../_images/sphx_glr_early_stopping_005.png" alt="Margin dynamic stopping: avg acc 0.96 | avg dur 0.77 | avg itr 134.4" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Margin:
-        Accuracy: avg=0.97 with std=0.04
-        Duration: avg=0.77 with std=0.03
-        ITR: avg=137.0 with std=11.36
+        Accuracy: avg=0.96 with std=0.06
+        Duration: avg=0.77 with std=0.05
+        ITR: avg=134.4 with std=15.15
 </pre></div>
 </div>
 </section>
@@ -555,7 +556,7 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
     <span class="n">beta</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">BetaStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="n">target_p</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">trial_time</span><span class="p">)</span>
     <span class="n">beta</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -604,10 +605,10 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_beta</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_beta</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_early_stopping_006.png" srcset="../_images/sphx_glr_early_stopping_006.png" alt="Beta dynamic stopping: avg acc 0.87 | avg dur 0.89 | avg itr 103.2" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Beta:
-        Accuracy: avg=0.87 with std=0.09
-        Duration: avg=0.89 with std=0.08
-        ITR: avg=103.2 with std=17.33
+<img src="../_images/sphx_glr_early_stopping_006.png" srcset="../_images/sphx_glr_early_stopping_006.png" alt="Beta dynamic stopping: avg acc 0.91 | avg dur 0.98 | avg itr 107.5" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Beta:
+        Accuracy: avg=0.91 with std=0.07
+        Duration: avg=0.98 with std=0.14
+        ITR: avg=107.5 with std=14.46
 </pre></div>
 </div>
 </section>
@@ -627,7 +628,7 @@ threshold using these and a cost criterion. This method comes in three flavours:
 <span class="n">cr</span> <span class="o">=</span> <span class="mf">1.0</span>
 
 <span class="c1"># Fit classifier</span>
-<span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+<span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                 <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
 <span class="n">bayes</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">BayesStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="n">cr</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">trial_time</span><span class="p">)</span>
 <span class="n">bayes</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -658,7 +659,7 @@ threshold using these and a cost criterion. This method comes in three flavours:
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
     <span class="n">bayes</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">BayesStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bds0&quot;</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="n">cr</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">trial_time</span><span class="p">)</span>
     <span class="n">bayes</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
@@ -705,12 +706,12 @@ threshold using these and a cost criterion. This method comes in three flavours:
 </div>
 <ul class="sphx-glr-horizontal">
 <li><img src="../_images/sphx_glr_early_stopping_007.png" srcset="../_images/sphx_glr_early_stopping_007.png" alt="Bayesian dynamic stopping" class = "sphx-glr-multi-img"/></li>
-<li><img src="../_images/sphx_glr_early_stopping_008.png" srcset="../_images/sphx_glr_early_stopping_008.png" alt="BDS0 dynamic stopping: avg acc 0.96 | avg dur 1.45 | avg itr 97.0" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_early_stopping_008.png" srcset="../_images/sphx_glr_early_stopping_008.png" alt="BDS0 dynamic stopping: avg acc 0.96 | avg dur 1.45 | avg itr 96.8" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS0:
         Accuracy: avg=0.96 with std=0.04
         Duration: avg=1.45 with std=0.25
-        ITR: avg=97.0 with std=6.02
+        ITR: avg=96.8 with std=6.01
 </pre></div>
 </div>
 </section>
@@ -741,7 +742,7 @@ threshold using these and a cost criterion. This method comes in three flavours:
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
     <span class="n">bayes</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">BayesStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bds1&quot;</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="n">cr</span><span class="p">,</span> <span class="n">target_pf</span><span class="o">=</span><span class="n">target_pf</span><span class="p">,</span>
                                            <span class="n">target_pd</span><span class="o">=</span><span class="n">target_pd</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">trial_time</span><span class="p">)</span>
@@ -790,7 +791,7 @@ threshold using these and a cost criterion. This method comes in three flavours:
 <img src="../_images/sphx_glr_early_stopping_009.png" srcset="../_images/sphx_glr_early_stopping_009.png" alt="BDS1 dynamic stopping: avg acc 1.00 | avg dur 1.63 | avg itr 99.2" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS1:
         Accuracy: avg=1.00 with std=0.00
         Duration: avg=1.63 with std=0.21
-        ITR: avg=99.2 with std=7.26
+        ITR: avg=99.2 with std=7.31
 </pre></div>
 </div>
 </section>
@@ -821,7 +822,7 @@ threshold using these and a cost criterion. This method comes in three flavours:
     <span class="n">X_tst</span><span class="p">,</span> <span class="n">y_tst</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">folds</span> <span class="o">==</span> <span class="n">i_fold</span><span class="p">]</span>
 
     <span class="c1"># Train template-matching classifier</span>
-    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
+    <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="n">encoding_length</span><span class="p">,</span>
                                     <span class="n">onset_event</span><span class="o">=</span><span class="n">onset_event</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
     <span class="n">bayes</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">BayesStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bds2&quot;</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="n">cr</span><span class="p">,</span> <span class="n">target_pf</span><span class="o">=</span><span class="n">target_pf</span><span class="p">,</span>
                                            <span class="n">target_pd</span><span class="o">=</span><span class="n">target_pd</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">trial_time</span><span class="p">)</span>
@@ -867,10 +868,10 @@ threshold using these and a cost criterion. This method comes in three flavours:
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_bds2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_bds2</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_early_stopping_010.png" srcset="../_images/sphx_glr_early_stopping_010.png" alt="BDS2 dynamic stopping: avg acc 0.96 | avg dur 1.36 | avg itr 100.2" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS2:
+<img src="../_images/sphx_glr_early_stopping_010.png" srcset="../_images/sphx_glr_early_stopping_010.png" alt="BDS2 dynamic stopping: avg acc 0.96 | avg dur 1.36 | avg itr 100.5" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS2:
         Accuracy: avg=0.96 with std=0.04
         Duration: avg=1.36 with std=0.15
-        ITR: avg=100.2 with std=6.21
+        ITR: avg=100.5 with std=6.30
 </pre></div>
 </div>
 </section>
@@ -919,7 +920,7 @@ Additionally, the evaluation is performed on a single participant only.</p>
 <img src="../_images/sphx_glr_early_stopping_011.png" srcset="../_images/sphx_glr_early_stopping_011.png" alt="Comparison of early stopping methods averaged across folds" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Comparison of early stopping methods averaged across folds&#39;)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 43.687 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 48.128 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-early-stopping-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/d015bbb5a1e2b956c967a5af70098a35/early_stopping.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">early_stopping.ipynb</span></code></a></p>

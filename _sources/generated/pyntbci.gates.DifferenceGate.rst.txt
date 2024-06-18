@@ -1,0 +1,12 @@
+﻿pyntbci.gates.DifferenceGate
+============================
+
+.. currentmodule:: pyntbci.gates
+
+.. autofunction:: DifferenceGate
+
+.. include:: pyntbci.gates.DifferenceGate.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

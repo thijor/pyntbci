@@ -271,7 +271,7 @@ the performance of eCCA.
         ecca.fit(X_trn, y_trn)
 
         # Apply template-matching classifier
-        yh_tst = ecca.predict(X_tst)
+        yh_tst = ecca.predict(X_tst)[:, 0]  # select component
 
         # Compute accuracy
         accuracy[i_fold] = np.mean(yh_tst == y_tst)
@@ -353,7 +353,7 @@ training data they require to estimate their parameters.
             ecca.fit(X_trn[:train_trials[i_trial], :, :], y_trn[:train_trials[i_trial]])
 
             # Apply classifier
-            yh_tst = ecca.predict(X_tst)
+            yh_tst = ecca.predict(X_tst)[:, 0]  # select component
 
             # Compute accuracy
             accuracy[i_fold, i_trial] = np.mean(yh_tst == y_tst)
@@ -426,7 +426,7 @@ need during testing to classify single-trials.
         # Loop segments
         for i_segment in range(n_segments):
             # Apply classifier
-            yh_tst = ecca.predict(X_tst[:, :, :int(fs * segments[i_segment])])
+            yh_tst = ecca.predict(X_tst[:, :, :int(fs * segments[i_segment])])[:, 0]  # select component
 
             # Compute accuracy
             accuracy[i_fold, i_segment] = np.mean(yh_tst == y_tst)
@@ -512,7 +512,7 @@ Analyse multiple participants
             ecca.fit(X_trn, y_trn)
 
             # Apply classifier
-            yh_tst = ecca.predict(X_tst)
+            yh_tst = ecca.predict(X_tst)[:, 0]  # select component
 
             # Compute accuracy
             accuracy[i_subject, i_fold] = np.mean(yh_tst == y_tst)
@@ -564,7 +564,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.823 seconds)
+   **Total running time of the script:** (0 minutes 4.609 seconds)
 
 
 .. _sphx_glr_download_examples_ecca.py:

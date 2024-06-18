@@ -89,7 +89,7 @@ The dataset consists of (1) the EEG data X that is a matrix of k trials, c chann
 that is a vector of k trials; (3) the pseudo-random noise-codes V that is a matrix of n classes and m samples. Note,
 the codes are upsampled to match the EEG sampling frequency and contain only one code-cycle.
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-96
+.. GENERATED FROM PYTHON SOURCE LINES 47-97
 
 .. code-block:: Python
 
@@ -133,6 +133,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     # Setup rCCA
     encoding_length = 0.3  # seconds
     onset_event = True  # an event modeling the onset of a trial
+    event = "refe"
 
     # Set size of increments of trials
     segment_time = 0.1  # seconds
@@ -160,7 +161,7 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-102
+.. GENERATED FROM PYTHON SOURCE LINES 98-103
 
 Maximum accuracy static stopping
 --------------------------------
@@ -168,7 +169,7 @@ The "maximum accuracy" method is a static stopping method that learns one stoppi
 reaches the maximum classification accuracy. During testing, all trials will stop as soon as that time is reached,
 hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-161
+.. GENERATED FROM PYTHON SOURCE LINES 103-162
 
 .. code-block:: Python
 
@@ -183,7 +184,7 @@ hence static stopping.
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         max_acc = pyntbci.stopping.CriterionStopping(rcca, segment_time, fs, criterion="accuracy", optimization="max")
         max_acc.fit(X_trn, y_trn)
@@ -235,7 +236,7 @@ hence static stopping.
 
 
 .. image-sg:: /examples/images/sphx_glr_early_stopping_001.png
-   :alt: Maximum accuracy early stopping: avg acc 1.00 | avg dur 1.30 | avg itr 112.7
+   :alt: Maximum accuracy early stopping: avg acc 1.00 | avg dur 1.26 | avg itr 114.9
    :srcset: /examples/images/sphx_glr_early_stopping_001.png
    :class: sphx-glr-single-img
 
@@ -246,13 +247,13 @@ hence static stopping.
 
     Maximum accuracy:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=1.30 with std=0.00
-            ITR: avg=112.7 with std=0.00
+            Duration: avg=1.26 with std=0.08
+            ITR: avg=114.9 with std=4.30
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-167
+.. GENERATED FROM PYTHON SOURCE LINES 163-168
 
 Maximum ITR static stopping
 ---------------------------
@@ -260,7 +261,7 @@ The "maximum ITR" method is a static stopping method that learns one stopping ti
 reaches the maximum information-transfer rate (ITR). During testing, all trials will stop as soon as that time is
 reached, hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-227
+.. GENERATED FROM PYTHON SOURCE LINES 168-228
 
 .. code-block:: Python
 
@@ -275,7 +276,7 @@ reached, hence static stopping.
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         max_itr = pyntbci.stopping.CriterionStopping(rcca, segment_time, fs, criterion="itr", optimization="max",
                                                      smooth_width=0.3)
@@ -345,7 +346,7 @@ reached, hence static stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 228-233
+.. GENERATED FROM PYTHON SOURCE LINES 229-234
 
 Targeted accuracy static stopping
 ---------------------------------
@@ -353,7 +354,7 @@ The "targeted accuracy" method is a static stopping method that learns one stopp
 reaches a preset targeted accuracy. During testing, all trials will stop as soon as that time is reached, hence static
 stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-297
+.. GENERATED FROM PYTHON SOURCE LINES 234-298
 
 .. code-block:: Python
 
@@ -371,7 +372,7 @@ stopping.
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         tgt_acc = pyntbci.stopping.CriterionStopping(rcca, segment_time, fs, criterion="accuracy", optimization="target",
                                                      target=target_p)
@@ -425,7 +426,7 @@ stopping.
 
 
 .. image-sg:: /examples/images/sphx_glr_early_stopping_003.png
-   :alt: Targeted accuracy early stopping: avg acc 1.00 | avg dur 1.30 | avg itr 112.7
+   :alt: Targeted accuracy early stopping: avg acc 1.00 | avg dur 1.26 | avg itr 114.9
    :srcset: /examples/images/sphx_glr_early_stopping_003.png
    :class: sphx-glr-single-img
 
@@ -436,13 +437,13 @@ stopping.
 
     Targeted accuracy:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=1.30 with std=0.00
-            ITR: avg=112.7 with std=0.00
+            Duration: avg=1.26 with std=0.08
+            ITR: avg=114.9 with std=4.30
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 298-308
+.. GENERATED FROM PYTHON SOURCE LINES 299-309
 
 Margin dynamic stopping
 -----------------------
@@ -455,7 +456,7 @@ References:
        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
        doi: https://doi.org/10.1371/journal.pone.0133797
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-383
+.. GENERATED FROM PYTHON SOURCE LINES 309-384
 
 .. code-block:: Python
 
@@ -464,7 +465,7 @@ References:
     target_p = 0.90 ** (1 / n_segments)
 
     # Fit classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
     margin = pyntbci.stopping.MarginStopping(rcca, segment_time, fs, target_p=target_p, max_time=trial_time)
     margin.fit(X, y)
@@ -486,7 +487,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         margin = pyntbci.stopping.MarginStopping(rcca, segment_time, fs, target_p=target_p)
         margin.fit(X_trn, y_trn)
@@ -550,7 +551,7 @@ References:
     *
 
       .. image-sg:: /examples/images/sphx_glr_early_stopping_005.png
-         :alt: Margin dynamic stopping: avg acc 0.97 | avg dur 0.77 | avg itr 137.0
+         :alt: Margin dynamic stopping: avg acc 0.96 | avg dur 0.77 | avg itr 134.4
          :srcset: /examples/images/sphx_glr_early_stopping_005.png
          :class: sphx-glr-multi-img
 
@@ -560,14 +561,14 @@ References:
  .. code-block:: none
 
     Margin:
-            Accuracy: avg=0.97 with std=0.04
-            Duration: avg=0.77 with std=0.03
-            ITR: avg=137.0 with std=11.36
+            Accuracy: avg=0.96 with std=0.06
+            Duration: avg=0.77 with std=0.05
+            ITR: avg=134.4 with std=15.15
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 384-394
+.. GENERATED FROM PYTHON SOURCE LINES 385-395
 
 Beta dynamic stopping
 ---------------------
@@ -580,7 +581,7 @@ References:
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 394-456
+.. GENERATED FROM PYTHON SOURCE LINES 395-457
 
 .. code-block:: Python
 
@@ -598,7 +599,7 @@ References:
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
         beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time)
         beta.fit(X, y)
@@ -650,7 +651,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_early_stopping_006.png
-   :alt: Beta dynamic stopping: avg acc 0.87 | avg dur 0.89 | avg itr 103.2
+   :alt: Beta dynamic stopping: avg acc 0.91 | avg dur 0.98 | avg itr 107.5
    :srcset: /examples/images/sphx_glr_early_stopping_006.png
    :class: sphx-glr-single-img
 
@@ -660,14 +661,14 @@ References:
  .. code-block:: none
 
     Beta:
-            Accuracy: avg=0.87 with std=0.09
-            Duration: avg=0.89 with std=0.08
-            ITR: avg=103.2 with std=17.33
+            Accuracy: avg=0.91 with std=0.07
+            Duration: avg=0.98 with std=0.14
+            ITR: avg=107.5 with std=14.46
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 457-466
+.. GENERATED FROM PYTHON SOURCE LINES 458-467
 
 Bayesian dynamic stopping (BDS0)
 --------------------------------
@@ -679,7 +680,7 @@ References:
 .. [5] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 466-546
+.. GENERATED FROM PYTHON SOURCE LINES 467-547
 
 .. code-block:: Python
 
@@ -688,7 +689,7 @@ response brain-computer interfacing
     cr = 1.0
 
     # Fit classifier
-    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, cr=cr, max_time=trial_time)
     bayes.fit(X, y)
@@ -719,7 +720,7 @@ response brain-computer interfacing
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds0", cr=cr, max_time=trial_time)
         bayes.fit(X_trn, y_trn)
@@ -779,7 +780,7 @@ response brain-computer interfacing
     *
 
       .. image-sg:: /examples/images/sphx_glr_early_stopping_008.png
-         :alt: BDS0 dynamic stopping: avg acc 0.96 | avg dur 1.45 | avg itr 97.0
+         :alt: BDS0 dynamic stopping: avg acc 0.96 | avg dur 1.45 | avg itr 96.8
          :srcset: /examples/images/sphx_glr_early_stopping_008.png
          :class: sphx-glr-multi-img
 
@@ -791,12 +792,12 @@ response brain-computer interfacing
     BDS0:
             Accuracy: avg=0.96 with std=0.04
             Duration: avg=1.45 with std=0.25
-            ITR: avg=97.0 with std=6.02
+            ITR: avg=96.8 with std=6.01
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 547-556
+.. GENERATED FROM PYTHON SOURCE LINES 548-557
 
 Bayesian dynamic stopping (BDS1)
 --------------------------------
@@ -808,7 +809,7 @@ References:
 .. [6] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 556-617
+.. GENERATED FROM PYTHON SOURCE LINES 557-618
 
 .. code-block:: Python
 
@@ -828,7 +829,7 @@ response brain-computer interfacing
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds1", cr=cr, target_pf=target_pf,
                                                target_pd=target_pd, max_time=trial_time)
@@ -889,12 +890,12 @@ response brain-computer interfacing
     BDS1:
             Accuracy: avg=1.00 with std=0.00
             Duration: avg=1.63 with std=0.21
-            ITR: avg=99.2 with std=7.26
+            ITR: avg=99.2 with std=7.31
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 618-627
+.. GENERATED FROM PYTHON SOURCE LINES 619-628
 
 Bayesian dynamic stopping (BDS2)
 --------------------------------
@@ -906,7 +907,7 @@ References:
 .. [7] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 627-688
+.. GENERATED FROM PYTHON SOURCE LINES 628-689
 
 .. code-block:: Python
 
@@ -926,7 +927,7 @@ response brain-computer interfacing
         X_tst, y_tst = X[folds == i_fold, :, :n_samples], y[folds == i_fold]
 
         # Train template-matching classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="inner")
         bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds2", cr=cr, target_pf=target_pf,
                                                target_pd=target_pd, max_time=trial_time)
@@ -975,7 +976,7 @@ response brain-computer interfacing
 
 
 .. image-sg:: /examples/images/sphx_glr_early_stopping_010.png
-   :alt: BDS2 dynamic stopping: avg acc 0.96 | avg dur 1.36 | avg itr 100.2
+   :alt: BDS2 dynamic stopping: avg acc 0.96 | avg dur 1.36 | avg itr 100.5
    :srcset: /examples/images/sphx_glr_early_stopping_010.png
    :class: sphx-glr-single-img
 
@@ -987,19 +988,19 @@ response brain-computer interfacing
     BDS2:
             Accuracy: avg=0.96 with std=0.04
             Duration: avg=1.36 with std=0.15
-            ITR: avg=100.2 with std=6.21
+            ITR: avg=100.5 with std=6.30
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 689-693
+.. GENERATED FROM PYTHON SOURCE LINES 690-694
 
 Overall comparison
 ------------------
 Comparison of the presented stopping methods. Note, each of these use default parameters that might need fine-tuning.
 Additionally, the evaluation is performed on a single participant only.
 
-.. GENERATED FROM PYTHON SOURCE LINES 693-730
+.. GENERATED FROM PYTHON SOURCE LINES 694-731
 
 .. code-block:: Python
 
@@ -1061,7 +1062,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 43.687 seconds)
+   **Total running time of the script:** (0 minutes 48.128 seconds)
 
 
 .. _sphx_glr_download_examples_early_stopping.py:

@@ -231,13 +231,13 @@ for i_fold in range(n_folds):
     # rCCA
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="contrast", encoding_length=0.3, onset_event=True)
     rcca.fit(X_trn, y_trn)
-    yh_tst = rcca.predict(X_tst)
+    yh_tst = rcca.predict(X_tst)[:, 0]  # select component
     accuracy[0, i_fold] = np.mean(yh_tst == y_tst)
 
     # eCCA
     ecca = pyntbci.classifiers.eCCA(lags=np.arange(0, 2 * 63, 4) / 60, fs=fs, cycle_size=2 * 63 / 60)
     ecca.fit(X_trn, y_trn)
-    yh_tst = ecca.predict(X_tst)
+    yh_tst = ecca.predict(X_tst)  # select component
     accuracy[1, i_fold] = np.mean(yh_tst == y_tst)
 
 # Plot accuracy (over folds)
@@ -278,13 +278,13 @@ for i_fold in range(n_folds):
         # rCCA
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.3, onset_event=True)
         rcca.fit(X_trn[:1 + i_trial, ...], y_trn[:1 + i_trial])
-        yh_tst = rcca.predict(X_tst)
+        yh_tst = rcca.predict(X_tst)  # select component
         accuracy[0, i_trial, i_fold] = np.mean(yh_tst == y_tst)
 
         # eCCA
         ecca = pyntbci.classifiers.eCCA(lags=np.arange(0, 2 * 63, 4) / 60, fs=fs, cycle_size=63 / 60)
         ecca.fit(X_trn[:1 + i_trial, ...], y_trn[:1 + i_trial])
-        yh_tst = ecca.predict(X_tst)
+        yh_tst = ecca.predict(X_tst)  # select component
         accuracy[1, i_trial, i_fold] = np.mean(yh_tst == y_tst)
 
 # Plot learning curve
