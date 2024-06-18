@@ -1,9 +1,9 @@
 Gating
 ======
 
-.. automodule:: pyntbci.gating
+.. automodule:: pyntbci.gates
 
-.. currentmodule:: pyntbci.gating
+.. currentmodule:: pyntbci.gates
 
 .. autosummary::
     :toctree: generated/
