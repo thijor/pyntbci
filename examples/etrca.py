@@ -159,7 +159,7 @@ for i_fold in range(n_folds):
     etrca.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
-    yh_tst = etrca.predict(X_tst)
+    yh_tst = etrca.predict(X_tst)[:, 0]  # select component
 
     # Compute accuracy
     accuracy[i_fold] = np.mean(yh_tst == y_tst)
@@ -216,7 +216,7 @@ for i_fold in range(n_folds):
         etrca.fit(X_trn[:train_trials[i_trial], :, :], y_trn[:train_trials[i_trial]])
 
         # Apply classifier
-        yh_tst = etrca.predict(X_tst)
+        yh_tst = etrca.predict(X_tst)[:, 0]  # select component
 
         # Compute accuracy
         accuracy[i_fold, i_trial] = np.mean(yh_tst == y_tst)
@@ -271,7 +271,7 @@ for i_fold in range(n_folds):
     # Loop segments
     for i_segment in range(n_segments):
         # Apply classifier
-        yh_tst = etrca.predict(X_tst[:, :, :int(fs * segments[i_segment])])
+        yh_tst = etrca.predict(X_tst[:, :, :int(fs * segments[i_segment])])[:, 0]  # select component
 
         # Compute accuracy
         accuracy[i_fold, i_segment] = np.mean(yh_tst == y_tst)
@@ -339,7 +339,7 @@ for i_subject in range(n_subjects):
         etrca.fit(X_trn, y_trn)
 
         # Apply classifier
-        yh_tst = etrca.predict(X_tst)
+        yh_tst = etrca.predict(X_tst)[:, 0]  # select component
 
         # Compute accuracy
         accuracy[i_subject, i_fold] = np.mean(yh_tst == y_tst)

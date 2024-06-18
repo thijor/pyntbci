@@ -7,7 +7,7 @@ import pyntbci
 class TestBayesStopping(unittest.TestCase):
 
     def test_bayes_rcca(self):
-        fs = 1000
+        fs = 200
         segment_time = 0.1
         encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)
@@ -34,7 +34,7 @@ class TestBayesStopping(unittest.TestCase):
 class TestBetaStopping(unittest.TestCase):
 
     def test_beta_rcca(self):
-        fs = 1000
+        fs = 200
         encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)
         y = np.random.choice(5, 111)
@@ -51,7 +51,7 @@ class TestBetaStopping(unittest.TestCase):
 class TestMarginStopping(unittest.TestCase):
 
     def test_margin_rcca(self):
-        fs = 1000
+        fs = 200
         segment_time = 0.1
         encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs)

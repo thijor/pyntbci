@@ -3,10 +3,17 @@
 ## Version 1.3.0
 
 ### Added
+- Removed `gating` of `rCCA` in `classifiers`
+- Removed `_score` methods in `classifiers`
+- Added `n_components` in `eCCA` in `classifiers`
+- Added `n_components` in `eTRCA` in `classifiers`
 
 ### Changed
 - Changed "bes" to "bds" in `BayesStopping` in `stopping` in line with publication
-- Changed `lx` and `ly` to `gamma_x` and `gamma_y` iof `eCCA` in `classifiers` 
+- Changed `lx` and `ly` to `gamma_x` and `gamma_y` iof `eCCA` in `classifiers`
+- Changed `gating` to `gates`
+- Changed `TRCA` in `transformers` to deal with one-class data only
+- Changed `_get_T` to `get_T` in all `classifiers`
 
 ### Fixed
 

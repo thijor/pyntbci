@@ -437,8 +437,9 @@ def filterbank(
         The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_passbands). If tmin is not None, n_samples
         will be reduced with tmin * fs number of samples.
     """
+    assert isinstance(passbands, list), "The passbands should be a list of tuples."
     for passband in passbands:
-        assert isinstance(passband, list), "The passbands should be a list of lists."
+        assert isinstance(passband, tuple), "The passbands should be a list of tuples."
 
     # Set default stopband to lower-2 and higher+7
     if N is None:

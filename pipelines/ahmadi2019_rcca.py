@@ -173,7 +173,7 @@ for i_subject in range(n_subjects):
         rcca.fit(X_trn, y_trn)
 
         # Apply classifier
-        yh_tst = rcca.predict(X_tst)
+        yh_tst = rcca.predict(X_tst)[:, 0]  # select component
 
         # Compute accuracy
         accuracy[i_subject, i_fold] = np.mean(yh_tst == y_tst)

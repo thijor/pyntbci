@@ -8,7 +8,7 @@ import pyntbci
 class TestCorrectLatency(unittest.TestCase):
 
     def test_correction(self):
-        fs = 1000
+        fs = 200
         X = np.random.rand(32, 64, fs)
         y = np.arange(32)
         latency = 10 * np.random.rand(32) / fs

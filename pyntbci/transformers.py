@@ -382,7 +382,7 @@ class TRCA(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    n_components: int
+    n_components: int (default: 1)
         The number of TRCA components to use.
 
     Attributes
@@ -406,20 +406,23 @@ class TRCA(BaseEstimator, TransformerMixin):
 
     def __init__(
             self,
-            n_components: int,
+            n_components: int = 1,
     ) -> None:
         self.n_components = n_components
 
-    def _fit_X(
+    def fit(
             self,
             X: np.ndarray,
+            y: np.ndarray = None,
     ) -> np.ndarray:
-        """Fit TRCA without labels by computing one filter across all trials.
+        """Fit TRCA.
 
         Parameters
         ----------
         X: np.ndarray
             Data matrix of shape (n_trials, n_features, n_samples).
+        y: np.ndarray (default: None)
+            Not used.
 
         Returns
         -------
@@ -447,64 +450,7 @@ class TRCA(BaseEstimator, TransformerMixin):
 
         # Eigenvalue decomposition
         D, V = eigh(S, Q)
-        return V[:, np.argsort(D)[::-1][:self.n_components]]
-
-    def _fit_X_y(
-            self,
-            X: np.ndarray,
-            y: np.ndarray,
-    ) -> np.ndarray:
-        """Fit TRCA with labels by computing a filter across all trials of the same label, for each class.
-
-        Parameters
-        ----------
-        X: np.ndarray
-            Data matrix of shape (n_trials, n_features, n_samples).
-        y: np.ndarray
-            Label vector of shape (n_trials,).
-
-        Returns
-        -------
-        w: np.ndarray:
-            The learned weights of shape (n_features, n_components, n_classes).
-        """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
-        X = X.astype("float")
-        y = y.astype(np.uint)
-
-        n_trials, n_channels, n_samples = X.shape
-        classes = np.unique(y)
-        n_classes = classes.size
-        W = np.zeros((n_channels, self.n_components, n_classes))
-        for i_class in range(n_classes):
-            W[:, :, i_class] = self._fit_X(X[y == classes[i_class], :, :])
-        return W
-
-    def fit(
-            self,
-            X: np.ndarray,
-            y: np.ndarray = None,
-    ) -> sklearn.base.BaseEstimator:
-        """Fit TRCA in one of 2 ways: (1) without labels (y=None) or with labels (y=vector). If no labels are provided,
-        TRCA will compute one filter across all labels. If labels are provided, one filter will be computed for each of
-        the classes.
-
-        Parameters
-        ----------
-        X: np.ndarray
-            Data matrix of shape (n_trials, n_features, n_samples) or (n_samples, n_features).
-        y: np.ndarray
-            Label vector of shape (n_trials,).
-
-        Returns
-        -------
-        self: TRCA
-            An instance of the transformer.
-        """
-        if y is None:
-            self.w_ = self._fit_X(X)
-        else:
-            self.w_ = self._fit_X_y(X, y)
+        self.w_ = V[:, np.argsort(D)[::-1][:self.n_components]]
 
         return self
 
@@ -523,36 +469,22 @@ class TRCA(BaseEstimator, TransformerMixin):
         X: np.ndarray
             Data matrix of shape (n_trials, n_features, n_samples).
         y: np.ndarray (default: None)
-            Label vector of shape (n_trials,). Can be None.
+            Not used.
 
         Returns
         -------
         X: np.ndarray
-            Projected data matrix of shape (n_trials, n_components, n_samples) if X and y were provided, of shape
-            (n_trials, n_components, n_samples, n_classes) if y=None and multi-class filters were learned, and
-            (n_trials, n_components, n_samples) if y=None and one pooled filter was learned.
+            Projected data matrix of shape (n_trials, n_components, n_samples).
         """
         check_is_fitted(self, ["w_"])
+        X = check_array(X, ensure_2d=False, allow_nd=True)
+        X = X.astype("float")
         n_trials, n_channels, n_samples = X.shape
-        if y is None:
-            X = check_array(X, ensure_2d=False, allow_nd=True)
-            X = X.astype("float")
-            if self.w_.ndim == 2:
-                Y = np.dot(
-                    X.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_channels)), self.w_
-                ).reshape((n_trials, n_samples, self.n_components)).transpose((0, 2, 1))
-            else:
-                n_classes = self.w_.shape[2]
-                Y = np.zeros((n_trials, self.n_components, n_samples, n_classes))
-                for i_class in range(n_classes):
-                    Y[:, :, :, i_class] = np.dot(
-                        X.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_channels)), self.w_[:, :, i_class]
-                    ).reshape((n_trials, n_samples, self.n_components)).transpose((0, 2, 1))
-        else:
-            X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
-            X = X.astype("float")
-            y = y.astype(np.uint)
-            Y = np.zeros((n_trials, self.n_components, n_samples))
-            for i_trial in range(n_trials):
-                Y[i_trial, :, :] = np.dot(self.w_[:, :, y[i_trial]].T, X[i_trial, :, :])
-        return Y
+
+        X = X.transpose((0, 2, 1))
+        X = X.reshape((n_trials * n_samples, n_channels))
+        X = np.dot(X, self.w_)
+        X = X.reshape((n_trials, n_samples, self.n_components))
+        X = X.transpose((0, 2, 1))
+
+        return X

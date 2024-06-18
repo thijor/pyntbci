@@ -59,9 +59,9 @@ folds = np.repeat(np.arange(n_folds), int(n_trials / n_folds))
 # Set filterbank (see pyntbci.utilities.filterbank)
 tmin = 0  # seconds before trial onset that could catch filter artefacts and is cut off after the filterbank
 filterbank = [  # passbands with lower and higher cutoffs in Hz
-    [1.0, 60.0],
-    [12.0, 60.0],
-    [30.0, 60.0]]
+    (1.0, 60.0),
+    (12.0, 60.0),
+    (30.0, 60.0)]
 ftype = "chebyshev1"  # filter type
 gpass = 3  # maximum attenuation in the passband in dB
 gstop = 20  # minimum attenuation in the stopband in dB
@@ -94,8 +94,8 @@ for i_subject in range(n_subjects):
         # Setup classifier
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event)
-        gate = pyntbci.gating.AggregateGate("mean")
-        fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gating=gate)
+        gate = pyntbci.gates.AggregateGate("mean")
+        fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gate=gate)
 
         # Train classifier
         fbrcca.fit(X_trn, y_trn)
@@ -116,7 +116,7 @@ for i_subject in range(n_subjects):
             rcca.fit(X_trn[:, :, :, i_band], y_trn)
 
             # Apply classifier
-            yh_tst = rcca.predict(X_tst[:, :, :, i_band])
+            yh_tst = rcca.predict(X_tst[:, :, :, i_band])[:, 0]  # select component
 
             # Compute accuracy
             accuracy_rcca[i_subject, i_fold, i_band] = np.mean(yh_tst == y_tst)

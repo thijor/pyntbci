@@ -112,32 +112,27 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         y = y.astype(np.uint)
 
         # TODO: pyntbci.classifier.BayesStopping does not yet work with pyntbci.classifiers.Ensemble
-        # N.B. Ensemble does not implement _apply_w and _get_T
+        # N.B. Ensemble does not implement get_T
         assert not isinstance(self.estimator, pyntbci.classifiers.Ensemble), "Not yet implemented for Ensemble!"
 
         # Fit estimator
         self.estimator.fit(X, y)
 
         # Spatially filter data
-        X = np.sum(self.estimator._cca.transform(X=X)[0], axis=1)
-        n_samples = X.shape[1]
+        X = self.estimator._cca.transform(X=X)[0]
+        n_samples = X.shape[2]
 
         # Get templates
-        T = self.estimator._get_T(n_samples)
+        T = self.estimator.get_T(n_samples)
         n_classes = T.shape[0]
-
-        # TODO: pyntbci.classifier.BayesStopping does not work with multi-component templates
-        # N.B. Ensemble assumes n-components=1
-        assert T.shape[1] == 1, "Not yet implemented for multiple components!"
-        T = T[:, 0, :]  # remove singular dimension
 
         # Obtain alpha from least squares
         model = LinearRegression()
-        model.fit(T[y, :].reshape(-1, 1), X.reshape(-1, 1))
+        model.fit(T[y, :, :].reshape((-1, 1)), X.reshape((-1, 1)))
         self.alpha_ = model.coef_[0, 0]
 
         # Obtain sigma from Gaussian fit to residuals
-        residuals = X.reshape(-1, 1) - model.predict(T[y, :].reshape(-1, 1))
+        residuals = X.reshape((-1, 1)) - model.predict(T[y, :, :].reshape((-1, 1)))
         self.sigma_ = norm.fit(residuals)[1]
 
         # Calculate b0, b1, s0, s1
@@ -148,7 +143,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.s1_ = np.zeros(n_segments)
         for i_segment in range(n_segments):
             idx = (1 + i_segment) * int(self.segment_time * self.fs)
-            inner = np.inner(T[:, :idx], T[:, :idx])
+            inner = np.inner(T[:, 0, :idx], T[:, 0, :idx])  # select component
             inner_xy = inner[~np.eye(n_classes, dtype=bool)]
             inner_xx = inner[np.eye(n_classes, dtype=bool)]
             self.b0_[i_segment] = inner_xy.mean()
@@ -196,7 +191,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)
+            scores = self.estimator.decision_function(X)[:, :, 0]  # select component
 
             # Check if stopped
             i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
@@ -245,7 +240,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             yh[not_stopped] = -1
 
         else:
-            yh = self.estimator.predict(X)
+            yh = self.estimator.predict(X)[:, 0]  # select component
 
         return yh
 
@@ -336,7 +331,8 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
             # Compute the scores and translate to range 0 to 1
-            scores = (self.estimator.decision_function(X) + 1) / 2
+            scores = self.estimator.decision_function(X)[:, :, 0]  # select component
+            scores = (scores + 1) / 2
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -358,7 +354,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
             yh[not_stopped] = -1
 
         else:
-            yh = self.estimator.predict(X)
+            yh = self.estimator.predict(X)[:, 0]  # select component
 
         return yh
 
@@ -455,7 +451,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
                 # Predict labels for this segment
                 idx = (1 + i_segment) * int(self.segment_time * self.fs)
-                yh = self.estimator.predict(X_tst[:, :, :idx])
+                yh = self.estimator.predict(X_tst[:, :, :idx])[:, 0]  # select component
 
                 # Compute criterion
                 if self.criterion == "accuracy":
@@ -483,7 +479,11 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         elif self.optimization == "target":
             if self.target is None:
                 raise Exception("For optimization target one should set the target")
-            self.stop_time_ = np.where(scores >= self.target)[0][0] * self.segment_time
+            idx = np.where(scores >= self.target)[0]
+            if len(idx) == 0:
+                self.stop_time_ = X.shape[2] / self.fs
+            else:
+                self.stop_time_ = idx[0] * self.segment_time
         else:
             raise Exception("Unknown optimization:", self.optimization)
 
@@ -510,7 +510,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         X = check_array(X, ensure_2d=False, allow_nd=True)
 
         if X.shape[2] >= self.stop_time_ * self.fs:
-            return self.estimator.predict(X)
+            return self.estimator.predict(X)[:, 0]  # select component
         else:
             return -1 * np.ones(X.shape[0])
 
@@ -607,7 +607,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
             # Compute scores for this segment
             idx = (1 + i_segment) * int(self.segment_time * self.fs)
-            scores = self.estimator.decision_function(X[:, :, :idx])
+            scores = self.estimator.decision_function(X[:, :, :idx])[:, :, 0]  # select component
 
             # Compute margins (best - second best)
             scores_sorted = np.sort(scores, axis=1)
@@ -659,7 +659,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)
+            scores = self.estimator.decision_function(X)[:, :, 0]  # select component
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -676,6 +676,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             yh[not_stopped] = -1
 
         else:
-            yh = self.estimator.predict(X)
+            yh = self.estimator.predict(X)[:, 0]  # select component
 
         return yh

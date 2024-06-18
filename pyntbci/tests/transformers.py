@@ -145,40 +145,26 @@ class TestCCA(unittest.TestCase):
 
 class TestTRCA(unittest.TestCase):
 
-    def test_X(self):
+    def test_trca(self):
         X = np.random.rand(111, 7, 1001)
 
-        trca = pyntbci.transformers.TRCA(n_components=1)
+        trca = pyntbci.transformers.TRCA()
         trca.fit(X)
         self.assertEqual(trca.w_.shape, (X.shape[1], 1))
+
         Z = trca.transform(X)
         self.assertEqual(Z.shape, (X.shape[0], 1, X.shape[2]))
 
-        trca = pyntbci.transformers.TRCA(n_components=3)
-        trca.fit(X)
-        self.assertEqual(trca.w_.shape, (X.shape[1], 3))
-        Z = trca.transform(X)
-        self.assertEqual(Z.shape, (X.shape[0], 3, X.shape[2]))
-
-    def test_X_y(self):
+    def test_trca_components(self):
         X = np.random.rand(111, 7, 1001)
-        y = np.random.choice(5, 111)
+        n_components = 3
 
-        trca = pyntbci.transformers.TRCA(n_components=1)
-        trca.fit(X, y)
-        self.assertEqual(trca.w_.shape, (X.shape[1], 1, np.unique(y).size))
-        Z = trca.transform(X)
-        self.assertEqual(Z.shape, (X.shape[0], 1, X.shape[2], np.unique(y).size))
-        Z = trca.transform(X, y)
-        self.assertEqual(Z.shape, (X.shape[0], 1, X.shape[2]))
+        trca = pyntbci.transformers.TRCA(n_components=n_components)
+        trca.fit(X)
+        self.assertEqual(trca.w_.shape, (X.shape[1], n_components))
 
-        trca = pyntbci.transformers.TRCA(n_components=3)
-        trca.fit(X, y)
-        self.assertEqual(trca.w_.shape, (X.shape[1], 3, np.unique(y).size))
         Z = trca.transform(X)
-        self.assertEqual(Z.shape, (X.shape[0], 3, X.shape[2], np.unique(y).size))
-        Z = trca.transform(X, y)
-        self.assertEqual(Z.shape, (X.shape[0], 3, X.shape[2]))
+        self.assertEqual(Z.shape, (X.shape[0], n_components, X.shape[2]))
 
 
 if __name__ == "__main__":

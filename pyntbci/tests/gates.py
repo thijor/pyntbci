@@ -7,12 +7,12 @@ import pyntbci
 class TestAggregateGate(unittest.TestCase):
 
     def test_aggregate_gate_functions(self):
-        for aggregate in pyntbci.gating.AGGREGATES:
+        for aggregate in pyntbci.gates.AGGREGATES:
             n_classes = 5
             X = np.random.rand(n_classes * 15, n_classes, 7)
             y = np.random.permutation(np.tile(np.arange(n_classes), 15))
 
-            gate = pyntbci.gating.AggregateGate(aggregate)
+            gate = pyntbci.gates.AggregateGate(aggregate)
             gate.fit(X, y)
 
             scores = gate.decision_function(X)
@@ -31,7 +31,7 @@ class TestDiffGate(unittest.TestCase):
         X = np.random.rand(n_classes * 15, n_classes, 7)
         y = np.random.permutation(np.tile(np.arange(n_classes), 15))
 
-        gate = pyntbci.gating.DifferenceGate(LinearDiscriminantAnalysis())
+        gate = pyntbci.gates.DifferenceGate(LinearDiscriminantAnalysis())
         gate.fit(X, y)
 
         scores = gate.decision_function(X)

@@ -97,14 +97,14 @@ for i_subject in range(n_subjects):
         # Setup classifier
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event)
-        gate = pyntbci.gating.AggregateGate("mean")
+        gate = pyntbci.gates.AggregateGate("mean")
         fbrcca = pyntbci.classifiers.Ensemble(estimator=rcca, gating=gate)
 
         # Train classifier
         fbrcca.fit(X_trn, y_trn)
 
         # Apply classifier
-        yh_tst = fbrcca.predict(X_tst)
+        yh_tst = fbrcca.predict(X_tst)[:, 0]  # select component
 
         # Compute accuracy
         accuracy_fbrcca[i_subject, i_fold] = np.mean(yh_tst == y_tst)
@@ -119,7 +119,7 @@ for i_subject in range(n_subjects):
             rcca.fit(X_trn[:, :, :, i_band], y_trn)
 
             # Apply classifier
-            yh_tst = rcca.predict(X_tst[:, :, :, i_band])
+            yh_tst = rcca.predict(X_tst[:, :, :, i_band])[:, 0]  # select component
 
             # Compute accuracy
             accuracy_rcca[i_subject, i_fold, i_band] = np.mean(yh_tst == y_tst)
