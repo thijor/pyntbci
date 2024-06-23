@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 1.3.1
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed zero division `eventplot` in `plotting`
+- Fixed event order duration event `event_matrix` in `utilities` 
+
 ## Version 1.3.0
 
 ### Added
