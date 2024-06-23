@@ -139,7 +139,7 @@ class TestEnsemble(unittest.TestCase):
         self.assertEqual(X.shape[3], len(fbecca.models_))
 
         yh = fbecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_fbrcca(self):
         fs = 200
@@ -155,7 +155,7 @@ class TestEnsemble(unittest.TestCase):
         self.assertEqual(X.shape[3], len(fbrcca.models_))
 
         yh = fbrcca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
 
 class TestETRCA(unittest.TestCase):
