@@ -44,21 +44,21 @@ def eventplot(
     S = S.astype("float")
     E = E.astype("float")
 
-    # Scale stimulus and events to a range of 0-1
-    S += S.min()
-    S /= S.max()
-    E += E.min(axis=1, keepdims=True)
-    E /= E.max(axis=1, keepdims=True)
-
     # Upsample for better visibility
     S = S.repeat(20)
     E = E.repeat(20, axis=1)
 
     # Plot stimulus
+    S -= S.min()
+    if S.max() != 0:
+        S /= S.max()
     ax.plot(np.arange(n_samples * upsample) / (upsample * fs), S, "k")
 
     # Plot events
     for i in range(n_events):
+        E[i, :] -= E[i, :].min()
+        if E[i, :].max() != 0:
+            E[i, :] /= E[i, :].max()
         ax.plot(np.arange(n_samples * upsample) / (upsample * fs), -1.5 * (1 + i) + E[i, :])
 
     # Plot sampling rate
