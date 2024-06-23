@@ -306,9 +306,9 @@ def event_matrix(
         stimulus = stimulus[np.newaxis, :]
     n_stims, n_samples = stimulus.shape
 
-    if event == "id" or event == "identity":
+    if event == "id" or event == "identity" or event == "stim" or event == "stimulus":
         events = stimulus[:, np.newaxis, :]
-        labels = ("id",)
+        labels = (event,)
 
     elif event == "on":
         events = stimulus[:, np.newaxis, :] > 0
@@ -347,15 +347,14 @@ def event_matrix(
             # Fill out durations in dictionary
             unique_durations = np.unique(durations)
             for duration in unique_durations:
-                if str(duration) not in events:
-                    events[str(duration)] = np.zeros((n_stims, n_samples), dtype="bool_")
-                events[str(duration)][i_code, idx] = durations == duration
+                if duration not in events:
+                    events[duration] = np.zeros((n_stims, n_samples), dtype="bool_")
+                events[duration][i_code, idx] = durations == duration
 
-        # Extract unique events (sorted numerically or alphabetically)
-        labels = tuple(sorted(events.keys()))
-
-        # Convert dictionary to event matrix
+        # Convert dictionary to event matrix with sorted labels
+        labels = sorted(events.keys())
         events = np.array([events[duration] for duration in labels]).transpose((1, 0, 2)).astype("bool_")
+        labels = tuple([str(label) for label in labels])
 
     # Get rising edges as event
     elif event == "re" or event == "rise" or event == "risingedge":
