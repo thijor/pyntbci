@@ -44,8 +44,11 @@ class eCCA(BaseEstimator, ClassifierMixin):
         for.
     ensemble: bool (default: False)
         Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
-    cov_estimator: object (default: None)
+    cov_estimator_x: object (default: None)
         Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
+        empirical covariance is used.
+    cov_estimator_t: object (default: None)
+        Estimator object with a fit method that estimates a covariance matrix of the EEG templates. If None, a custom
         empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
@@ -79,7 +82,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
             gamma_y: Union[float, list[float], np.ndarray] = None,
             latency: np.ndarray = None,
             ensemble: bool = False,
-            cov_estimator: sklearn.base.BaseEstimator = None,
+            cov_estimator_x: sklearn.base.BaseEstimator = None,
+            cov_estimator_t: sklearn.base.BaseEstimator = None,
             n_components: int = 1,
     ) -> None:
         self.lags = lags
@@ -92,7 +96,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self.gamma_y = gamma_y
         self.latency = latency
         self.ensemble = ensemble
-        self.cov_estimator = cov_estimator
+        self.cov_estimator_x = cov_estimator_x
+        self.cov_estimator_t = cov_estimator_t
         self.n_components = n_components
 
     def _fit_T(
@@ -249,7 +254,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
                 if self.cca_channels is not None:
                     R = R[:, self.cca_channels]
                 self._cca.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
-                                     estimator_x=self.cov_estimator, estimator_y=self.cov_estimator))
+                                     estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t))
                 self._cca[i_class].fit(S, R)
                 self.w_[:, :, i_class] = self._cca[i_class].w_x_
         else:
@@ -258,7 +263,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             if self.cca_channels is not None:
                 R = R[:, self.cca_channels]
             self._cca = CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
-                            estimator_x=self.cov_estimator, estimator_y=self.cov_estimator)
+                            estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t)
             self._cca.fit(S, R)
             self.w_ = self._cca.w_x_
 

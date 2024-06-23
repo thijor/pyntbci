@@ -1,6 +1,16 @@
 # Changelog
 
-## Version 1.3.1
+## Version 1.3.1 (23-06-2024)
+
+### Added
+- Added `cov_estimator_t` to `eCCA` in `classifiers`
+
+### Changed
+- Changed separate covariance estimators for data and templates in `eCCA` of `classifiers`
+
+### Fixed
+
+## Version 1.3.1 (23-06-2024)
 
 ### Added
 
@@ -10,7 +20,7 @@
 - Fixed zero division `eventplot` in `plotting`
 - Fixed event order duration event `event_matrix` in `utilities` 
 
-## Version 1.3.0
+## Version 1.3.0 (18-06-2024)
 
 ### Added
 - Removed `gating` of `rCCA` in `classifiers`
