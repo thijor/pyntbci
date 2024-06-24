@@ -1,0 +1,31 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: PyntBCI
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jordy
+    family-names: Thielen
+    email: jordy.thielen@donders.ru.nl
+    affiliation: Radboud University
+    orcid: 'https://orcid.org/0000-0002-6264-0367'
+repository-code: 'https://github.com/thijor/pyntbci'
+url: 'https://thijor.github.io/pyntbci/'
+abstract: >-
+  The Python Noise-Tagging Brain-Computer interface
+  (PyntBCI) library is a Python toolbox for the
+  noise-tagging brain-computer interfacing (BCI) project
+  developed at the Donders Institute for Brain, Cognition
+  and Behaviour, Radboud University, Nijmegen, the
+  Netherlands
+keywords:
+  - electroencephalography (EEG)
+  - classification
+  - brain-computer interfacing (BCI)
+  - noise-tagging
+  - code-modulated visual evoked potential (c-VEP)
+license: BSD-3-Clause
