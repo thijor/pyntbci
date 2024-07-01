@@ -1,6 +1,15 @@
 # Changelog
 
-## Version 1.3.1 (23-06-2024)
+## Version 1.3.3 (01-07-2024)
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed components bug in `decision_function` of `eCCA` in `classifiers` 
+
+## Version 1.3.2 (23-06-2024)
 
 ### Added
 - Added `cov_estimator_t` to `eCCA` in `classifiers`

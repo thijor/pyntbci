@@ -157,7 +157,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
         if self.ensemble:
             for i_class in range(T.shape[0]):
-                Xi = np.sum(self._cca[i_class].transform(X=X)[0], axis=1)
+                Xi = self._cca[i_class].transform(X=X)[0]
                 for i_component in range(self.n_components):
                     if self.score_metric == "correlation":
                         scores[:, i_class, i_component] = correlation(Xi[:, i_component, :],
