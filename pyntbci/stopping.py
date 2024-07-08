@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 import sklearn.base
 from scipy.stats import beta, norm
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -39,19 +40,19 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         The scaling parameter between observed and predicted responses.
     sigma_: float
         The standard deviation of the noise.
-    b0_: np.ndarray
+    b0_: NDArray
         The mean of the non-target Gaussian distribution of shape (n_segments).
-    b1_: np.ndarray
+    b1_: NDArray
         The mean of the target Gaussian distribution of shape (n_segments).
-    s0_: np.ndarray
+    s0_: NDArray
         The standard deviation of the non-target Gaussian distribution of shape (n_segments).
-    s1_: np.ndarray
+    s1_: NDArray
         The standard deviation of the target Gaussian distribution of shape (n_segments).
-    eta_: np.ndarray
+    eta_: NDArray
         The decision boundary of shape (n_segments).
-    pf_: np.ndarray
+    pf_: NDArray
         The predicted probability of a false detection of shape (n_segments).
-    pm_: np.ndarray
+    pm_: NDArray
         The predicted probability of a miss of shape (n_segments).
 
     References
@@ -61,13 +62,13 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
     """
     alpha_: float
     sigma_: float
-    b0_: np.ndarray
-    b1_: np.ndarray
-    s0_: np.ndarray
-    s1_: np.ndarray
-    eta_: np.ndarray
-    pf_: np.ndarray
-    pm_: np.ndarray
+    b0_: NDArray
+    b1_: NDArray
+    s0_: NDArray
+    s1_: NDArray
+    eta_: NDArray
+    pf_: NDArray
+    pm_: NDArray
 
     def __init__(
             self,
@@ -91,16 +92,16 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: np.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials).
 
         Returns
@@ -170,18 +171,18 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using Bayesian dynamic stopping.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """
@@ -287,17 +288,17 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the dynamic procedure on supervised EEG data. Note, BetaStopping itself does
         not require training, it only trains the estimator.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: np.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials).
 
         Returns
@@ -311,18 +312,18 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using beta dynamic stopping.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """
@@ -386,7 +387,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
     stop_time_: float
         The trained static stopping time.
     """
-    stop_time_: np.ndarray
+    stop_time_: NDArray
 
     def __init__(
             self,
@@ -410,16 +411,16 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the static procedure on supervised EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: np.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials).
 
         Returns
@@ -491,18 +492,18 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using criterion static stopping.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """
@@ -516,7 +517,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
 
 class MarginStopping(BaseEstimator, ClassifierMixin):
-    """Margin dynamic stopping. Learns threshold margins (difference between best and second best score) to stop at
+    """Margin dynamic stopping. Learns threshold margins (difference between best and second-best score) to stop at
     such that a targeted accuracy is reached [3]_.
 
     Parameters
@@ -541,7 +542,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
-    margins_: np.ndarray
+    margins_: NDArray
         The trained stopping margins of shape (n_segments).
 
     References
@@ -549,7 +550,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
     .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
-    margins_: np.ndarray
+    margins_: NDArray
 
     def __init__(
             self,
@@ -573,16 +574,16 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: np.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials).
 
         Returns
@@ -638,18 +639,18 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using margin dynamic stopping.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """

@@ -3,11 +3,12 @@ from matplotlib.patches import Circle, Ellipse, Polygon
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 import numpy as np
+from numpy.typing import NDArray
 
 
 def eventplot(
-        S: np.ndarray,
-        E: np.ndarray,
+        S: NDArray,
+        E: NDArray,
         fs: int,
         ax: matplotlib.axes.Axes = None,
         upsample: int = 20,
@@ -20,9 +21,9 @@ def eventplot(
 
     Parameters
     ----------
-    S: np.ndarray
+    S: NDArray
         The stimulus time-series of shape (samples)
-    E: np.ndarray
+    E: NDArray
         The event time-series of shape (events, samples)
     fs: int
         The sampling rate in Hz
@@ -31,7 +32,7 @@ def eventplot(
     upsample: int (default: 20)
         A scalar value to upsample the stimulus and event time-series with for improved visualization
     plotfs: bool (default: True)
-        Whether or not to plot vertical gridlines at the original sampling rate fs
+        Whether to plot vertical gridlines at the original sampling rate fs
     events: tuple (default: None)
         A tuple with the names of each of the events
     """
@@ -76,7 +77,7 @@ def eventplot(
 
 
 def topoplot(
-        z: np.ndarray,
+        z: NDArray,
         locfile: str,
         cbar: bool = False,
         ax: matplotlib.axes.Axes = None,
@@ -88,18 +89,18 @@ def topoplot(
 
     Parameters
     ----------
-    z: np.ndarray
+    z: NDArray
         A vector of electrode values, e.g. a spatial filter/patterns.
     locfile: str
         A .loc file with electrode position information.
     cbar: bool (default: False)
-        Whether or not to add a colorbar.
+        Whether to add a colorbar.
     ax: matplotlib.axes.Axes (default: None)
         Axes to plot in. A new one is made when None.
     iso: bool (default: False)
-        Whether or not to add iso lines.
+        Whether to add iso lines.
     chan: bool (default: True)
-        Whether or not to plot the channel positions.
+        Whether to plot the channel positions.
     """
     assert locfile[-4:] == ".loc", "The topoplot function accepts .loc files only."
 
@@ -116,7 +117,7 @@ def topoplot(
     # Add additional points for interpolation to edge of head
     edge = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1]])
     xy = np.concatenate((xy, edge), axis=0)
-    z = np.concatenate((z, np.zeros((4,))), axis=None)
+    z = np.concatenate((z, np.zeros((4,))), axis=None).astype("float")
 
     # Make grid
     N = 300
@@ -124,7 +125,7 @@ def topoplot(
     yi = np.linspace(-2, 2, N)
     zi = griddata((xy[:, 0], xy[:, 1]), z, (xi[None, :], yi[:, None]), method="cubic", fill_value=np.nan)
 
-    # Set points outside radius to nan so they will not be plotted.
+    # Set points outside radius to nan, so they will not be plotted.
     d = xi[1] - xi[0]
     for i in range(N):
         for j in range(N):

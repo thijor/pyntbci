@@ -1,8 +1,9 @@
 import numpy as np
+from numpy.typing import NDArray
 
 
 def is_de_bruijn_sequence(
-        stimulus: np.ndarray,
+        stimulus: NDArray,
         k: int = 2,
         n: int = 6,
 ) -> bool:
@@ -11,7 +12,7 @@ def is_de_bruijn_sequence(
 
     Parameters
     ----------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A vector with the de Bruijn sequence of shape (1, n_bits).
     k: int (default: 2)
         The size of the alphabet.
@@ -55,7 +56,7 @@ def is_de_bruijn_sequence(
 
 
 def is_gold_code(
-        stimulus: np.ndarray,
+        stimulus: NDArray,
 ) -> bool:
     """Check whether a stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function
     [4]_. If the length of the linear feedback shift register m is even:
@@ -71,7 +72,7 @@ def is_gold_code(
 
     Parameters
     ----------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A vector with the Gold code of shape (n_classes, n_bits).
 
     Returns
@@ -120,14 +121,14 @@ def is_gold_code(
 
 
 def is_m_sequence(
-        stimulus: np.ndarray,
+        stimulus: NDArray,
 ) -> bool:
     """Check whether a stimulus is an m-sequence. An m-sequence [5]_ should have an auto-correlation function that is 1
     at time-shift 0 and -1/n elsewhere [6]_.
 
     Parameters
     ----------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A vector with the m-sequence of shape (1, n_bits).
 
     Returns
@@ -161,7 +162,7 @@ def is_m_sequence(
     
 
 def make_apa_sequence(
-) -> np.ndarray:
+) -> NDArray:
     """Make an almost perfect auto-correlation (APA) sequence. APA sequence [7]_ examples are taken from [8]_.
 
     Returns
@@ -189,7 +190,7 @@ def make_de_bruijn_sequence(
         k: int = 2,
         n: int = 6,
         seed: list[int] = None,
-) -> np.ndarray:
+) -> NDArray:
     """Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.
 
     Parameters
@@ -203,7 +204,7 @@ def make_de_bruijn_sequence(
 
     Returns
     -------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A matrix with a de Bruijn sequence of shape (1, n_bits).
 
     References
@@ -237,12 +238,12 @@ def make_de_bruijn_sequence(
 
 
 def make_golay_sequence(
-) -> np.ndarray:
+) -> NDArray:
     """Make complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.
 
     Returns
     -------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A matrix with two complementary Golay sequences of shape (2, n_bits).
 
     References
@@ -267,8 +268,8 @@ def make_gold_codes(
         poly2: list[int] = None,
         seed1: list[int] = None,
         seed2: list[int] = None,
-) -> np.ndarray:
-    """Make a set of Gold codes. The Gold codes [13]_ should be generate with two polynomials that define a preferred
+) -> NDArray:
+    """Make a set of Gold codes. The Gold codes [13]_ should be generated with two polynomials that define a preferred
     pair of m-sequences.
     
     Parameters
@@ -286,7 +287,7 @@ def make_gold_codes(
         
     Returns
     -------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A matrix with Gold codes of shape (n_classes, n_bits).
 
     References
@@ -315,7 +316,7 @@ def make_m_sequence(
         poly: list[int] = None,
         base: int = 2,
         seed: list[int] = None,
-) -> np.ndarray:
+) -> NDArray:
     """Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.
     
     Parameters
@@ -331,7 +332,7 @@ def make_m_sequence(
         
     Returns
     -------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A matrix with an m-sequence of shape (1, n_bits).
 
     References
@@ -358,19 +359,19 @@ def make_m_sequence(
 
 
 def modulate(
-        stimulus: np.ndarray,
-) -> np.ndarray:
+        stimulus: NDArray,
+) -> NDArray:
     """Modulate a stimulus. Modulation is done by xoring with a double frequency bit-clock [15]_. This limits
     low-frequency content as well as the event distribution (i.e., limits to shorter (only two) run-lengths).
     
     Parameters
     ----------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A stimulus matrix of shape (n_classes, n_bits).
 
     Returns
     -------
-    stimulus: np.ndarray
+    stimulus: NDArray
         A modulated stimulus matrix of shape (n_classes, 2 * n_bits).
 
     References

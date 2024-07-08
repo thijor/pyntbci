@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 from scipy.signal import butter, buttord, filtfilt, gammatone, resample
 
 
@@ -7,7 +8,7 @@ def aud_space_bw(
         fmax: float,
         bw: float = 1.0,
         scale: str = "erb",
-) -> np.ndarray:
+) -> NDArray:
     """Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
     frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two
     consecutive values is bw on the auditory scale, and the points will be centered on the auditory scale between fmin
@@ -28,7 +29,7 @@ def aud_space_bw(
 
     Returns
     -------
-    y: np.ndarray
+    y: NDArray
         A vector containing the center frequencies.
     """
     # Convert the frequency limits to auditory scale
@@ -52,23 +53,23 @@ def aud_space_bw(
 
 
 def aud_to_freq(
-        aud: np.ndarray,
+        aud: NDArray,
         scale: str = "erb",
-) -> np.ndarray:
+) -> NDArray:
     """Convert auditory units at the auditory scale to frequency (Hz).
 
     Adapted from LTFAT: https://ltfat.org/doc/auditory/audtofreq audtofreq.m (Peter L. Søndergaard)
 
     Parameters
     ----------
-    aud: np.ndarray
+    aud: NDArray
         The values at the ERB auditory scale.
     scale: str (default: "erb")
         Auditory scale.
 
     Returns
     -------
-    freq: np.ndarray
+    freq: NDArray
         The values in frequencies measured in Hz.
     """
     if scale == "erb":
@@ -79,7 +80,7 @@ def aud_to_freq(
 
 
 def envelope_gammatone(
-        audio: np.ndarray,
+        audio: NDArray,
         fs: int,
         fs_inter: int = 8000,
         fs_target: int = 32,
@@ -88,7 +89,7 @@ def envelope_gammatone(
         fmin: float = 150.0,
         fmax: float = 4000.0,
         spacing: float = 1.5,
-) -> np.ndarray:
+) -> NDArray:
     """Compute the envelope of audio using a gammatone filterbank.
 
     Developed in collaboration with Hanneke Scheppink.
@@ -101,7 +102,7 @@ def envelope_gammatone(
 
     Parameters
     ----------
-    audio: np.ndarray
+    audio: NDArray
         A vector containing the raw audio sampled at fs.
     fs: int
         The sampling frequency in Hz of the raw audio.
@@ -122,7 +123,7 @@ def envelope_gammatone(
 
     Returns
     -------
-    envelope: np.ndarray
+    envelope: NDArray
         The envelope for each of the subbands in the gammatone filterbank of shape (samples, subbands).
     """
     freqs = erb_space_bw(fmin, fmax, spacing)
@@ -161,16 +162,16 @@ def envelope_gammatone(
 
 
 def envelope_rms(
-        audio: np.ndarray,
+        audio: NDArray,
         fs: int,
         fs_inter: int = 8000,
         fs_target: int = 32,
-) -> np.ndarray:
+) -> NDArray:
     """Compute the envelope of the audio as the root mean square (RMS) of the signal.
 
     Parameters
     ----------
-    audio: np.ndarray
+    audio: NDArray
         A vector containing the raw audio sampled at fs.
     fs: int
         The sampling frequency in Hz of the raw audio.
@@ -181,7 +182,7 @@ def envelope_rms(
 
     Returns
     -------
-    envelope: np.ndarray
+    envelope: NDArray
         The envelope using the RMS of the audio.
     """
     # Resample stimulus
@@ -200,7 +201,7 @@ def erb_space_bw(
         fmin: float,
         fmax: float,
         bw: float = 1.0,
-) -> np.ndarray:
+) -> NDArray:
     """Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
     frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two
     consecutive values is bw on ERB auditory scale, and the points will be centered on the scale between fmin and fmax.
@@ -218,7 +219,7 @@ def erb_space_bw(
 
     Returns
     -------
-    y: np.ndarray
+    y: NDArray
         A vector containing the center frequencies.
     """
     y = aud_space_bw(fmin, fmax, bw, "erb")
@@ -226,23 +227,23 @@ def erb_space_bw(
 
 
 def freq_to_aud(
-        freq: np.ndarray,
+        freq: NDArray,
         scale: str = "erb",
-) -> np.ndarray:
+) -> NDArray:
     """Convert frequencies (Hz) to auditory units at the auditory scale.
 
     Adapted from LTFAT: https://ltfat.org/doc/auditory/freqtoaud freqtoaud.m (Peter L. Søndergaard)
 
     Parameters
     ----------
-    freq: np.ndarray
+    freq: NDArray
         The values in frequencies measured in Hz.
     scale: str (default: "erb")
         Auditory scale.
 
     Returns
     -------
-    aud: np.ndarray
+    aud: NDArray
         The values at the ERB auditory scale.
     """
     if scale == "erb":

@@ -1,6 +1,7 @@
 from typing import Union
 
 import numpy as np
+from numpy.typing import NDArray
 import sklearn.base
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
 
@@ -9,21 +10,21 @@ EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe")
 
 
 def correct_latency(
-        X: np.ndarray,
-        y: np.ndarray,
-        latency: np.ndarray,
+        X: NDArray,
+        y: NDArray,
+        latency: NDArray,
         fs: int,
         axis: int = -1,
-) -> np.ndarray:
+) -> NDArray:
     """Correct for a latency in data. This is done by shifting data according to the class-specific latencies.
 
     Parameters
     ----------
-    X: np.ndarray
+    X: NDArray
         The EEG data of shape (n_trials, ...)
-    y: np.ndarray
+    y: NDArray
         The labels of the EEG data of shape (n_trials) that indicate which latency to use for which trials.
-    latency: np.ndarray
+    latency: NDArray
         The list with latencies in seconds of shape (n_classes).
     fs: int
         The sampling frequency of the EEG data in Hz.
@@ -32,7 +33,7 @@ def correct_latency(
     
     Returns
     -------
-    X: np.ndarray
+    X: NDArray
         The latency-corrected EEG data of shape (n_trials, ...).
     """
     Z = np.zeros(X.shape, dtype=X.dtype)
@@ -47,21 +48,21 @@ def correct_latency(
 
 
 def correlation(
-        A: np.ndarray,
-        B: np.ndarray,
-) -> np.ndarray:
+        A: NDArray,
+        B: NDArray,
+) -> NDArray:
     """Compute the correlation coefficient. Computed between two sets of variables.
 
     Parameters
     ----------
-    A: np.ndarray
+    A: NDArray
         The first set of variables of shape (n_A, n_samples).
-    B: np.ndarray
+    B: NDArray
         The second set of variables of shape (n_B, n_samples).
 
     Returns
     -------
-    scores: np.ndarray
+    scores: NDArray
         The correlation matrix of shape (n_A, n_B).
     """
     if A.ndim == 1:
@@ -86,39 +87,39 @@ def correlation(
 
 
 def covariance(
-        X: np.ndarray,
+        X: NDArray,
         n_old: int = 0,
-        avg_old: np.ndarray = None,
-        cov_old: np.ndarray = None,
+        avg_old: NDArray = None,
+        cov_old: NDArray = None,
         estimator: sklearn.base.BaseEstimator = None,
         running: bool = False,
-) -> tuple[int, np.ndarray, np.ndarray]:
+) -> tuple[int, NDArray, NDArray]:
     """Compute the covariance matrix.
 
     Parameters
     ----------
-    X: np.ndarray
+    X: NDArray
         Data matrix of shape (n_samples, n_features).
     n_old: int (default: 0)
         Number of already observed samples.
-    avg_old: np.ndarray (default: None)
+    avg_old: NDArray (default: None)
         Already observed average of shape (n_features).
-    cov_old: np.ndarray (default: None)
+    cov_old: NDArray (default: None)
         Already observed covariance of shape (n_features, n_features).
     estimator: object (default: None)
         An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the
         empirical covariance is used.
     running: bool (default: False)
-        Whether or not to use a running covariance. If False, the covariance matrix is computed instantaneously using
+        Whether to use a running covariance. If False, the covariance matrix is computed instantaneously using
         only X, such that n_old, avg_old, and cov_old are not used.
 
     Returns
     -------
     n_new: int
         Number of samples.
-    avg_new: np.ndarray
+    avg_new: NDArray
         The average of shape (1, n_features).
-    cov_new: np.ndarray
+    cov_new: NDArray
         The covariance of shape (n_features, n_features).
     """
     n_obs = X.shape[0]
@@ -147,16 +148,16 @@ def covariance(
 
 
 def decoding_matrix(
-        data: np.ndarray,
+        data: NDArray,
         length: int,
         stride: int = 1,
-) -> np.ndarray:
+) -> NDArray:
     """Make a Hankel-like decoding matrix. Used to phase-shift the data (i.e., backward / decoding model), to learn a
     spatio-spectral filter (i.e., a spectral filter per channel).
 
     Parameters
     ----------
-    data: np.ndarray
+    data: NDArray
         Data matrix of shape (n_trials, n_channels, n_samples).
     length: int
         The length in samples of the spectral filter, i.e., the number of phase-shifted data per channel.
@@ -165,7 +166,7 @@ def decoding_matrix(
 
     Returns
     -------
-    dmatrix: np.ndarray
+    dmatrix: NDArray
         Decoding matrix of shape (n_trials, n_channels * length / stride, n_samples).
     """
     n_trials, n_channels, n_samples = data.shape
@@ -187,25 +188,25 @@ def encoding_matrix(
         stimulus: np.array,
         length: Union[int, list[int]],
         stride: int = 1,
-        amplitude: np.ndarray = None,
-) -> np.ndarray:
+        amplitude: NDArray = None,
+) -> NDArray:
     """Make a Toeplitz-like encoding matrix. Used to phase-shift the stimulus (forward / encoding model), per event to
     learn a (or several) temporal filter(s). Also called a "structure matrix" or "design matrix".
 
     Parameters
     ----------
-    stimulus: np.ndarray
+    stimulus: NDArray
         Stimulus matrix of shape (n_classes, n_events, n_samples).
     length: int | list[int]
         The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If a list is
         provided, it denotes the length per event.
     stride: int (default: 1)
         The step size in samples over the length of the temporal filter.
-    amplitude: np.ndarray (default: None)
+    amplitude: NDArray (default: None)
         Amplitude information to embed in the encoding matrix of shape (n_classes, n_samples). If None, it is ignored.
     Returns
     -------
-    ematrix: np.ndarray
+    ematrix: NDArray
         Encoding matrix of shape (n_classes, n_events * length / stride, n_samples).
     """
     n_classes, n_events, n_samples = stimulus.shape
@@ -240,21 +241,21 @@ def encoding_matrix(
 
 
 def euclidean(
-        A: np.ndarray,
-        B: np.ndarray,
-) -> np.ndarray:
+        A: NDArray,
+        B: NDArray,
+) -> NDArray:
     """Compute the Euclidean distance. Computed between two sets of variables.
 
     Parameters
     ----------
-    A: np.ndarray
+    A: NDArray
         The first set of variables of shape (n_A, n_samples).
-    B: np.ndarray
+    B: NDArray
         The second set of variables of shape (n_B, n_samples).
 
     Returns
     -------
-    scores: np.ndarray
+    scores: NDArray
         The correlation matrix of shape (n_A, n_B).
     """
     if A.ndim == 1:
@@ -272,16 +273,16 @@ def euclidean(
 
 
 def event_matrix(
-        stimulus: np.ndarray,
+        stimulus: NDArray,
         event: str,
         onset_event: bool = False,
-) -> tuple[np.ndarray, tuple[str]]:
+) -> tuple[NDArray, tuple[str]]:
     """Make an event matrix. The event matrix describes the onset of events in a stimulus sequence, given a particular
     event definition.
 
     Parameters
     ----------
-    stimulus: np.ndarray
+    stimulus: NDArray
         The stimulus used for stimulation of shape (n_stims, n_samples). Note, this can be any continuous time-series
         per stimulus, it is not limited to binary sequences.
     event: str
@@ -293,11 +294,11 @@ def event_matrix(
             "refe" | "risefall" | "risingedgefallingedge" | "contrast": one event for rising edges and one event for
             falling edges (i.e., 01 and 10).
     onset_event: bool (default: False)
-        Whether or not to model the onset of stimulation. This "onset" event is added as last event.
+        Whether to model the onset of stimulation. This "onset" event is added as last event.
 
     Returns
     -------
-    events: np.ndarray
+    events: NDArray
         An event matrix of zeros and ones denoting the onsets of events of shape (n_stims, n_events, n_samples).
     labels: tuple
         A tuple of event labels of shape (n_events).
@@ -391,7 +392,7 @@ def event_matrix(
 
 
 def filterbank(
-        X: np.ndarray,
+        X: NDArray,
         passbands: list[tuple[float, float]],
         fs: float,
         tmin: float = None,
@@ -400,13 +401,13 @@ def filterbank(
         stopbands: list[tuple[float, float]] = None,
         gpass: Union[float, list[float]] = 3.0,
         gstop: Union[float, list[float]] = 40.0,
-) -> np.ndarray:
+) -> NDArray:
     """Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the
     minimum loss in the stopband.
 
     Parameters
     ----------
-    X: np.ndarray
+    X: NDArray
         The matrix of EEG data of shape (n_trials, n_channels, n_samples).
     passbands: list[tuple[float, float]]
         A list of tuples with passbands defined as (lower, higher) cutoff in Hz.
@@ -432,7 +433,7 @@ def filterbank(
 
     Returns
     -------
-    X: np.ndarray
+    X: NDArray
         The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_passbands). If tmin is not None, n_samples
         will be reduced with tmin * fs number of samples.
     """
@@ -497,24 +498,24 @@ def filterbank(
 
 
 def itr(
-        n: Union[int, np.ndarray],
-        p: Union[float, np.ndarray],
-        t: Union[float, np.ndarray],
-) -> np.ndarray:
+        n: Union[int, NDArray],
+        p: Union[float, NDArray],
+        t: Union[float, NDArray],
+) -> NDArray:
     """Compute the information-transfer rate (ITR).
 
     Parameters
     ----------
-    n: int | np.ndarray:
+    n: int | NDArray:
         The number of classes.
-    p: float | np.ndarray:
+    p: float | NDArray:
         The decoding accuracy between 0 and 1.
-    t: float | np.ndarray:
+    t: float | NDArray:
         The decoding time in seconds (including inter-trial time).
 
     Returns
     -------
-    itr: float | np.ndarray
+    itr: float | NDArray
         The ITR in bits per minute.
     """
     p = np.atleast_1d(p)
@@ -525,32 +526,32 @@ def itr(
 
 
 def trials_to_epochs(
-        X: np.ndarray,
-        y: np.ndarray,
-        codes: np.ndarray,
+        X: NDArray,
+        y: NDArray,
+        codes: NDArray,
         epoch_size: int,
         step_size: int,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray, NDArray]:
     """Slice trials to epochs.
     
     Parameters
     ----------
-    X: np.ndarray
+    X: NDArray
         The EEG data of shape (n_trials, n_channels, n_samples).
-    y: np.ndarray
+    y: NDArray
         Label vector of shape (n_trials).
-    codes: np.ndarray
+    codes: NDArray
         Codes matrix of shape (n_codes, n_samples).
     epoch_size: int
-        The the width of an epoch starting at the onset of an epoch in samples.
+        The width of an epoch starting at the onset of an epoch in samples.
     step_size: int
         The distance between consecutive epochs in samples.
 
     Returns
     -------
-    np.ndarray
+    NDArray
         The sliced EEG data of shape (n_trials, n_epochs, n_channels, epoch_size).
-    np.ndarray
+    NDArray
         The sliced label information of shape (n_trials, n_epochs).
     """
     n_trials, n_channels, n_samples = X.shape

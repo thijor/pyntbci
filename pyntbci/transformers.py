@@ -1,9 +1,11 @@
+from typing import Union
+
 import numpy as np
+from numpy.typing import NDArray
 import sklearn.base
 from scipy.linalg import eigh, inv, sqrtm, svd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from typing import Union
 
 from pyntbci.utilities import covariance
 
@@ -16,10 +18,10 @@ class CCA(BaseEstimator, TransformerMixin):
     ----------
     n_components: int
         The number of CCA components to use.
-    gamma_x: float | list[float] | np.ndarray (default: None)
+    gamma_x: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_x. If
         None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
-    gamma_y: float | list[float] | np.ndarray (default: None)
+    gamma_y: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
         None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
     estimator_x: BaseEstimator (Default: None)
@@ -34,27 +36,27 @@ class CCA(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    w_x_: np.ndarray
+    w_x_: NDArray
         The weight vector to project X of shape (n_features_x, n_components).
-    w_y_: np.ndarray
+    w_y_: NDArray
         The weight vector to project Y of shape (n_features_y, n_components).
     n_x_: int
         The number of samples used to estimate avg_x_ and cov_x.
-    avg_x_: np.ndarray
+    avg_x_: NDArray
         The (running) average of X of shape (n_features_x).
-    cov_x_: np.ndarray
+    cov_x_: NDArray
         The (running) covariance of X of shape (n_features_x, n_features_x).
     n_y_: int
         The number of samples used to estimate avg_y_ and cov_y.
-    avg_y_: np.ndarray
+    avg_y_: NDArray
         The (running) average of Y of shape (n_features_y).
-    cov_y_: np.ndarray
+    cov_y_: NDArray
         The (running) covariance of Y of shape (n_features_y, n_features_y).
     n_xy_: int
         The number of samples used to estimate avg_xy_ and cov_xy.
-    avg_xy_: np.ndarray
+    avg_xy_: NDArray
         The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).
-    cov_xy_: np.ndarray
+    cov_xy_: NDArray
         The (running) cross-covariance of X and Y of shape (n_features_x, n_features_y).
 
     References
@@ -62,23 +64,23 @@ class CCA(BaseEstimator, TransformerMixin):
     .. [1] Hotelling, H. (1992). Relations between two sets of variates. In Breakthroughs in statistics: methodology and
            distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14
     """
-    w_x_: np.ndarray
-    w_y_: np.ndarray
+    w_x_: NDArray
+    w_y_: NDArray
     n_x_: int = 0
-    avg_x_: np.ndarray = None
-    cov_x_: np.ndarray = None
+    avg_x_: NDArray = None
+    cov_x_: NDArray = None
     n_y_: int = 0
-    avg_y_: np.ndarray = None
-    cov_y_: np.ndarray = None
+    avg_y_: NDArray = None
+    cov_y_: NDArray = None
     n_xy_: int = 0
-    avg_xy_: np.ndarray = None
-    cov_xy_: np.ndarray = None
+    avg_xy_: NDArray = None
+    cov_xy_: NDArray = None
 
     def __init__(
             self,
             n_components: int,
-            gamma_x: Union[float, list[float], np.ndarray] = None,
-            gamma_y: Union[float, list[float], np.ndarray] = None,
+            gamma_x: Union[float, list[float], NDArray] = None,
+            gamma_y: Union[float, list[float], NDArray] = None,
             estimator_x: sklearn.base.BaseEstimator = None,
             estimator_y: sklearn.base.BaseEstimator = None,
             running: bool = False,
@@ -92,16 +94,16 @@ class CCA(BaseEstimator, TransformerMixin):
 
     def _fit_X2D_Y2D(
             self,
-            X: np.ndarray,
-            Y: np.ndarray,
+            X: NDArray,
+            Y: NDArray,
     ) -> None:
         """Fit the CCA for a 2D X data matrix and 2D Y data matrix.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_samples, n_features_x).
-        Y: np.ndarray
+        Y: NDArray
             Data matrix of shape (n_samples, n_features_y).
         """
         X = check_array(X, ensure_2d=True, allow_nd=False)
@@ -169,16 +171,16 @@ class CCA(BaseEstimator, TransformerMixin):
 
     def _fit_X3D_Y3D(
             self,
-            X: np.ndarray,
-            Y: np.ndarray,
+            X: NDArray,
+            Y: NDArray,
     ) -> None:
         """Fit the CCA for a 3D X data matrix and 3D Y data matrix.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_trials, n_features_x, n_samples).
-        Y: np.ndarray
+        Y: NDArray
             Data matrix of shape (n_trials, n_features_y, n_samples).
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
@@ -200,16 +202,16 @@ class CCA(BaseEstimator, TransformerMixin):
 
     def _fit_X3D_Y1D(
             self,
-            X: np.ndarray,
-            Y: np.ndarray,
+            X: NDArray,
+            Y: NDArray,
     ) -> None:
         """Fit the CCA for a 3D X data matrix and 1D Y label vector.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_trials, n_features_x, n_samples).
-        Y: np.ndarray
+        Y: NDArray
             Label vector of shape (n_trials,).
         """
         X, Y = check_X_y(X, Y, ensure_2d=False, allow_nd=True, y_numeric=True)
@@ -231,17 +233,17 @@ class CCA(BaseEstimator, TransformerMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            Y: np.ndarray,
+            X: NDArray,
+            Y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """Fit the CCA in one of 3 ways: (1) X (data) is 3D and y (labels) is 1D, (2) X (data) is 3D and Y (data) is 3D,
         or (3) X (data) is 2D and Y (data) is 2D.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_trials, n_features_x, n_samples) or (n_samples, n_features_x).
-        Y: np.ndarray
+        Y: NDArray
             Data matrix of shape (n_trials, n_features_y, n_samples) or (n_samples, n_features_y), or label vector of
             shape (n_trials,).
 
@@ -263,23 +265,23 @@ class CCA(BaseEstimator, TransformerMixin):
 
     def _transform_X2D(
             self,
-            X: np.ndarray = None,
-            Y: np.ndarray = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+            X: NDArray = None,
+            Y: NDArray = None,
+    ) -> tuple[NDArray, NDArray]:
         """Transform the 2D data matrix from feature space to component space.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_samples, n_features_x).
-        Y: np.ndarray
+        Y: NDArray
             Data matrix of shape (n_samples, n_features_y).
 
         Returns
         -------
-        X: np.ndarray
+        X: NDArray
             Projected data matrix of shape (n_samples, n_components).
-        Y: np.ndarray
+        Y: NDArray
             Projected data matrix of shape (n_samples, n_components).
         """
         if X is not None:
@@ -297,23 +299,23 @@ class CCA(BaseEstimator, TransformerMixin):
 
     def _transform_X3D(
             self,
-            X: np.ndarray = None,
-            Y: np.ndarray = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+            X: NDArray = None,
+            Y: NDArray = None,
+    ) -> tuple[NDArray, NDArray]:
         """Transform the 3D data matrix from feature space to component space.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_trials, n_features_x, n_samples).
-        Y: np.ndarray
+        Y: NDArray
             Data matrix of shape (n_trials, n_features_y, n_samples).
 
         Returns
         -------
-        X: np.ndarray
+        X: NDArray
             Projected data matrix of shape (n_trials, n_components, n_samples).
-        Y: np.ndarray
+        Y: NDArray
             Projected data matrix of shape (n_trials, n_components, n_samples).
         """
         if X is not None:
@@ -338,27 +340,27 @@ class CCA(BaseEstimator, TransformerMixin):
 
     def transform(
             self,
-            X: np.ndarray = None,
-            Y: np.ndarray = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+            X: NDArray = None,
+            Y: NDArray = None,
+    ) -> tuple[NDArray, NDArray]:
         """Transform the data matrix from feature space to component space. Note, works with both 2D and 3D data, and
         can operate on both X and Y if both are not None, or on each separately if the other is None.
 
         Parameters
         ----------
-        X: np.ndarray (default: None)
+        X: NDArray (default: None)
             Data matrix of shape (n_samples, n_features_x) or (n_trials, n_features_x, n_samples). If None, only
             performs projection of Y.
-        Y: np.ndarray (default: None)
+        Y: NDArray (default: None)
             Data matrix of shape (n_samples, n_features_y) or (n_trials, n_features_y, n_samples). If None, only
             performs projection of X.
 
         Returns
         -------
-        X: np.ndarray
+        X: NDArray
             Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the
             input was None.
-        Y: np.ndarray
+        Y: NDArray
             Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the
             input was None.
         """
@@ -387,7 +389,7 @@ class TRCA(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    w_: np.ndarray
+    w_: NDArray
         The weight vector to project X of shape (n_features, n_components).
 
     References
@@ -402,7 +404,7 @@ class TRCA(BaseEstimator, TransformerMixin):
     .. [5] https://github.com/NeuroTechX/moabb/blob/develop/moabb/pipelines/classification.py
     .. [6] https://github.com/nbara/python-meegkit/blob/master/meegkit/trca.py
     """
-    w_: np.ndarray
+    w_: NDArray
 
     def __init__(
             self,
@@ -412,21 +414,21 @@ class TRCA(BaseEstimator, TransformerMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray = None,
-    ) -> np.ndarray:
+            X: NDArray,
+            y: NDArray = None,
+    ) -> NDArray:
         """Fit TRCA.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_trials, n_features, n_samples).
-        y: np.ndarray (default: None)
+        y: NDArray (default: None)
             Not used.
 
         Returns
         -------
-        w: np.ndarray:
+        w: NDArray:
             The learned weights of shape (n_features, n_components).
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
@@ -456,24 +458,24 @@ class TRCA(BaseEstimator, TransformerMixin):
 
     def transform(
             self,
-            X: np.ndarray,
-            y: np.ndarray = None,
-    ) -> np.ndarray:
+            X: NDArray,
+            y: NDArray = None,
+    ) -> NDArray:
         """Transform the data matrix from feature space to component space. Note, can operate on both X and y or just X.
-        If X and y are provided, data are filtered with class-specific filters. If only X is provided and a multi-class
+        If X and y are provided, X is filtered with class-specific filters. If only X is provided and a multi-class
         filter was learned, all trials are filtered with all filters. If only one filter was learned, then only this
         filter is applied.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Data matrix of shape (n_trials, n_features, n_samples).
-        y: np.ndarray (default: None)
+        y: NDArray (default: None)
             Not used.
 
         Returns
         -------
-        X: np.ndarray
+        X: NDArray
             Projected data matrix of shape (n_trials, n_components, n_samples).
         """
         check_is_fitted(self, ["w_"])

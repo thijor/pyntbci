@@ -2,6 +2,7 @@ import copy
 from typing import Union
 
 import numpy as np
+from numpy.typing import NDArray
 import sklearn.base
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.svm import OneClassSVM
@@ -17,7 +18,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    lags: None | np.ndarray
+    lags: None | NDArray
         A vector of latencies in seconds per class relative to the first stimulus if stimuli are circularly shifted
         versions of the first stimulus, or None if all stimuli are different or this circular shift feature should be
         ignored.
@@ -33,17 +34,17 @@ class eCCA(BaseEstimator, ClassifierMixin):
     cca_channels: list[int] (default: None)
         A list of channel indexes that need to be included in the estimation of a spatial filter at the template side
         of the CCA, i.e. CCA(X, T[:, cca_channels, :]). If None is given, all channels are used.
-    gamma_x: float | list[float] | np.ndarray (default: None)
+    gamma_x: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
         None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
-    gamma_y: float | list[float] | np.ndarray (default: None)
+    gamma_y: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along Y (channels). If
         None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
-    latency: np.ndarray (default: None)
+    latency: NDArray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
     ensemble: bool (default: False)
-        Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
+        Whether to use an ensemble classifier, that is, a separate spatial filter for each class.
     cov_estimator_x: object (default: None)
         Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
         empirical covariance is used.
@@ -55,10 +56,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
-    w_: np.ndarray
+    w_: NDArray
         The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
         shape is (n_channels, n_components, n_classes).
-    T_: np.ndarray
+    T_: NDArray
         The template matrix representing the expected responses of shape (n_classes, n_components, n_samples).
 
     References
@@ -67,20 +68,20 @@ class eCCA(BaseEstimator, ClassifierMixin):
            (2021). Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature
            review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf
     """
-    w_: np.ndarray
-    T_: np.ndarray
+    w_: NDArray
+    T_: NDArray
 
     def __init__(
             self,
-            lags: Union[None, np.ndarray],
+            lags: Union[None, NDArray],
             fs: int,
             cycle_size: float = None,
             template_metric: str = "mean",
             score_metric: str = "correlation",
             cca_channels: list[int] = None,
-            gamma_x: Union[float, list[float], np.ndarray] = None,
-            gamma_y: Union[float, list[float], np.ndarray] = None,
-            latency: np.ndarray = None,
+            gamma_x: Union[float, list[float], NDArray] = None,
+            gamma_y: Union[float, list[float], NDArray] = None,
+            latency: NDArray = None,
             ensemble: bool = False,
             cov_estimator_x: sklearn.base.BaseEstimator = None,
             cov_estimator_t: sklearn.base.BaseEstimator = None,
@@ -102,18 +103,18 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     def _fit_T(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Fit the templates.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        T: np.ndarray
+        T: NDArray
             The matrix of one EEG template of shape (n_channels, n_samples).
         """
         n_trials, n_channels, n_samples = X.shape
@@ -133,18 +134,18 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     def decision_function(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Apply the classifier to get classification scores for X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        scores: np.ndarray
+        scores: NDArray
             The similarity scores of shape (n_trials, n_classes, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
@@ -187,14 +188,14 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit eCCA on supervised EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
         y: numpy.ndarray
             The vector of ground-truth labels of the trials in X of shape (n_trials), i.e., the index of the
@@ -280,7 +281,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
     def get_T(
             self,
             n_samples: int = None,
-    ) -> np.ndarray:
+    ) -> NDArray:
         """Get the templates.
 
         Parameters
@@ -290,7 +291,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        T: np.ndarray
+        T: NDArray
             The templates of shape (n_classes, n_components, n_samples).
         """
         if n_samples is None or self.T_.shape[2] == n_samples:
@@ -303,18 +304,18 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply eCCA to novel EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: nNDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The predicted labels of shape (n_trials, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
@@ -351,18 +352,18 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
     def decision_function(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Apply the classifier to get classification scores for X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).
 
         Returns
         -------
-        scores: np.ndarray
+        scores: NDArray
             The matrix of scores of shape (n_trials, n_classes).
         """
         scores = np.stack([
@@ -372,16 +373,16 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to apply an ensemble classifier on supervised EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).
-        y: np.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials). Note, these denote the index at
             which to find the associated stimulus!
 
@@ -409,18 +410,18 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply the ensemble classifier to novel EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The vector of predicted labels of the trials in X of shape (n_trials). Note, these denote the index at which
             to find the associated stimulus!
         """
@@ -435,7 +436,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    lags: None | np.ndarray
+    lags: None | NDArray
         A vector of latencies in seconds per class relative to the first stimulus if stimuli are circularly shifted
         versions of the first stimulus, or None if all stimuli are different or this circular shift feature should be
         ignored.
@@ -448,18 +449,18 @@ class eTRCA(BaseEstimator, ClassifierMixin):
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean,
         inner.
-    latency: np.ndarray (default: None)
+    latency: NDArray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
     ensemble: bool (default: False)
-        Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
+        Whether to use an ensemble classifier, that is, a separate spatial filter for each class.
 
     Attributes
     ----------
-    w_: np.ndarray
+    w_: NDArray
         The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
         shape is (n_channels, n_components, n_classes).
-    T_: np.ndarray
+    T_: NDArray
         The template matrix representing the expected responses of shape (n_classes, n_samples, n_components).
 
     References
@@ -468,17 +469,17 @@ class eTRCA(BaseEstimator, ClassifierMixin):
            for a high-speed brain speller using task-related component analysis. IEEE Transactions on Biomedical
            Engineering, 65(1), 104-112. doi: 10.1109/TBME.2017.2694818
     """
-    w_: np.ndarray
-    T_: np.ndarray
+    w_: NDArray
+    T_: NDArray
 
     def __init__(
             self,
-            lags: Union[None, np.ndarray],
+            lags: Union[None, NDArray],
             fs: int,
             cycle_size: float = None,
             template_metric: str = "mean",
             score_metric: str = "correlation",
-            latency: np.ndarray = None,
+            latency: NDArray = None,
             ensemble: bool = False,
             n_components: int = 1,
     ) -> None:
@@ -493,18 +494,18 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     def _fit_T(
             self,
-            X: np.ndarray,
+            X: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """Fit the templates.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        T: np.ndarray
+        T: NDArray
             The matrix of one EEG template of shape (n_channels, n_samples).
         """
         if self.template_metric == "mean":
@@ -521,18 +522,18 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     def decision_function(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Apply the classifier to get classification scores for X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        scores: np.ndarray
+        scores: NDArray
             The similarity scores of shape (n_trials, n_classes, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
@@ -574,14 +575,14 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit eTRCA on supervised EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
         y: numpy.ndarray
             The vector of ground-truth labels of the trials in X of shape (n_trials), i.e., the index of the attended
@@ -664,7 +665,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
     def get_T(
             self,
             n_samples: int = None,
-    ) -> np.ndarray:
+    ) -> NDArray:
         """Get the templates.
 
         Parameters
@@ -674,7 +675,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        T: np.ndarray
+        T: NDArray
             The templates of shape (n_classes, n_samples).
         """
         if n_samples is None or self.T_.shape[2] == n_samples:
@@ -687,18 +688,18 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply eTRCA to novel EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The predicted labels of shape (n_trials, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
@@ -712,7 +713,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    stimulus: np.ndarray
+    stimulus: NDArray
         The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
         one stimulus-repetition) is sufficient.
     fs: int
@@ -720,7 +721,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
     event: str (default: "duration")
         The event definition to map stimulus to events.
     onset_event: bool (default: False)
-        Whether or not to add an event for the onset of stimulation. Added as last event.
+        Whether to add an event for the onset of stimulation. Added as last event.
     decoding_length: float (default: None)
         The length of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1
         sample, such that no phase-shifting is performed.
@@ -736,17 +737,17 @@ class rCCA(BaseEstimator, ClassifierMixin):
         equivalent to 1 sample, such that no stride is used.
     score_metric: str (default: "correlation")
         Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean.
-    latency: np.ndarray (default: None)
+    latency: NDArray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
     ensemble: bool (default: False)
-        Whether or not to use an ensemble classifier, that is, a separate spatial filter for each class.
-    amplitudes: np.ndarray
+        Whether to use an ensemble classifier, that is, a separate spatial filter for each class.
+    amplitudes: NDArray
         The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs.
-    gamma_x: float | list[float] | np.ndarray (default: None)
+    gamma_x: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
         None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
-    gamma_m: float | list[float] np.ndarray (default: None)
+    gamma_m: float | list[float] NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along M (samples). If None,
         no regularization is applied. The gamma_m ranges from 0 (no regularization) to 1 (full regularization).
     cov_estimator_x: BaseEstimator (default: None)
@@ -760,16 +761,16 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
-    w_: np.ndarray
+    w_: NDArray
         The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
         shape is (n_channels, n_components, n_classes).
-    r_: np.ndarray
+    r_: NDArray
         The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components). If
         ensemble=True, then the shape is (n_events * n_event_samples, n_components, n_classes).
-    Ts_: np.ndarray
+    Ts_: NDArray
         The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
         stimulus cycle 1 (i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).
-    Tw_: np.ndarray
+    Tw_: NDArray
         The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
         stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of
         previous cycles).
@@ -785,14 +786,14 @@ class rCCA(BaseEstimator, ClassifierMixin):
            code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
            056007. doi: 10.1088/1741-2552/abecef
     """
-    w_: np.ndarray
-    r_: np.ndarray
-    Ts_: np.ndarray
-    Tw_: np.ndarray
+    w_: NDArray
+    r_: NDArray
+    Ts_: NDArray
+    Tw_: NDArray
 
     def __init__(
             self,
-            stimulus: np.ndarray,
+            stimulus: NDArray,
             fs: int,
             event: str = "duration",
             onset_event: bool = False,
@@ -801,11 +802,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
             encoding_length: Union[float, list[float]] = None,
             encoding_stride: Union[float, list[float]] = None,
             score_metric: str = "correlation",
-            latency: np.ndarray = None,
+            latency: NDArray = None,
             ensemble: bool = False,
-            amplitudes: np.ndarray = None,
-            gamma_x: Union[float, list[float], np.ndarray] = None,
-            gamma_m: Union[float, list[float], np.ndarray] = None,
+            amplitudes: NDArray = None,
+            gamma_x: Union[float, list[float], NDArray] = None,
+            gamma_m: Union[float, list[float], NDArray] = None,
             cov_estimator_x: sklearn.base.BaseEstimator = None,
             cov_estimator_m: sklearn.base.BaseEstimator = None,
             n_components: int = 1,
@@ -843,7 +844,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
     def _get_M(
             self,
             n_samples: int = None,
-    ) -> np.ndarray:
+    ) -> NDArray:
         """Get the encoding matrix of a particular length.
 
         Parameters
@@ -853,7 +854,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        M: np.ndarray
+        M: NDArray
             The encoding matrix denoting event timings of shape (n_classes, encoding_length, n_samples).
         """
         # Repeat the stimulus to n_samples
@@ -877,18 +878,18 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     def decision_function(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Apply the classifier to get classification scores for X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        scores: np.ndarray
+        scores: NDArray
             The similarity scores of shape (n_trials, n_classes, n_components).
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
@@ -934,16 +935,16 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """The training procedure to fit a rCCA on supervised EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: np.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials). Note, these denote the index at
             which to find the associated stimulus!
 
@@ -1005,7 +1006,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
     def get_T(
             self,
             n_samples: int = None,
-    ) -> np.ndarray:
+    ) -> NDArray:
         """Get the templates.
 
         Parameters
@@ -1015,7 +1016,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        T: np.ndarray
+        T: NDArray
             The templates of shape (n_classes, n_components, n_samples).
         """
         if n_samples is None or self.Ts_.shape[2] == n_samples:
@@ -1032,18 +1033,18 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """The testing procedure to apply rCCA to novel EEG data.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             The predicted labels of shape (n_trials, n_components).
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
@@ -1052,13 +1053,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     def set_stimulus(
             self,
-            stimulus: np.ndarray,
+            stimulus: NDArray,
     ) -> None:
         """Set the stimulus, and as such change the templates.
 
         Parameters
         ----------
-        stimulus: np.ndarray
+        stimulus: NDArray
             The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
             one stimulus-repetition) is sufficient. If None, it is not changed.
         """
@@ -1066,13 +1067,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     def set_amplitudes(
             self,
-            amplitudes: np.ndarray,
+            amplitudes: NDArray,
     ) -> None:
         """Set the amplitudes, and as such change the templates.
 
         Parameters
         ----------
-        amplitudes: np.ndarray
+        amplitudes: NDArray
             The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs. If None, it is not
             changed.
         """
@@ -1080,17 +1081,17 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     def set_stimulus_amplitudes(
             self,
-            stimulus: np.ndarray,
-            amplitudes: np.ndarray,
+            stimulus: NDArray,
+            amplitudes: NDArray,
     ) -> None:
         """Set the stimulus and/or the amplitudes, and as such change the templates.
 
         Parameters
         ----------
-        stimulus: np.ndarray
+        stimulus: NDArray
             The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
             one stimulus-repetition) is sufficient. If None, it is not changed.
-        amplitudes: np.ndarray
+        amplitudes: NDArray
             The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs. If None, it is not
             changed.
         """

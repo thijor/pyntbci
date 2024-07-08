@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 import sklearn.base
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array
@@ -27,18 +28,18 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
 
     def decision_function(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Compute gated scores for X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Score matrix of shape (n_trials, n_classes, n_items).
 
         Returns
         -------
-        scores: np.ndarray
+        scores: NDArray
             Score matrix of shape (n_trials, n_classes).
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
@@ -57,16 +58,16 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """Fit an aggregate gate. Note, does not involve learning.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Score matrix of shape (n_trials, n_classes, n_items).
-        y: np.ndarray
+        y: NDArray
             Label vector of shape (n_trials).
 
         Returns
@@ -78,18 +79,18 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Predict the labels of X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Score matrix of shape (n_trials, n_classes, n_items).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             Predicted label vector of shape (n_trials).
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
@@ -117,18 +118,18 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
     def _compute_difference_scores(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Compute difference scores.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Score matrix of shape (n_trials, n_classes, n_items).
 
         Returns
         -------
-        scores: np.ndarray
+        scores: NDArray
             Difference score matrix of shape (n_trials, (n_classes * (n_classes - 1)) / 2 * n_items)
         """
         Z = []
@@ -139,18 +140,18 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
     def decision_function(
             self,
-            X: np.ndarray
-    ) -> np.ndarray:
+            X: NDArray
+    ) -> NDArray:
         """Compute gated scores for X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Score matrix of shape (n_trials, n_classes, n_items).
 
         Returns
         -------
-        scores: np.ndarray
+        scores: NDArray
             Score matrix of shape (n_trials, n_classes).
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
@@ -158,16 +159,16 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
     def fit(
             self,
-            X: np.ndarray,
-            y: np.ndarray,
+            X: NDArray,
+            y: NDArray,
     ) -> sklearn.base.BaseEstimator:
         """Fit a difference scores gate. Note, calibrates the estimator on difference scores.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Score matrix of shape (n_trials, n_classes, n_items).
-        y: np.ndarray
+        y: NDArray
             Label vector of shape (n_trials).
 
         Returns
@@ -181,18 +182,18 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
     def predict(
             self,
-            X: np.ndarray,
-    ) -> np.ndarray:
+            X: NDArray,
+    ) -> NDArray:
         """Predict the labels of X.
 
         Parameters
         ----------
-        X: np.ndarray
+        X: NDArray
             Score matrix of shape (n_trials, n_classes, n_items).
 
         Returns
         -------
-        y: np.ndarray
+        y: NDArray
             Predicted label vector of shape (n_trials).
         """
         X = check_array(X, ensure_2d=False, allow_nd=True)
