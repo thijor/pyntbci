@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 import sklearn.base
 from scipy.linalg import eigh, inv, sqrtm, svd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 
 from pyntbci.utilities import covariance
 
@@ -106,8 +106,6 @@ class CCA(BaseEstimator, TransformerMixin):
         Y: NDArray
             Data matrix of shape (n_samples, n_features_y).
         """
-        X = check_array(X, ensure_2d=True, allow_nd=False)
-        Y = check_array(Y, ensure_2d=True, allow_nd=False)
         assert X.shape[0] == Y.shape[0], f"Unequal samples in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
         X = X.astype("float")
         Y = Y.astype("float")
@@ -183,8 +181,6 @@ class CCA(BaseEstimator, TransformerMixin):
         Y: NDArray
             Data matrix of shape (n_trials, n_features_y, n_samples).
         """
-        X = check_array(X, ensure_2d=False, allow_nd=True)
-        Y = check_array(Y, ensure_2d=False, allow_nd=True)
         X = X.astype("float")
         Y = Y.astype("float")
         assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
@@ -214,7 +210,6 @@ class CCA(BaseEstimator, TransformerMixin):
         Y: NDArray
             Label vector of shape (n_trials,).
         """
-        X, Y = check_X_y(X, Y, ensure_2d=False, allow_nd=True, y_numeric=True)
         X = X.astype("float")
         Y = Y.astype(np.uint)
         assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
@@ -285,12 +280,10 @@ class CCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_samples, n_components).
         """
         if X is not None:
-            X = check_array(X, ensure_2d=True, allow_nd=False)
             X = X.astype("float")
             X -= self.avg_x_
             X = np.dot(X, self.w_x_)
         if Y is not None:
-            Y = check_array(Y, ensure_2d=True, allow_nd=False)
             Y = Y.astype("float")
             Y -= self.avg_y_
             Y = np.dot(Y, self.w_y_)
@@ -319,12 +312,10 @@ class CCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_trials, n_components, n_samples).
         """
         if X is not None:
-            X = check_array(X, ensure_2d=False, allow_nd=True)
             X = X.astype("float")
             n_trials, n_features_x, n_samples = X.shape
             X = X.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_x))
         if Y is not None:
-            Y = check_array(Y, ensure_2d=False, allow_nd=True)
             Y = Y.astype("float")
             n_trials, n_features_y, n_samples = Y.shape
             Y = Y.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_y))
@@ -416,7 +407,7 @@ class TRCA(BaseEstimator, TransformerMixin):
             self,
             X: NDArray,
             y: NDArray = None,
-    ) -> NDArray:
+    ) -> sklearn.base.BaseEstimator:
         """Fit TRCA.
 
         Parameters
@@ -431,7 +422,6 @@ class TRCA(BaseEstimator, TransformerMixin):
         w: NDArray:
             The learned weights of shape (n_features, n_components).
         """
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         X = X.astype("float")
         n_trials, n_channels, n_samples = X.shape
 
@@ -479,7 +469,6 @@ class TRCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_trials, n_components, n_samples).
         """
         check_is_fitted(self, ["w_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         X = X.astype("float")
         n_trials, n_channels, n_samples = X.shape
 

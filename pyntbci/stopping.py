@@ -4,7 +4,7 @@ import sklearn.base
 from scipy.stats import beta, norm
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.linear_model import LinearRegression
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 
 import pyntbci.classifiers
 from pyntbci.utilities import itr
@@ -109,7 +109,6 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self: BayesStopping
             An instance of the stopping procedure.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
 
         # TODO: pyntbci.classifier.BayesStopping does not yet work with pyntbci.classifiers.Ensemble
@@ -187,7 +186,6 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             trial cannot yet be stopped.
         """
         check_is_fitted(self, ["alpha_", "sigma_", "b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
 
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
@@ -327,7 +325,6 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """
-        X = check_array(X, ensure_2d=False, allow_nd=True)
 
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
@@ -428,7 +425,6 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         self: CriterionStopping
             An instance of the stopping procedure.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
 
         n_trials = X.shape[0]
@@ -508,7 +504,6 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
             trial cannot yet be stopped.
         """
         check_is_fitted(self, ["stop_time_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
 
         if X.shape[2] >= self.stop_time_ * self.fs:
             return self.estimator.predict(X)[:, 0]  # select component
@@ -591,7 +586,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         self: MarginStopping
             An instance of the stopping procedure.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
 
         # Fit estimator
@@ -655,7 +649,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             trial cannot yet be stopped.
         """
         check_is_fitted(self, ["margins_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
 
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 

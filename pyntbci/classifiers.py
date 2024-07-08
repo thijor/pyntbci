@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 import sklearn.base
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.svm import OneClassSVM
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 
 from pyntbci.transformers import CCA, TRCA
 from pyntbci.utilities import correct_latency, correlation, decoding_matrix, encoding_matrix, euclidean, event_matrix
@@ -149,7 +149,6 @@ class eCCA(BaseEstimator, ClassifierMixin):
             The similarity scores of shape (n_trials, n_classes, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
 
         # Set templates to trial length
         T = self.get_T(X.shape[2])
@@ -206,7 +205,6 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self: eCCA
             An instance of the classifier.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
         n_trials, n_channels, n_samples = X.shape
 
@@ -319,7 +317,6 @@ class eCCA(BaseEstimator, ClassifierMixin):
             The predicted labels of shape (n_trials, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         return np.argmax(self.decision_function(X), axis=1)
 
 
@@ -391,7 +388,6 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         self: Ensemble
             An instance of the classifier.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
         assert X.ndim == 4
 
@@ -426,7 +422,6 @@ class Ensemble(BaseEstimator, ClassifierMixin):
             to find the associated stimulus!
         """
         check_is_fitted(self, ["models_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         return self.gate.predict(self.decision_function(X))
 
 
@@ -537,7 +532,6 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             The similarity scores of shape (n_trials, n_classes, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
 
         # Set templates to trial length
         T = self.get_T(X.shape[2])
@@ -593,7 +587,6 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         self: eTRCA
             An instance of the classifier.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
         n_trials, n_channels, n_samples = X.shape
 
@@ -703,7 +696,6 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             The predicted labels of shape (n_trials, n_components).
         """
         check_is_fitted(self, ["w_", "T_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         return np.argmax(self.decision_function(X), axis=1)
 
 
@@ -893,7 +885,6 @@ class rCCA(BaseEstimator, ClassifierMixin):
             The similarity scores of shape (n_trials, n_classes, n_components).
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
 
         # Set decoding matrix
         X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
@@ -953,7 +944,6 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self: rCCA
             An instance of the classifier.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         y = y.astype(np.uint)
         n_classes = np.unique(y).size
 
@@ -1048,7 +1038,6 @@ class rCCA(BaseEstimator, ClassifierMixin):
             The predicted labels of shape (n_trials, n_components).
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         return np.argmax(self.decision_function(X), axis=1)
 
     def set_stimulus(

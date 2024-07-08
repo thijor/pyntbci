@@ -2,7 +2,6 @@ import numpy as np
 from numpy.typing import NDArray
 import sklearn.base
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array
 
 
 AGGREGATES = ("mean", "median", "sum", "min", "max")
@@ -42,7 +41,6 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         scores: NDArray
             Score matrix of shape (n_trials, n_classes).
         """
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         if self.aggregate == "mean":
             return np.mean(X, axis=2)
         elif self.aggregate == "median":
@@ -93,7 +91,6 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         y: NDArray
             Predicted label vector of shape (n_trials).
         """
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         return np.argmax(self.decision_function(X), axis=1)
 
 
@@ -154,7 +151,6 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         scores: NDArray
             Score matrix of shape (n_trials, n_classes).
         """
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         return self.estimator.decision_function(self._compute_difference_scores(X))
 
     def fit(
@@ -176,7 +172,6 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         self: DifferenceGate
             An instance of the gating function.
         """
-        X, y = check_X_y(X, y, ensure_2d=False, allow_nd=True, y_numeric=True)
         self.estimator.fit(self._compute_difference_scores(X), y)
         return self
 
@@ -196,5 +191,4 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         y: NDArray
             Predicted label vector of shape (n_trials).
         """
-        X = check_array(X, ensure_2d=False, allow_nd=True)
         return self.estimator.predict(self._compute_difference_scores(X))
