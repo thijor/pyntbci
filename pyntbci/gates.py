@@ -13,16 +13,13 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
     ----------
     aggregate: str (default: "mean")
         The aggregate function to use. Options: mean, median, sum, min, max.
-
-    Attributes
-    ----------
     """
 
     def __init__(
             self,
             aggregate: str = "mean"
     ) -> None:
-        self.aggregate = aggregate
+        self.aggregate = aggregate.lower()
 
     def decision_function(
             self,

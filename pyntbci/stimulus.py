@@ -167,7 +167,7 @@ def make_apa_sequence(
 
     Returns
     -------
-    stimulus: (numpy.ndarray):
+    stimulus: NDArray
         A matrix with an APA sequence of shape (1, n_bits).
 
     References
@@ -199,7 +199,7 @@ def make_de_bruijn_sequence(
         The size of the alphabet.
     n: int (default: 6)
         The order of the sequence.
-    seed: list (default: None)
+    seed: list[int] (default: None)
         Seed for the initial register. None leads to an all zero initial register.
 
     Returns
@@ -274,15 +274,15 @@ def make_gold_codes(
     
     Parameters
     ----------
-    poly1: list (default: None)
+    poly1: list[int] (default: None)
         The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
-    poly2: list (default: None)
+    poly2: list[int] (default: None)
         The feedback tap points defined by a primitive polynomial. If None, [1, 1, 0, 0, 1, 1] is used.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
-    seed1: list (default: None)
+    seed1: list[int] (default: None)
         Seed for the initial shift register of poly1. If None, an all zero initial register is used.
-    seed2: list (default: None)
+    seed2: list[int] (default: None)
         Seed for the initial shift register of poly2. If None, an all zero initial register is used.
         
     Returns
@@ -321,13 +321,13 @@ def make_m_sequence(
     
     Parameters
     ----------
-    poly: list (default: None)
+    poly: list[int] (default: None)
         The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
     base: int (default: 2)
         The base of the sequence (related to the Galois Field), i.e. base 2 generates a binary sequence, base 3 a
         tertiary sequence, etc.
-    seed: list (default: None)
+    seed: list[int] (default: None)
         The seed for the initial shift register. If None, an all zero initial register is used.
         
     Returns

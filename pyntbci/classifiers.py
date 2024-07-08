@@ -44,10 +44,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
         for.
     ensemble: bool (default: False)
         Whether to use an ensemble classifier, that is, a separate spatial filter for each class.
-    cov_estimator_x: object (default: None)
+    cov_estimator_x: BaseEstimator (default: None)
         Estimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
         empirical covariance is used.
-    cov_estimator_t: object (default: None)
+    cov_estimator_t: BaseEstimator (default: None)
         Estimator object with a fit method that estimates a covariance matrix of the EEG templates. If None, a custom
         empirical covariance is used.
     n_components: int (default: 1)
@@ -198,7 +198,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         ----------
         X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: numpy.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials), i.e., the index of the
             attended code.
 
@@ -310,7 +310,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X: nNDArray
+        X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
 
         Returns
@@ -336,7 +336,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
-    models_: list[sClassifierMixin]
+    models_: list[ClassifierMixin]
         A list containing all models learned for each of the databanks.
     """
     models_: list[ClassifierMixin]
@@ -584,7 +584,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         ----------
         X: NDArray
             The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: numpy.ndarray
+        y: NDArray
             The vector of ground-truth labels of the trials in X of shape (n_trials), i.e., the index of the attended
             code.
 

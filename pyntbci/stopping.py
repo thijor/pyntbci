@@ -260,9 +260,6 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
         it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
 
-    Attributes
-    ----------
-
     References
     ----------
     .. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
@@ -519,7 +516,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
     ----------
     estimator: ClassifierMixin
         The classifier object that performs the classification.
-    segment_time; float
+    segment_time: float
         The size of a segment of data at which classification is performed ins seconds.
     fs: int
         The sampling frequency of the EEG data in Hz.

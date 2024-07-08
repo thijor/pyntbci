@@ -1,4 +1,4 @@
-import matplotlib.axes
+from matplotlib.axes import Axes
 from matplotlib.patches import Circle, Ellipse, Polygon
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
@@ -10,7 +10,7 @@ def eventplot(
         S: NDArray,
         E: NDArray,
         fs: int,
-        ax: matplotlib.axes.Axes = None,
+        ax: Axes = None,
         upsample: int = 20,
         plotfs: bool = True,
         events: tuple[str] = None,
@@ -27,7 +27,7 @@ def eventplot(
         The event time-series of shape (events, samples)
     fs: int
         The sampling rate in Hz
-    ax: matplotlib.axes.Axes (default: None)
+    ax: Axes (default: None)
         The axis to plot in. If None, a new figure will be opened.
     upsample: int (default: 20)
         A scalar value to upsample the stimulus and event time-series with for improved visualization
@@ -80,7 +80,7 @@ def topoplot(
         z: NDArray,
         locfile: str,
         cbar: bool = False,
-        ax: matplotlib.axes.Axes = None,
+        ax: Axes = None,
         iso: bool = False,
         chan: bool = True,
 ) -> None:
@@ -95,7 +95,7 @@ def topoplot(
         A .loc file with electrode position information.
     cbar: bool (default: False)
         Whether to add a colorbar.
-    ax: matplotlib.axes.Axes (default: None)
+    ax: Axes (default: None)
         Axes to plot in. A new one is made when None.
     iso: bool (default: False)
         Whether to add iso lines.

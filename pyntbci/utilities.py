@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-import sklearn.base
+from sklearn.base import BaseEstimator
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
 
 
@@ -91,7 +91,7 @@ def covariance(
         n_old: int = 0,
         avg_old: NDArray = None,
         cov_old: NDArray = None,
-        estimator: sklearn.base.BaseEstimator = None,
+        estimator: BaseEstimator = None,
         running: bool = False,
 ) -> tuple[int, NDArray, NDArray]:
     """Compute the covariance matrix.
@@ -106,7 +106,7 @@ def covariance(
         Already observed average of shape (n_features).
     cov_old: NDArray (default: None)
         Already observed covariance of shape (n_features, n_features).
-    estimator: object (default: None)
+    estimator: BaseEstimator (default: None)
         An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the
         empirical covariance is used.
     running: bool (default: False)
