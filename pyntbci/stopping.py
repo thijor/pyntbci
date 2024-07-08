@@ -1,6 +1,5 @@
 import numpy as np
 from numpy.typing import NDArray
-import sklearn.base
 from scipy.stats import beta, norm
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.linear_model import LinearRegression
@@ -16,7 +15,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: BaseEstimator
+    estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time: float
         The size of a segment of data at which classification is performed ins seconds.
@@ -72,7 +71,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
     def __init__(
             self,
-            estimator: sklearn.base.BaseEstimator,
+            estimator: ClassifierMixin,
             segment_time: float,
             fs: int,
             method: str = "bds0",
@@ -94,7 +93,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
         Parameters
@@ -106,8 +105,8 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: BayesStopping
-            An instance of the stopping procedure.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         y = y.astype(np.uint)
 
@@ -119,7 +118,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.estimator.fit(X, y)
 
         # Spatially filter data
-        X = self.estimator._cca.transform(X=X)[0]
+        X = self.estimator.cca_.transform(X=X)[0]
         n_samples = X.shape[2]
 
         # Get templates
@@ -250,7 +249,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: BaseEstimator
+    estimator: ClassifierMixin
         The classifier object that performs the classification.
     target_p: float (default: 0.95)
         The targeted probability of correct classification.
@@ -272,7 +271,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
     def __init__(
             self,
-            estimator: sklearn.base.BaseEstimator,
+            estimator: ClassifierMixin,
             target_p: float = 0.95,
             fs: int = None,
             max_time: float = None,
@@ -288,7 +287,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to fit the dynamic procedure on supervised EEG data. Note, BetaStopping itself does
         not require training, it only trains the estimator.
 
@@ -301,8 +300,8 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: BayesStopping
-            An instance of the stopping procedure.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         # Fit estimator
         self.estimator.fit(X, y)
@@ -362,7 +361,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: BaseEstimator
+    estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time: float
         The size of a segment of data at which classification is performed ins seconds.
@@ -384,11 +383,11 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
     stop_time_: float
         The trained static stopping time.
     """
-    stop_time_: NDArray
+    stop_time_: float
 
     def __init__(
             self,
-            estimator: sklearn.base.BaseEstimator,
+            estimator: ClassifierMixin,
             segment_time: float,
             fs: int,
             criterion: str = "accuracy",
@@ -410,7 +409,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to fit the static procedure on supervised EEG data.
 
         Parameters
@@ -422,8 +421,8 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: CriterionStopping
-            An instance of the stopping procedure.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         y = y.astype(np.uint)
 
@@ -517,7 +516,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: BaseEstimator
+    estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time; float
         The size of a segment of data at which classification is performed ins seconds.
@@ -549,7 +548,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
     def __init__(
             self,
-            estimator: sklearn.base.BaseEstimator,
+            estimator: ClassifierMixin,
             segment_time: float,
             fs: int,
             target_p: float = 0.95,
@@ -571,7 +570,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
         Parameters
@@ -583,8 +582,8 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: MarginStopping
-            An instance of the stopping procedure.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         y = y.astype(np.uint)
 

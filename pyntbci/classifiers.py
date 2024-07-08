@@ -3,8 +3,7 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-import sklearn.base
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, TransformerMixin
 from sklearn.svm import OneClassSVM
 from sklearn.utils.validation import check_is_fitted
 
@@ -56,6 +55,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    cca_: list[TransformerMixin]
+        The CCA used to fit the spatial. If ensemble=False, len(cca_)=1, otherwise len(cca_)=n_classes.
     w_: NDArray
         The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
         shape is (n_channels, n_components, n_classes).
@@ -68,6 +69,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
            (2021). Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature
            review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf
     """
+    cca_: list[TransformerMixin]
     w_: NDArray
     T_: NDArray
 
@@ -83,8 +85,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
             gamma_y: Union[float, list[float], NDArray] = None,
             latency: NDArray = None,
             ensemble: bool = False,
-            cov_estimator_x: sklearn.base.BaseEstimator = None,
-            cov_estimator_t: sklearn.base.BaseEstimator = None,
+            cov_estimator_x: BaseEstimator = None,
+            cov_estimator_t: BaseEstimator = None,
             n_components: int = 1,
     ) -> None:
         self.lags = lags
@@ -157,7 +159,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
         if self.ensemble:
             for i_class in range(T.shape[0]):
-                Xi = self._cca[i_class].transform(X=X)[0]
+                Xi = self.cca_[i_class].transform(X=X)[0]
                 for i_component in range(self.n_components):
                     if self.score_metric == "correlation":
                         scores[:, i_class, i_component] = correlation(Xi[:, i_component, :],
@@ -172,7 +174,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
                         raise Exception(f"Unknown score metric: {self.score_metric}")
 
         else:
-            X = self._cca.transform(X=X)[0]
+            X = self.cca_[0].transform(X=X)[0]
             for i_component in range(self.n_components):
                 if self.score_metric == "correlation":
                     scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
@@ -189,7 +191,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to fit eCCA on supervised EEG data.
 
         Parameters
@@ -202,8 +204,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: eCCA
-            An instance of the classifier.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         y = y.astype(np.uint)
         n_trials, n_channels, n_samples = X.shape
@@ -244,35 +246,35 @@ class eCCA(BaseEstimator, ClassifierMixin):
                 T = correct_latency(T, np.arange(n_classes), self.latency, self.fs, axis=-1)
 
         # Fit CCA
+        self.cca_ = []
         if self.ensemble:
             self.w_ = np.zeros((n_channels, self.n_components, n_classes))
-            self._cca = []
             for i_class in range(n_classes):
-                S = np.reshape(X[y == i_class, :, :].transpose((0, 2, 1)), (-1, n_channels))  # Concatenate trials
-                R = np.tile(T[i_class, :, :].T, (np.sum(y == i_class), 1))  # Concatenate templates
+                S = np.reshape(X[y == i_class, :, :].transpose((0, 2, 1)), (-1, n_channels))
+                R = np.tile(T[i_class, :, :].T, (np.sum(y == i_class), 1))
                 if self.cca_channels is not None:
                     R = R[:, self.cca_channels]
-                self._cca.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
+                self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
                                      estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t))
-                self._cca[i_class].fit(S, R)
-                self.w_[:, :, i_class] = self._cca[i_class].w_x_
+                self.cca_[i_class].fit(S, R)
+                self.w_[:, :, i_class] = self.cca_[i_class].w_x_
         else:
-            S = np.reshape(X.transpose((0, 2, 1)), (-1, n_channels))  # Concatenate trials
-            R = np.reshape(T[y, :, :].transpose((0, 2, 1)), (-1, n_channels))  # Concatenate templates
+            S = np.reshape(X.transpose((0, 2, 1)), (-1, n_channels))
+            R = np.reshape(T[y, :, :].transpose((0, 2, 1)), (-1, n_channels))
             if self.cca_channels is not None:
                 R = R[:, self.cca_channels]
-            self._cca = CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
-                            estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t)
-            self._cca.fit(S, R)
-            self.w_ = self._cca.w_x_
+            self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
+                                 estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t))
+            self.cca_[0].fit(S, R)
+            self.w_ = self.cca_[0].w_x_
 
         # Spatially filter templates
         if self.ensemble:
             self.T_ = np.zeros((n_classes, self.n_components, n_samples))
             for i_class in range(n_classes):
-                self.T_[i_class, :, :] = self._cca[i_class].transform(X=None, Y=T[[i_class], :, :])[1]
+                self.T_[i_class, :, :] = self.cca_[i_class].transform(X=None, Y=T[[i_class], :, :])[1]
         else:
-            self.T_ = self._cca.transform(X=None, Y=T)[1]
+            self.T_ = self.cca_.transform(X=None, Y=T)[1]
 
         return self
 
@@ -327,22 +329,22 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: sklearn.base.BaseEstimator
+    estimator: ClassifierMixin
         The classifier object that is applied to each item in the databank.
-    gate: sklearn.base.BaseEstimator
+    gate: ClassifierMixin
         The gate that is used to combine the scores obtained from each individual estimator.
 
     Attributes
     ----------
-    models_: list[sklearn.base.BaseEstimator]
+    models_: list[sClassifierMixin]
         A list containing all models learned for each of the databanks.
     """
-    models_: list[sklearn.base.BaseEstimator]
+    models_: list[ClassifierMixin]
 
     def __init__(
             self,
-            estimator: sklearn.base.BaseEstimator,
-            gate: sklearn.base.BaseEstimator,
+            estimator: ClassifierMixin,
+            gate: ClassifierMixin,
     ) -> None:
         self.estimator = estimator
         self.gate = gate
@@ -363,6 +365,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         scores: NDArray
             The matrix of scores of shape (n_trials, n_classes).
         """
+        check_is_fitted(self, ["models_"])
         scores = np.stack([
             self.models_[i].decision_function(X[:, :, :, i])
             for i in range(X.shape[3])], axis=2)
@@ -372,7 +375,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to apply an ensemble classifier on supervised EEG data.
 
         Parameters
@@ -385,8 +388,8 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: Ensemble
-            An instance of the classifier.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         y = y.astype(np.uint)
         assert X.ndim == 4
@@ -452,6 +455,8 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    trca_: list[TransformerMixin]
+        The TRCA used to fit the spatial. If ensemble=False, len(trca_)=1, otherwise len(trca_)=n_classes.
     w_: NDArray
         The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
         shape is (n_channels, n_components, n_classes).
@@ -464,6 +469,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
            for a high-speed brain speller using task-related component analysis. IEEE Transactions on Biomedical
            Engineering, 65(1), 104-112. doi: 10.1109/TBME.2017.2694818
     """
+    trca_: list[TransformerMixin]
     w_: NDArray
     T_: NDArray
 
@@ -490,7 +496,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
     def _fit_T(
             self,
             X: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> NDArray:
         """Fit the templates.
 
         Parameters
@@ -540,7 +546,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
         if self.ensemble:
             for i_class in range(T.shape[0]):
-                Xi = self._trca[i_class].transform(X)
+                Xi = self.trca_[i_class].transform(X)
                 for i_component in range(self.n_components):
                     if self.score_metric == "correlation":
                         scores[:, i_class, i_component] = correlation(Xi[:, i_component, :],
@@ -554,7 +560,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
                     else:
                         raise Exception(f"Unknown score metric: {self.score_metric}")
         else:
-            X = self._trca.transform(X)
+            X = self.trca_[0].transform(X)
             for i_component in range(self.n_components):
                 if self.score_metric == "correlation":
                     scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
@@ -571,7 +577,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to fit eTRCA on supervised EEG data.
 
         Parameters
@@ -584,8 +590,8 @@ class eTRCA(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: eTRCA
-            An instance of the classifier.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         y = y.astype(np.uint)
         n_trials, n_channels, n_samples = X.shape
@@ -598,27 +604,27 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             X = correct_latency(X, y, -self.latency, self.fs, axis=-1)
 
         # Learn spatial filter
+        self.trca_ = []
         if self.ensemble:
             self.w_ = np.zeros((n_channels, self.n_components, n_classes))
-            self._trca = []
             for i_class in range(n_classes):
-                self._trca.append(TRCA(n_components=self.n_components))
-                self._trca[i_class].fit(X[y == i_class, :, :])
-                self.w_[:, :, i_class] = self._trca[i_class].w_
+                self.trca_.append(TRCA(n_components=self.n_components))
+                self.trca_[i_class].fit(X[y == i_class, :, :])
+                self.w_[:, :, i_class] = self.trca_[i_class].w_
         else:
-            self._trca = TRCA(n_components=self.n_components)
-            self._trca.fit(X)
-            self.w_ = self._trca.w_
+            self.trca_.append(TRCA(n_components=self.n_components))
+            self.trca_[0].fit(X)
+            self.w_ = self.trca_[0].w_
 
         # Spatially filter data
         if self.ensemble:
             Z = np.copy(X)
             X = np.zeros((Z.shape[0], self.n_components, Z.shape[2]))
             for i_class in range(n_classes):
-                X[y == i_class, :, :] = self._trca[i_class].transform(Z[y == i_class, :, :])
+                X[y == i_class, :, :] = self.trca_[i_class].transform(Z[y == i_class, :, :])
             del Z
         else:
-            X = self._trca.transform(X)
+            X = self.trca_[0].transform(X)
 
         # Synchronize all classes
         if self.lags is not None:
@@ -753,6 +759,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    cca_: list[TransformerMixin]
+        The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise
+        len(cca_)=n_classes.
     w_: NDArray
         The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
         shape is (n_channels, n_components, n_classes).
@@ -778,6 +787,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
            code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
            056007. doi: 10.1088/1741-2552/abecef
     """
+    cca_: list[TransformerMixin]
     w_: NDArray
     r_: NDArray
     Ts_: NDArray
@@ -799,8 +809,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
             amplitudes: NDArray = None,
             gamma_x: Union[float, list[float], NDArray] = None,
             gamma_m: Union[float, list[float], NDArray] = None,
-            cov_estimator_x: sklearn.base.BaseEstimator = None,
-            cov_estimator_m: sklearn.base.BaseEstimator = None,
+            cov_estimator_x: BaseEstimator = None,
+            cov_estimator_m: BaseEstimator = None,
             n_components: int = 1,
     ) -> None:
         self.stimulus = stimulus
@@ -896,7 +906,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
         if self.ensemble:
             for i_class in range(T.shape[0]):
-                Xi = self._cca[i_class].transform(X=X)[0]
+                Xi = self.cca_[i_class].transform(X=X)[0]
                 for i_component in range(self.n_components):
                     if self.score_metric == "correlation":
                         scores[:, i_class, i_component] = correlation(Xi[:, i_component, :],
@@ -911,7 +921,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
                         raise Exception(f"Unknown score metric: {self.score_metric}")
 
         else:
-            X = self._cca.transform(X=X)[0]
+            X = self.cca_[0].transform(X=X)[0]
             for i_component in range(self.n_components):
                 if self.score_metric == "correlation":
                     scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
@@ -928,7 +938,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """The training procedure to fit a rCCA on supervised EEG data.
 
         Parameters
@@ -941,11 +951,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: rCCA
-            An instance of the classifier.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         y = y.astype(np.uint)
-        n_classes = np.unique(y).size
+        n_classes = self.stimulus.shape[0]
 
         # Correct for raster latency
         if self.latency is not None:
@@ -958,31 +968,31 @@ class rCCA(BaseEstimator, ClassifierMixin):
         M = self._get_M(X.shape[2])
 
         # Fit w and r
+        self.cca_ = []
         if self.ensemble:
             self.w_ = np.zeros((X.shape[1], self.n_components, n_classes))
             self.r_ = np.zeros((M.shape[1], self.n_components, n_classes))
-            self._cca = []
             for i_class in range(n_classes):
-                self._cca.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
+                self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
                                      estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m))
-                self._cca[i_class].fit(X[y == i_class, :, :], np.tile(M[[i_class], :, :], (np.sum(y == i_class), 1, 1)))
-                self.w_[:, :, i_class] = self._cca[i_class].w_x_
-                self.r_[:, :, i_class] = self._cca[i_class].w_y_
+                self.cca_[i_class].fit(X[y == i_class, :, :], np.tile(M[[i_class], :, :], (np.sum(y == i_class), 1, 1)))
+                self.w_[:, :, i_class] = self.cca_[i_class].w_x_
+                self.r_[:, :, i_class] = self.cca_[i_class].w_y_
         else:
-            self._cca = CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
-                            estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m)
-            self._cca.fit(X, M[y, :, :])
-            self.w_ = self._cca.w_x_
-            self.r_ = self._cca.w_y_
+            self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
+                                 estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m))
+            self.cca_[0].fit(X, M[y, :, :])
+            self.w_ = self.cca_[0].w_x_
+            self.r_ = self.cca_[0].w_y_
 
         # Set templates (start and wrapper)
         M = self._get_M(2 * self.stimulus.shape[1])
         if self.ensemble:
             T = np.zeros((n_classes, self.n_components, M.shape[2]))
             for i_class in range(n_classes):
-                T[i_class, :, :] = self._cca[i_class].transform(X=None, Y=M[[i_class], :, :])[1]
+                T[i_class, :, :] = self.cca_[i_class].transform(X=None, Y=M[[i_class], :, :])[1]
         else:
-            T = self._cca.transform(X=None, Y=M)[1]
+            T = self.cca_[0].transform(X=None, Y=M)[1]
         self.Ts_ = T[:, :, :self.stimulus.shape[1]]
         self.Tw_ = T[:, :, self.stimulus.shape[1]:]
 
@@ -1086,6 +1096,13 @@ class rCCA(BaseEstimator, ClassifierMixin):
         """
         self.stimulus = stimulus
         self.amplitudes = amplitudes
-        T = self._cca.transform(X=None, Y=self._get_M(2 * self.stimulus.shape[1]))[1]
+        n_classes = self.stimulus.shape[0]
+        M = self._get_M(2 * self.stimulus.shape[1])
+        if self.ensemble:
+            T = np.zeros((n_classes, self.n_components, M.shape[2]))
+            for i_class in range(n_classes):
+                T[i_class, :, :] = self.cca_[i_class].transform(X=None, Y=M[[i_class], :, :])[1]
+        else:
+            T = self.cca_[0].transform(X=None, Y=M)[1]
         self.Ts_ = T[:, :, :self.stimulus.shape[1]]
         self.Tw_ = T[:, :, self.stimulus.shape[1]:]

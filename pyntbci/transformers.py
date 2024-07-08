@@ -2,7 +2,6 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-import sklearn.base
 from scipy.linalg import eigh, inv, sqrtm, svd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -81,8 +80,8 @@ class CCA(BaseEstimator, TransformerMixin):
             n_components: int,
             gamma_x: Union[float, list[float], NDArray] = None,
             gamma_y: Union[float, list[float], NDArray] = None,
-            estimator_x: sklearn.base.BaseEstimator = None,
-            estimator_y: sklearn.base.BaseEstimator = None,
+            estimator_x: BaseEstimator = None,
+            estimator_y: BaseEstimator = None,
             running: bool = False,
     ) -> None:
         self.n_components = n_components
@@ -230,7 +229,7 @@ class CCA(BaseEstimator, TransformerMixin):
             self,
             X: NDArray,
             Y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> TransformerMixin:
         """Fit the CCA in one of 3 ways: (1) X (data) is 3D and y (labels) is 1D, (2) X (data) is 3D and Y (data) is 3D,
         or (3) X (data) is 2D and Y (data) is 2D.
 
@@ -244,8 +243,8 @@ class CCA(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        self: CCA
-            An instance of the transformer.
+        self: TransformerMixin
+            Returns the instance itself.
         """
         if X.ndim == 3 and Y.ndim == 1:
             self._fit_X3D_Y1D(X, Y)
@@ -407,7 +406,7 @@ class TRCA(BaseEstimator, TransformerMixin):
             self,
             X: NDArray,
             y: NDArray = None,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> TransformerMixin:
         """Fit TRCA.
 
         Parameters
@@ -419,8 +418,8 @@ class TRCA(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        w: NDArray:
-            The learned weights of shape (n_features, n_components).
+        self: TransformerMixin
+            Returns the instance itself.
         """
         X = X.astype("float")
         n_trials, n_channels, n_samples = X.shape

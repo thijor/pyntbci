@@ -1,6 +1,5 @@
 import numpy as np
 from numpy.typing import NDArray
-import sklearn.base
 from sklearn.base import BaseEstimator, ClassifierMixin
 
 
@@ -58,7 +57,7 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """Fit an aggregate gate. Note, does not involve learning.
 
         Parameters
@@ -70,8 +69,8 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: AggregateGate
-            An instance of the gating function.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         return self
 
@@ -100,7 +99,7 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    estimator: sklearn.base.BaseEstimator
+    estimator: ClassifierMixin
         The estimator used to classify difference scores.
 
     Attributes
@@ -109,7 +108,7 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
     def __init__(
             self,
-            estimator: sklearn.base.BaseEstimator,
+            estimator: ClassifierMixin,
     ) -> None:
         self.estimator = estimator
 
@@ -157,7 +156,7 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
             self,
             X: NDArray,
             y: NDArray,
-    ) -> sklearn.base.BaseEstimator:
+    ) -> ClassifierMixin:
         """Fit a difference scores gate. Note, calibrates the estimator on difference scores.
 
         Parameters
@@ -169,8 +168,8 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        self: DifferenceGate
-            An instance of the gating function.
+        self: ClassifierMixin
+            Returns the instance itself.
         """
         self.estimator.fit(self._compute_difference_scores(X), y)
         return self
