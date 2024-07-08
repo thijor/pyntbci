@@ -29,7 +29,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
     template_metric: str (default: "mean")
         Metric to use to compute templates: mean, median, OCSVM.
     score_metric: str (default: "correlation")
-        Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean,
+        Metric to use to compute the overlap of templates and single-trials during testing: correlation, Euclidean,
         inner.
     cca_channels: list[int] (default: None)
         A list of channel indexes that need to be included in the estimation of a spatial filter at the template side
@@ -91,7 +91,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self.fs = fs
         self.cycle_size = cycle_size
         self.template_metric = template_metric
-        self.score_metric = score_metric
+        self.score_metric = score_metric.lower()
         self.cca_channels = cca_channels
         self.gamma_x = gamma_x
         self.gamma_y = gamma_y
@@ -447,7 +447,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
     template_metric: str (default: "mean")
         Metric to use to compute templates: mean, median, OCSVM.
     score_metric: str (default: "correlation")
-        Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean,
+        Metric to use to compute the overlap of templates and single-trials during testing: correlation, Euclidean,
         inner.
     latency: NDArray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
@@ -487,7 +487,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         self.fs = fs
         self.cycle_size = cycle_size
         self.template_metric = template_metric
-        self.score_metric = score_metric
+        self.score_metric = score_metric.lower()
         self.latency = latency
         self.ensemble = ensemble
         self.n_components = n_components
@@ -736,7 +736,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         The stride of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs,
         equivalent to 1 sample, such that no stride is used.
     score_metric: str (default: "correlation")
-        Metric to use to compute the overlap of templates and single-trials during testing: correlation, euclidean.
+        Metric to use to compute the overlap of templates and single-trials during testing: correlation, Euclidean.
     latency: NDArray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
@@ -831,7 +831,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
             self.encoding_stride = 1 / fs
         else:
             self.encoding_stride = encoding_stride
-        self.score_metric = score_metric
+        self.score_metric = score_metric.lower()
         self.latency = latency
         self.ensemble = ensemble
         self.amplitudes = amplitudes
