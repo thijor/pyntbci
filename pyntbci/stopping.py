@@ -117,8 +117,9 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         # Fit estimator
         self.estimator.fit(X, y)
 
+        # TODO: pyntbci.classifier.BayesStopping does not yet work with multiple components in classifiers
         # Spatially filter data
-        X = self.estimator.cca_.transform(X=X)[0]
+        X = self.estimator.cca_[0].transform(X=X)[0]
         n_samples = X.shape[2]
 
         # Get templates

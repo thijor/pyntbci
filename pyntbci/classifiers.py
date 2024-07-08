@@ -274,7 +274,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             for i_class in range(n_classes):
                 self.T_[i_class, :, :] = self.cca_[i_class].transform(X=None, Y=T[[i_class], :, :])[1]
         else:
-            self.T_ = self.cca_.transform(X=None, Y=T)[1]
+            self.T_ = self.cca_[0].transform(X=None, Y=T)[1]
 
         return self
 
