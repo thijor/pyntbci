@@ -1,5 +1,21 @@
 # Changelog
 
+## Version 1.4.0 
+
+### Added
+- Added `pinv` to `utilities`
+- Added `alpha_x` to `CCA` in `tranformers`
+- Added `alpha_y` to `CCA` in `tranformers`
+- Added `alpha_x` to `eCCA` in `classifiers`
+- Added `alpha_t` to `eCCA` in `classifiers`
+- Added `alpha_x` to `rCCA` in `classifiers`
+- Added `alpha_m` to `rCCA` in `classifiers`
+
+### Changed
+- Changed `scipy.linalg.inv` to `pyntbci.utilities.pinv` in `CCA` of `transformers` 
+
+### Fixed 
+
 ## Version 1.3.3 (01-07-2024)
 
 ### Added

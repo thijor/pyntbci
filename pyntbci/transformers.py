@@ -2,11 +2,11 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.linalg import eigh, inv, sqrtm, svd
+from scipy.linalg import eigh, sqrtm, svd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from pyntbci.utilities import covariance
+from pyntbci.utilities import covariance, pinv
 
 
 class CCA(BaseEstimator, TransformerMixin):
@@ -32,6 +32,10 @@ class CCA(BaseEstimator, TransformerMixin):
     running: bool (default: False)
         If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
         track of previous data to update a running average and covariance for the CCA.
+    alpha_x: float (Default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
+    alpha_y: float (Default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of Y. If None, all variance.
 
     Attributes
     ----------
@@ -83,6 +87,8 @@ class CCA(BaseEstimator, TransformerMixin):
             estimator_x: BaseEstimator = None,
             estimator_y: BaseEstimator = None,
             running: bool = False,
+            alpha_x: float = None,
+            alpha_y: float = None,
     ) -> None:
         self.n_components = n_components
         self.gamma_x = gamma_x
@@ -90,6 +96,8 @@ class CCA(BaseEstimator, TransformerMixin):
         self.estimator_x = estimator_x
         self.estimator_y = estimator_y
         self.running = running
+        self.alpha_x = alpha_x
+        self.alpha_y = alpha_y
 
     def _fit_X2D_Y2D(
             self,
@@ -152,8 +160,8 @@ class CCA(BaseEstimator, TransformerMixin):
             Cyy = (1 - gamma_y) * Cyy + gamma_y * nu_y @ np.identity(Y.shape[1])
 
         # Inverse square root
-        iCxx = np.real(inv(sqrtm(Cxx)))
-        iCyy = np.real(inv(sqrtm(Cyy)))
+        iCxx = np.real(pinv(sqrtm(Cxx), self.alpha_x))
+        iCyy = np.real(pinv(sqrtm(Cyy), self.alpha_y))
 
         # SVD
         U, self.rho_, V = svd(iCxx @ Cxy @ iCyy)

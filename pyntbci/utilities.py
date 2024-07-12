@@ -497,6 +497,38 @@ def filterbank(
     return Xf
 
 
+def pinv(
+        A: NDArray,
+        alpha: float = None
+) -> NDArray:
+    """
+    Compute the pseudo-inverse of a square matrix.
+
+    Parameters
+    ----------
+    A: NDArray
+        Square matrix of shape n x n to compute pseudo-inverse for.
+    alpha: float (Default: None)
+        The amount of variance the retain.
+
+    Returns
+    -------
+    iA: NDArray
+        The pseudo-inverse of A of shape n x n.
+    """
+    assert A.ndim == 2, "A should be a square matrix."
+    assert A.shape[0] == A.shape[1], "A should be a square matrix."
+    U, d, V = np.linalg.svd(A)
+    if alpha is not None:
+        for i in range(d.size):
+            if np.sum(d[0:d.size - i] / np.sum(d)) < alpha:
+                d = 1 / d
+                d[d.size - i + 1:] = 0
+                break
+    iA = U.dot(np.diag(d)).dot(V)
+    return iA
+
+
 def itr(
         n: Union[int, NDArray],
         p: Union[float, NDArray],

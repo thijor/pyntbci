@@ -36,9 +36,9 @@ class eCCA(BaseEstimator, ClassifierMixin):
     gamma_x: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along X (channels). If
         None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).
-    gamma_y: float | list[float] | NDArray (default: None)
-        Regularization on the covariance matrix for CCA for all or each individual parameter along Y (channels). If
-        None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
+    gamma_t: float | list[float] | NDArray (default: None)
+        Regularization on the covariance matrix for CCA for all or each individual parameter along T (channels). If
+        None, no regularization is applied. The gamma_t ranges from 0 (no regularization) to 1 (full regularization).
     latency: NDArray (default: None)
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
@@ -52,6 +52,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
         empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
+    alpha_x: float (Default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
+    alpha_t: float (Default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of Y. If None, all variance.
 
     Attributes
     ----------
@@ -82,12 +86,14 @@ class eCCA(BaseEstimator, ClassifierMixin):
             score_metric: str = "correlation",
             cca_channels: list[int] = None,
             gamma_x: Union[float, list[float], NDArray] = None,
-            gamma_y: Union[float, list[float], NDArray] = None,
+            gamma_t: Union[float, list[float], NDArray] = None,
             latency: NDArray = None,
             ensemble: bool = False,
             cov_estimator_x: BaseEstimator = None,
             cov_estimator_t: BaseEstimator = None,
             n_components: int = 1,
+            alpha_x: float = None,
+            alpha_t: float = None,
     ) -> None:
         self.lags = lags
         self.fs = fs
@@ -96,12 +102,14 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self.score_metric = score_metric.lower()
         self.cca_channels = cca_channels
         self.gamma_x = gamma_x
-        self.gamma_y = gamma_y
+        self.gamma_t = gamma_t
         self.latency = latency
         self.ensemble = ensemble
         self.cov_estimator_x = cov_estimator_x
         self.cov_estimator_t = cov_estimator_t
         self.n_components = n_components
+        self.alpha_x = alpha_x
+        self.alpha_t = alpha_t
 
     def _fit_T(
             self,
@@ -254,8 +262,9 @@ class eCCA(BaseEstimator, ClassifierMixin):
                 R = np.tile(T[i_class, :, :].T, (np.sum(y == i_class), 1))
                 if self.cca_channels is not None:
                     R = R[:, self.cca_channels]
-                self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
-                                     estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t))
+                self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_t,
+                                     estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t,
+                                     alpha_x=self.alpha_x, alpha_y=self.alpha_t))
                 self.cca_[i_class].fit(S, R)
                 self.w_[:, :, i_class] = self.cca_[i_class].w_x_
         else:
@@ -263,8 +272,9 @@ class eCCA(BaseEstimator, ClassifierMixin):
             R = np.reshape(T[y, :, :].transpose((0, 2, 1)), (-1, n_channels))
             if self.cca_channels is not None:
                 R = R[:, self.cca_channels]
-            self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_y,
-                                 estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t))
+            self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_t,
+                                 estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_t,
+                                 alpha_x=self.alpha_x, alpha_y=self.alpha_t))
             self.cca_[0].fit(S, R)
             self.w_ = self.cca_[0].w_x_
 
@@ -756,6 +766,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         None, a custom empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
+    alpha_x: float (Default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
+    alpha_m: float (Default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of M. If None, all variance.
 
     Attributes
     ----------
@@ -812,6 +826,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
             cov_estimator_x: BaseEstimator = None,
             cov_estimator_m: BaseEstimator = None,
             n_components: int = 1,
+            alpha_x: float = None,
+            alpha_m: float = None,
     ) -> None:
         self.stimulus = stimulus
         self.fs = fs
@@ -842,6 +858,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.cov_estimator_x = cov_estimator_x
         self.cov_estimator_m = cov_estimator_m
         self.n_components = n_components
+        self.alpha_x = alpha_x
+        self.alpha_m = alpha_m
 
     def _get_M(
             self,
@@ -974,13 +992,15 @@ class rCCA(BaseEstimator, ClassifierMixin):
             self.r_ = np.zeros((M.shape[1], self.n_components, n_classes))
             for i_class in range(n_classes):
                 self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
-                                     estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m))
+                                     estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m,
+                                     alpha_x=self.alpha_x, alpha_y=self.alpha_m))
                 self.cca_[i_class].fit(X[y == i_class, :, :], np.tile(M[[i_class], :, :], (np.sum(y == i_class), 1, 1)))
                 self.w_[:, :, i_class] = self.cca_[i_class].w_x_
                 self.r_[:, :, i_class] = self.cca_[i_class].w_y_
         else:
             self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
-                                 estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m))
+                                 estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m,
+                                 alpha_x=self.alpha_x, alpha_y=self.alpha_m))
             self.cca_[0].fit(X, M[y, :, :])
             self.w_ = self.cca_[0].w_x_
             self.r_ = self.cca_[0].w_y_
