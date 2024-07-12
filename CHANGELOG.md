@@ -12,6 +12,8 @@
 - Added `alpha_m` to `rCCA` in `classifiers`
 
 ### Changed
+- Changed `numpy` typing of `np.ndarray` to `NDArray`
+- Changed `cca_` and `trca_` attributes to be `list` always in `eCCA`, `rCCA` and `eTRCA`
 - Changed `scipy.linalg.inv` to `pyntbci.utilities.pinv` in `CCA` of `transformers` 
 
 ### Fixed 
