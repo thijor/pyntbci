@@ -113,7 +113,7 @@ plt.tight_layout()
 # so-called "events" at the "epoch" level. Subsequently, these epoch-level classifications are used (and integrated over
 # time) to classify full "trials".
 #
-# Specifically, a trial contains the multi-channel EEG response to a visually presented stimulus. In the c-VEP domain,
+# Specifically, a trial contains the multichannel EEG response to a visually presented stimulus. In the c-VEP domain,
 # the stimulus is a pseudo-random noise-code that encodes how each of the classes flashes (i.e., a 1-bit denotes a white
 # background, a 0-bit denotes a black background). In this notebook, we call the 1-bits "flashes" and the 0-bits
 # "no-flashes". In particular, the events we will work with are simply flashes versus no-flashes. Do note though, that
@@ -152,9 +152,9 @@ print("Number of non-flash epochs:", np.sum(y_sliced == 0))
 # Event-related potentials
 # ------------------------
 # With the sliced data, we can compute so-called event-related potentials (ERPs), i.e. averaged responses of epochs that
-# have the same label. Here, this will we an ERP for a flash epoch and one for non-flash epochs. Please note, these are
+# have the same label. Here, this will be an ERP for a flash epoch and one for non-flash epochs. Please note, these are
 # non-typical ERPs, as the epochs used here have a high amount of overlap. Specifically, the length of an epochs is 300
-# ms, while each epoch was sliced 1/60th ms after the previous one (i.e., a the stimulus presentation rate).
+# ms, while each epoch was sliced 1/60th ms after the previous one (i.e., the stimulus presentation rate).
 
 # Compute ERPs
 erp_noflash = np.mean(X_sliced[y_sliced == 0, :, :], axis=0)

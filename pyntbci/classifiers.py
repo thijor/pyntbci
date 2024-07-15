@@ -52,9 +52,11 @@ class eCCA(BaseEstimator, ClassifierMixin):
         empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
-    alpha_x: float (Default: None)
+    squeeze_components: bool (default: True)
+        Remove the component dimension when n_components=1.
+    alpha_x: float (default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
-    alpha_t: float (Default: None)
+    alpha_t: float (default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of Y. If None, all variance.
 
     Attributes
@@ -92,6 +94,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             cov_estimator_x: BaseEstimator = None,
             cov_estimator_t: BaseEstimator = None,
             n_components: int = 1,
+            squeeze_components: bool = True,
             alpha_x: float = None,
             alpha_t: float = None,
     ) -> None:
@@ -108,6 +111,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self.cov_estimator_x = cov_estimator_x
         self.cov_estimator_t = cov_estimator_t
         self.n_components = n_components
+        self.squeeze_components = squeeze_components
         self.alpha_x = alpha_x
         self.alpha_t = alpha_t
 
@@ -156,7 +160,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
         Returns
         -------
         scores: NDArray
-            The similarity scores of shape (n_trials, n_classes, n_components).
+            The similarity scores of shape (n_trials, n_classes, n_components) or (n-trials, n_classes) if
+            n_components=1 and squeeze_components=True.
         """
         check_is_fitted(self, ["w_", "T_"])
 
@@ -192,6 +197,9 @@ class eCCA(BaseEstimator, ClassifierMixin):
                     scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
                 else:
                     raise Exception(f"Unknown score metric: {self.score_metric}")
+
+        if self.n_components == 1 and self.squeeze_components:
+            scores = scores[:, :, 0]
 
         return scores
 
@@ -326,7 +334,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
         Returns
         -------
         y: NDArray
-            The predicted labels of shape (n_trials, n_components).
+            The predicted labels of shape (n_trials, n_components) or (n_trials) if n_components=1 and
+            squeeze+components=True.
         """
         check_is_fitted(self, ["w_", "T_"])
         return np.argmax(self.decision_function(X), axis=1)
@@ -376,9 +385,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
             The matrix of scores of shape (n_trials, n_classes).
         """
         check_is_fitted(self, ["models_"])
-        scores = np.stack([
-            self.models_[i].decision_function(X[:, :, :, i])
-            for i in range(X.shape[3])], axis=2)
+        scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
         return self.gate.decision_function(scores)
 
     def fit(
@@ -405,14 +412,10 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         assert X.ndim == 4
 
         # Fit separate models for each databank
-        self.models_ = [
-            copy.deepcopy(self.estimator).fit(X[:, :, :, i], y)
-            for i in range(X.shape[3])]
+        self.models_ = [copy.deepcopy(self.estimator).fit(X[:, :, :, i], y) for i in range(X.shape[3])]
 
         # Fit gating
-        scores = np.stack([
-            self.models_[i].decision_function(X[:, :, :, i])
-            for i in range(X.shape[3])], axis=2)
+        scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
         self.gate.fit(scores, y)
 
         return self
@@ -435,7 +438,8 @@ class Ensemble(BaseEstimator, ClassifierMixin):
             to find the associated stimulus!
         """
         check_is_fitted(self, ["models_"])
-        return self.gate.predict(self.decision_function(X))
+        scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
+        return self.gate.predict(scores)
 
 
 class eTRCA(BaseEstimator, ClassifierMixin):
@@ -462,6 +466,10 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         for.
     ensemble: bool (default: False)
         Whether to use an ensemble classifier, that is, a separate spatial filter for each class.
+    n_components: int (default: 1)
+        The number of CCA components to use.
+    squeeze_components: bool (default: True)
+        Remove the component dimension when n_components=1.
 
     Attributes
     ----------
@@ -493,6 +501,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             latency: NDArray = None,
             ensemble: bool = False,
             n_components: int = 1,
+            squeeze_components: bool = True,
     ) -> None:
         self.lags = lags
         self.fs = fs
@@ -502,6 +511,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         self.latency = latency
         self.ensemble = ensemble
         self.n_components = n_components
+        self.squeeze_components = squeeze_components
 
     def _fit_T(
             self,
@@ -580,6 +590,9 @@ class eTRCA(BaseEstimator, ClassifierMixin):
                     scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
                 else:
                     raise Exception(f"Unknown score metric: {self.score_metric}")
+
+        if self.n_components == 1 and self.squeeze_components:
+            scores = scores[:, :, 0]
 
         return scores
 
@@ -766,6 +779,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
         None, a custom empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
+    squeeze_components: bool (default: True)
+        Remove the component dimension when n_components=1.
     alpha_x: float (Default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
     alpha_m: float (Default: None)
@@ -826,6 +841,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
             cov_estimator_x: BaseEstimator = None,
             cov_estimator_m: BaseEstimator = None,
             n_components: int = 1,
+            squeeze_components: bool = True,
             alpha_x: float = None,
             alpha_m: float = None,
     ) -> None:
@@ -858,6 +874,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.cov_estimator_x = cov_estimator_x
         self.cov_estimator_m = cov_estimator_m
         self.n_components = n_components
+        self.squeeze_components = squeeze_components
         self.alpha_x = alpha_x
         self.alpha_m = alpha_m
 
@@ -949,6 +966,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
                     scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
                 else:
                     raise Exception(f"Unknown score metric: {self.score_metric}")
+
+        if self.n_components == 1 and self.squeeze_components:
+            scores = scores[:, :, 0]
 
         return scores
 

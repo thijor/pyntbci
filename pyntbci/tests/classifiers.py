@@ -17,10 +17,10 @@ class TestECCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, X.shape[2]), ecca.T_.shape)
 
         z = ecca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = ecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_ecca_shape_non_cyclic(self):
         fs = 200
@@ -33,10 +33,10 @@ class TestECCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, X.shape[2]), ecca.T_.shape)
 
         z = ecca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = ecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_ecca_shape_cyclic_cycle_size(self):
         fs = 200
@@ -50,10 +50,10 @@ class TestECCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, int(cycle_size * fs)), ecca.T_.shape)
 
         z = ecca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = ecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_ecca_shape_non_cyclic_cycle_size(self):
         fs = 200
@@ -67,10 +67,10 @@ class TestECCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, int(cycle_size * fs)), ecca.T_.shape)
 
         z = ecca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = ecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_ecca_score_metric(self):
         fs = 200
@@ -80,17 +80,17 @@ class TestECCA(unittest.TestCase):
         ecca = pyntbci.classifiers.eCCA(lags=np.arange(5), fs=fs, score_metric="correlation")
         ecca.fit(X, y)
         yh = ecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
         ecca = pyntbci.classifiers.eCCA(lags=np.arange(5), fs=fs, score_metric="euclidean")
         ecca.fit(X, y)
         yh = ecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
         ecca = pyntbci.classifiers.eCCA(lags=np.arange(5), fs=fs, score_metric="inner")
         ecca.fit(X, y)
         yh = ecca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_ecca_components(self):
         fs = 200
@@ -126,22 +126,22 @@ class TestECCA(unittest.TestCase):
 
 class TestEnsemble(unittest.TestCase):
 
-    def test_fbecca(self):
+    def test_ensemble_ecca(self):
         fs = 200
         cycle_size = 1.0
         X = np.random.rand(111, 64, 2 * fs, 7)
         y = np.random.choice(5, 111)
 
         ecca = pyntbci.classifiers.eCCA(lags=np.arange(5), fs=fs, cycle_size=cycle_size)
-        gating = pyntbci.gates.AggregateGate("mean")
-        fbecca = pyntbci.classifiers.Ensemble(ecca, gating)
-        fbecca.fit(X, y)
-        self.assertEqual(X.shape[3], len(fbecca.models_))
+        gate = pyntbci.gates.AggregateGate("mean")
+        ensemble = pyntbci.classifiers.Ensemble(ecca, gate)
+        ensemble.fit(X, y)
+        self.assertEqual(X.shape[3], len(ensemble.models_))
 
-        yh = fbecca.predict(X)
+        yh = ensemble.predict(X)
         self.assertEqual((X.shape[0], ), yh.shape)
 
-    def test_fbrcca(self):
+    def test_ensemble_rcca(self):
         fs = 200
         encoding_length = 0.3
         X = np.random.rand(111, 64, 2 * fs, 7)
@@ -149,12 +149,12 @@ class TestEnsemble(unittest.TestCase):
         V = np.random.rand(5, fs) > 0.5
 
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length)
-        gating = pyntbci.gates.AggregateGate("mean")
-        fbrcca = pyntbci.classifiers.Ensemble(rcca, gating)
-        fbrcca.fit(X, y)
-        self.assertEqual(X.shape[3], len(fbrcca.models_))
+        gate = pyntbci.gates.AggregateGate("mean")
+        ensemble = pyntbci.classifiers.Ensemble(rcca, gate)
+        ensemble.fit(X, y)
+        self.assertEqual(X.shape[3], len(ensemble.models_))
 
-        yh = fbrcca.predict(X)
+        yh = ensemble.predict(X)
         self.assertEqual((X.shape[0], ), yh.shape)
 
 
@@ -171,10 +171,10 @@ class TestETRCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, X.shape[2]), etrca.T_.shape)
 
         z = etrca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = etrca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_etrca_shape_cyclic_ensemble(self):
         fs = 200
@@ -187,10 +187,10 @@ class TestETRCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, X.shape[2]), etrca.T_.shape)
 
         z = etrca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = etrca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_etrca_shape_non_cyclic(self):
         fs = 200
@@ -203,10 +203,10 @@ class TestETRCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, X.shape[2]), etrca.T_.shape)
 
         z = etrca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = etrca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_etrca_shape_non_cyclic_ensemble(self):
         fs = 200
@@ -219,10 +219,10 @@ class TestETRCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, X.shape[2]), etrca.T_.shape)
 
         z = etrca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = etrca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_etrca_shape_cyclic_cycle_size(self):
         fs = 200
@@ -236,10 +236,10 @@ class TestETRCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, int(cycle_size * fs)), etrca.T_.shape)
 
         z = etrca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = etrca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_etrca_shape_non_cyclic_cycle_size(self):
         fs = 200
@@ -253,10 +253,10 @@ class TestETRCA(unittest.TestCase):
         self.assertEqual((np.unique(y).size, 1, int(cycle_size * fs)), etrca.T_.shape)
 
         z = etrca.decision_function(X)
-        self.assertEqual((X.shape[0], np.unique(y).size, 1), z.shape)
+        self.assertEqual((X.shape[0], np.unique(y).size), z.shape)
 
         yh = etrca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_etrca_components(self):
         fs = 200
@@ -293,10 +293,10 @@ class TestRCCA(unittest.TestCase):
         self.assertEqual((V.shape[0], 1, V.shape[1]), rcca.Tw_.shape)
 
         z = rcca.decision_function(X)
-        self.assertEqual((X.shape[0], V.shape[0], 1), z.shape)
+        self.assertEqual((X.shape[0], V.shape[0]), z.shape)
 
         yh = rcca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_rcca_score_metric(self):
         fs = 200
@@ -309,19 +309,19 @@ class TestRCCA(unittest.TestCase):
                                         score_metric="correlation")
         rcca.fit(X, y)
         yh = rcca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length,
                                         score_metric="euclidean")
         rcca.fit(X, y)
         yh = rcca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length,
                                         score_metric="inner")
         rcca.fit(X, y)
         yh = rcca.predict(X)
-        self.assertEqual((X.shape[0], 1), yh.shape)
+        self.assertEqual((X.shape[0], ), yh.shape)
 
     def test_rcca_components(self):
         fs = 200

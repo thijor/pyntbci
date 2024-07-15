@@ -139,7 +139,7 @@ rcca.fit(X_trn, y_trn)
 rcca.set_stimulus(U)
 
 # Apply template-matching classifier
-yh_tst = rcca.predict(X_tst)[:, 0]  # select component
+yh_tst = rcca.predict(X_tst)
 
 # Compute accuracy
 accuracy = np.mean(yh_tst == y_tst)
@@ -189,7 +189,7 @@ for i_subject in range(n_subjects):
         rcca.fit(X_trn_, y_trn_)
 
         # Apply classifier
-        yh_tst_ = rcca.predict(X_tst_)[:, 0]  # select component
+        yh_tst_ = rcca.predict(X_tst_)
 
         # Compute accuracy
         accuracy[i_subject, i_fold] = np.mean(yh_tst_ == y_tst_)

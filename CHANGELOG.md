@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.4.0 
+## Version 1.4.0 (15-07-2024)
 
 ### Added
 - Added `pinv` to `utilities`
@@ -10,13 +10,15 @@
 - Added `alpha_t` to `eCCA` in `classifiers`
 - Added `alpha_x` to `rCCA` in `classifiers`
 - Added `alpha_m` to `rCCA` in `classifiers`
+- Added `squeeze_components` to `rCCA`, `eCCA`, `eTRCA` in `classifiers'
 
 ### Changed
 - Changed `numpy` typing of `np.ndarray` to `NDArray`
 - Changed `cca_` and `trca_` attributes to be `list` always in `eCCA`, `rCCA` and `eTRCA`
-- Changed `scipy.linalg.inv` to `pyntbci.utilities.pinv` in `CCA` of `transformers` 
+- Changed `scipy.linalg.inv` to `pyntbci.utilities.pinv` in `CCA` of `transformers`
+- Changed `decision_function` and `predict` of `classifiers` to return without additional dimension for components if `n_components=1` and `squeeze_components=True`, both of which are defaults
 
-### Fixed 
+### Fixed
 
 ## Version 1.3.3 (01-07-2024)
 

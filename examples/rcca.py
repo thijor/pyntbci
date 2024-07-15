@@ -171,8 +171,8 @@ plt.tight_layout()
 # -----------------
 # The full reconvolution CCA (rCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 # `pyntbci.classifiers.rCCA`. All it needs are the binary sequences `stimulus`, the sampling frequency `fs`, the event
-# definition `event`, the transient response size `encoding_length` and whether or not to include an event for the onset
-# of a trial `onset_event`.
+# definition `event`, the transient response size `encoding_length` and whether to include an event for the onset of a
+# trial `onset_event`.
 #
 # When calling `rCCA.fit(X, y)` with training data `X` and labels `y`, the full decomposition is performed to obtain
 # spatial filters `rCCA.w_` and temporal filter `rCCA.r_`.
@@ -204,7 +204,7 @@ fig.tight_layout()
 # Cross-validation
 # ----------------
 # To perform decoding, one can call `rCCA.fit(X_trn, y_trn)` on training data `X_trn` and labels `y_trn` and
-# `rCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is setup to evaluate
+# `rCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is set up to evaluate
 # the performance of rCCA.
 
 trialtime = 4.2  # limit trials to a certain duration in seconds
@@ -227,7 +227,7 @@ for i_fold in range(n_folds):
     rcca.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
-    yh_tst = rcca.predict(X_tst)[:, 0]  # select component
+    yh_tst = rcca.predict(X_tst)
 
     # Compute accuracy
     accuracy[i_fold] = np.mean(yh_tst == y_tst)
@@ -283,7 +283,7 @@ for i_fold in range(n_folds):
         rcca.fit(X_trn[:train_trials[i_trial], :, :], y_trn[:train_trials[i_trial]])
 
         # Apply classifier
-        yh_tst = rcca.predict(X_tst)[:, 0]  # select component
+        yh_tst = rcca.predict(X_tst)
 
         # Compute accuracy
         accuracy[i_fold, i_trial] = np.mean(yh_tst == y_tst)
@@ -338,7 +338,7 @@ for i_fold in range(n_folds):
     # Loop segments
     for i_segment in range(n_segments):
         # Apply classifier
-        yh_tst = rcca.predict(X_tst[:, :, :int(fs * segments[i_segment])])[:, 0]  # select component
+        yh_tst = rcca.predict(X_tst[:, :, :int(fs * segments[i_segment])])
 
         # Compute accuracy
         accuracy[i_fold, i_segment] = np.mean(yh_tst == y_tst)
@@ -406,7 +406,7 @@ for i_subject in range(n_subjects):
         rcca.fit(X_trn, y_trn)
 
         # Apply classifier
-        yh_tst = rcca.predict(X_tst)[:, 0]  # select component
+        yh_tst = rcca.predict(X_tst)
 
         # Compute accuracy
         accuracy[i_subject, i_fold] = np.mean(yh_tst == y_tst)

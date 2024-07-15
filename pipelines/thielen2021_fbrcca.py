@@ -104,7 +104,7 @@ for i_subject in range(n_subjects):
         fbrcca.fit(X_trn, y_trn)
 
         # Apply classifier
-        yh_tst = fbrcca.predict(X_tst)[:, 0]  # select component
+        yh_tst = fbrcca.predict(X_tst)
 
         # Compute accuracy
         accuracy_fbrcca[i_subject, i_fold] = np.mean(yh_tst == y_tst)
@@ -119,7 +119,7 @@ for i_subject in range(n_subjects):
             rcca.fit(X_trn[:, :, :, i_band], y_trn)
 
             # Apply classifier
-            yh_tst = rcca.predict(X_tst[:, :, :, i_band])[:, 0]  # select component
+            yh_tst = rcca.predict(X_tst[:, :, :, i_band])
 
             # Compute accuracy
             accuracy_rcca[i_subject, i_fold, i_band] = np.mean(yh_tst == y_tst)

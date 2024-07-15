@@ -519,11 +519,13 @@ def pinv(
     assert A.ndim == 2, "A should be a square matrix."
     assert A.shape[0] == A.shape[1], "A should be a square matrix."
     U, d, V = np.linalg.svd(A)
-    if alpha is not None:
+    if alpha is None:
+        d = 1 / d
+    else:
         for i in range(d.size):
-            if np.sum(d[0:d.size - i] / np.sum(d)) < alpha:
+            if np.sum(d[:d.size - i] / np.sum(d)) < alpha:
                 d = 1 / d
-                d[d.size - i + 1:] = 0
+                d[d.size - i:] = 0
                 break
     iA = U.dot(np.diag(d)).dot(V)
     return iA

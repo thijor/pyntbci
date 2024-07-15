@@ -190,7 +190,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)[:, :, 0]  # select component
+            scores = self.estimator.decision_function(X)
 
             # Check if stopped
             i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
@@ -239,7 +239,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             yh[not_stopped] = -1
 
         else:
-            yh = self.estimator.predict(X)[:, 0]  # select component
+            yh = self.estimator.predict(X)
 
         return yh
 
@@ -326,7 +326,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
             # Compute the scores and translate to range 0 to 1
-            scores = self.estimator.decision_function(X)[:, :, 0]  # select component
+            scores = self.estimator.decision_function(X)
             scores = (scores + 1) / 2
 
             # Sort the scores (ascending)
@@ -349,7 +349,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
             yh[not_stopped] = -1
 
         else:
-            yh = self.estimator.predict(X)[:, 0]  # select component
+            yh = self.estimator.predict(X)
 
         return yh
 
@@ -445,7 +445,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
                 # Predict labels for this segment
                 idx = (1 + i_segment) * int(self.segment_time * self.fs)
-                yh = self.estimator.predict(X_tst[:, :, :idx])[:, 0]  # select component
+                yh = self.estimator.predict(X_tst[:, :, :idx])
 
                 # Compute criterion
                 if self.criterion == "accuracy":
@@ -503,7 +503,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["stop_time_"])
 
         if X.shape[2] >= self.stop_time_ * self.fs:
-            return self.estimator.predict(X)[:, 0]  # select component
+            return self.estimator.predict(X)
         else:
             return -1 * np.ones(X.shape[0])
 
@@ -599,7 +599,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
             # Compute scores for this segment
             idx = (1 + i_segment) * int(self.segment_time * self.fs)
-            scores = self.estimator.decision_function(X[:, :, :idx])[:, :, 0]  # select component
+            scores = self.estimator.decision_function(X[:, :, :idx])
 
             # Compute margins (best - second best)
             scores_sorted = np.sort(scores, axis=1)
@@ -650,7 +650,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)[:, :, 0]  # select component
+            scores = self.estimator.decision_function(X)
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -667,6 +667,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             yh[not_stopped] = -1
 
         else:
-            yh = self.estimator.predict(X)[:, 0]  # select component
+            yh = self.estimator.predict(X)
 
         return yh
