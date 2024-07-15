@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rCCA &mdash; PyntBCI 1.3.3 documentation</title>
+  <title>rCCA &mdash; PyntBCI 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=28d163b9"></script>
+        <script src="../_static/documentation_options.js?v=9172181d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.3.3
+                1.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -303,8 +303,8 @@ the responses to each of the events. However, one could also set different lengt
 <h2>Reconvolution CCA<a class="headerlink" href="#reconvolution-cca" title="Link to this heading"></a></h2>
 <p>The full reconvolution CCA (rCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 <cite>pyntbci.classifiers.rCCA</cite>. All it needs are the binary sequences <cite>stimulus</cite>, the sampling frequency <cite>fs</cite>, the event
-definition <cite>event</cite>, the transient response size <cite>encoding_length</cite> and whether or not to include an event for the onset
-of a trial <cite>onset_event</cite>.</p>
+definition <cite>event</cite>, the transient response size <cite>encoding_length</cite> and whether to include an event for the onset of a
+trial <cite>onset_event</cite>.</p>
 <p>When calling <cite>rCCA.fit(X, y)</cite> with training data <cite>X</cite> and labels <cite>y</cite>, the full decomposition is performed to obtain
 spatial filters <cite>rCCA.w_</cite> and temporal filter <cite>rCCA.r_</cite>.</p>
 <p>Please note that the transient responses are concatenated in this temporal filter <cite>rCCA.r_</cite>. One can use
@@ -338,7 +338,7 @@ r:  (216, 1) (encoding_length*events)
 <section id="cross-validation">
 <h2>Cross-validation<a class="headerlink" href="#cross-validation" title="Link to this heading"></a></h2>
 <p>To perform decoding, one can call <cite>rCCA.fit(X_trn, y_trn)</cite> on training data <cite>X_trn</cite> and labels <cite>y_trn</cite> and
-<cite>rCCA.predict(X_tst)</cite> on testing data <cite>X_tst</cite>. In this section, a chronological cross-validation is setup to evaluate
+<cite>rCCA.predict(X_tst)</cite> on testing data <cite>X_tst</cite>. In this section, a chronological cross-validation is set up to evaluate
 the performance of rCCA.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">trialtime</span> <span class="o">=</span> <span class="mf">4.2</span>  <span class="c1"># limit trials to a certain duration in seconds</span>
 <span class="n">intertrialtime</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># ITI in seconds for computing ITR</span>
@@ -360,7 +360,7 @@ the performance of rCCA.</p>
     <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
     <span class="c1"># Apply template-matching classifier</span>
-    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
 
     <span class="c1"># Compute accuracy</span>
     <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -420,7 +420,7 @@ training data they require to estimate their parameters.</p>
         <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">[:</span><span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y_trn</span><span class="p">[:</span><span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]])</span>
 
         <span class="c1"># Apply classifier</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
 
         <span class="c1"># Compute accuracy</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -475,7 +475,7 @@ need during testing to classify single-trials.</p>
     <span class="c1"># Loop segments</span>
     <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
         <span class="c1"># Apply classifier</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span> <span class="o">*</span> <span class="n">segments</span><span class="p">[</span><span class="n">i_segment</span><span class="p">])])[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span> <span class="o">*</span> <span class="n">segments</span><span class="p">[</span><span class="n">i_segment</span><span class="p">])])</span>
 
         <span class="c1"># Compute accuracy</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -543,7 +543,7 @@ need during testing to classify single-trials.</p>
         <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
         <span class="c1"># Apply classifier</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
 
         <span class="c1"># Compute accuracy</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="n">i_subject</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -579,7 +579,7 @@ need during testing to classify single-trials.</p>
 <img src="../_images/sphx_glr_rcca_011.png" srcset="../_images/sphx_glr_rcca_011.png" alt="Decoding performance full dataset" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Average accuracy: 0.98
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 46.281 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (3 minutes 8.840 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-rcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/da0a2a0786140090a1e5b7c21a1e9d27/rcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">rcca.ipynb</span></code></a></p>

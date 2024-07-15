@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**06:08.552** total execution time for 8 files **from all galleries**:
+**06:39.583** total execution time for 8 files **from all galleries**:
 
 .. container::
 
@@ -33,26 +33,26 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_examples_rcca.py` (``../examples/rcca.py``)
-     - 02:46.281
+     - 03:08.840
      - 0.0
    * - :ref:`sphx_glr_examples_fbrcca.py` (``../examples/fbrcca.py``)
-     - 01:14.511
+     - 01:21.855
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_getting_started.py` (``../tutorials/tutorial_getting_started.py``)
-     - 00:55.081
+     - 00:53.656
      - 0.0
    * - :ref:`sphx_glr_examples_early_stopping.py` (``../examples/early_stopping.py``)
-     - 00:46.840
+     - 00:50.155
      - 0.0
    * - :ref:`sphx_glr_examples_etrca.py` (``../examples/etrca.py``)
-     - 00:11.878
+     - 00:10.471
      - 0.0
    * - :ref:`sphx_glr_examples_epoch_cca_lda.py` (``../examples/epoch_cca_lda.py``)
-     - 00:08.580
+     - 00:09.251
      - 0.0
    * - :ref:`sphx_glr_examples_ecca.py` (``../examples/ecca.py``)
-     - 00:04.495
+     - 00:04.402
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_reconvolution_events.py` (``../tutorials/tutorial_reconvolution_events.py``)
-     - 00:00.886
+     - 00:00.954
      - 0.0

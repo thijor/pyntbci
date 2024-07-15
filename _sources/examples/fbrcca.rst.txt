@@ -165,7 +165,7 @@ filterbank.
                 rcca.fit(X_trn[:, :, :, i_band], y_trn)
 
                 # Apply classifier
-                yh_tst = rcca.predict(X_tst[:, :, :, i_band])[:, 0]  # select component
+                yh_tst = rcca.predict(X_tst[:, :, :, i_band])
 
                 # Compute accuracy
                 accuracy_rcca[i_subject, i_fold, i_band] = np.mean(yh_tst == y_tst)
@@ -223,7 +223,7 @@ filterbank.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 14.511 seconds)
+   **Total running time of the script:** (1 minutes 21.855 seconds)
 
 
 .. _sphx_glr_download_examples_fbrcca.py:

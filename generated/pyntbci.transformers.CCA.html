@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.transformers.CCA &mdash; PyntBCI 1.3.3 documentation</title>
+  <title>pyntbci.transformers.CCA &mdash; PyntBCI 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=28d163b9"></script>
+        <script src="../_static/documentation_options.js?v=9172181d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.3.3
+                1.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -95,16 +95,16 @@
 <h1>pyntbci.transformers.CCA<a class="headerlink" href="#pyntbci-transformers-cca" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyntbci.transformers.CCA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.transformers.</span></span><span class="sig-name descname"><span class="pre">CCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">running</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/transformers.html#CCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.CCA" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyntbci.transformers.</span></span><span class="sig-name descname"><span class="pre">CCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">running</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/transformers.html#CCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.CCA" title="Link to this definition"></a></dt>
 <dd><p>Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.
 Here, CCA is implemented as the SVD of (cross)covariance matrices <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n_components</strong> (<em>int</em>) – The number of CCA components to use.</p></li>
-<li><p><strong>gamma_x</strong> (<em>float</em><em> | </em><em>list</em><em>[</em><em>float</em><em>] </em><em>| </em><em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_x. If
+<li><p><strong>gamma_x</strong> (<em>float</em><em> | </em><em>list</em><em>[</em><em>float</em><em>] </em><em>| </em><em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_x. If
 None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).</p></li>
-<li><p><strong>gamma_y</strong> (<em>float</em><em> | </em><em>list</em><em>[</em><em>float</em><em>] </em><em>| </em><em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
+<li><p><strong>gamma_y</strong> (<em>float</em><em> | </em><em>list</em><em>[</em><em>float</em><em>] </em><em>| </em><em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
 None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).</p></li>
 <li><p><strong>estimator_x</strong> (<em>BaseEstimator</em><em> (</em><em>Default: None</em><em>)</em>) – A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom
 implementation of the empirical covariance is used.</p></li>
@@ -112,6 +112,8 @@ implementation of the empirical covariance is used.</p></li>
 implementation of the empirical covariance is used.</p></li>
 <li><p><strong>running</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
 track of previous data to update a running average and covariance for the CCA.</p></li>
+<li><p><strong>alpha_x</strong> (<em>float</em><em> (</em><em>Default: None</em><em>)</em>) – Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.</p></li>
+<li><p><strong>alpha_y</strong> (<em>float</em><em> (</em><em>Default: None</em><em>)</em>) – Amount of variance to retain in computing the inverse of the covariance matrix of Y. If None, all variance.</p></li>
 </ul>
 </dd>
 </dl>
@@ -121,7 +123,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The weight vector to project X of shape (n_features_x, n_components).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -132,7 +134,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The weight vector to project Y of shape (n_features_y, n_components).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -154,7 +156,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The (running) average of X of shape (n_features_x).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -165,7 +167,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The (running) covariance of X of shape (n_features_x, n_features_x).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -187,7 +189,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The (running) average of Y of shape (n_features_y).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -198,7 +200,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The (running) covariance of Y of shape (n_features_y, n_features_y).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -220,7 +222,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -231,7 +233,7 @@ track of previous data to update a running average and covariance for the CCA.</
 <dd><p>The (running) cross-covariance of X and Y of shape (n_features_x, n_features_y).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -246,45 +248,45 @@ distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-
 </aside>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyntbci.transformers.CCA.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BaseEstimator</span></span></span><a class="reference internal" href="../_modules/pyntbci/transformers.html#CCA.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.CCA.fit" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TransformerMixin</span></span></span><a class="reference internal" href="../_modules/pyntbci/transformers.html#CCA.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.CCA.fit" title="Link to this definition"></a></dt>
 <dd><p>Fit the CCA in one of 3 ways: (1) X (data) is 3D and y (labels) is 1D, (2) X (data) is 3D and Y (data) is 3D,
 or (3) X (data) is 2D and Y (data) is 2D.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>np.ndarray</em>) – Data matrix of shape (n_trials, n_features_x, n_samples) or (n_samples, n_features_x).</p></li>
-<li><p><strong>Y</strong> (<em>np.ndarray</em>) – Data matrix of shape (n_trials, n_features_y, n_samples) or (n_samples, n_features_y), or label vector of
+<li><p><strong>X</strong> (<em>NDArray</em>) – Data matrix of shape (n_trials, n_features_x, n_samples) or (n_samples, n_features_x).</p></li>
+<li><p><strong>Y</strong> (<em>NDArray</em>) – Data matrix of shape (n_trials, n_features_y, n_samples) or (n_samples, n_features_y), or label vector of
 shape (n_trials,).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>self</strong> – An instance of the transformer.</p>
+<dd class="field-even"><p><strong>self</strong> – Returns the instance itself.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pyntbci.transformers.CCA" title="pyntbci.transformers.CCA">CCA</a></p>
+<dd class="field-odd"><p>TransformerMixin</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyntbci.transformers.CCA.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyntbci/transformers.html#CCA.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.CCA.transform" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyntbci/transformers.html#CCA.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.transformers.CCA.transform" title="Link to this definition"></a></dt>
 <dd><p>Transform the data matrix from feature space to component space. Note, works with both 2D and 3D data, and
 can operate on both X and Y if both are not None, or on each separately if the other is None.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Data matrix of shape (n_samples, n_features_x) or (n_trials, n_features_x, n_samples). If None, only
+<li><p><strong>X</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Data matrix of shape (n_samples, n_features_x) or (n_trials, n_features_x, n_samples). If None, only
 performs projection of Y.</p></li>
-<li><p><strong>Y</strong> (<em>np.ndarray</em><em> (</em><em>default: None</em><em>)</em>) – Data matrix of shape (n_samples, n_features_y) or (n_trials, n_features_y, n_samples). If None, only
+<li><p><strong>Y</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Data matrix of shape (n_samples, n_features_y) or (n_trials, n_features_y, n_samples). If None, only
 performs projection of X.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>X</strong> (<em>np.ndarray</em>) – Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the
+<li><p><strong>X</strong> (<em>NDArray</em>) – Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the
 input was None.</p></li>
-<li><p><strong>Y</strong> (<em>np.ndarray</em>) – Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the
+<li><p><strong>Y</strong> (<em>NDArray</em>) – Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the
 input was None.</p></li>
 </ul>
 </p>

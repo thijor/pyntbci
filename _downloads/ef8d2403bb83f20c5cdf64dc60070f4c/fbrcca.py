@@ -116,7 +116,7 @@ for i_subject in range(n_subjects):
             rcca.fit(X_trn[:, :, :, i_band], y_trn)
 
             # Apply classifier
-            yh_tst = rcca.predict(X_tst[:, :, :, i_band])[:, 0]  # select component
+            yh_tst = rcca.predict(X_tst[:, :, :, i_band])
 
             # Compute accuracy
             accuracy_rcca[i_subject, i_fold, i_band] = np.mean(yh_tst == y_tst)

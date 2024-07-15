@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.envelope &mdash; PyntBCI 1.3.3 documentation</title>
+  <title>pyntbci.envelope &mdash; PyntBCI 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=28d163b9"></script>
+        <script src="../../_static/documentation_options.js?v=9172181d"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.3.3
+                1.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -89,6 +89,7 @@
              
   <h1>Source code for pyntbci.envelope</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">filtfilt</span><span class="p">,</span> <span class="n">gammatone</span><span class="p">,</span> <span class="n">resample</span>
 
 
@@ -97,7 +98,7 @@
         <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
 <span class="sd">    frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two</span>
 <span class="sd">    consecutive values is bw on the auditory scale, and the points will be centered on the auditory scale between fmin</span>
@@ -118,7 +119,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    y: np.ndarray</span>
+<span class="sd">    y: NDArray</span>
 <span class="sd">        A vector containing the center frequencies.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Convert the frequency limits to auditory scale</span>
@@ -142,23 +143,23 @@
 
 
 <span class="k">def</span> <span class="nf">aud_to_freq</span><span class="p">(</span>
-        <span class="n">aud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">aud</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert auditory units at the auditory scale to frequency (Hz).</span>
 
 <span class="sd">    Adapted from LTFAT: https://ltfat.org/doc/auditory/audtofreq audtofreq.m (Peter L. Søndergaard)</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    aud: np.ndarray</span>
+<span class="sd">    aud: NDArray</span>
 <span class="sd">        The values at the ERB auditory scale.</span>
 <span class="sd">    scale: str (default: &quot;erb&quot;)</span>
 <span class="sd">        Auditory scale.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    freq: np.ndarray</span>
+<span class="sd">    freq: NDArray</span>
 <span class="sd">        The values in frequencies measured in Hz.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">&quot;erb&quot;</span><span class="p">:</span>
@@ -171,7 +172,7 @@
 <div class="viewcode-block" id="envelope_gammatone">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.envelope_gammatone.html#pyntbci.envelope.envelope_gammatone">[docs]</a>
 <span class="k">def</span> <span class="nf">envelope_gammatone</span><span class="p">(</span>
-        <span class="n">audio</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">audio</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
         <span class="n">fs_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
@@ -180,7 +181,7 @@
         <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">150.0</span><span class="p">,</span>
         <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4000.0</span><span class="p">,</span>
         <span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the envelope of audio using a gammatone filterbank.</span>
 
 <span class="sd">    Developed in collaboration with Hanneke Scheppink.</span>
@@ -193,7 +194,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    audio: np.ndarray</span>
+<span class="sd">    audio: NDArray</span>
 <span class="sd">        A vector containing the raw audio sampled at fs.</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling frequency in Hz of the raw audio.</span>
@@ -214,7 +215,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    envelope: np.ndarray</span>
+<span class="sd">    envelope: NDArray</span>
 <span class="sd">        The envelope for each of the subbands in the gammatone filterbank of shape (samples, subbands).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">freqs</span> <span class="o">=</span> <span class="n">erb_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
@@ -256,16 +257,16 @@
 <div class="viewcode-block" id="envelope_rms">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.envelope_rms.html#pyntbci.envelope.envelope_rms">[docs]</a>
 <span class="k">def</span> <span class="nf">envelope_rms</span><span class="p">(</span>
-        <span class="n">audio</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">audio</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
         <span class="n">fs_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the envelope of the audio as the root mean square (RMS) of the signal.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    audio: np.ndarray</span>
+<span class="sd">    audio: NDArray</span>
 <span class="sd">        A vector containing the raw audio sampled at fs.</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling frequency in Hz of the raw audio.</span>
@@ -276,7 +277,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    envelope: np.ndarray</span>
+<span class="sd">    envelope: NDArray</span>
 <span class="sd">        The envelope using the RMS of the audio.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Resample stimulus</span>
@@ -296,7 +297,7 @@
         <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
 <span class="sd">    frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two</span>
 <span class="sd">    consecutive values is bw on ERB auditory scale, and the points will be centered on the scale between fmin and fmax.</span>
@@ -314,7 +315,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    y: np.ndarray</span>
+<span class="sd">    y: NDArray</span>
 <span class="sd">        A vector containing the center frequencies.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">aud_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="s2">&quot;erb&quot;</span><span class="p">)</span>
@@ -322,23 +323,23 @@
 
 
 <span class="k">def</span> <span class="nf">freq_to_aud</span><span class="p">(</span>
-        <span class="n">freq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">freq</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert frequencies (Hz) to auditory units at the auditory scale.</span>
 
 <span class="sd">    Adapted from LTFAT: https://ltfat.org/doc/auditory/freqtoaud freqtoaud.m (Peter L. Søndergaard)</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    freq: np.ndarray</span>
+<span class="sd">    freq: NDArray</span>
 <span class="sd">        The values in frequencies measured in Hz.</span>
 <span class="sd">    scale: str (default: &quot;erb&quot;)</span>
 <span class="sd">        Auditory scale.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    aud: np.ndarray</span>
+<span class="sd">    aud: NDArray</span>
 <span class="sd">        The values at the ERB auditory scale.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">&quot;erb&quot;</span><span class="p">:</span>

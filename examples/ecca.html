@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eCCA &mdash; PyntBCI 1.3.3 documentation</title>
+  <title>eCCA &mdash; PyntBCI 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=28d163b9"></script>
+        <script src="../_static/documentation_options.js?v=9172181d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.3.3
+                1.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -229,7 +229,7 @@ Channels: Fpz, T7, O1, POz, Oz, Iz, O2, T8
 <h2>ERP CCA<a class="headerlink" href="#erp-cca" title="Link to this heading"></a></h2>
 <p>The full ERP CCA (eCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 <cite>pyntbci.classifiers.eCCA</cite>. All it needs are the lags if a circular shifted code is used (not used here) in <cite>lags</cite>,
-the sampling frequency <cite>fs</cite>, and the the duration of one period of a code as <cite>cycle_size</cite>.</p>
+the sampling frequency <cite>fs</cite>, and the duration of one period of a code as <cite>cycle_size</cite>.</p>
 <p>When calling <cite>eCCA.fit(X, y)</cite> with training data <cite>X</cite> and labels <cite>y</cite>, the template responses are learned as well as the
 spatial filters <cite>eCCA.w_</cite>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Perform CCA</span>
@@ -253,7 +253,7 @@ Text(0.5, 1.0, &#39;Spatial filter&#39;)
 <section id="cross-validation">
 <h2>Cross-validation<a class="headerlink" href="#cross-validation" title="Link to this heading"></a></h2>
 <p>To perform decoding, one can call <cite>eCCA.fit(X_trn, y_trn)</cite> on training data <cite>X_trn</cite> and labels <cite>y_trn</cite> and
-<cite>eCCA.predict(X_tst)</cite> on testing data <cite>X_tst</cite>. In this section, a chronological cross-validation is setup to evaluate
+<cite>eCCA.predict(X_tst)</cite> on testing data <cite>X_tst</cite>. In this section, a chronological cross-validation is set up to evaluate
 the performance of eCCA.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">trialtime</span> <span class="o">=</span> <span class="mf">4.2</span>  <span class="c1"># limit trials to a certain duration in seconds</span>
 <span class="n">intertrialtime</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># ITI in seconds for computing ITR</span>
@@ -275,7 +275,7 @@ the performance of eCCA.</p>
     <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
     <span class="c1"># Apply template-matching classifier</span>
-    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
 
     <span class="c1"># Compute accuracy</span>
     <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -336,7 +336,7 @@ training data they require to estimate their parameters.</p>
         <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">[:</span><span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y_trn</span><span class="p">[:</span><span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]])</span>
 
         <span class="c1"># Apply classifier</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
 
         <span class="c1"># Compute accuracy</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -391,7 +391,7 @@ need during testing to classify single-trials.</p>
     <span class="c1"># Loop segments</span>
     <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
         <span class="c1"># Apply classifier</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span> <span class="o">*</span> <span class="n">segments</span><span class="p">[</span><span class="n">i_segment</span><span class="p">])])[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span> <span class="o">*</span> <span class="n">segments</span><span class="p">[</span><span class="n">i_segment</span><span class="p">])])</span>
 
         <span class="c1"># Compute accuracy</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -459,7 +459,7 @@ need during testing to classify single-trials.</p>
         <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
         <span class="c1"># Apply classifier</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
 
         <span class="c1"># Compute accuracy</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="n">i_subject</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
@@ -495,7 +495,7 @@ need during testing to classify single-trials.</p>
 <img src="../_images/sphx_glr_ecca_008.png" srcset="../_images/sphx_glr_ecca_008.png" alt="Decoding performance full dataset" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Average accuracy: 0.92
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.495 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.402 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-ecca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/3887a9ed47244b68cee76c93140624fd/ecca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">ecca.ipynb</span></code></a></p>

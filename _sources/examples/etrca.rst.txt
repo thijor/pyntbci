@@ -198,7 +198,7 @@ ERP TRCA
 -----------------
 The full ERP TRCA (eTRCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 `pyntbci.classifiers.rCCA`. All it needs are the lags if a circular shifted code is used (not used here) in `lags`,
-# the sampling frequency `fs`, and the the duration of one period of a code as `cycle_size`. Additionally, eTRCA
+# the sampling frequency `fs`, and the duration of one period of a code as `cycle_size`. Additionally, eTRCA
 requires the argument `ensemble` to denote whether a separate spatial filter needs to be learned for each class.
 
 When calling `eTRCA.fit(X, y)` with training data `X` and labels `y`, the template responses are learned as well as
@@ -252,8 +252,8 @@ the spatial filters `eTRCA.w_`.
 Cross-validation
 ----------------
 To perform decoding, one can call `eTRCA.fit(X_trn, y_trn)` on training data `X_trn` and labels `y_trn` and
-`eTRCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is setup to evaluate
-the performance of eTRCA.
+`eTRCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is set up to
+evaluate the performance of eTRCA.
 
 .. GENERATED FROM PYTHON SOURCE LINES 141-185
 
@@ -280,7 +280,7 @@ the performance of eTRCA.
         etrca.fit(X_trn, y_trn)
 
         # Apply template-matching classifier
-        yh_tst = etrca.predict(X_tst)[:, 0]  # select component
+        yh_tst = etrca.predict(X_tst)
 
         # Compute accuracy
         accuracy[i_fold] = np.mean(yh_tst == y_tst)
@@ -362,7 +362,7 @@ training data they require to estimate their parameters.
             etrca.fit(X_trn[:train_trials[i_trial], :, :], y_trn[:train_trials[i_trial]])
 
             # Apply classifier
-            yh_tst = etrca.predict(X_tst)[:, 0]  # select component
+            yh_tst = etrca.predict(X_tst)
 
             # Compute accuracy
             accuracy[i_fold, i_trial] = np.mean(yh_tst == y_tst)
@@ -435,7 +435,7 @@ need during testing to classify single-trials.
         # Loop segments
         for i_segment in range(n_segments):
             # Apply classifier
-            yh_tst = etrca.predict(X_tst[:, :, :int(fs * segments[i_segment])])[:, 0]  # select component
+            yh_tst = etrca.predict(X_tst[:, :, :int(fs * segments[i_segment])])
 
             # Compute accuracy
             accuracy[i_fold, i_segment] = np.mean(yh_tst == y_tst)
@@ -521,7 +521,7 @@ Analyse multiple participants
             etrca.fit(X_trn, y_trn)
 
             # Apply classifier
-            yh_tst = etrca.predict(X_tst)[:, 0]  # select component
+            yh_tst = etrca.predict(X_tst)
 
             # Compute accuracy
             accuracy[i_subject, i_fold] = np.mean(yh_tst == y_tst)
@@ -573,7 +573,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 11.878 seconds)
+   **Total running time of the script:** (0 minutes 10.471 seconds)
 
 
 .. _sphx_glr_download_examples_etrca.py:

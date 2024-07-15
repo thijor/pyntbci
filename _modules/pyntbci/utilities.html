@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities &mdash; PyntBCI 1.3.3 documentation</title>
+  <title>pyntbci.utilities &mdash; PyntBCI 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=28d163b9"></script>
+        <script src="../../_static/documentation_options.js?v=9172181d"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.3.3
+                1.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -91,7 +91,8 @@
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">sklearn.base</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">cheby1</span><span class="p">,</span> <span class="n">cheb1ord</span><span class="p">,</span> <span class="n">filtfilt</span>
 
 
@@ -101,21 +102,21 @@
 <div class="viewcode-block" id="correct_latency">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency">[docs]</a>
 <span class="k">def</span> <span class="nf">correct_latency</span><span class="p">(</span>
-        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">latency</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">latency</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Correct for a latency in data. This is done by shifting data according to the class-specific latencies.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X: np.ndarray</span>
+<span class="sd">    X: NDArray</span>
 <span class="sd">        The EEG data of shape (n_trials, ...)</span>
-<span class="sd">    y: np.ndarray</span>
+<span class="sd">    y: NDArray</span>
 <span class="sd">        The labels of the EEG data of shape (n_trials) that indicate which latency to use for which trials.</span>
-<span class="sd">    latency: np.ndarray</span>
+<span class="sd">    latency: NDArray</span>
 <span class="sd">        The list with latencies in seconds of shape (n_classes).</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling frequency of the EEG data in Hz.</span>
@@ -124,7 +125,7 @@
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    X: np.ndarray</span>
+<span class="sd">    X: NDArray</span>
 <span class="sd">        The latency-corrected EEG data of shape (n_trials, ...).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -142,21 +143,21 @@
 <div class="viewcode-block" id="correlation">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.correlation.html#pyntbci.utilities.correlation">[docs]</a>
 <span class="k">def</span> <span class="nf">correlation</span><span class="p">(</span>
-        <span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">B</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">A</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the correlation coefficient. Computed between two sets of variables.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    A: np.ndarray</span>
+<span class="sd">    A: NDArray</span>
 <span class="sd">        The first set of variables of shape (n_A, n_samples).</span>
-<span class="sd">    B: np.ndarray</span>
+<span class="sd">    B: NDArray</span>
 <span class="sd">        The second set of variables of shape (n_B, n_samples).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    scores: np.ndarray</span>
+<span class="sd">    scores: NDArray</span>
 <span class="sd">        The correlation matrix of shape (n_A, n_B).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -184,39 +185,39 @@
 <div class="viewcode-block" id="covariance">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.covariance.html#pyntbci.utilities.covariance">[docs]</a>
 <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span>
-        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">n_old</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">avg_old</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">cov_old</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">estimator</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">avg_old</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cov_old</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">estimator</span><span class="p">:</span> <span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the covariance matrix.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X: np.ndarray</span>
+<span class="sd">    X: NDArray</span>
 <span class="sd">        Data matrix of shape (n_samples, n_features).</span>
 <span class="sd">    n_old: int (default: 0)</span>
 <span class="sd">        Number of already observed samples.</span>
-<span class="sd">    avg_old: np.ndarray (default: None)</span>
+<span class="sd">    avg_old: NDArray (default: None)</span>
 <span class="sd">        Already observed average of shape (n_features).</span>
-<span class="sd">    cov_old: np.ndarray (default: None)</span>
+<span class="sd">    cov_old: NDArray (default: None)</span>
 <span class="sd">        Already observed covariance of shape (n_features, n_features).</span>
-<span class="sd">    estimator: object (default: None)</span>
+<span class="sd">    estimator: BaseEstimator (default: None)</span>
 <span class="sd">        An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the</span>
 <span class="sd">        empirical covariance is used.</span>
 <span class="sd">    running: bool (default: False)</span>
-<span class="sd">        Whether or not to use a running covariance. If False, the covariance matrix is computed instantaneously using</span>
+<span class="sd">        Whether to use a running covariance. If False, the covariance matrix is computed instantaneously using</span>
 <span class="sd">        only X, such that n_old, avg_old, and cov_old are not used.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    n_new: int</span>
 <span class="sd">        Number of samples.</span>
-<span class="sd">    avg_new: np.ndarray</span>
+<span class="sd">    avg_new: NDArray</span>
 <span class="sd">        The average of shape (1, n_features).</span>
-<span class="sd">    cov_new: np.ndarray</span>
+<span class="sd">    cov_new: NDArray</span>
 <span class="sd">        The covariance of shape (n_features, n_features).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_obs</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -248,16 +249,16 @@
 <div class="viewcode-block" id="decoding_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.decoding_matrix.html#pyntbci.utilities.decoding_matrix">[docs]</a>
 <span class="k">def</span> <span class="nf">decoding_matrix</span><span class="p">(</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a Hankel-like decoding matrix. Used to phase-shift the data (i.e., backward / decoding model), to learn a</span>
 <span class="sd">    spatio-spectral filter (i.e., a spectral filter per channel).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data: np.ndarray</span>
+<span class="sd">    data: NDArray</span>
 <span class="sd">        Data matrix of shape (n_trials, n_channels, n_samples).</span>
 <span class="sd">    length: int</span>
 <span class="sd">        The length in samples of the spectral filter, i.e., the number of phase-shifted data per channel.</span>
@@ -266,7 +267,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    dmatrix: np.ndarray</span>
+<span class="sd">    dmatrix: NDArray</span>
 <span class="sd">        Decoding matrix of shape (n_trials, n_channels * length / stride, n_samples).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
@@ -291,25 +292,25 @@
         <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
         <span class="n">length</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
         <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">amplitude</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">amplitude</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a Toeplitz-like encoding matrix. Used to phase-shift the stimulus (forward / encoding model), per event to</span>
 <span class="sd">    learn a (or several) temporal filter(s). Also called a &quot;structure matrix&quot; or &quot;design matrix&quot;.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stimulus: np.ndarray</span>
+<span class="sd">    stimulus: NDArray</span>
 <span class="sd">        Stimulus matrix of shape (n_classes, n_events, n_samples).</span>
 <span class="sd">    length: int | list[int]</span>
 <span class="sd">        The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If a list is</span>
 <span class="sd">        provided, it denotes the length per event.</span>
 <span class="sd">    stride: int (default: 1)</span>
 <span class="sd">        The step size in samples over the length of the temporal filter.</span>
-<span class="sd">    amplitude: np.ndarray (default: None)</span>
+<span class="sd">    amplitude: NDArray (default: None)</span>
 <span class="sd">        Amplitude information to embed in the encoding matrix of shape (n_classes, n_samples). If None, it is ignored.</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    ematrix: np.ndarray</span>
+<span class="sd">    ematrix: NDArray</span>
 <span class="sd">        Encoding matrix of shape (n_classes, n_events * length / stride, n_samples).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_classes</span><span class="p">,</span> <span class="n">n_events</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span>
@@ -347,21 +348,21 @@
 <div class="viewcode-block" id="euclidean">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean">[docs]</a>
 <span class="k">def</span> <span class="nf">euclidean</span><span class="p">(</span>
-        <span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">B</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">A</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the Euclidean distance. Computed between two sets of variables.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    A: np.ndarray</span>
+<span class="sd">    A: NDArray</span>
 <span class="sd">        The first set of variables of shape (n_A, n_samples).</span>
-<span class="sd">    B: np.ndarray</span>
+<span class="sd">    B: NDArray</span>
 <span class="sd">        The second set of variables of shape (n_B, n_samples).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    scores: np.ndarray</span>
+<span class="sd">    scores: NDArray</span>
 <span class="sd">        The correlation matrix of shape (n_A, n_B).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -382,16 +383,16 @@
 <div class="viewcode-block" id="event_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix">[docs]</a>
 <span class="k">def</span> <span class="nf">event_matrix</span><span class="p">(</span>
-        <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">onset_event</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make an event matrix. The event matrix describes the onset of events in a stimulus sequence, given a particular</span>
 <span class="sd">    event definition.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stimulus: np.ndarray</span>
+<span class="sd">    stimulus: NDArray</span>
 <span class="sd">        The stimulus used for stimulation of shape (n_stims, n_samples). Note, this can be any continuous time-series</span>
 <span class="sd">        per stimulus, it is not limited to binary sequences.</span>
 <span class="sd">    event: str</span>
@@ -403,11 +404,11 @@
 <span class="sd">            &quot;refe&quot; | &quot;risefall&quot; | &quot;risingedgefallingedge&quot; | &quot;contrast&quot;: one event for rising edges and one event for</span>
 <span class="sd">            falling edges (i.e., 01 and 10).</span>
 <span class="sd">    onset_event: bool (default: False)</span>
-<span class="sd">        Whether or not to model the onset of stimulation. This &quot;onset&quot; event is added as last event.</span>
+<span class="sd">        Whether to model the onset of stimulation. This &quot;onset&quot; event is added as last event.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    events: np.ndarray</span>
+<span class="sd">    events: NDArray</span>
 <span class="sd">        An event matrix of zeros and ones denoting the onsets of events of shape (n_stims, n_events, n_samples).</span>
 <span class="sd">    labels: tuple</span>
 <span class="sd">        A tuple of event labels of shape (n_events).</span>
@@ -504,7 +505,7 @@
 <div class="viewcode-block" id="filterbank">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank">[docs]</a>
 <span class="k">def</span> <span class="nf">filterbank</span><span class="p">(</span>
-        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">passbands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -513,13 +514,13 @@
         <span class="n">stopbands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpass</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
         <span class="n">gstop</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">40.0</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the</span>
 <span class="sd">    minimum loss in the stopband.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X: np.ndarray</span>
+<span class="sd">    X: NDArray</span>
 <span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
 <span class="sd">    passbands: list[tuple[float, float]]</span>
 <span class="sd">        A list of tuples with passbands defined as (lower, higher) cutoff in Hz.</span>
@@ -545,7 +546,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    X: np.ndarray</span>
+<span class="sd">    X: NDArray</span>
 <span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_passbands). If tmin is not None, n_samples</span>
 <span class="sd">        will be reduced with tmin * fs number of samples.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -610,27 +611,61 @@
 
 
 
+<span class="k">def</span> <span class="nf">pinv</span><span class="p">(</span>
+        <span class="n">A</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the pseudo-inverse of a square matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A: NDArray</span>
+<span class="sd">        Square matrix of shape n x n to compute pseudo-inverse for.</span>
+<span class="sd">    alpha: float (Default: None)</span>
+<span class="sd">        The amount of variance the retain.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iA: NDArray</span>
+<span class="sd">        The pseudo-inverse of A of shape n x n.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;A should be a square matrix.&quot;</span>
+    <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;A should be a square matrix.&quot;</span>
+    <span class="n">U</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">d</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d</span><span class="p">[:</span><span class="n">d</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">d</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">i</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">break</span>
+    <span class="n">iA</span> <span class="o">=</span> <span class="n">U</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">d</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">iA</span>
+
+
 <div class="viewcode-block" id="itr">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr">[docs]</a>
 <span class="k">def</span> <span class="nf">itr</span><span class="p">(</span>
-        <span class="n">n</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-        <span class="n">p</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-        <span class="n">t</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">n</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+        <span class="n">p</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the information-transfer rate (ITR).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    n: int | np.ndarray:</span>
+<span class="sd">    n: int | NDArray:</span>
 <span class="sd">        The number of classes.</span>
-<span class="sd">    p: float | np.ndarray:</span>
+<span class="sd">    p: float | NDArray:</span>
 <span class="sd">        The decoding accuracy between 0 and 1.</span>
-<span class="sd">    t: float | np.ndarray:</span>
+<span class="sd">    t: float | NDArray:</span>
 <span class="sd">        The decoding time in seconds (including inter-trial time).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    itr: float | np.ndarray</span>
+<span class="sd">    itr: float | NDArray</span>
 <span class="sd">        The ITR in bits per minute.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
@@ -644,32 +679,32 @@
 <div class="viewcode-block" id="trials_to_epochs">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs">[docs]</a>
 <span class="k">def</span> <span class="nf">trials_to_epochs</span><span class="p">(</span>
-        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">codes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">codes</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">epoch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">step_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice trials to epochs.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X: np.ndarray</span>
+<span class="sd">    X: NDArray</span>
 <span class="sd">        The EEG data of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    y: np.ndarray</span>
+<span class="sd">    y: NDArray</span>
 <span class="sd">        Label vector of shape (n_trials).</span>
-<span class="sd">    codes: np.ndarray</span>
+<span class="sd">    codes: NDArray</span>
 <span class="sd">        Codes matrix of shape (n_codes, n_samples).</span>
 <span class="sd">    epoch_size: int</span>
-<span class="sd">        The the width of an epoch starting at the onset of an epoch in samples.</span>
+<span class="sd">        The width of an epoch starting at the onset of an epoch in samples.</span>
 <span class="sd">    step_size: int</span>
 <span class="sd">        The distance between consecutive epochs in samples.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    NDArray</span>
 <span class="sd">        The sliced EEG data of shape (n_trials, n_epochs, n_channels, epoch_size).</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    NDArray</span>
 <span class="sd">        The sliced label information of shape (n_trials, n_epochs).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>

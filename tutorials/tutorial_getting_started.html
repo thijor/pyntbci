@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Getting started &mdash; PyntBCI 1.3.3 documentation</title>
+  <title>Getting started &mdash; PyntBCI 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=28d163b9"></script>
+        <script src="../_static/documentation_options.js?v=9172181d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.3.3
+                1.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -304,8 +304,8 @@ the responses to each of the events. However, one could also set different lengt
 <h2>Reconvolution CCA<a class="headerlink" href="#reconvolution-cca" title="Link to this heading"></a></h2>
 <p>The full reconvolution CCA (rCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 <cite>pyntbci.classifiers.rCCA</cite>. All it needs are the binary sequences <cite>stimulus</cite>, the sampling frequency <cite>fs</cite>, the event
-definition <cite>event</cite>, the transient response size <cite>encoding_length</cite> and whether or not to include an event for the onset
-of a trial <cite>onset_event</cite>.</p>
+definition <cite>event</cite>, the transient response size <cite>encoding_length</cite> and whether to include an event for the onset of a
+trial <cite>onset_event</cite>.</p>
 <p>When calling <cite>rCCA.fit(X, y)</cite> with training data <cite>X</cite> and labels <cite>y</cite>, the full decomposition is performed to obtain
 spatial filters <cite>rCCA.w_</cite> and temporal filter <cite>rCCA.r_</cite>.</p>
 <p>Please note that the transient responses are concatenated in this temporal filter <cite>rCCA.r_</cite>. One can use
@@ -339,7 +339,7 @@ r:  (216, 1) (encoding_length*events)
 <section id="cross-validation">
 <h2>Cross-validation<a class="headerlink" href="#cross-validation" title="Link to this heading"></a></h2>
 <p>To perform decoding, one can call <cite>rCCA.fit(X_trn, y_trn)</cite> on training data <cite>X_trn</cite> and labels <cite>y_trn</cite> and
-<cite>rCCA.predict(X_tst)</cite> on testing data <cite>X_tst</cite>. In this section, a chronological cross-validation is setup to evaluate
+<cite>rCCA.predict(X_tst)</cite> on testing data <cite>X_tst</cite>. In this section, a chronological cross-validation is set up to evaluate
 the performance of rCCA.</p>
 <p>Additionally, a second classifier is introduced, <cite>eCCA</cite>, which is the so-called “reference” method for c-VEP decoding.
 Instead of using reconvolution for template generation (rCCA), eCCA computes templates by computing average responses
@@ -361,13 +361,13 @@ that specifies the relationship between the different classes.</p>
     <span class="c1"># rCCA</span>
     <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;contrast&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
-    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># select component</span>
+    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
     <span class="n">accuracy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
 
     <span class="c1"># eCCA</span>
     <span class="n">ecca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">(</span><span class="n">lags</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">63</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">cycle_size</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">63</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
     <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
-    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>  <span class="c1"># select component</span>
+    <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
     <span class="n">accuracy</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
 
 <span class="c1"># Plot accuracy (over folds)</span>
@@ -386,10 +386,10 @@ that specifies the relationship between the different classes.</p>
 <img src="../_images/sphx_glr_tutorial_getting_started_008.png" srcset="../_images/sphx_glr_tutorial_getting_started_008.png" alt="Chronological cross-validation" class = "sphx-glr-single-img"/></section>
 <section id="learning-curve">
 <h2>Learning curve<a class="headerlink" href="#learning-curve" title="Link to this heading"></a></h2>
-<p>When comparing eCCA and rCCA, one can appreciate that rCCA typically requires less data than eCCA. The reason for this
-is that rCCA reduce the number of free parameters to those of the transient responses instead of the full c-VEP, which
-at the same time allows to increase the amount of data to perform a kind of average over. This can be observed in the
-so-called learning curve, which shows the performance as a function of the amount of training data.</p>
+<p>When comparing eCCA and rCCA, one can appreciate that rCCA typically requires fewer data than eCCA. The reason for
+this is that rCCA reduce the number of free parameters to those of the transient responses instead of the full c-VEP,
+which at the same time allows to increase the amount of data to perform a kind of average over. This can be observed
+in the so-called learning curve, which shows the performance as a function of the amount of training data.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Chronological cross-validation</span>
 <span class="n">n_folds</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">n_trials</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">n_folds</span><span class="p">)</span>
@@ -408,13 +408,13 @@ so-called learning curve, which shows the performance as a function of the amoun
         <span class="c1"># rCCA</span>
         <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">[:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_trial</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">y_trn</span><span class="p">[:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_trial</span><span class="p">])</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_trial</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
 
         <span class="c1"># eCCA</span>
         <span class="n">ecca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">(</span><span class="n">lags</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">63</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">cycle_size</span><span class="o">=</span><span class="mi">63</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
         <span class="n">ecca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">[:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_trial</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">y_trn</span><span class="p">[:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_trial</span><span class="p">])</span>
-        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>  <span class="c1"># select component</span>
+        <span class="n">yh_tst</span> <span class="o">=</span> <span class="n">ecca</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">)</span>
         <span class="n">accuracy</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i_trial</span><span class="p">,</span> <span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
 
 <span class="c1"># Plot learning curve</span>
@@ -437,7 +437,7 @@ so-called learning curve, which shows the performance as a function of the amoun
 <span class="c1"># plt.show()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_tutorial_getting_started_009.png" srcset="../_images/sphx_glr_tutorial_getting_started_009.png" alt="Learning curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 55.081 seconds)</p>
+<img src="../_images/sphx_glr_tutorial_getting_started_009.png" srcset="../_images/sphx_glr_tutorial_getting_started_009.png" alt="Learning curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 53.656 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-tutorial-getting-started-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/0f0ae086fd356c7ed621bb7181d54c2e/tutorial_getting_started.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tutorial_getting_started.ipynb</span></code></a></p>

@@ -298,7 +298,7 @@ print(f"\tITR: avg={itr_tgt_acc.mean():.1f} with std={itr_tgt_acc.std():.2f}")
 # %%
 # Margin dynamic stopping
 # -----------------------
-# The margin method learns threshold margins (i.e., the difference between the best and second best score) to stop.
+# The margin method learns threshold margins (i.e., the difference between the best and second-best score) to stop.
 # These margins are defined as such that a targeted accuracy is reached.
 #
 # References:

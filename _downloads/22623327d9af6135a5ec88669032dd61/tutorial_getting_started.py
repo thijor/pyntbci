@@ -174,8 +174,8 @@ plt.tight_layout()
 # -----------------
 # The full reconvolution CCA (rCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 # `pyntbci.classifiers.rCCA`. All it needs are the binary sequences `stimulus`, the sampling frequency `fs`, the event
-# definition `event`, the transient response size `encoding_length` and whether or not to include an event for the onset
-# of a trial `onset_event`.
+# definition `event`, the transient response size `encoding_length` and whether to include an event for the onset of a
+# trial `onset_event`.
 #
 # When calling `rCCA.fit(X, y)` with training data `X` and labels `y`, the full decomposition is performed to obtain
 # spatial filters `rCCA.w_` and temporal filter `rCCA.r_`.
@@ -207,7 +207,7 @@ fig.tight_layout()
 # Cross-validation
 # ----------------
 # To perform decoding, one can call `rCCA.fit(X_trn, y_trn)` on training data `X_trn` and labels `y_trn` and
-# `rCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is setup to evaluate
+# `rCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is set up to evaluate
 # the performance of rCCA.
 #
 # Additionally, a second classifier is introduced, `eCCA`, which is the so-called "reference" method for c-VEP decoding.
@@ -231,13 +231,13 @@ for i_fold in range(n_folds):
     # rCCA
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="contrast", encoding_length=0.3, onset_event=True)
     rcca.fit(X_trn, y_trn)
-    yh_tst = rcca.predict(X_tst)[:, 0]  # select component
+    yh_tst = rcca.predict(X_tst)
     accuracy[0, i_fold] = np.mean(yh_tst == y_tst)
 
     # eCCA
     ecca = pyntbci.classifiers.eCCA(lags=np.arange(0, 2 * 63, 4) / 60, fs=fs, cycle_size=2 * 63 / 60)
     ecca.fit(X_trn, y_trn)
-    yh_tst = ecca.predict(X_tst)  # select component
+    yh_tst = ecca.predict(X_tst)
     accuracy[1, i_fold] = np.mean(yh_tst == y_tst)
 
 # Plot accuracy (over folds)
@@ -255,10 +255,10 @@ plt.tight_layout()
 # %%
 # Learning curve
 # --------------
-# When comparing eCCA and rCCA, one can appreciate that rCCA typically requires less data than eCCA. The reason for this
-# is that rCCA reduce the number of free parameters to those of the transient responses instead of the full c-VEP, which
-# at the same time allows to increase the amount of data to perform a kind of average over. This can be observed in the
-# so-called learning curve, which shows the performance as a function of the amount of training data.
+# When comparing eCCA and rCCA, one can appreciate that rCCA typically requires fewer data than eCCA. The reason for
+# this is that rCCA reduce the number of free parameters to those of the transient responses instead of the full c-VEP,
+# which at the same time allows to increase the amount of data to perform a kind of average over. This can be observed
+# in the so-called learning curve, which shows the performance as a function of the amount of training data.
 
 # Chronological cross-validation
 n_folds = 4
@@ -278,13 +278,13 @@ for i_fold in range(n_folds):
         # rCCA
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=0.3, onset_event=True)
         rcca.fit(X_trn[:1 + i_trial, ...], y_trn[:1 + i_trial])
-        yh_tst = rcca.predict(X_tst)  # select component
+        yh_tst = rcca.predict(X_tst)
         accuracy[0, i_trial, i_fold] = np.mean(yh_tst == y_tst)
 
         # eCCA
         ecca = pyntbci.classifiers.eCCA(lags=np.arange(0, 2 * 63, 4) / 60, fs=fs, cycle_size=63 / 60)
         ecca.fit(X_trn[:1 + i_trial, ...], y_trn[:1 + i_trial])
-        yh_tst = ecca.predict(X_tst)  # select component
+        yh_tst = ecca.predict(X_tst)
         accuracy[1, i_trial, i_fold] = np.mean(yh_tst == y_tst)
 
 # Plot learning curve

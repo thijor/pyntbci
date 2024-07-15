@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Epoch CCA and LDA &mdash; PyntBCI 1.3.3 documentation</title>
+  <title>Epoch CCA and LDA &mdash; PyntBCI 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=28d163b9"></script>
+        <script src="../_static/documentation_options.js?v=9172181d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.3.3
+                1.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -235,7 +235,7 @@ Channels: Fpz, T7, O1, POz, Oz, Iz, O2, T8
 <p>In this section, we will perform the classification of trials as a two-step approach. Firstly, we will classify
 so-called “events” at the “epoch” level. Subsequently, these epoch-level classifications are used (and integrated over
 time) to classify full “trials”.</p>
-<p>Specifically, a trial contains the multi-channel EEG response to a visually presented stimulus. In the c-VEP domain,
+<p>Specifically, a trial contains the multichannel EEG response to a visually presented stimulus. In the c-VEP domain,
 the stimulus is a pseudo-random noise-code that encodes how each of the classes flashes (i.e., a 1-bit denotes a white
 background, a 0-bit denotes a black background). In this notebook, we call the 1-bits “flashes” and the 0-bits
 “no-flashes”. In particular, the events we will work with are simply flashes versus no-flashes. Do note though, that
@@ -278,9 +278,9 @@ Number of non-flash epochs: 30600
 <section id="event-related-potentials">
 <h2>Event-related potentials<a class="headerlink" href="#event-related-potentials" title="Link to this heading"></a></h2>
 <p>With the sliced data, we can compute so-called event-related potentials (ERPs), i.e. averaged responses of epochs that
-have the same label. Here, this will we an ERP for a flash epoch and one for non-flash epochs. Please note, these are
+have the same label. Here, this will be an ERP for a flash epoch and one for non-flash epochs. Please note, these are
 non-typical ERPs, as the epochs used here have a high amount of overlap. Specifically, the length of an epochs is 300
-ms, while each epoch was sliced 1/60th ms after the previous one (i.e., a the stimulus presentation rate).</p>
+ms, while each epoch was sliced 1/60th ms after the previous one (i.e., the stimulus presentation rate).</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute ERPs</span>
 <span class="n">erp_noflash</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X_sliced</span><span class="p">[</span><span class="n">y_sliced</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">erp_flash</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X_sliced</span><span class="p">[</span><span class="n">y_sliced</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -526,7 +526,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.</p>
 Text(0.5, 1.0, &#39;CCA+LDA: classification accuracy (trial): avg=0.99 std=0.02&#39;)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 8.580 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.251 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-epoch-cca-lda-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/f105c771db3c7944db6dbbb77d7163b0/epoch_cca_lda.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">epoch_cca_lda.ipynb</span></code></a></p>
