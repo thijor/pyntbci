@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.linalg import eigh, sqrtm, svd
+from scipy.linalg import eigh, sqrtm, svd, inv
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -160,8 +160,14 @@ class CCA(BaseEstimator, TransformerMixin):
             Cyy = (1 - gamma_y) * Cyy + gamma_y * nu_y @ np.identity(Y.shape[1])
 
         # Inverse square root
-        iCxx = np.real(pinv(sqrtm(Cxx), self.alpha_x))
-        iCyy = np.real(pinv(sqrtm(Cyy), self.alpha_y))
+        if self.alpha_x is None:
+            iCxx = np.real(inv(sqrtm(Cxx)))
+        else:
+            iCxx = np.real(pinv(sqrtm(Cxx), self.alpha_x))
+        if self.alpha_y is None:
+            iCyy = np.real(inv(sqrtm(Cyy)))
+        else:
+            iCyy = np.real(pinv(sqrtm(Cyy), self.alpha_y))
 
         # SVD
         U, self.rho_, V = svd(iCxx @ Cxy @ iCyy)

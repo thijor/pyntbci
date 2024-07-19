@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 1.4.1 (19-07-2024)
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed default `CCA` in `transformers` to `inv`, not `pinv`
+
 ## Version 1.4.0 (15-07-2024)
 
 ### Added
