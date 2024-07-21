@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 1.5.0
+
+### Added
+
+### Changed
+- Changed 'envelope_rms' to 'rms' in 'envelope'
+
+### Fixed
+- Fixed default `CCA` in `transformers` to `inv`, not `pinv`
+
 ## Version 1.4.1 (19-07-2024)
 
 ### Added

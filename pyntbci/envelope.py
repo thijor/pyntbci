@@ -161,7 +161,7 @@ def envelope_gammatone(
     return envelope
 
 
-def envelope_rms(
+def rms(
         audio: NDArray,
         fs: int,
         fs_inter: int = 8000,
