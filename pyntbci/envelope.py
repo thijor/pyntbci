@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from scipy.signal import butter, buttord, filtfilt, gammatone, resample
+from scipy import signal
 
 
 def aud_space_bw(
@@ -79,7 +79,7 @@ def aud_to_freq(
     return freq
 
 
-def envelope_gammatone(
+def gammatone(
         audio: NDArray,
         fs: int,
         fs_inter: int = 8000,
@@ -129,29 +129,29 @@ def envelope_gammatone(
     freqs = erb_space_bw(fmin, fmax, spacing)
 
     # Build bandpass filter
-    N, Wn = buttord(wp=lowpass - 0.45, ws=lowpass + 0.45, gpass=0.5, gstop=15, fs=fs_inter)
-    bbutter, abutter = butter(N=N, Wn=Wn, btype="low", fs=fs_inter)
+    N, Wn = signal.buttord(wp=lowpass - 0.45, ws=lowpass + 0.45, gpass=0.5, gstop=15, fs=fs_inter)
+    bbutter, abutter = signal.butter(N=N, Wn=Wn, btype="low", fs=fs_inter)
 
     # Resample stimulus
-    audio = resample(audio, int(audio.size / fs) * fs_inter)
+    audio = signal.resample(audio, int(audio.size / fs) * fs_inter)
 
     # Apply gammatone filterbank
     envelope = []
     for freq in freqs:
         # Build gammatone filter subband
-        bgamma, agamma = gammatone(freq, 'fir', order=4, fs=fs_inter)
+        bgamma, agamma = signal.gammatone(freq, 'fir', order=4, fs=fs_inter)
 
         # Compute envelope of gammatone filter subband
-        env = np.real(filtfilt(bgamma, agamma, audio))
+        env = np.real(signal.filtfilt(bgamma, agamma, audio))
 
         # Apply the powerlaw
         env = np.abs(env) ** power
 
         # Lowpass filter the envelope
-        env = filtfilt(bbutter, 1, env)
+        env = signal.filtfilt(bbutter, 1, env)
 
         # Downsample to ultimate frequency
-        env = resample(env, int(env.size / fs_inter) * fs_target)
+        env = signal.resample(env, int(env.size / fs_inter) * fs_target)
 
         envelope.append(env)
 
@@ -186,7 +186,7 @@ def rms(
         The envelope using the RMS of the audio.
     """
     # Resample stimulus
-    audio = resample(audio, int(audio.size / fs) * fs_inter)
+    audio = signal.resample(audio, int(audio.size / fs) * fs_inter)
 
     # Reshape to compute RMS per bin
     audio = audio.reshape((-1, int(fs_inter / fs_target)))

@@ -6,6 +6,7 @@
 
 ### Changed
 - Changed 'envelope_rms' to 'rms' in 'envelope'
+- Changed 'envelope_gammatone' to 'gammatone' in 'envelope'
 
 ### Fixed
 - Fixed default `CCA` in `transformers` to `inv`, not `pinv`
