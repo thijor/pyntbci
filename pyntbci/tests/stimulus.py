@@ -97,18 +97,18 @@ class TestMSequence(unittest.TestCase):
 class TestModulation(unittest.TestCase):
 
     def test_codes_shape(self):
-        codes = np.random.rand(2, 100) > 0.5
+        codes = np.array(np.random.rand(2, 100) > 0.5).astype("uint8")
         modulated_codes = pyntbci.stimulus.modulate(codes)
         self.assertEqual(codes.shape[0], modulated_codes.shape[0])
         self.assertEqual(2 * codes.shape[1], modulated_codes.shape[1])
 
     def test_codes_elements(self):
-        codes = np.random.rand(2, 100) > 0.5
+        codes = np.array(np.random.rand(2, 100) > 0.5).astype("uint8")
         modulated_codes = pyntbci.stimulus.modulate(codes)
         self.assertEqual(np.unique(codes).size, np.unique(modulated_codes).size)
 
     def test_codes_balanced(self):
-        codes = np.random.rand(2, 100) > 0.5
+        codes = np.array(np.random.rand(2, 100) > 0.5).astype("uint8")
         modulated_codes = pyntbci.stimulus.modulate(codes)
         self.assertEqual(np.sum(modulated_codes == 0), np.sum(modulated_codes == 1))
 

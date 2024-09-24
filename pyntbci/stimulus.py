@@ -328,7 +328,7 @@ def make_m_sequence(
         The base of the sequence (related to the Galois Field), i.e. base 2 generates a binary sequence, base 3 a
         tertiary sequence, etc.
     seed: list[int] (default: None)
-        The seed for the initial shift register. If None, an all zero initial register is used.
+        The seed for the initial shift register. If None, an all ones initial register is used.
         
     Returns
     -------
@@ -341,18 +341,18 @@ def make_m_sequence(
     """
     if poly is None:
         poly = [1, 0, 0, 0, 0, 1]
-    n = len(poly)
     poly = np.array(poly)
-    assert np.all(poly < base), "All values in the polynomial should be smaller than the base."
+    assert np.all(poly < base), "All values in the polynomial must be smaller than the base."
+    n = poly.size
     if seed is None:
-        register = np.ones(n, dtype="uint8")
-    else:
-        register = np.array(seed, dtype="uint8")
-    assert len(register) == n, "The (seeded) register must be of length n (of the polynomial)."
+        seed = n * [1]
+    assert n == len(seed), "The polynomial and seed must contain an equal number of items."
+    register = np.array(seed).astype("uint8")
+    assert not np.all(register == 0), "The seed cannot be all zero."
     stimulus = np.zeros(2**n-1, dtype="uint8")
     for i in range(2**n-1):
         bit = np.sum(poly * register) % base
-        register = np.roll(register, 1)
+        register = np.roll(register, shift=1)
         register[0] = bit
         stimulus[i] = bit
     return stimulus[np.newaxis, :]
