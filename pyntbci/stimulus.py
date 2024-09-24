@@ -281,9 +281,9 @@ def make_gold_codes(
         The feedback tap points defined by a primitive polynomial. If None, [1, 1, 0, 0, 1, 1] is used.
         Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
     seed1: list[int] (default: None)
-        Seed for the initial shift register of poly1. If None, an all zero initial register is used.
+        Seed for the initial shift register of poly1. If None, an all ones initial register is used.
     seed2: list[int] (default: None)
-        Seed for the initial shift register of poly2. If None, an all zero initial register is used.
+        Seed for the initial shift register of poly2. If None, an all ones initial register is used.
         
     Returns
     -------
