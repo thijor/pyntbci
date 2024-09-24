@@ -214,7 +214,7 @@ def make_de_bruijn_sequence(
     .. [10] Eviatar Bach: git.sagemath.org/sage.git/tree/src/sage/combinat/debruijn_sequence.pyx
     """
     if seed is None:
-        register = [0] * k * n   
+        register = [0] * k * n
     else:
         register = seed
     assert len(register) == n * k, "The register must be of length n*k."  
@@ -232,7 +232,7 @@ def make_de_bruijn_sequence(
                 seq = db(seq, reg, t + 1, t)
         return seq
 
-    sequence = db([], register, 1, 1)
+    sequence = db(seq=[], reg=register, t=1, p=1)
     stimulus = np.array([alphabet[i] for i in sequence])[np.newaxis, :]
     return stimulus
 
