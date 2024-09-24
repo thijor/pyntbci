@@ -325,9 +325,8 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
 
         if self.max_time is None or X.shape[2] < self.max_time * self.fs:
 
-            # Compute the scores and translate to range 0 to 1
+            # Compute the scores
             scores = self.estimator.decision_function(X)
-            scores = (scores + 1) / 2
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -336,7 +335,7 @@ class BetaStopping(BaseEstimator, ClassifierMixin):
             p = np.zeros(scores.shape[0])
             for i_trial in range(scores.shape[0]):
                 # Fit beta to non-max scores
-                a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=0, fscale=1)
+                a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=-1, fscale=2)
 
                 # Look up probability of maximum score in beta
                 p[i_trial] = beta.cdf(scores_sorted[i_trial, -1], a, b, loc, scale) ** scores.shape[1]
@@ -367,7 +366,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         The sampling frequency of the EEG data in Hz.
     criterion: str (default: "accuracy")
         The criterion to use.
-    optimization: str (default: "max)
+    optimization: str (default: "max")
         The optimization to use.
     n_folds: int (n_folds: 4)
         The number of folds to evaluate the optimization.
@@ -661,6 +660,158 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             # Check stopped
             i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
             not_stopped = margins <= self.margins_[i_segment]
+
+            # Classify and set not-stopped-trials to -1
+            yh = np.argmax(scores, axis=1)
+            yh[not_stopped] = -1
+
+        else:
+            yh = self.estimator.predict(X)
+
+        return yh
+
+
+class ValueStopping(BaseEstimator, ClassifierMixin):
+    """Value dynamic stopping. Learns threshold values to stop at such that a targeted accuracy is reached.
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The classifier object that performs the classification.
+    segment_time: float
+        The size of a segment of data at which classification is performed ins seconds.
+    fs: int
+        The sampling frequency of the EEG data in Hz.
+    target_p: float (default: 0.95)
+        The targeted probability of correct classification.
+    value_min: float (default: 0.0)
+        The minimum value for the possible threshold margin to stop at.
+    value_max: float (default: 1.0)
+        The maximum value for the possible threshold margin to stop at.
+    value_step: float (default: 0.05)
+        The step size defining the resolution of the threshold margins at which to stop.
+    max_time: float (default: None)
+        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
+        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
+
+    Attributes
+    ----------
+    values_: float
+        The trained stopping values of shape (n_segments).
+    """
+    values_: NDArray
+
+    def __init__(
+            self,
+            estimator: ClassifierMixin,
+            segment_time: float,
+            fs: int,
+            target_p: float = 0.95,
+            value_min: float = 0.0,
+            value_max: float = 1.0,
+            value_step: float = 0.05,
+            max_time: float = None,
+    ) -> None:
+        self.estimator = estimator
+        self.segment_time = segment_time
+        self.fs = fs
+        self.target_p = target_p
+        self.value_min = value_min
+        self.value_max = value_max
+        self.value_step = value_step
+        self.max_time = max_time
+
+    def fit(
+            self,
+            X: NDArray,
+            y: NDArray,
+    ) -> ClassifierMixin:
+        """The training procedure to fit the dynamic procedure on supervised EEG data.
+
+        Parameters
+        ----------
+        X: NDArray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+        y: NDArray
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
+
+        Returns
+        -------
+        self: ClassifierMixin
+            Returns the instance itself.
+        """
+        # Set value axis (possible values to stop at)
+        value_axis = np.arange(self.value_min, self.value_max, self.value_step)
+
+        # Fit estimator
+        self.estimator.fit(X, y)
+
+        # Calculate a value per segment
+        n_samples = X.shape[2]
+        n_segments = int(n_samples / int(self.segment_time * self.fs))
+        self.values_ = np.zeros(n_segments)
+        for i_segment in range(n_segments):
+
+            # Compute scores for this segment
+            idx = (1 + i_segment) * int(self.segment_time * self.fs)
+            scores = self.estimator.decision_function(X[:, :, :idx])
+
+            # Compute values
+            values = np.max(scores, axis=1)
+
+            # Compute correctness (max is label)
+            correct = np.argmax(scores, axis=1) == y
+
+            # Compute histograms
+            wrong_hist = np.histogram(values[~correct], value_axis)[0]
+            right_hist = np.histogram(values[correct], value_axis)[0]
+
+            # Reverse cumulative (how many stop is margin>x)
+            wrong_hist = np.cumsum(wrong_hist[::-1])[::-1]
+            right_hist = np.cumsum(right_hist[::-1])[::-1]
+
+            # Compute accuracy (plus eps to prevent division by zero)
+            accuracy = right_hist / (wrong_hist + right_hist + np.finfo("float").eps)
+
+            # Select margin that makes the accuracy reach the targeted accuracy
+            idx = np.where(accuracy >= self.target_p)[0]
+            if len(idx) == 0:
+                self.values_[i_segment] = value_axis[-1]
+            else:
+                self.values_[i_segment] = value_axis[idx[0]]
+
+        return self
+
+    def predict(
+            self,
+            X: NDArray,
+    ) -> NDArray:
+        """The testing procedure to apply the estimator to novel EEG data using margin dynamic stopping.
+
+        Parameters
+        ----------
+        X: NDArray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+
+        Returns
+        -------
+        y: NDArray
+            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
+            trial cannot yet be stopped.
+        """
+        check_is_fitted(self, ["values_"])
+
+        if self.max_time is None or X.shape[2] < self.max_time * self.fs:
+
+            # Compute the scores
+            scores = self.estimator.decision_function(X)
+
+            # Compute values
+            values = np.max(scores, axis=1)
+
+            # Check stopped
+            i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
+            not_stopped = values <= self.values_[i_segment]
 
             # Classify and set not-stopped-trials to -1
             yh = np.argmax(scores, axis=1)
