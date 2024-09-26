@@ -160,7 +160,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         Returns
         -------
         scores: NDArray
-            The similarity scores of shape (n_trials, n_classes, n_components) or (n-trials, n_classes) if
+            The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if
             n_components=1 and squeeze_components=True.
         """
         check_is_fitted(self, ["w_", "T_"])
@@ -555,7 +555,8 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         Returns
         -------
         scores: NDArray
-            The similarity scores of shape (n_trials, n_classes, n_components).
+            The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if
+            n_components=1 and squeeze_components=True.
         """
         check_is_fitted(self, ["w_", "T_"])
 
@@ -927,7 +928,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
         Returns
         -------
         scores: NDArray
-            The similarity scores of shape (n_trials, n_classes, n_components).
+            The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if
+            n_components=1 and squeeze_components=True.
         """
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
 
