@@ -3,6 +3,7 @@
 ## Version 1.5.0
 
 ### Added
+- Added `ValueStopping` to `stopping`
 - Added parameter `distribution` to `DistributionStopping` in `stopping` 
 
 ### Changed
@@ -12,6 +13,7 @@
 
 ### Fixed
 - Fixed default `CCA` in `transformers` to `inv`, not `pinv`
+- Fixed `seed` for `make_m_sequence` and `make_gold_codes` in `stimulus` to not be full zeros
 
 ## Version 1.4.1 (19-07-2024)
 
