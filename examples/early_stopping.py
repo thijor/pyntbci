@@ -408,7 +408,8 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
-    beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time)
+    beta = pyntbci.stopping.DistributionStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time,
+                                                 distribution="beta")
     beta.fit(X, y)
 
     # Loop segments

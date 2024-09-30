@@ -239,7 +239,8 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="duration", encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
-    beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time)
+    beta = pyntbci.stopping.DistributionStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time,
+                                                 distribution="beta")
     beta.fit(X, y)
 
     # Loop segments
@@ -546,4 +547,4 @@ ax[2].set_ylabel("itr [bits/min]")
 ax[1].legend(bbox_to_anchor=(1.0, 1.0))
 ax[0].set_title("Comparison of dynamic stopping methods averaged across folds")
 
-# plt.show()
+plt.show()

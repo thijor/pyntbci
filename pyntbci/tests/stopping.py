@@ -41,7 +41,7 @@ class TestBetaStopping(unittest.TestCase):
         V = np.random.rand(5, fs) > 0.5
 
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length)
-        stop = pyntbci.stopping.BetaStopping(rcca)
+        stop = pyntbci.stopping.DistributionStopping(rcca, distribution="beta")
         stop.fit(X, y)
 
         yh = stop.predict(X)
