@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.5.0
+## Version 1.5.0 (30-09-2024)
 
 ### Added
 - Added `ValueStopping` to `stopping`

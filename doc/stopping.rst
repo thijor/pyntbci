@@ -10,6 +10,7 @@ Stopping
     :template: class.rst
 
     BayesStopping
-    BetaStopping
     CriterionStopping
+    DistributionStopping
     MarginStopping
+    ValueStopping

@@ -9,5 +9,5 @@ Envelope
     :toctree: generated/
     :template: function.rst
 
-    envelope_gammatone
-    envelope_rms
+    gammatone
+    rms
