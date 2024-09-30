@@ -1,0 +1,14 @@
+﻿pyntbci.stopping.ValueStopping
+==============================
+
+.. currentmodule:: pyntbci.stopping
+
+.. autoclass:: ValueStopping
+   :special-members: __contains__,__getitem__,__iter__,__len__,__add__,__sub__,__mul__,__div__,__neg__,__hash__
+   :members:
+
+.. include:: pyntbci.stopping.ValueStopping.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

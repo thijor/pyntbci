@@ -4,10 +4,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.stopping.CriterionStopping &mdash; PyntBCI 1.4.1 documentation</title>
+  <title>pyntbci.stopping.CriterionStopping &mdash; PyntBCI 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -19,14 +19,14 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=350a9c04"></script>
+        <script src="../_static/documentation_options.js?v=e0a75244"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.stopping.MarginStopping" href="pyntbci.stopping.MarginStopping.html" />
-    <link rel="prev" title="pyntbci.stopping.BetaStopping" href="pyntbci.stopping.BetaStopping.html" /> 
+    <link rel="next" title="pyntbci.stopping.DistributionStopping" href="pyntbci.stopping.DistributionStopping.html" />
+    <link rel="prev" title="pyntbci.stopping.BayesStopping" href="pyntbci.stopping.BayesStopping.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.4.1
+                1.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -101,12 +101,12 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>estimator</strong> (<em>ClassifierMixin</em>) – The classifier object that performs the classification.</p></li>
-<li><p><strong>segment_time</strong> (<em>float</em>) – The size of a segment of data at which classification is performed ins seconds.</p></li>
+<li><p><strong>segment_time</strong> (<em>float</em>) – The size of a segment of data at which classification is performed in seconds.</p></li>
 <li><p><strong>fs</strong> (<em>int</em>) – The sampling frequency of the EEG data in Hz.</p></li>
-<li><p><strong>criterion</strong> (<em>str</em><em> (</em><em>default: &quot;accuracy&quot;</em><em>)</em>) – The criterion to use.</p></li>
-<li><p><strong>optimization</strong> (<em>str</em><em> (</em><em>default: &quot;max</em><em>)</em>) – The optimization to use.</p></li>
+<li><p><strong>criterion</strong> (<em>str</em><em> (</em><em>default: &quot;accuracy&quot;</em><em>)</em>) – The criterion to use: accuracy, itr.</p></li>
+<li><p><strong>optimization</strong> (<em>str</em><em> (</em><em>default: &quot;max&quot;</em><em>)</em>) – The optimization to use: max, target.</p></li>
 <li><p><strong>n_folds</strong> (<em>int</em><em> (</em><em>n_folds: 4</em><em>)</em>) – The number of folds to evaluate the optimization.</p></li>
-<li><p><strong>target</strong> (<em>float</em><em> (</em><em>default: None</em><em>)</em>) – The targeted value for the criterion to optimize for.</p></li>
+<li><p><strong>target</strong> (<em>float</em><em> (</em><em>default: None</em><em>)</em>) – The targeted value for the criterion to optimize for. Only used if optimization=”target”.</p></li>
 <li><p><strong>smooth_width</strong> (<em>float</em><em> (</em><em>default: None</em><em>)</em>) – The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.</p></li>
 </ul>
 </dd>
@@ -208,8 +208,8 @@ sub-estimator of a meta-estimator, e.g. used inside a
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.stopping.BetaStopping.html" class="btn btn-neutral float-left" title="pyntbci.stopping.BetaStopping" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.stopping.MarginStopping.html" class="btn btn-neutral float-right" title="pyntbci.stopping.MarginStopping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.stopping.BayesStopping.html" class="btn btn-neutral float-left" title="pyntbci.stopping.BayesStopping" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.stopping.DistributionStopping.html" class="btn btn-neutral float-right" title="pyntbci.stopping.DistributionStopping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

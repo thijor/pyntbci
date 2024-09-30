@@ -613,7 +613,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 8.711 seconds)
+   **Total running time of the script:** (0 minutes 8.708 seconds)
 
 
 .. _sphx_glr_download_examples_epoch_cca_lda.py:
@@ -629,6 +629,10 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: epoch_cca_lda.py <epoch_cca_lda.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: epoch_cca_lda.zip <epoch_cca_lda.zip>`
 
 
 .. only:: html

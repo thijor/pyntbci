@@ -702,7 +702,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 39.004 seconds)
+   **Total running time of the script:** (2 minutes 39.690 seconds)
 
 
 .. _sphx_glr_download_examples_rcca.py:
@@ -718,6 +718,10 @@ Analyse multiple participants
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: rcca.py <rcca.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: rcca.zip <rcca.zip>`
 
 
 .. only:: html

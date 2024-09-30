@@ -508,7 +508,7 @@ in the so-called learning curve, which shows the performance as a function of th
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 55.117 seconds)
+   **Total running time of the script:** (0 minutes 47.464 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_getting_started.py:
@@ -524,6 +524,10 @@ in the so-called learning curve, which shows the performance as a function of th
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: tutorial_getting_started.py <tutorial_getting_started.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: tutorial_getting_started.zip <tutorial_getting_started.zip>`
 
 
 .. only:: html

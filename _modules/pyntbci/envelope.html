@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.envelope &mdash; PyntBCI 1.4.1 documentation</title>
+  <title>pyntbci.envelope &mdash; PyntBCI 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=350a9c04"></script>
+        <script src="../../_static/documentation_options.js?v=e0a75244"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.4.1
+                1.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -90,7 +90,7 @@
   <h1>Source code for pyntbci.envelope</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">filtfilt</span><span class="p">,</span> <span class="n">gammatone</span><span class="p">,</span> <span class="n">resample</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
 
 
 <span class="k">def</span> <span class="nf">aud_space_bw</span><span class="p">(</span>
@@ -169,9 +169,9 @@
     <span class="k">return</span> <span class="n">freq</span>
 
 
-<div class="viewcode-block" id="envelope_gammatone">
-<a class="viewcode-back" href="../../generated/pyntbci.envelope.envelope_gammatone.html#pyntbci.envelope.envelope_gammatone">[docs]</a>
-<span class="k">def</span> <span class="nf">envelope_gammatone</span><span class="p">(</span>
+<div class="viewcode-block" id="gammatone">
+<a class="viewcode-back" href="../../generated/pyntbci.envelope.gammatone.html#pyntbci.envelope.gammatone">[docs]</a>
+<span class="k">def</span> <span class="nf">gammatone</span><span class="p">(</span>
         <span class="n">audio</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
@@ -221,29 +221,29 @@
     <span class="n">freqs</span> <span class="o">=</span> <span class="n">erb_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
 
     <span class="c1"># Build bandpass filter</span>
-    <span class="n">N</span><span class="p">,</span> <span class="n">Wn</span> <span class="o">=</span> <span class="n">buttord</span><span class="p">(</span><span class="n">wp</span><span class="o">=</span><span class="n">lowpass</span> <span class="o">-</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="n">lowpass</span> <span class="o">+</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
-    <span class="n">bbutter</span><span class="p">,</span> <span class="n">abutter</span> <span class="o">=</span> <span class="n">butter</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;low&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">Wn</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">buttord</span><span class="p">(</span><span class="n">wp</span><span class="o">=</span><span class="n">lowpass</span> <span class="o">-</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="n">lowpass</span> <span class="o">+</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
+    <span class="n">bbutter</span><span class="p">,</span> <span class="n">abutter</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;low&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
 
     <span class="c1"># Resample stimulus</span>
-    <span class="n">audio</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_inter</span><span class="p">)</span>
+    <span class="n">audio</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_inter</span><span class="p">)</span>
 
     <span class="c1"># Apply gammatone filterbank</span>
     <span class="n">envelope</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="n">freqs</span><span class="p">:</span>
         <span class="c1"># Build gammatone filter subband</span>
-        <span class="n">bgamma</span><span class="p">,</span> <span class="n">agamma</span> <span class="o">=</span> <span class="n">gammatone</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="s1">&#39;fir&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
+        <span class="n">bgamma</span><span class="p">,</span> <span class="n">agamma</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">gammatone</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="s1">&#39;fir&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
 
         <span class="c1"># Compute envelope of gammatone filter subband</span>
-        <span class="n">env</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">bgamma</span><span class="p">,</span> <span class="n">agamma</span><span class="p">,</span> <span class="n">audio</span><span class="p">))</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">bgamma</span><span class="p">,</span> <span class="n">agamma</span><span class="p">,</span> <span class="n">audio</span><span class="p">))</span>
 
         <span class="c1"># Apply the powerlaw</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="o">**</span> <span class="n">power</span>
 
         <span class="c1"># Lowpass filter the envelope</span>
-        <span class="n">env</span> <span class="o">=</span> <span class="n">filtfilt</span><span class="p">(</span><span class="n">bbutter</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">bbutter</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
 
         <span class="c1"># Downsample to ultimate frequency</span>
-        <span class="n">env</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs_inter</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_target</span><span class="p">)</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs_inter</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_target</span><span class="p">)</span>
 
         <span class="n">envelope</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
 
@@ -254,9 +254,9 @@
 
 
 
-<div class="viewcode-block" id="envelope_rms">
-<a class="viewcode-back" href="../../generated/pyntbci.envelope.envelope_rms.html#pyntbci.envelope.envelope_rms">[docs]</a>
-<span class="k">def</span> <span class="nf">envelope_rms</span><span class="p">(</span>
+<div class="viewcode-block" id="rms">
+<a class="viewcode-back" href="../../generated/pyntbci.envelope.rms.html#pyntbci.envelope.rms">[docs]</a>
+<span class="k">def</span> <span class="nf">rms</span><span class="p">(</span>
         <span class="n">audio</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
@@ -281,7 +281,7 @@
 <span class="sd">        The envelope using the RMS of the audio.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Resample stimulus</span>
-    <span class="n">audio</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_inter</span><span class="p">)</span>
+    <span class="n">audio</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_inter</span><span class="p">)</span>
 
     <span class="c1"># Reshape to compute RMS per bin</span>
     <span class="n">audio</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">fs_inter</span> <span class="o">/</span> <span class="n">fs_target</span><span class="p">)))</span>

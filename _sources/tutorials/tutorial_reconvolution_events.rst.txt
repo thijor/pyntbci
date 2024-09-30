@@ -234,7 +234,7 @@ in more detail.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.883 seconds)
+   **Total running time of the script:** (0 minutes 0.901 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_reconvolution_events.py:
@@ -250,6 +250,10 @@ in more detail.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: tutorial_reconvolution_events.py <tutorial_reconvolution_events.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: tutorial_reconvolution_events.zip <tutorial_reconvolution_events.zip>`
 
 
 .. only:: html

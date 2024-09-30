@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.classifiers &mdash; PyntBCI 1.4.1 documentation</title>
+  <title>pyntbci.classifiers &mdash; PyntBCI 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=350a9c04"></script>
+        <script src="../../_static/documentation_options.js?v=e0a75244"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.4.1
+                1.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -254,7 +254,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scores: NDArray</span>
-<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components) or (n-trials, n_classes) if</span>
+<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if</span>
 <span class="sd">            n_components=1 and squeeze_components=True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;T_&quot;</span><span class="p">])</span>
@@ -676,7 +676,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scores: NDArray</span>
-<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components).</span>
+<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if</span>
+<span class="sd">            n_components=1 and squeeze_components=True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;T_&quot;</span><span class="p">])</span>
 
@@ -1063,7 +1064,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scores: NDArray</span>
-<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components).</span>
+<span class="sd">            The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if</span>
+<span class="sd">            n_components=1 and squeeze_components=True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;w_&quot;</span><span class="p">,</span> <span class="s2">&quot;r_&quot;</span><span class="p">,</span> <span class="s2">&quot;Ts_&quot;</span><span class="p">,</span> <span class="s2">&quot;Tw_&quot;</span><span class="p">])</span>
 

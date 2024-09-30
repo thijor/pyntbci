@@ -581,7 +581,7 @@ References:
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 395-457
+.. GENERATED FROM PYTHON SOURCE LINES 395-458
 
 .. code-block:: Python
 
@@ -601,7 +601,8 @@ References:
         # Train template-matching classifier
         rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                         onset_event=onset_event, score_metric="correlation")
-        beta = pyntbci.stopping.BetaStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time)
+        beta = pyntbci.stopping.DistributionStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time,
+                                                     distribution="beta")
         beta.fit(X, y)
 
         # Loop segments
@@ -668,7 +669,7 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 458-467
+.. GENERATED FROM PYTHON SOURCE LINES 459-468
 
 Bayesian dynamic stopping (BDS0)
 --------------------------------
@@ -680,7 +681,7 @@ References:
 .. [5] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 467-547
+.. GENERATED FROM PYTHON SOURCE LINES 468-548
 
 .. code-block:: Python
 
@@ -797,7 +798,7 @@ response brain-computer interfacing
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 548-557
+.. GENERATED FROM PYTHON SOURCE LINES 549-558
 
 Bayesian dynamic stopping (BDS1)
 --------------------------------
@@ -809,7 +810,7 @@ References:
 .. [6] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 557-618
+.. GENERATED FROM PYTHON SOURCE LINES 558-619
 
 .. code-block:: Python
 
@@ -895,7 +896,7 @@ response brain-computer interfacing
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 619-628
+.. GENERATED FROM PYTHON SOURCE LINES 620-629
 
 Bayesian dynamic stopping (BDS2)
 --------------------------------
@@ -907,7 +908,7 @@ References:
 .. [7] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 628-689
+.. GENERATED FROM PYTHON SOURCE LINES 629-690
 
 .. code-block:: Python
 
@@ -993,14 +994,14 @@ response brain-computer interfacing
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 690-694
+.. GENERATED FROM PYTHON SOURCE LINES 691-695
 
 Overall comparison
 ------------------
 Comparison of the presented stopping methods. Note, each of these use default parameters that might need fine-tuning.
 Additionally, the evaluation is performed on a single participant only.
 
-.. GENERATED FROM PYTHON SOURCE LINES 694-731
+.. GENERATED FROM PYTHON SOURCE LINES 695-732
 
 .. code-block:: Python
 
@@ -1062,7 +1063,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 44.129 seconds)
+   **Total running time of the script:** (0 minutes 45.240 seconds)
 
 
 .. _sphx_glr_download_examples_early_stopping.py:
@@ -1078,6 +1079,10 @@ Additionally, the evaluation is performed on a single participant only.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: early_stopping.py <early_stopping.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: early_stopping.zip <early_stopping.zip>`
 
 
 .. only:: html

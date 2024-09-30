@@ -564,7 +564,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 4.248 seconds)
+   **Total running time of the script:** (0 minutes 4.358 seconds)
 
 
 .. _sphx_glr_download_examples_ecca.py:
@@ -580,6 +580,10 @@ Analyse multiple participants
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: ecca.py <ecca.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: ecca.zip <ecca.zip>`
 
 
 .. only:: html

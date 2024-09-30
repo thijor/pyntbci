@@ -573,7 +573,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 10.300 seconds)
+   **Total running time of the script:** (0 minutes 10.247 seconds)
 
 
 .. _sphx_glr_download_examples_etrca.py:
@@ -589,6 +589,10 @@ Analyse multiple participants
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: etrca.py <etrca.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: etrca.zip <etrca.zip>`
 
 
 .. only:: html
