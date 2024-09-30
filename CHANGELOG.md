@@ -3,10 +3,12 @@
 ## Version 1.5.0
 
 ### Added
+- Added parameter `distribution` to `DistributionStopping` in `stopping` 
 
 ### Changed
-- Changed 'envelope_rms' to 'rms' in 'envelope'
-- Changed 'envelope_gammatone' to 'gammatone' in 'envelope'
+- Changed `envelope_rms` to `rms` in `envelope`
+- Changed `envelope_gammatone` to `gammatone` in `envelope`
+- Changed `BetaStopping` in `stopping` to `DistributionStopping`
 
 ### Fixed
 - Fixed default `CCA` in `transformers` to `inv`, not `pinv`

@@ -244,115 +244,6 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         return yh
 
 
-class BetaStopping(BaseEstimator, ClassifierMixin):
-    """Beta dynamic stopping. Fits a beta distribution to non-max (correlation+1)/2, and tests the probability of
-    the maximum correlation to belong to that same distribution [2]_.
-
-    Parameters
-    ----------
-    estimator: ClassifierMixin
-        The classifier object that performs the classification.
-    target_p: float (default: 0.95)
-        The targeted probability of correct classification.
-    fs: int (default None)
-        The sampling frequency of the EEG data in Hz. Required for max_time.
-    max_time: float (default: None)
-        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
-        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
-
-    References
-    ----------
-    .. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-           code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-           056007. doi: 10.1088/1741-2552/abecef
-    """
-
-    def __init__(
-            self,
-            estimator: ClassifierMixin,
-            target_p: float = 0.95,
-            fs: int = None,
-            max_time: float = None,
-    ) -> None:
-        self.estimator = estimator
-        self.target_p = target_p
-        self.fs = fs
-        self.max_time = max_time
-        if self.max_time is not None:
-            assert self.fs is not None, "If max_time is specified, then also fs should be specified."
-
-    def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
-    ) -> ClassifierMixin:
-        """The training procedure to fit the dynamic procedure on supervised EEG data. Note, BetaStopping itself does
-        not require training, it only trains the estimator.
-
-        Parameters
-        ----------
-        X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-        y: NDArray
-            The vector of ground-truth labels of the trials in X of shape (n_trials).
-
-        Returns
-        -------
-        self: ClassifierMixin
-            Returns the instance itself.
-        """
-        # Fit estimator
-        self.estimator.fit(X, y)
-        return self
-
-    def predict(
-            self,
-            X: NDArray,
-    ) -> NDArray:
-        """The testing procedure to apply the estimator to novel EEG data using beta dynamic stopping.
-
-        Parameters
-        ----------
-        X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
-
-        Returns
-        -------
-        y: NDArray
-            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
-            trial cannot yet be stopped.
-        """
-
-        if self.max_time is None or X.shape[2] < self.max_time * self.fs:
-
-            # Compute the scores
-            scores = self.estimator.decision_function(X)
-
-            # Sort the scores (ascending)
-            scores_sorted = np.sort(scores, axis=1)
-
-            # Calculate probability of maximum score being a "true" maximum
-            p = np.zeros(scores.shape[0])
-            for i_trial in range(scores.shape[0]):
-                # Fit beta to non-max scores
-                a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=-1, fscale=2)
-
-                # Look up probability of maximum score in beta
-                p[i_trial] = beta.cdf(scores_sorted[i_trial, -1], a, b, loc, scale) ** scores.shape[1]
-
-            # Check if stopped
-            not_stopped = p <= self.target_p
-
-            # Classify and set not-stopped-trials to -1
-            yh = np.argmax(scores, axis=1)
-            yh[not_stopped] = -1
-
-        else:
-            yh = self.estimator.predict(X)
-
-        return yh
-
-
 class CriterionStopping(BaseEstimator, ClassifierMixin):
     """Criterion static stopping. Fits an optimal stopping time given some criterion to optimize.
 
@@ -361,17 +252,17 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
     estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time: float
-        The size of a segment of data at which classification is performed ins seconds.
+        The size of a segment of data at which classification is performed in seconds.
     fs: int
         The sampling frequency of the EEG data in Hz.
     criterion: str (default: "accuracy")
-        The criterion to use.
+        The criterion to use: accuracy, itr.
     optimization: str (default: "max")
-        The optimization to use.
+        The optimization to use: max, target.
     n_folds: int (n_folds: 4)
         The number of folds to evaluate the optimization.
     target: float (default: None)
-        The targeted value for the criterion to optimize for.
+        The targeted value for the criterion to optimize for. Only used if optimization="target".
     smooth_width: float (default: None)
         The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.
 
@@ -505,6 +396,175 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
             return self.estimator.predict(X)
         else:
             return -1 * np.ones(X.shape[0])
+
+
+class DistributionStopping(BaseEstimator, ClassifierMixin):
+    """Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability
+    of the target / maximum score to be an outlier of that distribution [2]_.
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The classifier object that performs the classification.
+    target_p: float (default: 0.95)
+        The targeted probability of correct classification.
+    fs: int (default None)
+        The sampling frequency of the EEG data in Hz. Required for max_time.
+    max_time: float (default: None)
+        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
+        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
+    trained: bool (default: False)
+        Whether to calibrate the beta distributions on training data.
+    segment_time: float
+        The size of a segment of data at which classification is performed ins seconds.
+    distribution: str (default: "beta")
+        The distribution to use for the non-target / non-maximum distribution. Either beta or norm.
+
+    Attributes
+    ----------
+    distributions_: list[dict]
+        A list of dictionaries containing the parameters of the distribution for each data segment. Only used if
+        trained=True.
+
+    References
+    ----------
+    .. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+           code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
+           056007. doi: 10.1088/1741-2552/abecef
+    """
+
+    distributions_: list[dict]
+
+    def __init__(
+            self,
+            estimator: ClassifierMixin,
+            target_p: float = 0.95,
+            fs: int = None,
+            max_time: float = None,
+            trained: bool = False,
+            segment_time: float = None,
+            distribution: str = "beta",
+    ) -> None:
+        self.estimator = estimator
+        self.target_p = target_p
+        self.fs = fs
+        self.max_time = max_time
+        if self.max_time is not None:
+            assert self.fs is not None, "If max_time is specified, fs must be specified."
+        self.trained = trained
+        self.segment_time = segment_time
+        if self.trained:
+            assert self.segment_time is not None, "If trained=True, segment_time cannot be None."
+        self.distribution = distribution
+        assert self.distribution in ["beta", "norm"], "Distribution must be beta or norm."
+
+    def fit(
+            self,
+            X: NDArray,
+            y: NDArray,
+    ) -> ClassifierMixin:
+        """The training procedure to fit the dynamic procedure on supervised EEG data.
+
+        Parameters
+        ----------
+        X: NDArray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+        y: NDArray
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
+
+        Returns
+        -------
+        self: ClassifierMixin
+            Returns the instance itself.
+        """
+        # Fit estimator
+        self.estimator.fit(X, y)
+
+        # Fit beta distributions
+        if self.trained:
+            self.distributions_ = []
+            n_segments = int(X.shape[2] / int(self.segment_time * self.fs))
+            for i_segment in range(n_segments):
+
+                # Estimate scores for this segment
+                idx = (1 + i_segment) * int(self.segment_time * self.fs)
+                scores = self.estimator.decision_function(X[:, :, :idx])
+
+                # Put target score at index 0
+                for i_trial in range(X.shape[0]):
+                    scores[[0, y[i_trial]], :] = scores[[y[i_trial], 0], :]
+
+                # Fit distribution to non-target scores
+                if self.distribution == "beta":
+                    a, b, loc, scale = beta.fit(scores[:, 1:].flatten(), floc=-1, fscale=2)
+                    self.distributions_.append(dict(a=a, b=b, loc=loc, scale=scale))
+                elif self.distribution == "norm":
+                    loc, scale = norm.fit(scores[:, 1:].flatten())
+                    self.distributions_.append(dict(loc=loc, scale=scale))
+
+        return self
+
+    def predict(
+            self,
+            X: NDArray,
+    ) -> NDArray:
+        """The testing procedure to apply the estimator to novel EEG data using dynamic stopping.
+
+        Parameters
+        ----------
+        X: NDArray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+
+        Returns
+        -------
+        y: NDArray
+            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
+            trial cannot yet be stopped.
+        """
+
+        if self.max_time is None or X.shape[2] < self.max_time * self.fs:
+
+            # Compute the scores
+            scores = self.estimator.decision_function(X)
+
+            # Sort the scores (ascending)
+            scores_sorted = np.sort(scores, axis=1)
+
+            # Calculate probability of maximum score being a "true" maximum
+            p = np.zeros(scores.shape[0])
+            for i_trial in range(scores.shape[0]):
+
+                if self.trained:
+                    # Look-up pre-fit distribution parameters
+                    i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
+                    if self.distribution == "beta":
+                        a, b, loc, scale = [self.distributions_[i_segment][key] for key in ["a", "b", "loc", "scale"]]
+                    elif self.distribution == "norm":
+                        loc, scale = [self.distributions_[i_segment][key] for key in ["loc", "scale"]]
+                else:
+                    # Fit distribution to current non-max scores
+                    if self.distribution == "beta":
+                        a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=-1, fscale=2)
+                    elif self.distribution == "norm":
+                        loc, scale = norm.fit(scores_sorted[i_trial, :-1])
+
+                # Look up probability of maximum score in distribution
+                if self.distribution == "beta":
+                    p[i_trial] = beta.cdf(scores_sorted[i_trial, -1], a, b, loc, scale) ** scores.shape[1]
+                elif self.distribution == "norm":
+                    p[i_trial] = norm.cdf(scores_sorted[i_trial, -1], loc, scale) ** scores.shape[1]
+
+            # Check if stopped
+            not_stopped = p <= self.target_p
+
+            # Classify and set not-stopped-trials to -1
+            yh = np.argmax(scores, axis=1)
+            yh[not_stopped] = -1
+
+        else:
+            yh = self.estimator.predict(X)
+
+        return yh
 
 
 class MarginStopping(BaseEstimator, ClassifierMixin):
