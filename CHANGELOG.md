@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 1.6.0
+
+### Added
+- Added `find_neighbours` and `find_worst_neighbour` to `utilities`
+- Added `optimize_subset_clustering` to `stimulus`
+- Added `optimize_layout_incremental` to `stimulus`
+
+### Changed
+
+### Fixed
+
 ## Version 1.5.0 (30-09-2024)
 
 ### Added

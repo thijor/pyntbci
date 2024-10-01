@@ -1,5 +1,8 @@
 import numpy as np
 from numpy.typing import NDArray
+from sklearn.cluster import AgglomerativeClustering
+
+from pyntbci.utilities import correlation, find_worst_neighbour
 
 
 def is_de_bruijn_sequence(
@@ -383,4 +386,140 @@ def modulate(
     clock = np.zeros(stimulus.shape, dtype="uint8")
     clock[:, ::2] = 1
     return (stimulus + clock) % 2
-    
+
+
+def optimize_layout_incremental(
+        X: NDArray,
+        neighbours: NDArray,
+        n_initializations: int = 100,
+        n_iterations: int = 100
+) -> NDArray:
+    """
+    Optimize the allocation of codes to a layout by considering the correlation between neighboring codes. This method
+    was developed and evaluated as part of [17]_.
+
+    Parameters
+    ----------
+    X: NDArray
+        Data matrix of shape (n_codes, n_samples).
+    neighbours: NDArray
+        A matrix of neighbouring pairs of shape (n_neighbours, 2).
+    n_initializations: int (default: 50)
+        The number of random initial layouts to test.
+    n_iterations: int (default: 50)
+        The maximum number of iterations to improve a specific initial layout.
+
+    Returns
+    -------
+    layout: NDArray
+        The vector containing the mapping of codes to positions of shape (n_codes).
+
+    References
+    ----------
+    .. [16] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
+    """
+    n_codes = X.shape[0]
+
+    def swap_pair(layout_, pair_):
+        layout_ = np.copy(layout_)
+        layout_[pair_] = layout_[pair_[::-1]]
+        return layout_
+
+    # Compute correlation
+    rho = correlation(X, X)
+
+    layout = np.arange(n_codes)
+    value = find_worst_neighbour(rho, neighbours, layout)[1]
+    for i in range(n_initializations):
+
+        # Random initial layout
+        lay = np.random.permutation(layout)
+
+        for j in range(n_iterations):
+
+            # Find worst neighbours
+            idx, val = find_worst_neighbour(rho, neighbours, lay)
+
+            # Find all candidate swaps
+            others = np.setxor1d(idx, np.arange(n_codes))
+            swaps = np.concatenate((
+                np.stack((np.full(others.size, idx[0]), others), axis=1),
+                np.stack((np.full(others.size, idx[1]), others), axis=1)
+            ), axis=0)
+
+            # Try all candidate swaps
+            values = np.zeros(swaps.shape[0])
+            for k in range(swaps.shape[0]):
+                values[k] = find_worst_neighbour(rho, neighbours, swap_pair(lay, swaps[k, :]))[1]
+
+            # Swap best
+            if np.min(values) < val:
+                lay = swap_pair(lay, swaps[np.argmin(values), :])
+
+            # If there is no improvement anymore, stop iterating
+            if np.min(values) == val:
+                break
+
+        # Keep track of the best layout
+        if val < value:
+            layout = lay
+            value = val
+
+    return layout
+
+
+def optimize_subset_clustering(
+        X: NDArray,
+        n_subset: int
+) -> NDArray:
+    """
+    Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each
+    cluster. The best candidate from each cluster is defined by the minimum maximum correlation with any code outside
+    the cluster. This method was developed and evaluated as part of [17]_.
+
+    Parameters
+    ----------
+    X: NDArray
+        Data matrix of shape (n_codes, n_samples).
+    n_subset: int
+        Number of codes in the optimized subset.
+
+    Returns
+    -------
+    subset: NDArray
+        A vector of indices of shape (n_subset) for the optimal subset.
+
+    References
+    ----------
+    .. [17] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
+    """
+    n_codes = X.shape[0]
+    assert n_codes > n_subset, "X must contain more than n_subset codes"
+
+    # Cluster templates
+    model = AgglomerativeClustering(n_clusters=n_subset, metric="cosine", linkage="single")
+    model.fit(X)
+
+    # Compute correlation
+    rho = correlation(X, X)
+    rho[np.eye(rho.shape[0]) == 1] = np.nan
+
+    # Estimate order of clusters (maximum correlation with any code outside the cluster)
+    rho_max = np.zeros(n_subset)
+    for i in range(n_subset):
+        rho_ = rho[model.labels_ == i, :][:, model.labels_ != i]
+        rho_max[i] = np.nanmax(rho_)
+    order = np.argsort(rho_max)[::-1]
+
+    # Select best candidates from each cluster (minimum maximum correlation with any code outside the cluster)
+    removed = np.full(n_codes, False)
+    for i in range(n_subset):
+        rho_ = rho[model.labels_ == order[i], :][:, np.logical_and(model.labels_ != order[i], np.logical_not(removed))]
+        idx = np.where(model.labels_ == order[i])[0][np.nanargmin(np.nanmax(rho_, axis=1))]
+        removed[model.labels_ == order[i]] = True
+        removed[idx] = False
+    subset = np.where(np.logical_not(removed))[0]
+
+    return subset

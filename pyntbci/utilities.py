@@ -497,6 +497,89 @@ def filterbank(
     return Xf
 
 
+def find_neighbours(
+        layout: NDArray,
+        border_value: int = -1
+) -> NDArray:
+    """
+    Find the neighbour pairs in a rectangular layout.
+
+    Parameters
+    ----------
+    layout: NDArray
+        A matrix of identities of shape (rows, columns).
+    border_value
+        A value not existing in the layout to represent a border to prevent wrapping around edges.
+
+    Returns
+    -------
+    neighbours: NDArray
+        A matrix of neighbour pairs of shape (n_neighbours, 2).
+    """
+    assert border_value not in layout, "The border_value must not be in the layout."
+
+    # Add a border around the layout
+    layout = np.concatenate((
+        np.full((1, layout.shape[1]), border_value),
+        layout,
+        np.full((1, layout.shape[1]), border_value)), axis=0).astype("int")
+    layout = np.concatenate((
+        np.full((layout.shape[0], 1), border_value),
+        layout,
+        np.full((layout.shape[0], 1), border_value)), axis=1).astype("int")
+
+    # Find all neighbours
+    neighbours = np.stack((
+        np.roll(layout, -1, axis=1).flatten(order="F"),
+        np.roll(layout, -1, axis=0).flatten(order="F"),
+        np.roll(np.roll(layout, -1, axis=0), -1, axis=1).flatten(order="F"),
+        np.roll(np.roll(layout, -1, axis=0), 1, axis=1).flatten(order="F"),
+    ), axis=1).astype("int")
+
+    # Find all neighbour pairs
+    neighbours = np.stack((
+        np.tile(layout.flatten(order="F"), (1, neighbours.shape[1])).flatten(order="F"),
+        neighbours.flatten(order="F"),
+    ), axis=1).astype("int")
+
+    # Remove the border
+    neighbours = neighbours[~np.any(neighbours == border_value, axis=1), :]
+
+    # Sort
+    neighbours = neighbours[neighbours[:, 0].argsort(), :]
+
+    return neighbours
+
+
+def find_worst_neighbour(
+        score: NDArray,
+        neighbours: NDArray,
+        layout: NDArray
+) -> tuple[tuple[int, int], float]:
+    """
+    Find the neighbouring pair with maximum score.
+
+    Parameters
+    ----------
+    score: NDArray
+        The matrix of scores of shape (n_codes, n_codes).
+    neighbours: NDArray
+        The matrix of neighbouring pairs of shape (n_pairs, 2).
+    layout: NDArray
+        The vector mapping positions to identities of shape (n_codes).
+
+    Returns
+    -------
+    idx: tuple[int, int]
+        The two indexes of the neighbouring codes in the layout that have a maximum score.
+    val: float
+        The maximum score.
+    """
+    idx = neighbours[np.argmax(score[layout[neighbours[:, 0]], layout[neighbours[:, 1]]]), :]
+    val = score[layout[idx[0]], layout[idx[1]]]
+    return idx, val
+
+
 def pinv(
         A: NDArray,
         alpha: float = None
