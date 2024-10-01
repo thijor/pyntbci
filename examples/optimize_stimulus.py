@@ -80,7 +80,7 @@ optimized_vals = optimized_vals[~np.isnan(optimized_vals)]
 
 # Random subset
 random_subset = []
-value = np.Inf
+value = 1  # maximum correlation
 random = np.zeros(n_random)
 for i in range(n_random):
     subset_ = np.random.permutation(T.shape[0])[:n_classes]
@@ -134,7 +134,7 @@ optimized_vals = optimized_vals[~np.isnan(optimized_vals)]
 
 # Random layout
 random_layout = []
-value = np.Inf
+value = 1  # maximum correlation
 random = np.zeros(n_random)
 for i in range(n_random):
     layout_ = np.random.permutation(T.shape[0])
