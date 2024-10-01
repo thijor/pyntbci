@@ -34,13 +34,12 @@ References
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. DOI: https://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 18-27
+.. GENERATED FROM PYTHON SOURCE LINES 18-26
 
 .. code-block:: Python
 
 
     import matplotlib.pyplot as plt
-    import numpy as np
     import seaborn
 
     import pyntbci
@@ -54,14 +53,14 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-32
+.. GENERATED FROM PYTHON SOURCE LINES 27-31
 
 The stimulus
 --------
 PyntBCI contains a `stimulus` module with several functions that create various well-known noise-codes. Here we
 generate an m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-51
+.. GENERATED FROM PYTHON SOURCE LINES 31-37
 
 .. code-block:: Python
 
@@ -71,26 +70,8 @@ generate an m-sequence.
     n_classes, n_samples = V.shape
     print("V shape: ", V.shape, "(classes, samples)")
 
-    # Visualize stimuli
-    fr = 60  # the monitor refresh rate in Hz
-    Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
-    plt.figure(figsize=(15, 3))
-    plt.plot(np.arange(Vup.shape[1]) / (20 * fr), 2 * np.arange(n_classes) + Vup.T)
-    for i in range(1 + int(V.shape[1])):
-        plt.axvline(i / fr, c="k", alpha=0.1)
-    plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-    plt.xlabel("time [s]")
-    plt.ylabel("code")
-    plt.title("Code time-series")
-    plt.tight_layout()
 
 
-
-
-.. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_001.png
-   :alt: Code time-series
-   :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_001.png
-   :class: sphx-glr-single-img
 
 
 .. rst-class:: sphx-glr-script-out
@@ -102,7 +83,7 @@ generate an m-sequence.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-60
+.. GENERATED FROM PYTHON SOURCE LINES 38-46
 
 The event matrix
 ----------------
@@ -113,7 +94,7 @@ potential events that can be used, such as `id` (identity), `on`, `off`, `onoff`
 `fe` (falling edge), and `refe` (rising and falling edge, contrast). Here, we show what these decompositions look like
 in more detail.
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-79
+.. GENERATED FROM PYTHON SOURCE LINES 46-65
 
 .. code-block:: Python
 
@@ -131,7 +112,7 @@ in more detail.
 
         # Visualize event time-series
         fig, ax = plt.subplots(1, 1, figsize=(15, 3))
-        pyntbci.plotting.eventplot(V[i_class, :], E[i_class, :, :], fs=fr, ax=ax, events=events)
+        pyntbci.plotting.eventplot(V[i_class, :], E[i_class, :, :], fs=60, ax=ax, events=events)
         ax.set_title(f"Event time-series {event} (code {i_class})")
         plt.tight_layout()
 
@@ -144,58 +125,58 @@ in more detail.
 
     *
 
-      .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_002.png
+      .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_001.png
          :alt: Event time-series id (code 0)
+         :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_001.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_002.png
+         :alt: Event time-series on (code 0)
          :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_002.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_003.png
-         :alt: Event time-series on (code 0)
+         :alt: Event time-series off (code 0)
          :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_003.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_004.png
-         :alt: Event time-series off (code 0)
+         :alt: Event time-series onoff (code 0)
          :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_004.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_005.png
-         :alt: Event time-series onoff (code 0)
+         :alt: Event time-series dur (code 0)
          :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_005.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_006.png
-         :alt: Event time-series dur (code 0)
+         :alt: Event time-series re (code 0)
          :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_006.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_007.png
-         :alt: Event time-series re (code 0)
+         :alt: Event time-series fe (code 0)
          :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_007.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_008.png
-         :alt: Event time-series fe (code 0)
-         :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_008.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_009.png
          :alt: Event time-series refe (code 0)
-         :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_009.png
+         :srcset: /tutorials/images/sphx_glr_tutorial_3_reconvolution_events_008.png
          :class: sphx-glr-multi-img
 
 
@@ -234,7 +215,7 @@ in more detail.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.874 seconds)
+   **Total running time of the script:** (0 minutes 0.860 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_3_reconvolution_events.py:

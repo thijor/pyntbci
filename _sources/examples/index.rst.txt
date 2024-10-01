@@ -110,7 +110,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Bitwise Decoding</div>
+      <div class="sphx-glr-thumbnail-title">Bitwise decoding</div>
     </div>
 
 
