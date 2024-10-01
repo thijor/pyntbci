@@ -17,7 +17,6 @@ References
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn
 
 import pyntbci
@@ -58,7 +57,7 @@ for event in events:
 
     # Visualize event time-series
     fig, ax = plt.subplots(1, 1, figsize=(15, 3))
-    pyntbci.plotting.eventplot(V[i_class, :], E[i_class, :, :], fs=fr, ax=ax, events=events)
+    pyntbci.plotting.eventplot(V[i_class, :], E[i_class, :, :], fs=60, ax=ax, events=events)
     ax.set_title(f"Event time-series {event} (code {i_class})")
     plt.tight_layout()
 

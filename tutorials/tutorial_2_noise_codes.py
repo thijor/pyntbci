@@ -14,7 +14,6 @@ Neural Engineering, 18(6), 061002. DOI: 10.1088/1741-2552/ac38cf
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn
 
 import pyntbci
