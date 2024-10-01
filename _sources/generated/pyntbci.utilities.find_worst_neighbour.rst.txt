@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.find_worst_neighbour
+======================================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: find_worst_neighbour
+
+.. include:: pyntbci.utilities.find_worst_neighbour.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

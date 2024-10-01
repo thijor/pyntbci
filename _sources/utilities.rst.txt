@@ -17,5 +17,7 @@ Utilities
     event_matrix
     correct_latency
     filterbank
+    find_neighbours
+    find_worst_neighbour
     trials_to_epochs
     itr

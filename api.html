@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Reference &mdash; PyntBCI 1.5.0 documentation</title>
+  <title>API Reference &mdash; PyntBCI 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
@@ -19,7 +19,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=e0a75244"></script>
+        <script src="_static/documentation_options.js?v=72d88caf"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -41,7 +41,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.5.0
+                1.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -88,6 +88,8 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.is_gold_code.html">pyntbci.stimulus.is_gold_code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.is_m_sequence.html">pyntbci.stimulus.is_m_sequence</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.modulate.html">pyntbci.stimulus.modulate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.optimize_subset_clustering.html">pyntbci.stimulus.optimize_subset_clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.stimulus.optimize_layout_incremental.html">pyntbci.stimulus.optimize_layout_incremental</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.stopping">Stopping</a><ul>
@@ -112,6 +114,8 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html">pyntbci.utilities.event_matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html">pyntbci.utilities.correct_latency</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html">pyntbci.utilities.filterbank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.find_neighbours.html">pyntbci.utilities.find_neighbours</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.find_worst_neighbour.html">pyntbci.utilities.find_worst_neighbour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html">pyntbci.utilities.trials_to_epochs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.itr.html">pyntbci.utilities.itr</a></li>
 </ul>
@@ -234,6 +238,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.modulate.html#pyntbci.stimulus.modulate" title="pyntbci.stimulus.modulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modulate</span></code></a>(stimulus)</p></td>
 <td><p>Modulate a stimulus.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.optimize_subset_clustering.html#pyntbci.stimulus.optimize_subset_clustering" title="pyntbci.stimulus.optimize_subset_clustering"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_subset_clustering</span></code></a>(X, n_subset)</p></td>
+<td><p>Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each cluster.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.optimize_layout_incremental.html#pyntbci.stimulus.optimize_layout_incremental" title="pyntbci.stimulus.optimize_layout_incremental"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_layout_incremental</span></code></a>(X, neighbours[, ...])</p></td>
+<td><p>Optimize the allocation of codes to a layout by considering the correlation between neighboring codes.</p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -299,6 +309,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html#pyntbci.utilities.filterbank" title="pyntbci.utilities.filterbank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filterbank</span></code></a>(X, passbands, fs[, tmin, ftype, ...])</p></td>
 <td><p>Apply a filterbank.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.find_neighbours.html#pyntbci.utilities.find_neighbours" title="pyntbci.utilities.find_neighbours"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_neighbours</span></code></a>(layout[, border_value])</p></td>
+<td><p>Find the neighbour pairs in a rectangular layout.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.find_worst_neighbour.html#pyntbci.utilities.find_worst_neighbour" title="pyntbci.utilities.find_worst_neighbour"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_worst_neighbour</span></code></a>(score, neighbours, layout)</p></td>
+<td><p>Find the neighbouring pair with maximum score.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
 <td><p>Slice trials to epochs.</p></td>

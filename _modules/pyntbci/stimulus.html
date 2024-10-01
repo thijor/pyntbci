@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.stimulus &mdash; PyntBCI 1.5.0 documentation</title>
+  <title>pyntbci.stimulus &mdash; PyntBCI 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=e0a75244"></script>
+        <script src="../../_static/documentation_options.js?v=72d88caf"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             PyntBCI
           </a>
               <div class="version">
-                1.5.0
+                1.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -90,6 +90,9 @@
   <h1>Source code for pyntbci.stimulus</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">AgglomerativeClustering</span>
+
+<span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="n">correlation</span><span class="p">,</span> <span class="n">find_worst_neighbour</span>
 
 
 <div class="viewcode-block" id="is_de_bruijn_sequence">
@@ -500,7 +503,149 @@
     <span class="n">clock</span><span class="p">[:,</span> <span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">stimulus</span> <span class="o">+</span> <span class="n">clock</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span></div>
 
-    
+
+
+<div class="viewcode-block" id="optimize_layout_incremental">
+<a class="viewcode-back" href="../../generated/pyntbci.stimulus.optimize_layout_incremental.html#pyntbci.stimulus.optimize_layout_incremental">[docs]</a>
+<span class="k">def</span> <span class="nf">optimize_layout_incremental</span><span class="p">(</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">neighbours</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">n_initializations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">n_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Optimize the allocation of codes to a layout by considering the correlation between neighboring codes. This method</span>
+<span class="sd">    was developed and evaluated as part of [17]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X: NDArray</span>
+<span class="sd">        Data matrix of shape (n_codes, n_samples).</span>
+<span class="sd">    neighbours: NDArray</span>
+<span class="sd">        A matrix of neighbouring pairs of shape (n_neighbours, 2).</span>
+<span class="sd">    n_initializations: int (default: 50)</span>
+<span class="sd">        The number of random initial layouts to test.</span>
+<span class="sd">    n_iterations: int (default: 50)</span>
+<span class="sd">        The maximum number of iterations to improve a specific initial layout.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    layout: NDArray</span>
+<span class="sd">        The vector containing the mapping of codes to positions of shape (n_codes).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [16] Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:</span>
+<span class="sd">            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_codes</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">swap_pair</span><span class="p">(</span><span class="n">layout_</span><span class="p">,</span> <span class="n">pair_</span><span class="p">):</span>
+        <span class="n">layout_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">layout_</span><span class="p">)</span>
+        <span class="n">layout_</span><span class="p">[</span><span class="n">pair_</span><span class="p">]</span> <span class="o">=</span> <span class="n">layout_</span><span class="p">[</span><span class="n">pair_</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">layout_</span>
+
+    <span class="c1"># Compute correlation</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_codes</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">find_worst_neighbour</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">neighbours</span><span class="p">,</span> <span class="n">layout</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_initializations</span><span class="p">):</span>
+
+        <span class="c1"># Random initial layout</span>
+        <span class="n">lay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iterations</span><span class="p">):</span>
+
+            <span class="c1"># Find worst neighbours</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">find_worst_neighbour</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">neighbours</span><span class="p">,</span> <span class="n">lay</span><span class="p">)</span>
+
+            <span class="c1"># Find all candidate swaps</span>
+            <span class="n">others</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setxor1d</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_codes</span><span class="p">))</span>
+            <span class="n">swaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">others</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">others</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">others</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">others</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Try all candidate swaps</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">swaps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">swaps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">values</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_worst_neighbour</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">neighbours</span><span class="p">,</span> <span class="n">swap_pair</span><span class="p">(</span><span class="n">lay</span><span class="p">,</span> <span class="n">swaps</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:]))[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Swap best</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">lay</span> <span class="o">=</span> <span class="n">swap_pair</span><span class="p">(</span><span class="n">lay</span><span class="p">,</span> <span class="n">swaps</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="p">:])</span>
+
+            <span class="c1"># If there is no improvement anymore, stop iterating</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="n">val</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="c1"># Keep track of the best layout</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">layout</span> <span class="o">=</span> <span class="n">lay</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">return</span> <span class="n">layout</span></div>
+
+
+
+<div class="viewcode-block" id="optimize_subset_clustering">
+<a class="viewcode-back" href="../../generated/pyntbci.stimulus.optimize_subset_clustering.html#pyntbci.stimulus.optimize_subset_clustering">[docs]</a>
+<span class="k">def</span> <span class="nf">optimize_subset_clustering</span><span class="p">(</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">n_subset</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each</span>
+<span class="sd">    cluster. The best candidate from each cluster is defined by the minimum maximum correlation with any code outside</span>
+<span class="sd">    the cluster. This method was developed and evaluated as part of [17]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X: NDArray</span>
+<span class="sd">        Data matrix of shape (n_codes, n_samples).</span>
+<span class="sd">    n_subset: int</span>
+<span class="sd">        Number of codes in the optimized subset.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    subset: NDArray</span>
+<span class="sd">        A vector of indices of shape (n_subset) for the optimal subset.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [17] Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:</span>
+<span class="sd">            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_codes</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">n_codes</span> <span class="o">&gt;</span> <span class="n">n_subset</span><span class="p">,</span> <span class="s2">&quot;X must contain more than n_subset codes&quot;</span>
+
+    <span class="c1"># Cluster templates</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AgglomerativeClustering</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_subset</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;cosine&quot;</span><span class="p">,</span> <span class="n">linkage</span><span class="o">=</span><span class="s2">&quot;single&quot;</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c1"># Compute correlation</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">rho</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">rho</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># Estimate order of clusters (maximum correlation with any code outside the cluster)</span>
+    <span class="n">rho_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_subset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subset</span><span class="p">):</span>
+        <span class="n">rho_</span> <span class="o">=</span> <span class="n">rho</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">labels_</span> <span class="o">==</span> <span class="n">i</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">model</span><span class="o">.</span><span class="n">labels_</span> <span class="o">!=</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">rho_max</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">rho_</span><span class="p">)</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">rho_max</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Select best candidates from each cluster (minimum maximum correlation with any code outside the cluster)</span>
+    <span class="n">removed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_codes</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subset</span><span class="p">):</span>
+        <span class="n">rho_</span> <span class="o">=</span> <span class="n">rho</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">labels_</span> <span class="o">==</span> <span class="n">order</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">labels_</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">removed</span><span class="p">))]</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">labels_</span> <span class="o">==</span> <span class="n">order</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">nanargmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">rho_</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))]</span>
+        <span class="n">removed</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">labels_</span> <span class="o">==</span> <span class="n">order</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">removed</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">subset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">removed</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">subset</span></div>
+
 </pre></div>
 
            </div>

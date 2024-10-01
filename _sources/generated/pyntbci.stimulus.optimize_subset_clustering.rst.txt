@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.optimize_subset_clustering
+===========================================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: optimize_subset_clustering
+
+.. include:: pyntbci.stimulus.optimize_subset_clustering.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

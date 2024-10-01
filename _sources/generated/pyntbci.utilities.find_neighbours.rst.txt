@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.find_neighbours
+=================================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: find_neighbours
+
+.. include:: pyntbci.utilities.find_neighbours.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

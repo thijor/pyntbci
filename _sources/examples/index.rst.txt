@@ -31,6 +31,23 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script are simulated.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_optimize_stimulus_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_optimize_stimulus.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Optimize stimulus subset and layout</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
 
 .. only:: html
@@ -125,6 +142,7 @@ These examples demonstrate how to use PyntBCI.
    :hidden:
 
    /examples/fbrcca
+   /examples/optimize_stimulus
    /examples/ecca
    /examples/epoch_cca_lda
    /examples/etrca

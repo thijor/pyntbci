@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.optimize_layout_incremental
+============================================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: optimize_layout_incremental
+
+.. include:: pyntbci.stimulus.optimize_layout_incremental.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
