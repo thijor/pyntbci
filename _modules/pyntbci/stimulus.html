@@ -646,6 +646,36 @@
 
     <span class="k">return</span> <span class="n">subset</span></div>
 
+
+
+<span class="k">def</span> <span class="nf">shift</span><span class="p">(</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shift a code to create multiple.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stimulus: NDArray</span>
+<span class="sd">        The stimulus to shift of shape (1, n_bits).</span>
+<span class="sd">    stride: int (default: 1)</span>
+<span class="sd">        The number of bits to shift.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stimulus: NDArray</span>
+<span class="sd">        The set of stimuli with shifted versions of the original of shape (n_classes, n_bits).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">assert</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;The stimulus matrix must have only one stimulus.&quot;</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">stimulus</span>
+    <span class="n">stimulus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">stride</span><span class="p">),</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">stimulus</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">tmp</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)):</span>
+        <span class="n">stimulus</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">stimulus</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">stride</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stimulus</span>
 </pre></div>
 
            </div>

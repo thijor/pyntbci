@@ -114,9 +114,9 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    S: NDArray</span>
-<span class="sd">        The stimulus time-series of shape (samples)</span>
+<span class="sd">        The stimulus time-series of shape (n_samples)</span>
 <span class="sd">    E: NDArray</span>
-<span class="sd">        The event time-series of shape (events, samples)</span>
+<span class="sd">        The event time-series of shape (n_events, n_samples)</span>
 <span class="sd">    fs: int</span>
 <span class="sd">        The sampling rate in Hz</span>
 <span class="sd">    ax: Axes (default: None)</span>
@@ -160,13 +160,59 @@
             <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">fs</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
     <span class="c1"># Markup</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time [sec]&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time [s]&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">events</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">n_events</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">,)</span> <span class="o">+</span> <span class="n">events</span><span class="p">)</span></div>
 
+
+
+<span class="k">def</span> <span class="nf">stimplot</span><span class="p">(</span>
+        <span class="n">S</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">upsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">plotfs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the stimulus time-series.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    S: NDArray</span>
+<span class="sd">        The stimulus time-series of shape (n_stimuli, n_samples)</span>
+<span class="sd">    fs: int</span>
+<span class="sd">        The sampling rate in Hz</span>
+<span class="sd">    ax: Axes (default: None)</span>
+<span class="sd">        The axis to plot in. If None, a new figure will be opened.</span>
+<span class="sd">    upsample: int (default: 20)</span>
+<span class="sd">        A scalar value to upsample the stimulus and event time-series with for improved visualization</span>
+<span class="sd">    plotfs: bool (default: True)</span>
+<span class="sd">        Whether to plot vertical gridlines at the original sampling rate fs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Make figure</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="c1"># Up-sample to better visualize the sharp edges</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">upsample</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">n_classes</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c1"># Visualize stimuli</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">upsample</span> <span class="o">*</span> <span class="n">fs</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span> <span class="o">+</span> <span class="n">S</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="c1"># Add sample rate</span>
+    <span class="k">if</span> <span class="n">plotfs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="n">upsample</span><span class="p">)):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">fs</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="c1"># Label axes</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time [s]&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="topoplot">
@@ -185,7 +231,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    z: NDArray</span>
-<span class="sd">        A vector of electrode values, e.g. a spatial filter/patterns.</span>
+<span class="sd">        A vector of electrode values, e.g. a spatial filter/patterns of shape (n_channels).</span>
 <span class="sd">    locfile: str</span>
 <span class="sd">        A .loc file with electrode position information.</span>
 <span class="sd">    cbar: bool (default: False)</span>

@@ -101,8 +101,8 @@ time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>S</strong> (<em>NDArray</em>) – The stimulus time-series of shape (samples)</p></li>
-<li><p><strong>E</strong> (<em>NDArray</em>) – The event time-series of shape (events, samples)</p></li>
+<li><p><strong>S</strong> (<em>NDArray</em>) – The stimulus time-series of shape (n_samples)</p></li>
+<li><p><strong>E</strong> (<em>NDArray</em>) – The event time-series of shape (n_events, n_samples)</p></li>
 <li><p><strong>fs</strong> (<em>int</em>) – The sampling rate in Hz</p></li>
 <li><p><strong>ax</strong> (<em>Axes</em><em> (</em><em>default: None</em><em>)</em>) – The axis to plot in. If None, a new figure will be opened.</p></li>
 <li><p><strong>upsample</strong> (<em>int</em><em> (</em><em>default: 20</em><em>)</em>) – A scalar value to upsample the stimulus and event time-series with for improved visualization</p></li>

@@ -18,95 +18,10 @@ These examples demonstrate how to use PyntBCI.
 
 .. only:: html
 
-  .. image:: /examples/images/thumb/sphx_glr_fbrcca_thumb.png
+  .. image:: /examples/images/thumb/sphx_glr_example_1_rcca_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_fbrcca.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">FBrCCA</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script are simulated.">
-
-.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_optimize_stimulus_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_examples_optimize_stimulus.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Optimize stimulus subset and layout</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
-
-.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_ecca_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_examples_ecca.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">eCCA</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
-
-.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_epoch_cca_lda_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_examples_epoch_cca_lda.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Epoch CCA and LDA</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
-
-.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_etrca_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_examples_etrca.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">eTRCA</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
-
-.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_rcca_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_examples_rcca.py`
+  :ref:`sphx_glr_examples_example_1_rcca.py`
 
 .. raw:: html
 
@@ -120,14 +35,99 @@ These examples demonstrate how to use PyntBCI.
 
 .. only:: html
 
-  .. image:: /examples/images/thumb/sphx_glr_early_stopping_thumb.png
+  .. image:: /examples/images/thumb/sphx_glr_example_2_ecca_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_early_stopping.py`
+  :ref:`sphx_glr_examples_example_2_ecca.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">eCCA</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_example_3_etrca_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_example_3_etrca.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">eTRCA</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_example_4_fbrcca_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_example_4_fbrcca.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">FBrCCA</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_example_5_early_stopping_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_example_5_early_stopping.py`
 
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Early stopping</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_example_6_bitwise_decoding_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_example_6_bitwise_decoding.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Bitwise Decoding</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script are simulated.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_example_7_stimulus_optimization_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_example_7_stimulus_optimization.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Stimulus optimization</div>
     </div>
 
 
@@ -141,13 +141,13 @@ These examples demonstrate how to use PyntBCI.
 .. toctree::
    :hidden:
 
-   /examples/fbrcca
-   /examples/optimize_stimulus
-   /examples/ecca
-   /examples/epoch_cca_lda
-   /examples/etrca
-   /examples/rcca
-   /examples/early_stopping
+   /examples/example_1_rcca
+   /examples/example_2_ecca
+   /examples/example_3_etrca
+   /examples/example_4_fbrcca
+   /examples/example_5_early_stopping
+   /examples/example_6_bitwise_decoding
+   /examples/example_7_stimulus_optimization
 
 
 .. only:: html

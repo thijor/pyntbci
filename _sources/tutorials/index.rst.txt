@@ -14,35 +14,52 @@ These tutorials demonstrate how to get started using PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial shows the basic building block of the reconvolution approach (see [1]_ and [2]_) that is implemented in the PyntBCI library for analysing code-modulated responses. This tutorial generates an arbitrary code (here an m-sequence) and shows different kinds of event definitions.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This getting started tutorial shows an example of how to use the PyntBCI library for analysing code-modulated responses. This tutorial makes use of a small dataset of EEG data, recorded from one participant during a single session. This data is already minimally preprocessed following a spectral filter with a band-pass at 2-30 Hz and a downsample from 2 kHz to 240 Hz. The stimuli that were shown are a circularly shifted modulated Gold code (shift register length 6, shift between stimuli 2 bits), presented at 60 Hz. The participant focused on each of the 32 stimuli once in a 4x8 matrix speller, where each presentation lasted 4.2 seconds (2 code cycles) after a 0.8 second cue.">
 
 .. only:: html
 
-  .. image:: /tutorials/images/thumb/sphx_glr_tutorial_reconvolution_events_thumb.png
+  .. image:: /tutorials/images/thumb/sphx_glr_tutorial_1_getting_started_thumb.png
     :alt:
 
-  :ref:`sphx_glr_tutorials_tutorial_reconvolution_events.py`
+  :ref:`sphx_glr_tutorials_tutorial_1_getting_started.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Reconvolution events</div>
+      <div class="sphx-glr-thumbnail-title">Getting started</div>
     </div>
 
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This getting started tutorial shows an example of how to use the PyntBCI library for analysing code-modulated responses. This tutorial makes use of a small dataset of EEG data, recorded from one participant during a single session. This data is already minimally preprocessed following a spectral filter with a band-pass at 2-30 Hz and a downsample from 2 kHz to 240 Hz. The stimuli that were shown are a circularly shifted modulated Gold code (shift register length 6, shift between stimuli 2 bits), presented at 60 Hz. The participant focused on each of the 32 stimuli once in a 4x8 matrix speller, where each presentation lasted 4.2 seconds (2 code cycles) after a 0.8 second cue.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial shows how to generate different types of noise-codes using the PyntBCI library. Noise-codes are used to evoke the code-modulated visual evoked potential (c-VEP) as measured by EEG. For a comprehensive literature review, see [1]_.">
 
 .. only:: html
 
-  .. image:: /tutorials/images/thumb/sphx_glr_tutorial_getting_started_thumb.png
+  .. image:: /tutorials/images/thumb/sphx_glr_tutorial_2_noise_codes_thumb.png
     :alt:
 
-  :ref:`sphx_glr_tutorials_tutorial_getting_started.py`
+  :ref:`sphx_glr_tutorials_tutorial_2_noise_codes.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Getting started</div>
+      <div class="sphx-glr-thumbnail-title">Noise codes</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial shows the basic building block of the reconvolution approach (see [1]_ and [2]_) that is implemented in the PyntBCI library for analysing code-modulated responses. This tutorial generates an arbitrary code (here an m-sequence) and shows different kinds of event definitions.">
+
+.. only:: html
+
+  .. image:: /tutorials/images/thumb/sphx_glr_tutorial_3_reconvolution_events_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_tutorials_tutorial_3_reconvolution_events.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Reconvolution events</div>
     </div>
 
 
@@ -56,8 +73,9 @@ These tutorials demonstrate how to get started using PyntBCI.
 .. toctree::
    :hidden:
 
-   /tutorials/tutorial_reconvolution_events
-   /tutorials/tutorial_getting_started
+   /tutorials/tutorial_1_getting_started
+   /tutorials/tutorial_2_noise_codes
+   /tutorials/tutorial_3_reconvolution_events
 
 
 .. only:: html
