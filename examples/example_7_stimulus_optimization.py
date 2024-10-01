@@ -1,6 +1,6 @@
 """
-Optimize stimulus subset and layout
-===================
+Stimulus optimization
+=====================
 This script shows how to optimize the stimulus presentation by means of selecting the optimal subset of stimuli from a
 set of candidate stimuli and how to select an optimal layout to allocate them to a stimulus grid. The methods to
 optimize such subset and layout were developed and evaluated in [1]_.

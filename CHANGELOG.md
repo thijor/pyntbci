@@ -6,8 +6,10 @@
 - Added `find_neighbours` and `find_worst_neighbour` to `utilities`
 - Added `optimize_subset_clustering` to `stimulus`
 - Added `optimize_layout_incremental` to `stimulus`
+- Added `stimplot` to `plotting`
 
 ### Changed
+- Changed order of tutorials and examples
 
 ### Fixed
 

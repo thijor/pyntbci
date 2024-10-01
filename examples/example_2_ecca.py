@@ -1,6 +1,6 @@
 """
 eCCA
-=================
+====
 This script shows how to use eCCA from PyntBCI for decoding c-VEP trials. The eCCA method uses a template matching
 classifier where templates are estimated using averaging and canonical correlation analysis (CCA).
 
@@ -90,16 +90,10 @@ plt.title("Single-trial labels")
 plt.tight_layout()
 
 # Visualize stimuli
-Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
-plt.figure(figsize=(15, 8))
-plt.plot(np.arange(Vup.shape[1]) / (20 * fs), 2 * np.arange(n_classes) + Vup.T)
-for i in range(1 + int(V.shape[1] / (fs / fr))):
-    plt.axvline(i / fr, c="k", alpha=0.1)
-plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-plt.xlabel("time [s]")
-plt.ylabel("code")
-plt.title("Code time-series")
-plt.tight_layout()
+fig, ax = plt.subplots(1, 1, figsize=(15, 8))
+pyntbci.plotting.stimplot(V, fs=fs, ax=ax, plotfs=False)
+fig.tight_layout()
+ax.set_title("Stimulus time-series")
 
 # %%
 # ERP CCA

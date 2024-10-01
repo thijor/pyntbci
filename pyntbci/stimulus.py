@@ -523,3 +523,33 @@ def optimize_subset_clustering(
     subset = np.where(np.logical_not(removed))[0]
 
     return subset
+
+
+def shift(
+        stimulus: NDArray,
+        stride: int = 1,
+) -> NDArray:
+    """
+    Shift a code to create multiple.
+
+    Parameters
+    ----------
+    stimulus: NDArray
+        The stimulus to shift of shape (1, n_bits).
+    stride: int (default: 1)
+        The number of bits to shift.
+
+    Returns
+    -------
+    stimulus: NDArray
+        The set of stimuli with shifted versions of the original of shape (n_classes, n_bits).
+    """
+    if stimulus.ndim == 1:
+        stimulus = stimulus[np.newaxis, :]
+    assert stimulus.shape[0] == 1, "The stimulus matrix must have only one stimulus."
+    tmp = stimulus
+    stimulus = np.zeros((int(stimulus.shape[1] / stride), stimulus.shape[1]))
+    stimulus[0, :] = tmp
+    for i in range(1, int(stimulus.shape[1] / stride)):
+        stimulus[i, :] = np.roll(stimulus[i-1, :], stride)
+    return stimulus

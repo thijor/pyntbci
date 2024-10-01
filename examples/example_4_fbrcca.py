@@ -1,6 +1,6 @@
 """
 FBrCCA
-===================
+======
 This script shows how to use FBrCCA from PyntBCI for decoding c-VEP trials. The FBrCCA method uses a template matching
 classifier where templates are estimated using reconvolution and canonical correlation analysis (CCA). Additionally,
 FBrCCA uses a filterbank (FB).

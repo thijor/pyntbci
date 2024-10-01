@@ -22,9 +22,9 @@ def eventplot(
     Parameters
     ----------
     S: NDArray
-        The stimulus time-series of shape (samples)
+        The stimulus time-series of shape (n_samples)
     E: NDArray
-        The event time-series of shape (events, samples)
+        The event time-series of shape (n_events, n_samples)
     fs: int
         The sampling rate in Hz
     ax: Axes (default: None)
@@ -68,12 +68,58 @@ def eventplot(
             ax.axvline(i / fs, c="k", alpha=0.1)
 
     # Markup
-    ax.set_xlabel("time [sec]")
+    ax.set_xlabel("time [s]")
     if events is None:
         ax.set_ylabel("events")
     else:
         ax.set_ylabel("")
         ax.set_yticks(-1.5 * np.arange(0, 1 + n_events) + 0.5, ("stimulus",) + events)
+
+
+def stimplot(
+        S: NDArray,
+        fs: int,
+        ax: Axes = None,
+        upsample: int = 20,
+        plotfs: bool = True,
+) -> None:
+    """
+    Plot the stimulus time-series.
+
+    Parameters
+    ----------
+    S: NDArray
+        The stimulus time-series of shape (n_stimuli, n_samples)
+    fs: int
+        The sampling rate in Hz
+    ax: Axes (default: None)
+        The axis to plot in. If None, a new figure will be opened.
+    upsample: int (default: 20)
+        A scalar value to upsample the stimulus and event time-series with for improved visualization
+    plotfs: bool (default: True)
+        Whether to plot vertical gridlines at the original sampling rate fs
+    """
+    # Make figure
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+    # Up-sample to better visualize the sharp edges
+    S = S.repeat(upsample, axis=1)
+    n_classes, n_samples = S.shape
+
+    # Visualize stimuli
+    ax.plot(np.arange(n_samples) / (upsample * fs), 2 * np.arange(n_classes) + S.T)
+
+    # Add sample rate
+    if plotfs:
+        for i in range(1 + int(n_samples / upsample)):
+            ax.axvline(i / fs, c="k", alpha=0.1)
+
+    # Label axes
+    ax.set_yticks(2 * np.arange(n_classes), np.arange(n_classes))
+    ax.set_xlabel("time [s]")
+    ax.set_ylabel("stimulus")
 
 
 def topoplot(
@@ -90,7 +136,7 @@ def topoplot(
     Parameters
     ----------
     z: NDArray
-        A vector of electrode values, e.g. a spatial filter/patterns.
+        A vector of electrode values, e.g. a spatial filter/patterns of shape (n_channels).
     locfile: str
         A .loc file with electrode position information.
     cbar: bool (default: False)

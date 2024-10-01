@@ -35,9 +35,10 @@ extensions = [
 ]
 
 sphinx_gallery_conf = {
-     'examples_dirs': ['../examples', '../tutorials'],   # path to your example scripts
-     'gallery_dirs': ['examples', 'tutorials'],  # path to where to save gallery generated output
-     'filename_pattern': "(/example_|/tutorial_|)",
+    'examples_dirs': ['../examples', '../tutorials'],   # path to your example scripts
+    'gallery_dirs': ['examples', 'tutorials'],  # path to where to save gallery generated output
+    'filename_pattern': "(/example_|/tutorial_|)",
+    'within_subsection_order': "FileNameSortKey",
 }
 
 autosummary_generate = True
@@ -46,15 +47,13 @@ autodoc_default_flags = {"inherited-members": None}
 
 numpydoc_show_class_members = False
 
-exclude_patterns = ["_build", "_templates"]
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', "_templates", 'Thumbs.db', '.DS_Store']
 
 source_suffix = [".rst", ".md"]
 
