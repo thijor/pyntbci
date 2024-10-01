@@ -1,5 +1,5 @@
 """
-Bitwise Decoding
+Bitwise decoding
 ================
 This script shows how to use CCA and LDA on epochs within a trial, using PyntBCI, for decoding c-VEP trials. Epochs are
 defined as the windows of data within a trial, synchronized to the onset of individual flashes. For each of these epochs

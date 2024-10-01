@@ -35,19 +35,6 @@ V = pyntbci.stimulus.make_m_sequence()
 n_classes, n_samples = V.shape
 print("V shape: ", V.shape, "(classes, samples)")
 
-# Visualize stimuli
-fr = 60  # the monitor refresh rate in Hz
-Vup = V.repeat(20, axis=1)  # upsample to better visualize the sharp edges
-plt.figure(figsize=(15, 3))
-plt.plot(np.arange(Vup.shape[1]) / (20 * fr), 2 * np.arange(n_classes) + Vup.T)
-for i in range(1 + int(V.shape[1])):
-    plt.axvline(i / fr, c="k", alpha=0.1)
-plt.yticks(2 * np.arange(n_classes), np.arange(n_classes))
-plt.xlabel("time [s]")
-plt.ylabel("code")
-plt.title("Code time-series")
-plt.tight_layout()
-
 # %%
 # The event matrix
 # ----------------
