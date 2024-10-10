@@ -188,9 +188,10 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["alpha_", "sigma_", "b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
 
         # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
-        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        if self.max_time is not None:
+            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
+            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
@@ -527,9 +528,10 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         """
 
         # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
-        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        if self.max_time is not None:
+            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
+            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
@@ -715,9 +717,10 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["margins_"])
 
         # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
-        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        if self.max_time is not None:
+            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
+            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
@@ -874,9 +877,10 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["values_"])
 
         # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
-        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        if self.max_time is not None:
+            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
+            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
