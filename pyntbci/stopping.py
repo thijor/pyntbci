@@ -187,13 +187,17 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["alpha_", "sigma_", "b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
 
-        if self.max_time is None or X.shape[2] < self.max_time * self.fs:
+        # Estimate current segment
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
+        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+
+        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
 
             # Check if stopped
-            i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
             if self.method == "bds0":
                 # Stop if eta threshold of this segment is reached
                 not_stopped = np.max(scores, axis=1) <= self.eta_[i_segment]
@@ -522,7 +526,12 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
             trial cannot yet be stopped.
         """
 
-        if self.max_time is None or X.shape[2] < self.max_time * self.fs:
+        # Estimate current segment
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
+        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+
+        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
@@ -536,7 +545,6 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
 
                 if self.trained:
                     # Look-up pre-fit distribution parameters
-                    i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
                     if self.distribution == "beta":
                         a, b, loc, scale = [self.distributions_[i_segment][key] for key in ["a", "b", "loc", "scale"]]
                     elif self.distribution == "norm":
@@ -706,7 +714,12 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["margins_"])
 
-        if self.max_time is None or X.shape[2] < self.max_time * self.fs:
+        # Estimate current segment
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
+        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+
+        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
@@ -718,7 +731,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             margins = scores_sorted[:, -1] - scores_sorted[:, -2]
 
             # Check stopped
-            i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
             not_stopped = margins <= self.margins_[i_segment]
 
             # Classify and set not-stopped-trials to -1
@@ -861,7 +873,12 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["values_"])
 
-        if self.max_time is None or X.shape[2] < self.max_time * self.fs:
+        # Estimate current segment
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
+        i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+
+        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
@@ -870,7 +887,6 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
             values = np.max(scores, axis=1)
 
             # Check stopped
-            i_segment = int(X.shape[2] / int(self.segment_time * self.fs)) - 1
             not_stopped = values <= self.values_[i_segment]
 
             # Classify and set not-stopped-trials to -1

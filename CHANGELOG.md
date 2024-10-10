@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.6.0
+## Version 1.6.0 (10-10-2024)
 
 ### Added
 - Added `find_neighbours` and `find_worst_neighbour` to `utilities`
@@ -12,6 +12,7 @@
 - Changed order of tutorials and examples
 
 ### Fixed
+- Fixed `max_time` in all `stopping` classes to deal with "partial" segments
 
 ## Version 1.5.0 (30-09-2024)
 
