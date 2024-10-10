@@ -4,7 +4,7 @@ Early stopping
 This script shows how to use early stopping from PyntBCI for decoding c-VEP data. Early stopping refers to determining
 when to stop the processing or decoding of a trial based on the reliability of the input data. Early stopping may be of
 two kinds: static stopping and dynamic stopping. In static stopping, an optimal fixes stopping time is learned, while
-in dynamic stopping the optimal stopping time depends on reaching a certain criterium, which may naturally lead to a
+in dynamic stopping the optimal stopping time depends on reaching a certain criterion, which may naturally lead to a
 variable stopping time.
 
 The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.
@@ -313,7 +313,7 @@ target_p = 0.90 ** (1 / n_segments)
 # Fit classifier
 rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                 onset_event=onset_event, score_metric="correlation")
-margin = pyntbci.stopping.MarginStopping(rcca, segment_time, fs, target_p=target_p, max_time=trial_time)
+margin = pyntbci.stopping.MarginStopping(rcca, segment_time=segment_time, fs=fs, target_p=target_p, max_time=trial_time)
 margin.fit(X, y)
 
 # Plot dynamic stopping
@@ -335,7 +335,7 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
-    margin = pyntbci.stopping.MarginStopping(rcca, segment_time, fs, target_p=target_p)
+    margin = pyntbci.stopping.MarginStopping(rcca, segment_time=segment_time, fs=fs, target_p=target_p)
     margin.fit(X_trn, y_trn)
 
     # Loop segments
@@ -408,8 +408,8 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="correlation")
-    beta = pyntbci.stopping.DistributionStopping(rcca, target_p=target_p, fs=fs, max_time=trial_time,
-                                                 distribution="beta")
+    beta = pyntbci.stopping.DistributionStopping(rcca, segment_time=segment_time, fs=fs, target_p=target_p,
+                                                 distribution="beta", max_time=trial_time)
     beta.fit(X, y)
 
     # Loop segments
@@ -472,7 +472,7 @@ cr = 1.0
 # Fit classifier
 rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                 onset_event=onset_event, score_metric="inner")
-bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, cr=cr, max_time=trial_time)
+bayes = pyntbci.stopping.BayesStopping(rcca, segment_time=segment_time, fs=fs, cr=cr, max_time=trial_time)
 bayes.fit(X, y)
 
 # Plot dynamic stopping
@@ -503,7 +503,8 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
-    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds0", cr=cr, max_time=trial_time)
+    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time=segment_time, fs=fs, method="bds0", cr=cr,
+                                           max_time=trial_time)
     bayes.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
@@ -573,8 +574,8 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
-    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds1", cr=cr, target_pf=target_pf,
-                                           target_pd=target_pd, max_time=trial_time)
+    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time=segment_time, fs=fs, method="bds1", cr=cr,
+                                           target_pf=target_pf, target_pd=target_pd, max_time=trial_time)
     bayes.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
@@ -644,8 +645,8 @@ for i_fold in range(n_folds):
     # Train template-matching classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event=event, encoding_length=encoding_length,
                                     onset_event=onset_event, score_metric="inner")
-    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time, fs, method="bds2", cr=cr, target_pf=target_pf,
-                                           target_pd=target_pd, max_time=trial_time)
+    bayes = pyntbci.stopping.BayesStopping(rcca, segment_time=segment_time, fs=fs, method="bds2", cr=cr,
+                                           target_pf=target_pf, target_pd=target_pd, max_time=trial_time)
     bayes.fit(X_trn, y_trn)
 
     # Apply template-matching classifier
