@@ -1,4 +1,4 @@
-import copy
+from copy import deepcopy
 from typing import Union
 
 import numpy as np
@@ -412,7 +412,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         assert X.ndim == 4
 
         # Fit separate models for each databank
-        self.models_ = [copy.deepcopy(self.estimator).fit(X[:, :, :, i], y) for i in range(X.shape[3])]
+        self.models_ = [deepcopy(self.estimator).fit(X[:, :, :, i], y) for i in range(X.shape[3])]
 
         # Fit gating
         scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
@@ -1148,3 +1148,54 @@ class rCCA(BaseEstimator, ClassifierMixin):
             T = self.cca_[0].transform(X=None, Y=M)[1]
         self.Ts_ = T[:, :, :self.stimulus.shape[1]]
         self.Tw_ = T[:, :, self.stimulus.shape[1]:]
+
+
+class urCCA(BaseEstimator, ClassifierMixin):
+
+    def __init__(
+            self,
+            stimulus: NDArray,
+            fs: int,
+            event: str = "duration",
+            onset_event: bool = False,
+            encoding_length: Union[float, list[float]] = None,
+    ) -> None:
+
+        stimulus = np.tile(stimulus, (1, 2))
+        E, events = event_matrix(stimulus, event, onset_event)
+        M = encoding_matrix(E, int(encoding_length * fs))
+        self.Ms = M[:, :, :int(M.shape[2] / 2)]
+        self.Mw = M[:, :, int(M.shape[2] / 2):]
+
+        # Setup CCA, one for each class
+        self.ccas = [CCA(n_components=1, running=True) for i_class in range(self.Ms.shape[0])]
+
+    def fit(self, X, y=None):
+
+        n = int(np.ceil(X.shape[1] / self.Ms.shape[2]))
+        if n == 0:
+            M = self.Ms[:, :, :X.shape[1]]
+        else:
+            M = np.concatenate((self.Ms, np.tile(self.Mw, (1, 1, n))), axis=2)[:, :, :X.shape[1]]
+
+        # Compute correlations
+        self.rho = np.zeros(self.Ms.shape[0])
+        for i_class in range(self.Ms.shape[0]):
+
+            # Fit a per-class model
+            self.ccas[i_class].fit(X.T, M[i_class, :, :].T)
+
+            # Compute model fit
+            x, t = self.ccas[i_class].transform(X.T, M[i_class, :, :].T)
+            self.rho[i_class] = correlation(x.T, t.T)[0, 0]
+
+        return self
+
+    def predict(self, X=None):
+        # Maximize correlation
+        yh = np.argmax(self.rho)
+        return yh
+
+    def update(self, y):
+        # Update all CCAs with the predicted model
+        self.ccas = [deepcopy(self.ccas[y]) for i_class in range(self.Ms.shape[0])]

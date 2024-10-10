@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.6.0 (10-10-2024)
+## Version 1.6.1 (10-10-2024)
 
 ### Added
 - Added `find_neighbours` and `find_worst_neighbour` to `utilities`
