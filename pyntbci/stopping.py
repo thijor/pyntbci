@@ -188,10 +188,8 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["alpha_", "sigma_", "b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
 
         # Estimate current segment
-        if self.max_time is not None:
-            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-            i_segment = np.max([0, i_segment])  # lower bound 0
-            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
@@ -411,19 +409,19 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
     ----------
     estimator: ClassifierMixin
         The classifier object that performs the classification.
+    segment_time: float
+        The size of a segment of data at which classification is performed ins seconds.
+    fs: int
+        The sampling frequency of the EEG data in Hz. Required for max_time.
+    trained: bool (default: False)
+        Whether to calibrate the beta distributions on training data.
+    distribution: str (default: "beta")
+        The distribution to use for the non-target / non-maximum distribution. Either beta or norm.
     target_p: float (default: 0.95)
         The targeted probability of correct classification.
-    fs: int (default None)
-        The sampling frequency of the EEG data in Hz. Required for max_time.
     max_time: float (default: None)
         The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
         it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
-    trained: bool (default: False)
-        Whether to calibrate the beta distributions on training data.
-    segment_time: float
-        The size of a segment of data at which classification is performed ins seconds.
-    distribution: str (default: "beta")
-        The distribution to use for the non-target / non-maximum distribution. Either beta or norm.
 
     Attributes
     ----------
@@ -443,23 +441,19 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
     def __init__(
             self,
             estimator: ClassifierMixin,
-            target_p: float = 0.95,
-            fs: int = None,
-            max_time: float = None,
+            segment_time: float,
+            fs: int,
             trained: bool = False,
-            segment_time: float = None,
             distribution: str = "beta",
+            target_p: float = 0.95,
+            max_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.target_p = target_p
+        self.segment_time = segment_time
         self.fs = fs
         self.max_time = max_time
-        if self.max_time is not None:
-            assert self.fs is not None, "If max_time is specified, fs must be specified."
         self.trained = trained
-        self.segment_time = segment_time
-        if self.trained:
-            assert self.segment_time is not None, "If trained=True, segment_time cannot be None."
         self.distribution = distribution
         assert self.distribution in ["beta", "norm"], "Distribution must be beta or norm."
 
@@ -528,10 +522,8 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         """
 
         # Estimate current segment
-        if self.max_time is not None:
-            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-            i_segment = np.max([0, i_segment])  # lower bound 0
-            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
@@ -717,10 +709,8 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["margins_"])
 
         # Estimate current segment
-        if self.max_time is not None:
-            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-            i_segment = np.max([0, i_segment])  # lower bound 0
-            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
@@ -877,10 +867,8 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["values_"])
 
         # Estimate current segment
-        if self.max_time is not None:
-            i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-            i_segment = np.max([0, i_segment])  # lower bound 0
-            i_segment = np.min([i_segment, self.margins_.size - 1])  # upper bound max segments
+        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
+        i_segment = np.max([0, i_segment])  # lower bound 0
 
         if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
 
