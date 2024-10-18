@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 1.7.0
+
+### Added
+- Added `tmin` to `encoding_matrix` in `utilities`
+- - Added `tmin` to `rCCA` in `classifiers`
+
+### Changed
+
+### Fixed
+
 ## Version 1.6.1 (10-10-2024)
 
 ### Added

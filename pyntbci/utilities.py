@@ -189,6 +189,7 @@ def encoding_matrix(
         length: Union[int, list[int]],
         stride: int = 1,
         amplitude: NDArray = None,
+        tmin: float = 0,
 ) -> NDArray:
     """Make a Toeplitz-like encoding matrix. Used to phase-shift the stimulus (forward / encoding model), per event to
     learn a (or several) temporal filter(s). Also called a "structure matrix" or "design matrix".
@@ -204,6 +205,8 @@ def encoding_matrix(
         The step size in samples over the length of the temporal filter.
     amplitude: NDArray (default: None)
         Amplitude information to embed in the encoding matrix of shape (n_classes, n_samples). If None, it is ignored.
+    tmin: float (default: 0)
+        The start of stimulation in samples. Can be used if there was a delay in the marker.
     Returns
     -------
     ematrix: NDArray
@@ -237,6 +240,21 @@ def encoding_matrix(
 
     # Concatenate matrices per event
     ematrix = np.concatenate(ematrix, axis=1)
+
+    # Add delay
+    if tmin < 0:
+        # Stimulation started earlier, pad with zeros at the end
+        ematrix = np.concatenate((
+            ematrix[:, :, np.abs(tmin):],
+            np.zeros((ematrix.shape[0], ematrix.shape[1], np.abs(tmin)))
+        ), axis=2)
+    elif tmin > 0:
+        # Stimulation started later, pad with zeros at the start
+        ematrix = np.concatenate((
+            np.zeros((ematrix.shape[0], ematrix.shape[1], tmin)),
+            ematrix[:, :, :-tmin]
+        ), axis=2)
+
     return ematrix
 
 

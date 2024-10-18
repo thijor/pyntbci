@@ -782,10 +782,12 @@ class rCCA(BaseEstimator, ClassifierMixin):
         The number of CCA components to use.
     squeeze_components: bool (default: True)
         Remove the component dimension when n_components=1.
-    alpha_x: float (Default: None)
+    alpha_x: float (default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
-    alpha_m: float (Default: None)
+    alpha_m: float (default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of M. If None, all variance.
+    tmin: float (default: 0)
+        The start of stimulation in seconds. Can be used if there was a delay in the marker.
 
     Attributes
     ----------
@@ -845,6 +847,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
             squeeze_components: bool = True,
             alpha_x: float = None,
             alpha_m: float = None,
+            tmin: float = 0,
     ) -> None:
         self.stimulus = stimulus
         self.fs = fs
@@ -878,6 +881,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.squeeze_components = squeeze_components
         self.alpha_x = alpha_x
         self.alpha_m = alpha_m
+        self.tmin = tmin
 
     def _get_M(
             self,
@@ -911,8 +915,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         # Get encoding matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
-        M = encoding_matrix(E, int(self.encoding_length * self.fs), int(self.encoding_stride * self.fs), amplitudes)
-        return M[:, :, :n_samples]
+        M = encoding_matrix(E, int(self.encoding_length * self.fs), int(self.encoding_stride * self.fs), amplitudes,
+                            int(self.tmin * self.fs))
+        M = M[:, :, :n_samples]
+
+        return M
 
     def decision_function(
             self,
