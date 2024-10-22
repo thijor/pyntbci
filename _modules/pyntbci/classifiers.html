@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.classifiers &mdash; PyntBCI 1.6.1 documentation</title>
+  <title>pyntbci.classifiers &mdash; PyntBCI 1.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
@@ -16,8 +16,8 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d6a008b6"></script>
-      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/documentation_options.js?v=030dc6f6"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -911,10 +911,12 @@
 <span class="sd">        The number of CCA components to use.</span>
 <span class="sd">    squeeze_components: bool (default: True)</span>
 <span class="sd">        Remove the component dimension when n_components=1.</span>
-<span class="sd">    alpha_x: float (Default: None)</span>
+<span class="sd">    alpha_x: float (default: None)</span>
 <span class="sd">        Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.</span>
-<span class="sd">    alpha_m: float (Default: None)</span>
+<span class="sd">    alpha_m: float (default: None)</span>
 <span class="sd">        Amount of variance to retain in computing the inverse of the covariance matrix of M. If None, all variance.</span>
+<span class="sd">    tmin: float (default: 0)</span>
+<span class="sd">        The start of stimulation in seconds. Can be used if there was a delay in the marker.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -974,6 +976,7 @@
             <span class="n">squeeze_components</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
             <span class="n">alpha_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">alpha_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
@@ -1007,6 +1010,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">squeeze_components</span> <span class="o">=</span> <span class="n">squeeze_components</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span> <span class="o">=</span> <span class="n">alpha_x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span> <span class="o">=</span> <span class="n">alpha_m</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmin</span> <span class="o">=</span> <span class="n">tmin</span>
 
     <span class="k">def</span> <span class="nf">_get_M</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -1040,8 +1044,11 @@
 
         <span class="c1"># Get encoding matrices</span>
         <span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_</span> <span class="o">=</span> <span class="n">event_matrix</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span><span class="p">)</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">encoding_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="n">amplitudes</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">encoding_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="n">amplitudes</span><span class="p">,</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmin</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">M</span>
 
 <div class="viewcode-block" id="rCCA.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.decision_function">[docs]</a>

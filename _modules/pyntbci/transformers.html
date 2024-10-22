@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.transformers &mdash; PyntBCI 1.6.1 documentation</title>
+  <title>pyntbci.transformers &mdash; PyntBCI 1.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
@@ -16,8 +16,8 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d6a008b6"></script>
-      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/documentation_options.js?v=030dc6f6"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -110,18 +110,18 @@
 <span class="sd">    gamma_y: float | list[float] | NDArray (default: None)</span>
 <span class="sd">        Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If</span>
 <span class="sd">        None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).</span>
-<span class="sd">    estimator_x: BaseEstimator (Default: None)</span>
+<span class="sd">    estimator_x: BaseEstimator (default: None)</span>
 <span class="sd">        A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom</span>
 <span class="sd">        implementation of the empirical covariance is used.</span>
-<span class="sd">    estimator_y: BaseEstimator (Default: None)</span>
+<span class="sd">    estimator_y: BaseEstimator (default: None)</span>
 <span class="sd">        A BaseEstimator object that estimates a covariance matrix for Y using a fit method. If None, a custom</span>
 <span class="sd">        implementation of the empirical covariance is used.</span>
 <span class="sd">    running: bool (default: False)</span>
 <span class="sd">        If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps</span>
 <span class="sd">        track of previous data to update a running average and covariance for the CCA.</span>
-<span class="sd">    alpha_x: float (Default: None)</span>
+<span class="sd">    alpha_x: float (default: None)</span>
 <span class="sd">        Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.</span>
-<span class="sd">    alpha_y: float (Default: None)</span>
+<span class="sd">    alpha_y: float (default: None)</span>
 <span class="sd">        Amount of variance to retain in computing the inverse of the covariance matrix of Y. If None, all variance.</span>
 
 <span class="sd">    Attributes</span>
