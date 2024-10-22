@@ -609,7 +609,7 @@ def pinv(
     ----------
     A: NDArray
         Square matrix of shape n x n to compute pseudo-inverse for.
-    alpha: float (Default: None)
+    alpha: float (default: None)
         The amount of variance the retain.
 
     Returns

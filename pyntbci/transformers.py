@@ -23,18 +23,18 @@ class CCA(BaseEstimator, TransformerMixin):
     gamma_y: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
         None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
-    estimator_x: BaseEstimator (Default: None)
+    estimator_x: BaseEstimator (default: None)
         A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom
         implementation of the empirical covariance is used.
-    estimator_y: BaseEstimator (Default: None)
+    estimator_y: BaseEstimator (default: None)
         A BaseEstimator object that estimates a covariance matrix for Y using a fit method. If None, a custom
         implementation of the empirical covariance is used.
     running: bool (default: False)
         If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
         track of previous data to update a running average and covariance for the CCA.
-    alpha_x: float (Default: None)
+    alpha_x: float (default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
-    alpha_y: float (Default: None)
+    alpha_y: float (default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of Y. If None, all variance.
 
     Attributes
