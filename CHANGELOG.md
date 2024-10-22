@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.7.0
+## Version 1.7.0 (22-10-2024)
 
 ### Added
 - Added `tmin` to `encoding_matrix` in `utilities`
