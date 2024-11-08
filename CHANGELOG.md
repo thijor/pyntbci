@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.8.0 ()
+## Version 1.8.0 (08-11-2024)
 
 ### Added
 - Added `min_time` to stopping methods in `stopping`

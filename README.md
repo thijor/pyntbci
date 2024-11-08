@@ -1,8 +1,20 @@
 # PyntBCI
 
-The Python Noise-Tagging Brain-Computer interface (PyntBCI) library is a Python toolbox for the noise-tagging brain-computer interfacing (BCI) project developed at the Donders Institute for Brain, Cognition and Behaviour, Radboud University, Nijmegen, the Netherlands. PyntBCI contains various signal processing steps and machine learning algorithms for BCIs that make use of evoked responses of the electroencephalogram (EEG), specifically code-modulated responses such as the code-modulated visual evoked potential (c-VEP). For a constructive review of this field, see:
+The Python Noise-Tagging Brain-Computer Interfacing (PyntBCI) library is a specialized Python toolbox developed for the noise-tagging brain-computer interfacing (BCI) project at the Donders Institute for Brain, Cognition, and Behaviour at Radboud University in Nijmegen, the Netherlands. PyntBCI offers a suite of signal processing tools and machine learning algorithms tailored for BCIs using evoked responses, such as those recorded by electroencephalography (EEG). It is particularly focused on supporting code-modulated responses like the code-modulated visual evoked potential (c-VEP). 
 
-* Martínez-Cagigal, V., Thielen, J., Santamaría-Vázquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021). Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): a literature review. Journal of Neural Engineering. DOI: [10.1088/1741-2552/ac38cf](https://doi.org/10.1088/1741-2552/ac38cf)
+For detailed documentation as wel as tutorials and examples, see:
+- https://thijor.github.io/pyntbci/
+
+For a constructive review of the c-VEP BCI field, see:
+- Martínez-Cagigal, V., Thielen, J., Santamaría-Vázquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021). Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): a literature review. Journal of Neural Engineering. DOI: [10.1088/1741-2552/ac38cf](https://doi.org/10.1088/1741-2552/ac38cf)
+
+For an extensive literature overview, also see:
+- https://github.com/thijor/cvep-literature.
+
+For an example of an online BCI with PyntBCI, see our Dareplane implementation:
+- https://github.com/thijor/dp-cvep
+- https://github.com/thijor/dp-cvep-speller
+- https://github.com/thijor/dp-cvep-decoder
 
 ## Installation
 
