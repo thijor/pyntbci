@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.stopping &mdash; PyntBCI 1.7.0 documentation</title>
+  <title>pyntbci.stopping &mdash; PyntBCI 1.8.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=030dc6f6"></script>
+      <script src="../../_static/documentation_options.js?v=b51e6972"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -117,8 +117,11 @@
 <span class="sd">    target_pd: float (default: 0.80)</span>
 <span class="sd">        The targeted probability for detection.</span>
 <span class="sd">    max_time: float (default: None)</span>
-<span class="sd">        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if</span>
-<span class="sd">        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.</span>
+<span class="sd">        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than</span>
+<span class="sd">        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.</span>
+<span class="sd">    min_time: float (default: None)</span>
+<span class="sd">        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the</span>
+<span class="sd">        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -166,6 +169,7 @@
             <span class="n">target_pf</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
             <span class="n">target_pd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.80</span><span class="p">,</span>
             <span class="n">max_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">min_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
@@ -175,6 +179,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span> <span class="o">=</span> <span class="n">target_pf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span> <span class="o">=</span> <span class="n">target_pd</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="o">=</span> <span class="n">min_time</span>
 
 <div class="viewcode-block" id="BayesStopping.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping.fit">[docs]</a>
@@ -279,11 +284,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;alpha_&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_&quot;</span><span class="p">,</span> <span class="s2">&quot;b0_&quot;</span><span class="p">,</span> <span class="s2">&quot;b1_&quot;</span><span class="p">,</span> <span class="s2">&quot;s0_&quot;</span><span class="p">,</span> <span class="s2">&quot;s1_&quot;</span><span class="p">,</span> <span class="s2">&quot;pf_&quot;</span><span class="p">,</span> <span class="s2">&quot;pm_&quot;</span><span class="p">])</span>
 
-        <span class="c1"># Estimate current segment</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)))</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
+        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">i_segment</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
             <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -333,9 +344,6 @@
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
 
@@ -364,6 +372,12 @@
 <span class="sd">        The targeted value for the criterion to optimize for. Only used if optimization=&quot;target&quot;.</span>
 <span class="sd">    smooth_width: float (default: None)</span>
 <span class="sd">        The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.</span>
+<span class="sd">    max_time: float (default: None)</span>
+<span class="sd">        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than</span>
+<span class="sd">        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.</span>
+<span class="sd">    min_time: float (default: None)</span>
+<span class="sd">        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the</span>
+<span class="sd">        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -381,7 +395,9 @@
             <span class="n">optimization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
             <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
             <span class="n">target</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">smooth_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">smooth_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">max_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">min_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
@@ -391,6 +407,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span> <span class="o">=</span> <span class="n">n_folds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">smooth_width</span> <span class="o">=</span> <span class="n">smooth_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="o">=</span> <span class="n">min_time</span>
 
 <div class="viewcode-block" id="CriterionStopping.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.CriterionStopping.html#pyntbci.stopping.CriterionStopping.fit">[docs]</a>
@@ -496,12 +514,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;stop_time_&quot;</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
-</div>
+        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
+        <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">yh</span></div>
+</div>
 
 
 <div class="viewcode-block" id="DistributionStopping">
@@ -525,8 +549,11 @@
 <span class="sd">    target_p: float (default: 0.95)</span>
 <span class="sd">        The targeted probability of correct classification.</span>
 <span class="sd">    max_time: float (default: None)</span>
-<span class="sd">        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if</span>
-<span class="sd">        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.</span>
+<span class="sd">        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than</span>
+<span class="sd">        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.</span>
+<span class="sd">    min_time: float (default: None)</span>
+<span class="sd">        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the</span>
+<span class="sd">        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -552,14 +579,17 @@
             <span class="n">distribution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span>
             <span class="n">target_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
             <span class="n">max_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">min_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">target_p</span> <span class="o">=</span> <span class="n">target_p</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trained</span> <span class="o">=</span> <span class="n">trained</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_p</span> <span class="o">=</span> <span class="n">target_p</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="o">=</span> <span class="n">min_time</span>
+
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">],</span> <span class="s2">&quot;Distribution must be beta or norm.&quot;</span>
 
 <div class="viewcode-block" id="DistributionStopping.fit">
@@ -631,11 +661,17 @@
 <span class="sd">            trial cannot yet be stopped.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># Estimate current segment</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)))</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
+        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">i_segment</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
             <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -655,10 +691,14 @@
                         <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">distributions_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;loc&quot;</span><span class="p">,</span> <span class="s2">&quot;scale&quot;</span><span class="p">]]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># Fit distribution to current non-max scores</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span>
-                        <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">beta</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scores_sorted</span><span class="p">[</span><span class="n">i_trial</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">floc</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">fscale</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span>
-                        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scores_sorted</span><span class="p">[</span><span class="n">i_trial</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span>
+                            <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">beta</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scores_sorted</span><span class="p">[</span><span class="n">i_trial</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">floc</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">fscale</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span>
+                            <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scores_sorted</span><span class="p">[</span><span class="n">i_trial</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="n">p</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                        <span class="k">continue</span>
 
                 <span class="c1"># Look up probability of maximum score in distribution</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span>
@@ -672,9 +712,6 @@
             <span class="c1"># Classify and set not-stopped-trials to -1</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
@@ -704,8 +741,11 @@
 <span class="sd">    margin_step: float (default: 0.05)</span>
 <span class="sd">        The step size defining the resolution of the threshold margins at which to stop.</span>
 <span class="sd">    max_time: float (default: None)</span>
-<span class="sd">        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if</span>
-<span class="sd">        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.</span>
+<span class="sd">        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than</span>
+<span class="sd">        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.</span>
+<span class="sd">    min_time: float (default: None)</span>
+<span class="sd">        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the</span>
+<span class="sd">        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -729,6 +769,7 @@
             <span class="n">margin_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="n">margin_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
             <span class="n">max_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">min_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
@@ -738,6 +779,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">margin_max</span> <span class="o">=</span> <span class="n">margin_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">margin_step</span> <span class="o">=</span> <span class="n">margin_step</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="o">=</span> <span class="n">min_time</span>
 
 <div class="viewcode-block" id="MarginStopping.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.MarginStopping.html#pyntbci.stopping.MarginStopping.fit">[docs]</a>
@@ -827,11 +869,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;margins_&quot;</span><span class="p">])</span>
 
-        <span class="c1"># Estimate current segment</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)))</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
+        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">i_segment</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
             <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -848,9 +896,6 @@
             <span class="c1"># Classify and set not-stopped-trials to -1</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
@@ -879,8 +924,11 @@
 <span class="sd">    value_step: float (default: 0.05)</span>
 <span class="sd">        The step size defining the resolution of the threshold margins at which to stop.</span>
 <span class="sd">    max_time: float (default: None)</span>
-<span class="sd">        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if</span>
-<span class="sd">        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.</span>
+<span class="sd">        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than</span>
+<span class="sd">        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.</span>
+<span class="sd">    min_time: float (default: None)</span>
+<span class="sd">        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the</span>
+<span class="sd">        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -899,6 +947,7 @@
             <span class="n">value_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="n">value_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
             <span class="n">max_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">min_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
@@ -908,6 +957,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">value_max</span> <span class="o">=</span> <span class="n">value_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value_step</span> <span class="o">=</span> <span class="n">value_step</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="o">=</span> <span class="n">min_time</span>
 
 <div class="viewcode-block" id="ValueStopping.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.ValueStopping.html#pyntbci.stopping.ValueStopping.fit">[docs]</a>
@@ -994,11 +1044,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;values_&quot;</span><span class="p">])</span>
 
-        <span class="c1"># Estimate current segment</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)))</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
+        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">i_segment</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
             <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -1012,9 +1068,6 @@
             <span class="c1"># Classify and set not-stopped-trials to -1</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
