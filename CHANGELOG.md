@@ -9,6 +9,7 @@
 ### Changed
 
 ### Fixed
+- Fixed fit exception in `DistributionStopping` in `stopping`
 
 ## Version 1.7.0 (22-10-2024)
 

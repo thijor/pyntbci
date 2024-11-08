@@ -581,10 +581,14 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
                         loc, scale = [self.distributions_[i_segment][key] for key in ["loc", "scale"]]
                 else:
                     # Fit distribution to current non-max scores
-                    if self.distribution == "beta":
-                        a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=-1, fscale=2)
-                    elif self.distribution == "norm":
-                        loc, scale = norm.fit(scores_sorted[i_trial, :-1])
+                    try:
+                        if self.distribution == "beta":
+                            a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=-1, fscale=2)
+                        elif self.distribution == "norm":
+                            loc, scale = norm.fit(scores_sorted[i_trial, :-1])
+                    except:
+                        p[i_trial] = 0.0
+                        continue
 
                 # Look up probability of maximum score in distribution
                 if self.distribution == "beta":
