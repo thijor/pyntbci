@@ -30,8 +30,11 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
     target_pd: float (default: 0.80)
         The targeted probability for detection.
     max_time: float (default: None)
-        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
-        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
+        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than
+        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.
+    min_time: float (default: None)
+        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the
+        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.
 
     Attributes
     ----------
@@ -79,6 +82,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             target_pf: float = 0.05,
             target_pd: float = 0.80,
             max_time: float = None,
+            min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -88,6 +92,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.target_pf = target_pf
         self.target_pd = target_pd
         self.max_time = max_time
+        self.min_time = min_time
 
     def fit(
             self,
@@ -187,11 +192,17 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["alpha_", "sigma_", "b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
 
-        # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
+        ctime = X.shape[2] / self.fs
 
-        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
+        if self.min_time is not None and ctime <= self.min_time:
+            yh = -1 * np.ones(X.shape[0])
+
+        elif self.max_time is not None and ctime >= self.max_time:
+            yh = self.estimator.predict(X)
+
+        else:
+            i_segment = int(np.round(ctime / self.segment_time)) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
@@ -241,9 +252,6 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
 
-        else:
-            yh = self.estimator.predict(X)
-
         return yh
 
 
@@ -268,6 +276,12 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         The targeted value for the criterion to optimize for. Only used if optimization="target".
     smooth_width: float (default: None)
         The width of the smoothing applied in seconds. If None, the values of the criterion are not smoothened.
+    max_time: float (default: None)
+        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than
+        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.
+    min_time: float (default: None)
+        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the
+        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.
 
     Attributes
     ----------
@@ -285,7 +299,9 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
             optimization: str = "max",
             n_folds: int = 4,
             target: float = None,
-            smooth_width: float = None
+            smooth_width: float = None,
+            max_time: float = None,
+            min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -295,6 +311,8 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         self.n_folds = n_folds
         self.target = target
         self.smooth_width = smooth_width
+        self.max_time = max_time
+        self.min_time = min_time
 
     def fit(
             self,
@@ -395,11 +413,17 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["stop_time_"])
 
-        if X.shape[2] >= self.stop_time_ * self.fs:
-            return self.estimator.predict(X)
-        else:
-            return -1 * np.ones(X.shape[0])
+        ctime = X.shape[2] / self.fs
+        if self.min_time is not None and ctime <= self.min_time:
+            yh = -1 * np.ones(X.shape[0])
 
+        elif (self.max_time is not None and ctime >= self.max_time) or ctime >= self.stop_time_:
+            yh = self.estimator.predict(X)
+
+        else:
+            yh = -1 * np.ones(X.shape[0])
+
+        return yh
 
 class DistributionStopping(BaseEstimator, ClassifierMixin):
     """Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability
@@ -420,8 +444,11 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
     target_p: float (default: 0.95)
         The targeted probability of correct classification.
     max_time: float (default: None)
-        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
-        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
+        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than
+        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.
+    min_time: float (default: None)
+        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the
+        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.
 
     Attributes
     ----------
@@ -447,14 +474,17 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
             distribution: str = "beta",
             target_p: float = 0.95,
             max_time: float = None,
+            min_time: float = None,
     ) -> None:
         self.estimator = estimator
-        self.target_p = target_p
         self.segment_time = segment_time
         self.fs = fs
-        self.max_time = max_time
         self.trained = trained
         self.distribution = distribution
+        self.target_p = target_p
+        self.max_time = max_time
+        self.min_time = min_time
+
         assert self.distribution in ["beta", "norm"], "Distribution must be beta or norm."
 
     def fit(
@@ -521,11 +551,17 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
             trial cannot yet be stopped.
         """
 
-        # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
+        ctime = X.shape[2] / self.fs
 
-        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
+        if self.min_time is not None and ctime <= self.min_time:
+            yh = -1 * np.ones(X.shape[0])
+
+        elif self.max_time is not None and ctime >= self.max_time:
+            yh = self.estimator.predict(X)
+
+        else:
+            i_segment = int(np.round(ctime / self.segment_time)) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
@@ -563,9 +599,6 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
 
-        else:
-            yh = self.estimator.predict(X)
-
         return yh
 
 
@@ -590,8 +623,11 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
     margin_step: float (default: 0.05)
         The step size defining the resolution of the threshold margins at which to stop.
     max_time: float (default: None)
-        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
-        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
+        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than
+        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.
+    min_time: float (default: None)
+        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the
+        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.
 
     Attributes
     ----------
@@ -615,6 +651,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             margin_max: float = 1.0,
             margin_step: float = 0.05,
             max_time: float = None,
+            min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -624,6 +661,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         self.margin_max = margin_max
         self.margin_step = margin_step
         self.max_time = max_time
+        self.min_time = min_time
 
     def fit(
             self,
@@ -708,11 +746,17 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["margins_"])
 
-        # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
+        ctime = X.shape[2] / self.fs
 
-        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
+        if self.min_time is not None and ctime <= self.min_time:
+            yh = -1 * np.ones(X.shape[0])
+
+        elif self.max_time is not None and ctime >= self.max_time:
+            yh = self.estimator.predict(X)
+
+        else:
+            i_segment = int(np.round(ctime / self.segment_time)) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
@@ -729,9 +773,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             # Classify and set not-stopped-trials to -1
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
-
-        else:
-            yh = self.estimator.predict(X)
 
         return yh
 
@@ -756,8 +797,11 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
     value_step: float (default: 0.05)
         The step size defining the resolution of the threshold margins at which to stop.
     max_time: float (default: None)
-        The maximum time at which to force a stop, i.e., a classification. If None, the algorithm will always emit -1 if
-        it cannot stop, otherwise it will emit a classification regardless of the certainty after that maximum time.
+        The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than
+        this maximum time. If None, the algorithm will always emit -1 if it cannot stop.
+    min_time: float (default: None)
+        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the
+        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.
 
     Attributes
     ----------
@@ -776,6 +820,7 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
             value_max: float = 1.0,
             value_step: float = 0.05,
             max_time: float = None,
+            min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -785,6 +830,7 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         self.value_max = value_max
         self.value_step = value_step
         self.max_time = max_time
+        self.min_time = min_time
 
     def fit(
             self,
@@ -866,11 +912,17 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["values_"])
 
-        # Estimate current segment
-        i_segment = int(np.round(X.shape[2] / int(self.segment_time * self.fs))) - 1
-        i_segment = np.max([0, i_segment])  # lower bound 0
+        ctime = X.shape[2] / self.fs
 
-        if self.max_time is None or i_segment < int(self.max_time / self.segment_time) - 1:
+        if self.min_time is not None and ctime <= self.min_time:
+            yh = -1 * np.ones(X.shape[0])
+
+        elif self.max_time is not None and ctime >= self.max_time:
+            yh = self.estimator.predict(X)
+
+        else:
+            i_segment = int(np.round(ctime / self.segment_time)) - 1
+            i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
             scores = self.estimator.decision_function(X)
@@ -884,8 +936,5 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
             # Classify and set not-stopped-trials to -1
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
-
-        else:
-            yh = self.estimator.predict(X)
 
         return yh

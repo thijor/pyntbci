@@ -1,10 +1,20 @@
 # Changelog
 
+## Version 1.8.0 ()
+
+### Added
+- Added `min_time` to stopping methods in `stopping`
+- Added `max_time` to `CriterionStopping` in `stopping`
+
+### Changed
+
+### Fixed
+
 ## Version 1.7.0 (22-10-2024)
 
 ### Added
 - Added `tmin` to `encoding_matrix` in `utilities`
-- - Added `tmin` to `rCCA` in `classifiers`
+- Added `tmin` to `rCCA` in `classifiers`
 
 ### Changed
 
