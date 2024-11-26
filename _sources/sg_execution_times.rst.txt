@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**05:51.761** total execution time for 10 files **from all galleries**:
+**05:53.684** total execution time for 10 files **from all galleries**:
 
 .. container::
 
@@ -33,32 +33,32 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_examples_example_1_rcca.py` (``../examples/example_1_rcca.py``)
-     - 02:35.876
+     - 02:39.595
      - 0.0
    * - :ref:`sphx_glr_examples_example_4_fbrcca.py` (``../examples/example_4_fbrcca.py``)
-     - 01:08.996
+     - 01:08.585
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_1_getting_started.py` (``../tutorials/tutorial_1_getting_started.py``)
-     - 00:54.290
+     - 00:52.493
      - 0.0
    * - :ref:`sphx_glr_examples_example_5_early_stopping.py` (``../examples/example_5_early_stopping.py``)
-     - 00:42.772
+     - 00:43.759
      - 0.0
    * - :ref:`sphx_glr_examples_example_3_etrca.py` (``../examples/example_3_etrca.py``)
-     - 00:10.104
+     - 00:09.812
      - 0.0
    * - :ref:`sphx_glr_examples_example_6_bitwise_decoding.py` (``../examples/example_6_bitwise_decoding.py``)
-     - 00:08.802
+     - 00:08.895
      - 0.0
    * - :ref:`sphx_glr_examples_example_2_ecca.py` (``../examples/example_2_ecca.py``)
-     - 00:04.235
+     - 00:04.169
      - 0.0
    * - :ref:`sphx_glr_examples_example_7_stimulus_optimization.py` (``../examples/example_7_stimulus_optimization.py``)
-     - 00:03.969
+     - 00:03.759
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_2_noise_codes.py` (``../tutorials/tutorial_2_noise_codes.py``)
-     - 00:01.868
+     - 00:01.803
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_3_reconvolution_events.py` (``../tutorials/tutorial_3_reconvolution_events.py``)
-     - 00:00.848
+     - 00:00.815
      - 0.0
