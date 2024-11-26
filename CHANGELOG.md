@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 1.8.1
+
+### Added
+- Added `labels` to `stimplot` in `plotting`
+
+### Changed
+
+### Fixed
+- Fixed fit exception in `DistributionStopping` in `stopping`
+
 ## Version 1.8.0 (08-11-2024)
 
 ### Added

@@ -82,6 +82,7 @@ def stimplot(
         ax: Axes = None,
         upsample: int = 20,
         plotfs: bool = True,
+        labels: list[str] = None,
 ) -> None:
     """
     Plot the stimulus time-series.
@@ -98,6 +99,9 @@ def stimplot(
         A scalar value to upsample the stimulus and event time-series with for improved visualization
     plotfs: bool (default: True)
         Whether to plot vertical gridlines at the original sampling rate fs
+    labels: list[str] (default: None)
+        A list of string labels for each of the stimuli, used as y ticks in the stimulus plot. If None, stimulus labels
+        of 1 to the number of stimuli is used.
     """
     # Make figure
     if ax is None:
@@ -106,10 +110,10 @@ def stimplot(
 
     # Up-sample to better visualize the sharp edges
     S = S.repeat(upsample, axis=1)
-    n_classes, n_samples = S.shape
+    n_stimuli, n_samples = S.shape
 
     # Visualize stimuli
-    ax.plot(np.arange(n_samples) / (upsample * fs), 2 * np.arange(n_classes) + S.T)
+    ax.plot(np.arange(n_samples) / (upsample * fs), 2 * np.arange(n_stimuli) + S[::-1, :].T)
 
     # Add sample rate
     if plotfs:
@@ -117,7 +121,11 @@ def stimplot(
             ax.axvline(i / fs, c="k", alpha=0.1)
 
     # Label axes
-    ax.set_yticks(2 * np.arange(n_classes), np.arange(n_classes))
+    if labels is None:
+        ax.set_yticks(2 * np.arange(n_stimuli), np.arange(1, 1 + n_stimuli)[::-1])
+    else:
+        assert len(labels) == n_stimuli, "The number of provided labels does not match the number of stimuli."
+        ax.set_yticks(2 * np.arange(n_stimuli), labels[::-1])
     ax.set_xlabel("time [s]")
     ax.set_ylabel("stimulus")
 
