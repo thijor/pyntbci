@@ -186,7 +186,7 @@ def decoding_matrix(
 
 def encoding_matrix(
         stimulus: np.array,
-        length: Union[int, list[int]],
+        length: Union[int, list[int], tuple[int,...], NDArray],
         stride: int = 1,
         amplitude: NDArray = None,
         tmin: float = 0,
@@ -198,9 +198,10 @@ def encoding_matrix(
     ----------
     stimulus: NDArray
         Stimulus matrix of shape (n_classes, n_events, n_samples).
-    length: int | list[int]
-        The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If a list is
-        provided, it denotes the length per event.
+    length: int | list[int] | tuple[int] | NDArray
+        The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If an array
+        is provided, it denotes the length per event. If one value is provided, it is assumed all event responses are of
+        the same length.
     stride: int (default: 1)
         The step size in samples over the length of the temporal filter.
     amplitude: NDArray (default: None)
@@ -214,12 +215,20 @@ def encoding_matrix(
     """
     n_classes, n_events, n_samples = stimulus.shape
 
+    assert (isinstance(length, int) or isinstance(length, list) or isinstance(length, tuple) or
+            isinstance(length, np.ndarray)), "encoding_length must be int, list[int], tuple[int], or np.ndarray()."
     if isinstance(length, int):
         length = n_events * [length]
     elif isinstance(length, list) or isinstance(length, tuple):
-        assert len(length) == n_events, "len(encoding_length) does not match S.shape[1]."
-    else:
-        raise Exception("encoding_length should be int, list[int], or tuple[int].")
+        if len(length) == 1:
+            length *= n_events
+        assert len(length) == n_events, "the number of events in encoding_length must match those in stimulus."
+        assert all([isinstance(value, int) for value in length]), "encoding_length must contain integer values."
+    elif isinstance(length, np.ndarray):
+        if length.size == 1:
+            length = np.repeat(length, n_events)
+        assert length.size == n_events, "the number of events in encoding_length must match those in stimulus."
+        assert np.issubdtype(length.dtype, np.integer), "encoding_length must contain integer values."
 
     # Create encoding window per event
     ematrix = []

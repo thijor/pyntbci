@@ -298,6 +298,26 @@ class TestRCCA(unittest.TestCase):
         yh = rcca.predict(X)
         self.assertEqual((X.shape[0], ), yh.shape)
 
+    def test_rcca_encoding_length(self):
+        fs = 200
+        encoding_length = [0.3, 0.1]
+        X = np.random.rand(111, 64, 2 * fs)
+        y = np.random.choice(5, 111)
+        V = np.random.rand(5, fs) > 0.5
+
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=fs, event="refe", encoding_length=encoding_length)
+        rcca.fit(X, y)
+        self.assertEqual((X.shape[1], 1), rcca.w_.shape)
+        self.assertEqual((int(sum(encoding_length) * fs), 1), rcca.r_.shape)
+        self.assertEqual((V.shape[0], 1, V.shape[1]), rcca.Ts_.shape)
+        self.assertEqual((V.shape[0], 1, V.shape[1]), rcca.Tw_.shape)
+
+        z = rcca.decision_function(X)
+        self.assertEqual((X.shape[0], V.shape[0]), z.shape)
+
+        yh = rcca.predict(X)
+        self.assertEqual((X.shape[0], ), yh.shape)
+
     def test_rcca_score_metric(self):
         fs = 200
         encoding_length = 0.3

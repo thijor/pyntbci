@@ -8,7 +8,7 @@
 ### Changed
 
 ### Fixed
-- Fixed fit exception in `DistributionStopping` in `stopping`
+- Fixed array `encoding_length` of `rCCA` in `classifiers` 
 
 ## Version 1.8.0 (08-11-2024)
 

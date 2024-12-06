@@ -862,9 +862,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
         else:
             self.decoding_stride = decoding_stride
         if encoding_length is None:
-            self.encoding_length = 1 / fs
+            self.encoding_length = np.atleast_1d(1 / fs)
         else:
-            self.encoding_length = encoding_length
+            self.encoding_length = np.atleast_1d(encoding_length)
         if encoding_stride is None:
             self.encoding_stride = 1 / fs
         else:
@@ -915,8 +915,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         # Get encoding matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
-        M = encoding_matrix(E, int(self.encoding_length * self.fs), int(self.encoding_stride * self.fs), amplitudes,
-                            int(self.tmin * self.fs))
+        M = encoding_matrix(E, (self.encoding_length * self.fs).astype("uint"), int(self.encoding_stride * self.fs),
+                            amplitudes, int(self.tmin * self.fs))
         M = M[:, :, :n_samples]
 
         return M

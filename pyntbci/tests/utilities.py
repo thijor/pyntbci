@@ -135,14 +135,55 @@ class TestEncodingMatrix(unittest.TestCase):
         self.assertEqual(M.shape[1], int(encoding_length / encoding_stride) * E.shape[1])  # response length(s)
         self.assertEqual(M.shape[2], S.shape[1])  # samples
 
-    def test_encoding_matrix_encoding_length_list(self):
-        encoding_length = [31, 41]
-        S = np.random.rand(17, 123) > 0.5
-        E = pyntbci.utilities.event_matrix(stimulus=S, event="refe")[0]
-        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=encoding_length)
+    def test_encoding_matrix_encoding_length(self):
+        S = np.tile(np.array([0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0]), reps=10).reshape([1, -1])  # 3 events
+        E, events = pyntbci.utilities.event_matrix(stimulus=S, event="dur")
+
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=31)
         self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], sum(encoding_length))  # response length(s)
+        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
         self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=[31])
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=(31,))
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=np.array([31]))
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=[31, 41, 51])
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], sum([31, 41, 51]))  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=(31, 41, 51))
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], sum([31, 41, 51]))  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=np.array([31, 41, 51]))
+        self.assertEqual(M.shape[0], S.shape[0])  # classes
+        self.assertEqual(M.shape[1], np.array([31, 41, 51]).sum())  # response length(s)
+        self.assertEqual(M.shape[2], S.shape[1])  # samples
+
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, 31.0)  # float
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, [31, 41])  # too few
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, [31, 41, 51, 61])  # too many
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, [31., 41., 51.])  # float
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, (31, 41))  # too few
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, (31, 41, 51, 61))  # too many
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, (31., 41., 51.))  # float
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, np.array([31, 41]))  # too few
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, np.array([31, 41, 51, 61]))  # too many
+        self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, np.array([31., 41., 51.]))  # float
 
 
 class TestEventMatrix(unittest.TestCase):
