@@ -285,7 +285,7 @@
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.encoding_matrix.html#pyntbci.utilities.encoding_matrix">[docs]</a>
 <span class="k">def</span> <span class="nf">encoding_matrix</span><span class="p">(</span>
         <span class="n">stimulus</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-        <span class="n">length</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+        <span class="n">length</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span><span class="o">...</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">],</span>
         <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">amplitude</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -297,9 +297,10 @@
 <span class="sd">    ----------</span>
 <span class="sd">    stimulus: NDArray</span>
 <span class="sd">        Stimulus matrix of shape (n_classes, n_events, n_samples).</span>
-<span class="sd">    length: int | list[int]</span>
-<span class="sd">        The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If a list is</span>
-<span class="sd">        provided, it denotes the length per event.</span>
+<span class="sd">    length: int | list[int] | tuple[int] | NDArray</span>
+<span class="sd">        The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If an array</span>
+<span class="sd">        is provided, it denotes the length per event. If one value is provided, it is assumed all event responses are of</span>
+<span class="sd">        the same length.</span>
 <span class="sd">    stride: int (default: 1)</span>
 <span class="sd">        The step size in samples over the length of the temporal filter.</span>
 <span class="sd">    amplitude: NDArray (default: None)</span>
@@ -313,12 +314,20 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_classes</span><span class="p">,</span> <span class="n">n_events</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span>
 
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)),</span> <span class="s2">&quot;encoding_length must be int, list[int], tuple[int], or np.ndarray().&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="n">length</span> <span class="o">=</span> <span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">length</span><span class="p">]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;len(encoding_length) does not match S.shape[1].&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;encoding_length should be int, list[int], or tuple[int].&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">*=</span> <span class="n">n_events</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in encoding_length must match those in stimulus.&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">length</span><span class="p">]),</span> <span class="s2">&quot;encoding_length must contain integer values.&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">length</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">n_events</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">length</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in encoding_length must match those in stimulus.&quot;</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">length</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span> <span class="s2">&quot;encoding_length must contain integer values.&quot;</span>
 
     <span class="c1"># Create encoding window per event</span>
     <span class="n">ematrix</span> <span class="o">=</span> <span class="p">[]</span>
