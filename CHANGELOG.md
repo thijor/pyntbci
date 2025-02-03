@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed array `encoding_length` of `rCCA` in `classifiers` 
+- Fixed `smooth_width` of `CriterionStopping` in `stopping`
 
 ## Version 1.8.0 (08-11-2024)
 

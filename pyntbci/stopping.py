@@ -372,11 +372,9 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
         # Smoothen
         if self.smooth_width is not None:
-            width = int(np.round((self.smooth_width / self.segment_time - 1) / 2))
-            for i in range(scores.size):
-                start = np.max([0, i - width])
-                stop = np.min([i + width, scores.size])
-                scores[i] = scores[start:stop].mean()
+            width = int(self.smooth_width / self.segment_time)
+            kernel = np.full(width, 1/width)
+            scores = np.convolve(scores, kernel, mode="same")
 
         # Optimize the criterion
         if self.optimization == "max":
