@@ -329,7 +329,7 @@ reached, hence static stopping.
 
 
 .. image-sg:: /examples/images/sphx_glr_example_5_early_stopping_002.png
-   :alt: Maximum ITR early stopping: avg acc 0.89 | avg dur 0.84 | avg itr 109.8
+   :alt: Maximum ITR early stopping: avg acc 0.80 | avg dur 0.70 | avg itr 98.5
    :srcset: /examples/images/sphx_glr_example_5_early_stopping_002.png
    :class: sphx-glr-single-img
 
@@ -339,9 +339,9 @@ reached, hence static stopping.
  .. code-block:: none
 
     Maximum ITR:
-            Accuracy: avg=0.89 with std=0.05
-            Duration: avg=0.84 with std=0.05
-            ITR: avg=109.8 with std=8.93
+            Accuracy: avg=0.80 with std=0.13
+            Duration: avg=0.70 with std=0.17
+            ITR: avg=98.5 with std=21.94
 
 
 
@@ -1064,7 +1064,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 44.571 seconds)
+   **Total running time of the script:** (0 minutes 43.854 seconds)
 
 
 .. _sphx_glr_download_examples_example_5_early_stopping.py:
