@@ -236,7 +236,7 @@ hence static stopping.
 
 
 .. image-sg:: /examples/images/sphx_glr_example_5_early_stopping_001.png
-   :alt: Maximum accuracy early stopping: avg acc 1.00 | avg dur 1.26 | avg itr 114.9
+   :alt: Maximum accuracy early stopping: avg acc 1.00 | avg dur 1.30 | avg itr 112.7
    :srcset: /examples/images/sphx_glr_example_5_early_stopping_001.png
    :class: sphx-glr-single-img
 
@@ -247,8 +247,8 @@ hence static stopping.
 
     Maximum accuracy:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=1.26 with std=0.08
-            ITR: avg=114.9 with std=4.30
+            Duration: avg=1.30 with std=0.00
+            ITR: avg=112.7 with std=0.00
 
 
 
@@ -329,7 +329,7 @@ reached, hence static stopping.
 
 
 .. image-sg:: /examples/images/sphx_glr_example_5_early_stopping_002.png
-   :alt: Maximum ITR early stopping: avg acc 0.80 | avg dur 0.70 | avg itr 98.5
+   :alt: Maximum ITR early stopping: avg acc 0.88 | avg dur 0.82 | avg itr 109.6
    :srcset: /examples/images/sphx_glr_example_5_early_stopping_002.png
    :class: sphx-glr-single-img
 
@@ -339,9 +339,9 @@ reached, hence static stopping.
  .. code-block:: none
 
     Maximum ITR:
-            Accuracy: avg=0.80 with std=0.13
-            Duration: avg=0.70 with std=0.17
-            ITR: avg=98.5 with std=21.94
+            Accuracy: avg=0.88 with std=0.08
+            Duration: avg=0.82 with std=0.12
+            ITR: avg=109.6 with std=14.98
 
 
 
@@ -426,7 +426,7 @@ stopping.
 
 
 .. image-sg:: /examples/images/sphx_glr_example_5_early_stopping_003.png
-   :alt: Targeted accuracy early stopping: avg acc 1.00 | avg dur 1.26 | avg itr 114.9
+   :alt: Targeted accuracy early stopping: avg acc 1.00 | avg dur 1.30 | avg itr 112.7
    :srcset: /examples/images/sphx_glr_example_5_early_stopping_003.png
    :class: sphx-glr-single-img
 
@@ -437,8 +437,8 @@ stopping.
 
     Targeted accuracy:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=1.26 with std=0.08
-            ITR: avg=114.9 with std=4.30
+            Duration: avg=1.30 with std=0.00
+            ITR: avg=112.7 with std=0.00
 
 
 
@@ -1064,7 +1064,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 43.854 seconds)
+   **Total running time of the script:** (0 minutes 45.089 seconds)
 
 
 .. _sphx_glr_download_examples_example_5_early_stopping.py:
