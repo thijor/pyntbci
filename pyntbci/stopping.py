@@ -367,18 +367,19 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
                 else:
                     raise Exception("Unknown criterion:", self.criterion)
 
-        # Average folds
-        scores = scores.mean(axis=0)
-
         # Smoothen
         if self.smooth_width is not None:
             width = int(self.smooth_width / self.segment_time)
             kernel = np.full(width, 1/width)
-            scores = np.convolve(scores, kernel, mode="same")
+            for i_fold in range(self.n_folds):
+                scores[i_fold, :] = np.convolve(scores[i_fold, :], kernel, mode="same")
+
+        # Average folds
+        scores = scores.mean(axis=0)
 
         # Optimize the criterion
         if self.optimization == "max":
-            self.stop_time_ = np.argmax(scores) * self.segment_time
+            self.stop_time_ = (1 + np.argmax(scores)) * self.segment_time
         elif self.optimization == "target":
             if self.target is None:
                 raise Exception("For optimization target one should set the target")
@@ -386,7 +387,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
             if len(idx) == 0:
                 self.stop_time_ = X.shape[2] / self.fs
             else:
-                self.stop_time_ = idx[0] * self.segment_time
+                self.stop_time_ = (1 + idx[0]) * self.segment_time
         else:
             raise Exception("Unknown optimization:", self.optimization)
 
