@@ -195,7 +195,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)
@@ -414,7 +414,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
         ctime = X.shape[2] / self.fs
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif (self.max_time is not None and ctime >= self.max_time) or ctime >= self.stop_time_:
             yh = self.estimator.predict(X)
@@ -553,7 +553,7 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)
@@ -752,7 +752,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)
@@ -918,7 +918,7 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)
