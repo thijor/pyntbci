@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.stimulus.optimize_subset_clustering &mdash; PyntBCI 1.8.1 documentation</title>
+  <title>pyntbci.stimulus.shift &mdash; PyntBCI 1.8.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
@@ -23,8 +23,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.stimulus.optimize_layout_incremental" href="pyntbci.stimulus.optimize_layout_incremental.html" />
-    <link rel="prev" title="pyntbci.stimulus.shift" href="pyntbci.stimulus.shift.html" /> 
+    <link rel="next" title="pyntbci.stimulus.optimize_subset_clustering" href="pyntbci.stimulus.optimize_subset_clustering.html" />
+    <link rel="prev" title="pyntbci.stimulus.modulate" href="pyntbci.stimulus.modulate.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -76,9 +76,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">pyntbci.stimulus.optimize_subset_clustering</li>
+      <li class="breadcrumb-item active">pyntbci.stimulus.shift</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/pyntbci.stimulus.optimize_subset_clustering.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pyntbci.stimulus.shift.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -86,36 +86,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pyntbci-stimulus-optimize-subset-clustering">
-<h1>pyntbci.stimulus.optimize_subset_clustering<a class="headerlink" href="#pyntbci-stimulus-optimize-subset-clustering" title="Link to this heading"></a></h1>
+  <section id="pyntbci-stimulus-shift">
+<h1>pyntbci.stimulus.shift<a class="headerlink" href="#pyntbci-stimulus-shift" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyntbci.stimulus.optimize_subset_clustering">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.stimulus.</span></span><span class="sig-name descname"><span class="pre">optimize_subset_clustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyntbci/stimulus.html#optimize_subset_clustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.stimulus.optimize_subset_clustering" title="Link to this definition"></a></dt>
-<dd><p>Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each
-cluster. The best candidate from each cluster is defined by the minimum maximum correlation with any code outside
-the cluster. This method was developed and evaluated as part of <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.</p>
+<dt class="sig sig-object py" id="pyntbci.stimulus.shift">
+<span class="sig-prename descclassname"><span class="pre">pyntbci.stimulus.</span></span><span class="sig-name descname"><span class="pre">shift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyntbci/stimulus.html#shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.stimulus.shift" title="Link to this definition"></a></dt>
+<dd><p>Shift a code to create multiple.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>NDArray</em>) – Data matrix of shape (n_codes, n_samples).</p></li>
-<li><p><strong>n_subset</strong> (<em>int</em>) – Number of codes in the optimized subset.</p></li>
+<li><p><strong>stimulus</strong> (<em>NDArray</em>) – The stimulus to shift of shape (1, n_bits).</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em> (</em><em>default: 1</em><em>)</em>) – The number of bits to shift.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>subset</strong> – A vector of indices of shape (n_subset) for the optimal subset.</p>
+<dd class="field-even"><p><strong>stimulus</strong> – The set of stimuli with shifted versions of the original of shape (n_classes, n_bits).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
-<p class="rubric">References</p>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id2" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">17</a><span class="fn-bracket">]</span></span>
-<p>Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:
-re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797</p>
-</aside>
-</aside>
 </dd></dl>
 
 <div style='clear:both'></div></section>
@@ -124,8 +114,8 @@ re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 1
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.stimulus.shift.html" class="btn btn-neutral float-left" title="pyntbci.stimulus.shift" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.stimulus.optimize_layout_incremental.html" class="btn btn-neutral float-right" title="pyntbci.stimulus.optimize_layout_incremental" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.stimulus.modulate.html" class="btn btn-neutral float-left" title="pyntbci.stimulus.modulate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.stimulus.optimize_subset_clustering.html" class="btn btn-neutral float-right" title="pyntbci.stimulus.optimize_subset_clustering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

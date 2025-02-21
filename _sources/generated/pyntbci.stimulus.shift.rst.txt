@@ -1,0 +1,12 @@
+﻿pyntbci.stimulus.shift
+======================
+
+.. currentmodule:: pyntbci.stimulus
+
+.. autofunction:: shift
+
+.. include:: pyntbci.stimulus.shift.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -643,6 +643,8 @@
 
 
 
+<div class="viewcode-block" id="shift">
+<a class="viewcode-back" href="../../generated/pyntbci.stimulus.shift.html#pyntbci.stimulus.shift">[docs]</a>
 <span class="k">def</span> <span class="nf">shift</span><span class="p">(</span>
         <span class="n">stimulus</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -670,7 +672,8 @@
     <span class="n">stimulus</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">tmp</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)):</span>
         <span class="n">stimulus</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">stimulus</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">stride</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">stimulus</span>
+    <span class="k">return</span> <span class="n">stimulus</span></div>
+
 </pre></div>
 
            </div>

@@ -18,5 +18,6 @@ Stimulus
     is_gold_code
     is_m_sequence
     modulate
+    shift
     optimize_subset_clustering
     optimize_layout_incremental
