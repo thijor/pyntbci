@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed array `encoding_length` of `rCCA` in `classifiers` 
+- Fixed `gamma_x` and `gamma_y` regularization of `CCA` in `transformers`
 
 ## Version 1.8.0 (08-11-2024)
 
