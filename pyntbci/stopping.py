@@ -195,7 +195,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)
@@ -367,20 +367,19 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
                 else:
                     raise Exception("Unknown criterion:", self.criterion)
 
+        # Smoothen
+        if self.smooth_width is not None:
+            width = int(self.smooth_width / self.segment_time)
+            kernel = np.full(width, 1/width)
+            for i_fold in range(self.n_folds):
+                scores[i_fold, :] = np.convolve(scores[i_fold, :], kernel, mode="same")
+
         # Average folds
         scores = scores.mean(axis=0)
 
-        # Smoothen
-        if self.smooth_width is not None:
-            width = int(np.round((self.smooth_width / self.segment_time - 1) / 2))
-            for i in range(scores.size):
-                start = np.max([0, i - width])
-                stop = np.min([i + width, scores.size])
-                scores[i] = scores[start:stop].mean()
-
         # Optimize the criterion
         if self.optimization == "max":
-            self.stop_time_ = np.argmax(scores) * self.segment_time
+            self.stop_time_ = (1 + np.argmax(scores)) * self.segment_time
         elif self.optimization == "target":
             if self.target is None:
                 raise Exception("For optimization target one should set the target")
@@ -388,7 +387,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
             if len(idx) == 0:
                 self.stop_time_ = X.shape[2] / self.fs
             else:
-                self.stop_time_ = idx[0] * self.segment_time
+                self.stop_time_ = (1 + idx[0]) * self.segment_time
         else:
             raise Exception("Unknown optimization:", self.optimization)
 
@@ -415,7 +414,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
         ctime = X.shape[2] / self.fs
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif (self.max_time is not None and ctime >= self.max_time) or ctime >= self.stop_time_:
             yh = self.estimator.predict(X)
@@ -554,7 +553,7 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)
@@ -753,7 +752,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)
@@ -919,7 +918,7 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
-            yh = -1 * np.ones(X.shape[0])
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
             yh = self.estimator.predict(X)

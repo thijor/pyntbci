@@ -9,7 +9,9 @@
 - Changed `pinv` in `utilities` to work with non-square matrices
 
 ### Fixed
-- Fixed array `encoding_length` of `rCCA` in `classifiers` 
+- Fixed array `encoding_length` of `rCCA` in `classifiers`
+- Fixed `smooth_width` of `CriterionStopping` in `stopping`
+- Fixed 'stop_time_' of `CriterionStopping` in `stopping`
 - Fixed `gamma_x` and `gamma_y` regularization of `CCA` in `transformers`
 
 ## Version 1.8.0 (08-11-2024)
