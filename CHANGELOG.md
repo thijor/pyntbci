@@ -6,6 +6,7 @@
 - Added `labels` to `stimplot` in `plotting`
 
 ### Changed
+- Changed `pinv` in `utilities` to work with non-square matrices
 
 ### Fixed
 - Fixed array `encoding_length` of `rCCA` in `classifiers` 
