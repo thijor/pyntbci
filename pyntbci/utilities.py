@@ -612,23 +612,24 @@ def pinv(
         alpha: float = None
 ) -> NDArray:
     """
-    Compute the pseudo-inverse of a square matrix.
+    Compute the pseudo-inverse of a matrix.
 
     Parameters
     ----------
     A: NDArray
-        Square matrix of shape n x n to compute pseudo-inverse for.
+        Matrix of shape p x q to compute pseudo-inverse for.
     alpha: float (default: None)
         The amount of variance the retain.
 
     Returns
     -------
     iA: NDArray
-        The pseudo-inverse of A of shape n x n.
+        The pseudo-inverse of A of shape p x q.
     """
-    assert A.ndim == 2, "A should be a square matrix."
-    assert A.shape[0] == A.shape[1], "A should be a square matrix."
-    U, d, V = np.linalg.svd(A)
+    assert A.ndim == 2, "A should be a matrix."
+    assert not np.isnan(A).any(), "A should not contains NaNs."
+    assert not np.isinf(A).any(), "A should not contains Infs."
+    U, d, V = np.linalg.svd(A, full_matrices=False)
     if alpha is None:
         d = 1 / d
     else:
@@ -637,7 +638,7 @@ def pinv(
                 d = 1 / d
                 d[d.size - i:] = 0
                 break
-    iA = U.dot(np.diag(d)).dot(V)
+    iA = np.dot(U * d, V)
     return iA
 
 

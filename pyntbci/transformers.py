@@ -141,33 +141,33 @@ class CCA(BaseEstimator, TransformerMixin):
 
         # Regularization
         if self.gamma_x is not None:
-            nu_x = np.trace(Cxx) / X.shape[1]
+            nu_x = np.trace(Cxx) / Cxx.shape[1]
             if isinstance(self.gamma_x, int) or isinstance(self.gamma_x, float):
-                gamma_x = self.gamma_x * np.ones((1, X.shape[1]))
+                gamma_x = np.full(Cxx.shape[1], self.gamma_x)
             elif np.array(self.gamma_x).ndim == 1:
                 gamma_x = np.array(self.gamma_x)[np.newaxis, :]
             else:
                 gamma_x = self.gamma_x
-            Cxx = (1 - gamma_x) * Cxx + gamma_x * nu_x @ np.identity(X.shape[1])
+            Cxx = (1 - gamma_x) * Cxx + nu_x * np.diag(gamma_x)
         if self.gamma_y is not None:
-            nu_y = np.trace(Cyy) / Y.shape[1]
+            nu_y = np.trace(Cyy) / Cyy.shape[1]
             if isinstance(self.gamma_y, int) or isinstance(self.gamma_y, float):
-                gamma_y = self.gamma_y * np.ones((1, Y.shape[1]))
+                gamma_y = np.full(Cyy.shape[1], self.gamma_y)
             elif np.array(self.gamma_y).ndim == 1:
                 gamma_y = np.array(self.gamma_y)[np.newaxis, :]
             else:
                 gamma_y = self.gamma_y
-            Cyy = (1 - gamma_y) * Cyy + gamma_y * nu_y @ np.identity(Y.shape[1])
+            Cyy = (1 - gamma_y) * Cyy + nu_y * np.diag(gamma_y)
 
         # Inverse square root
         if self.alpha_x is None:
-            iCxx = np.real(inv(sqrtm(Cxx)))
+            iCxx = np.real(sqrtm(inv(Cxx)))
         else:
-            iCxx = np.real(pinv(sqrtm(Cxx), self.alpha_x))
+            iCxx = np.real(sqrtm(pinv(Cxx, self.alpha_x)))
         if self.alpha_y is None:
-            iCyy = np.real(inv(sqrtm(Cyy)))
+            iCyy = np.real(sqrtm(inv(Cyy)))
         else:
-            iCyy = np.real(pinv(sqrtm(Cyy), self.alpha_y))
+            iCyy = np.real(sqrtm(pinv(Cyy, self.alpha_y)))
 
         # SVD
         U, self.rho_, V = svd(iCxx @ Cxy @ iCyy)
