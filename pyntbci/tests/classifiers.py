@@ -123,6 +123,19 @@ class TestECCA(unittest.TestCase):
         self.assertEqual((X.shape[1], n_components, n_classes), ecca.w_.shape)
         self.assertEqual(ecca.T_.shape, (n_classes, n_components, X.shape[2]))
 
+    def test_ecca_cca_channels(self):
+        fs = 200
+        X = np.random.rand(111, 64, 2 * fs)
+        n_classes = 5
+        y = np.repeat(np.arange(n_classes), 23)[:111]
+
+        ecca = pyntbci.classifiers.eCCA(lags=None, fs=fs, cca_channels=[4, 5, 6, 10, 55])
+        ecca.fit(X, y)
+        self.assertEqual(ecca.w_.shape, (X.shape[1], 1))
+        self.assertEqual(ecca.T_.shape, (n_classes, 1, X.shape[2]))
+        yh = ecca.predict(X)
+        self.assertEqual(yh.shape, y.shape)
+
 
 class TestEnsemble(unittest.TestCase):
 

@@ -290,9 +290,9 @@ class eCCA(BaseEstimator, ClassifierMixin):
         if self.ensemble:
             self.T_ = np.zeros((n_classes, self.n_components, n_samples))
             for i_class in range(n_classes):
-                self.T_[i_class, :, :] = self.cca_[i_class].transform(X=None, Y=T[[i_class], :, :])[1]
+                self.T_[i_class, :, :] = self.cca_[i_class].transform(T[[i_class], :, :])[0]
         else:
-            self.T_ = self.cca_[0].transform(X=None, Y=T)[1]
+            self.T_ = self.cca_[0].transform(T)[0]
 
         return self
 
