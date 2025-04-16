@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.8.2
+## Version 1.8.2 (16-04-2025)
 
 ### Added
 
@@ -9,7 +9,7 @@
 
 ### Fixed
 - Fixed `cca_channels` in `eCCA` of `classifiers`
-- Fices `lags=[...]` and `ensemble=True` combination in `eCCA` of `classifiers`
+- Fixed `lags=[...]` and `ensemble=True` combination in `eCCA` of `classifiers`
 
 ## Version 1.8.1 (11-03-2025)
 
