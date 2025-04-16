@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+- Changed `stride` in `encoding_matrix` of `utilities` to allow list input like `length`
 
 ### Fixed
 - Fixed `cca_channels` in `eCCA` of `classifiers`
