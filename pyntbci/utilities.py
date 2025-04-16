@@ -255,12 +255,12 @@ def encoding_matrix(
             stimulus[:, i_event, :] *= amplitude
 
         # Create Toeplitz structure
-        n_windows = int(length[i_event] / stride)
+        n_windows = int(length[i_event] / stride[i_event])
         tmp = np.zeros((n_classes, n_windows, n_samples), dtype=stimulus.dtype)
         tmp[:, 0, :] = stimulus[:, i_event, :]
         for i_window in range(1, n_windows):
-            tmp[:, i_window, :] = np.roll(tmp[:, i_window - 1, :], stride, axis=1)
-            tmp[:, i_window, :stride] = 0
+            tmp[:, i_window, :] = np.roll(tmp[:, i_window - 1, :], stride[i_event], axis=1)
+            tmp[:, i_window, :stride[i_event]] = 0
         ematrix.append(tmp)
 
     # Concatenate matrices per event
