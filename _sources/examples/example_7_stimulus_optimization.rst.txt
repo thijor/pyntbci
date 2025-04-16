@@ -283,7 +283,7 @@ grid, such that codes that still correlate much are not placed at neighbouring c
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.678 seconds)
+   **Total running time of the script:** (0 minutes 3.743 seconds)
 
 
 .. _sphx_glr_download_examples_example_7_stimulus_optimization.py:
