@@ -150,7 +150,7 @@ plt.tight_layout()
 # Create structure matrix
 encoding_length = int(0.3 * fs)  # 300 ms responses
 M = pyntbci.utilities.encoding_matrix(E, encoding_length)
-print("M: shape:", M.shape, "(classes x encoding_length*events x samples)")
+print("M:", M.shape, "(classes x encoding_length*events x samples)")
 
 # Plot structure matrix
 i_class = 0  # the class to visualize
@@ -298,4 +298,4 @@ plt.legend()
 plt.title("Learning curve")
 plt.tight_layout()
 
-# plt.show()
+plt.show()

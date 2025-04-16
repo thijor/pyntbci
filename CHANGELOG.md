@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed `cca_channels` in `eCCA` of `classifiers`
+- Fices `lags=[...]` and `ensemble=True` combination in `eCCA` of `classifiers`
 
 ## Version 1.8.1 (11-03-2025)
 

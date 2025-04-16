@@ -230,11 +230,6 @@ class eCCA(BaseEstimator, ClassifierMixin):
         if self.latency is not None:
             X = correct_latency(X, y, -self.latency, self.fs, axis=-1)
 
-        # Synchronize all classes
-        if self.lags is not None:
-            X = correct_latency(X, y, -self.lags, self.fs, axis=-1)
-            y = np.zeros(y.shape, y.dtype)
-
         # Cut trials to cycles
         if self.cycle_size is not None:
             cycle_size = int(self.cycle_size * self.fs)
@@ -256,7 +251,8 @@ class eCCA(BaseEstimator, ClassifierMixin):
         else:
             # Compute a template for latency 0 and shift for all others
             n_classes = len(self.lags)
-            T = np.tile(self._fit_T(X)[np.newaxis, :, :], (n_classes, 1, 1))
+            Z = correct_latency(X, y, -self.lags, self.fs, axis=-1)
+            T = np.tile(self._fit_T(Z)[np.newaxis, :, :], (n_classes, 1, 1))
             T = correct_latency(T, np.arange(n_classes), self.lags, self.fs, axis=-1)
             if self.latency is not None:
                 T = correct_latency(T, np.arange(n_classes), self.latency, self.fs, axis=-1)
