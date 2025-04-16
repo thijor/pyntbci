@@ -272,7 +272,7 @@ the responses to each of the events. However, one could also set different lengt
     # Create structure matrix
     encoding_length = int(0.3 * fs)  # 300 ms responses
     M = pyntbci.utilities.encoding_matrix(E, encoding_length)
-    print("M: shape:", M.shape, "(classes x encoding_length*events x samples)")
+    print("M:", M.shape, "(classes x encoding_length*events x samples)")
 
     # Plot structure matrix
     i_class = 0  # the class to visualize
@@ -298,7 +298,7 @@ the responses to each of the events. However, one could also set different lengt
 
  .. code-block:: none
 
-    M: shape: (32, 216, 504) (classes x encoding_length*events x samples)
+    M: (32, 216, 504) (classes x encoding_length*events x samples)
 
 
 
@@ -487,7 +487,7 @@ in the so-called learning curve, which shows the performance as a function of th
     plt.title("Learning curve")
     plt.tight_layout()
 
-    # plt.show()
+    plt.show()
 
 
 
@@ -503,7 +503,7 @@ in the so-called learning curve, which shows the performance as a function of th
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 46.687 seconds)
+   **Total running time of the script:** (0 minutes 47.150 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_1_getting_started.py:

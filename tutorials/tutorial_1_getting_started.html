@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Getting started &mdash; PyntBCI 1.8.1 documentation</title>
+  <title>Getting started &mdash; PyntBCI 1.8.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1166ed6b"></script>
+      <script src="../_static/documentation_options.js?v=269e6701"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -274,7 +274,7 @@ the responses to each of the events. However, one could also set different lengt
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create structure matrix</span>
 <span class="n">encoding_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>  <span class="c1"># 300 ms responses</span>
 <span class="n">M</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">encoding_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">encoding_length</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;M: shape:&quot;</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes x encoding_length*events x samples)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;M:&quot;</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes x encoding_length*events x samples)&quot;</span><span class="p">)</span>
 
 <span class="c1"># Plot structure matrix</span>
 <span class="n">i_class</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># the class to visualize</span>
@@ -288,7 +288,7 @@ the responses to each of the events. However, one could also set different lengt
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_tutorial_1_getting_started_006.png" srcset="../_images/sphx_glr_tutorial_1_getting_started_006.png" alt="Structure matrix (class 0)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>M: shape: (32, 216, 504) (classes x encoding_length*events x samples)
+<img src="../_images/sphx_glr_tutorial_1_getting_started_006.png" srcset="../_images/sphx_glr_tutorial_1_getting_started_006.png" alt="Structure matrix (class 0)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>M: (32, 216, 504) (classes x encoding_length*events x samples)
 </pre></div>
 </div>
 </section>
@@ -426,10 +426,10 @@ in the so-called learning curve, which shows the performance as a function of th
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Learning curve&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
-<span class="c1"># plt.show()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_tutorial_1_getting_started_009.png" srcset="../_images/sphx_glr_tutorial_1_getting_started_009.png" alt="Learning curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 46.687 seconds)</p>
+<img src="../_images/sphx_glr_tutorial_1_getting_started_009.png" srcset="../_images/sphx_glr_tutorial_1_getting_started_009.png" alt="Learning curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 47.150 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-tutorial-1-getting-started-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/395b5753c97c3f327a53109e7d9928a1/tutorial_1_getting_started.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tutorial_1_getting_started.ipynb</span></code></a></p>
