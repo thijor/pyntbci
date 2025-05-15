@@ -122,6 +122,9 @@
 <span class="sd">    min_time: float (default: None)</span>
 <span class="sd">        The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the</span>
 <span class="sd">        algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.</span>
+<span class="sd">    approach: str (default: &quot;template_inner&quot;)</span>
+<span class="sd">        The approach used to fit the BDS model. Either an analytic template-based method using the inner product, or an</span>
+<span class="sd">        approach using the empirical scores from the estimator object.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -146,8 +149,8 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] Ahmadi, S., Desain, P. &amp; Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked response</span>
-<span class="sd">           brain-computer interfacing</span>
+<span class="sd">    .. [1] Ahmadi, S., Desain, P., &amp; Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response</span>
+<span class="sd">           brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">alpha_</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">sigma_</span><span class="p">:</span> <span class="nb">float</span>
@@ -170,6 +173,7 @@
             <span class="n">target_pd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.80</span><span class="p">,</span>
             <span class="n">max_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">min_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">approach</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;template_inner&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">=</span> <span class="n">segment_time</span>
@@ -180,6 +184,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span> <span class="o">=</span> <span class="n">target_pd</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="o">=</span> <span class="n">min_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">approach</span> <span class="o">=</span> <span class="n">approach</span>
 
 <div class="viewcode-block" id="BayesStopping.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping.fit">[docs]</a>
@@ -204,17 +209,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint</span><span class="p">)</span>
 
-        <span class="c1"># TODO: pyntbci.classifier.BayesStopping does not yet work with pyntbci.classifiers.Ensemble</span>
-        <span class="c1"># N.B. Ensemble does not implement get_T</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">Ensemble</span><span class="p">),</span> <span class="s2">&quot;Not yet implemented for Ensemble!&quot;</span>
-
         <span class="c1"># Fit estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
-        <span class="c1"># TODO: pyntbci.classifier.BayesStopping does not yet work with multiple components in classifiers</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">approach</span> <span class="o">==</span> <span class="s2">&quot;template_inner&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_template_inner</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_fit_template_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
         <span class="c1"># Spatially filter data</span>
         <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
         <span class="c1"># Get templates</span>
         <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">get_T</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
@@ -260,8 +270,38 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">)</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span> <span class="o">**</span> <span class="n">n_classes</span>
 
-        <span class="k">return</span> <span class="bp">self</span></div>
+    <span class="k">def</span> <span class="nf">_fit_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
+        <span class="c1"># Calculate b0, b1, s0, s1</span>
+        <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b0_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">n_classes</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b0_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+        <span class="c1"># Calculate eta</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s1_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b0_</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s1_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b0_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s0_</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s1_</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_classes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta_</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">b</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">b</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span>
+
+        <span class="c1"># Calculate predicted error vectors (corrected for multiple comparisons)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pf_</span> <span class="o">=</span> <span class="p">((</span><span class="n">n_classes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b0_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pf_</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span> <span class="o">**</span> <span class="n">n_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">)</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span> <span class="o">**</span> <span class="n">n_classes</span>
 
 <div class="viewcode-block" id="BayesStopping.predict">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping.predict">[docs]</a>
