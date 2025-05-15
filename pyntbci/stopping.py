@@ -35,6 +35,9 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
     min_time: float (default: None)
         The minimum time in seconds at which a stop is possible, i.e., a classification. Before the minimum time, the
         algorithm will always emit -1. If None, the algorithm allows a stop already after the first segment of data.
+    approach: str (default: "template_inner")
+        The approach used to fit the BDS model. Either an analytic template-based method using the inner product, or an
+        approach using the empirical scores from the estimator object.
 
     Attributes
     ----------
@@ -59,8 +62,8 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
     References
     ----------
-    .. [1] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked response
-           brain-computer interfacing
+    .. [1] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+           brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
     """
     alpha_: float
     sigma_: float
@@ -83,6 +86,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             target_pd: float = 0.80,
             max_time: float = None,
             min_time: float = None,
+            approach: str = "template_inner",
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -93,6 +97,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.target_pd = target_pd
         self.max_time = max_time
         self.min_time = min_time
+        self.approach = approach
 
     def fit(
             self,
@@ -115,17 +120,21 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         """
         y = y.astype(np.uint)
 
-        # TODO: pyntbci.classifier.BayesStopping does not yet work with pyntbci.classifiers.Ensemble
-        # N.B. Ensemble does not implement get_T
-        assert not isinstance(self.estimator, pyntbci.classifiers.Ensemble), "Not yet implemented for Ensemble!"
-
         # Fit estimator
         self.estimator.fit(X, y)
 
-        # TODO: pyntbci.classifier.BayesStopping does not yet work with multiple components in classifiers
+        if self.approach == "template_inner":
+            self._fit_template_inner(X, y)
+        else:
+            self._fit_score(X, y)
+
+        return self
+
+    def _fit_template_inner(self, X, y):
+        n_samples = X.shape[2]
+
         # Spatially filter data
         X = self.estimator.cca_[0].transform(X=X)[0]
-        n_samples = X.shape[2]
 
         # Get templates
         T = self.estimator.get_T(n_samples)
@@ -171,7 +180,38 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.pm_ = (1 / n_classes) * norm.cdf(self.eta_, self.alpha_ * self.b1_, self.s1_)
         self.pm_ = 1 - (1 - self.pm_) ** n_classes
 
-        return self
+    def _fit_score(self, X, y):
+        n_samples = X.shape[2]
+
+        # Calculate b0, b1, s0, s1
+        n_segments = int(n_samples / int(self.segment_time * self.fs))
+        self.b0_ = np.zeros(n_segments)
+        self.b1_ = np.zeros(n_segments)
+        self.s0_ = np.zeros(n_segments)
+        self.s1_ = np.zeros(n_segments)
+        for i_segment in range(n_segments):
+            idx = (1 + i_segment) * int(self.segment_time * self.fs)
+            scores = self.estimator.decision_function(X[:, :, :idx])
+            n_classes = scores.shape[1]
+            mask = np.full(scores.shape, False)
+            mask[np.arange(y.size), y] = True
+            self.b0_[i_segment] = scores[~mask].mean()
+            self.b1_[i_segment] = scores[mask].mean()
+            self.s0_[i_segment] = scores[~mask].std()
+            self.s1_[i_segment] = scores[mask].std()
+
+        # Calculate eta
+        a = self.s1_ ** 2 - self.s0_ ** 2
+        b = -2 * (self.s1_ ** 2 * self.b0_ - self.s0_ ** 2 * self.b1_)
+        c = -(self.s1_ ** 2 * self.b0_ ** 2 + self.s0_ ** 2 * self.b1_ ** 2) + \
+            2 * self.s0_ ** 2 * self.s1_ ** 2 * np.log(self.s0_ / (self.s1_ * (n_classes - 1) * self.cr))
+        self.eta_ = (-b + np.sqrt(np.clip(b ** 2 - 4 * a * c, 0, None))) / (2 * a)
+
+        # Calculate predicted error vectors (corrected for multiple comparisons)
+        self.pf_ = ((n_classes - 1) / n_classes) * (1 - norm.cdf(self.eta_, self.b0_, self.s0_))
+        self.pf_ = 1 - (1 - self.pf_) ** n_classes
+        self.pm_ = (1 / n_classes) * norm.cdf(self.eta_, self.b1_, self.s1_)
+        self.pm_ = 1 - (1 - self.pm_) ** n_classes
 
     def predict(
             self,

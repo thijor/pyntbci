@@ -3,6 +3,7 @@
 ## Version 1.8.2 (16-04-2025)
 
 ### Added
+- Added `approach` in `BayesStopping` of `stopping`
 
 ### Changed
 - Changed `stride` in `encoding_matrix` of `utilities` to allow list input like `length`
