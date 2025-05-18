@@ -122,11 +122,11 @@ def covariance(
     if n_old == 0 or not running:
         n_new = n_obs
         avg_new = avg_obs
-        data -= avg_obs
+        data1 = data - avg_obs
         if estimator is None:
-            cov_obs = data.T @ data / (n_new - 1)
+            cov_obs = data1.T @ data1 / (n_new - 1)
         else:
-            cov_obs = estimator.fit(data).covariance_
+            cov_obs = estimator.fit(data1).covariance_
         cov_new = cov_obs
     else:
         n_new = n_old + n_obs
@@ -214,11 +214,11 @@ def encoding_matrix(
     assert (isinstance(length, int) or isinstance(length, list) or isinstance(length, tuple) or
             isinstance(length, np.ndarray)), "length must be int, list[int], tuple[int], or np.ndarray()."
     if isinstance(length, int):
-        length = np.array(n_events * [length], dtype="int")
+        length = np.array(n_events * [length])
     elif isinstance(length, list) or isinstance(length, tuple):
         if len(length) == 1:
             length *= n_events
-        length = np.array(length, dtype="int")
+        length = np.array(length)
     elif isinstance(length, np.ndarray):
         if length.size == 1:
             length = np.repeat(length, n_events)
@@ -228,11 +228,11 @@ def encoding_matrix(
     assert (isinstance(stride, int) or isinstance(stride, list) or isinstance(stride, tuple) or
             isinstance(stride, np.ndarray)), "stride must be int, list[int], tuple[int], or np.ndarray()."
     if isinstance(stride, int):
-        stride = np.array(n_events * [stride], dtype="int")
+        stride = np.array(n_events * [stride])
     elif isinstance(stride, list) or isinstance(stride, tuple):
         if len(stride) == 1:
             stride *= n_events
-        stride = np.array(stride, dtype="int")
+        stride = np.array(stride)
     elif isinstance(stride, np.ndarray):
         if stride.size == 1:
             stride = np.repeat(stride, n_events)
