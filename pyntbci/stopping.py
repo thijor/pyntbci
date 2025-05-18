@@ -118,9 +118,6 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        y = y.astype(np.uint)
-
-        # Fit estimator
         self.estimator.fit(X, y)
 
         if self.approach == "template_inner":
@@ -373,8 +370,6 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        y = y.astype(np.uint)
-
         n_trials = X.shape[0]
         n_samples = X.shape[2]
         n_segments = int(n_samples / int(self.segment_time * self.fs))
@@ -725,9 +720,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        y = y.astype(np.uint)
-
-        # Fit estimator
         self.estimator.fit(X, y)
 
         # Set margin axis (possible margins to stop at)

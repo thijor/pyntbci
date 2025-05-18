@@ -133,7 +133,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         """
         n_trials, n_channels, n_samples = X.shape
         if self.template_metric == "mean":
-            T = np.mean(X, axis=0)
+            T = X.mean(axis=0)
         elif self.template_metric == "median":
             T = np.median(X, axis=0)
         elif self.template_metric == "ocsvm":
@@ -223,7 +223,6 @@ class eCCA(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        y = y.astype(np.uint)
         n_trials, n_channels, n_samples = X.shape
 
         # Correct for raster latency
@@ -263,7 +262,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             self.w_ = np.zeros((n_channels, self.n_components, n_classes))
             for i_class in range(n_classes):
                 S = np.reshape(X[y == i_class, :, :].transpose((0, 2, 1)), (-1, n_channels))
-                R = np.tile(T[i_class, :, :].T, (np.sum(y == i_class), 1))
+                R = np.tile(T[i_class, :, :].T, ((y == i_class).sum(), 1))
                 if self.cca_channels is not None:
                     R = R[:, self.cca_channels]
                 self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_t,
@@ -404,7 +403,6 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        y = y.astype(np.uint)
         assert X.ndim == 4
 
         # Fit separate models for each databank
@@ -526,7 +524,7 @@ class eTRCA(BaseEstimator, ClassifierMixin):
             The matrix of one EEG template of shape (n_channels, n_samples).
         """
         if self.template_metric == "mean":
-            T = np.mean(X, axis=0)
+            T = X.mean(axis=0)
         elif self.template_metric == "median":
             T = np.median(X, axis=0)
         elif self.template_metric == "ocsvm":
@@ -613,7 +611,6 @@ class eTRCA(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        y = y.astype(np.uint)
         n_trials, n_channels, n_samples = X.shape
 
         # Correct for raster latency
@@ -862,9 +859,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
         else:
             self.encoding_length = np.atleast_1d(encoding_length)
         if encoding_stride is None:
-            self.encoding_stride = 1 / fs
+            self.encoding_stride = np.atleast_1d(1 / fs)
         else:
-            self.encoding_stride = encoding_stride
+            self.encoding_stride = np.atleast_1d(encoding_stride)
         self.score_metric = score_metric.lower()
         self.latency = latency
         self.ensemble = ensemble
@@ -911,7 +908,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
         # Get encoding matrices
         E, self.events_ = event_matrix(stimulus, self.event, self.onset_event)
-        M = encoding_matrix(E, (self.encoding_length * self.fs).astype("uint"), int(self.encoding_stride * self.fs),
+        M = encoding_matrix(E,
+                            (self.encoding_length * self.fs).astype("uint"),
+                            (self.encoding_stride * self.fs).astype("uint"),
                             amplitudes, int(self.tmin * self.fs))
         M = M[:, :, :n_samples]
 
@@ -937,7 +936,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["w_", "r_", "Ts_", "Tw_"])
 
         # Set decoding matrix
-        X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
+        if int(self.decoding_length * self.fs) > 1:
+            X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
 
         # Set templates to trial length
         T = self.get_T(X.shape[2])
@@ -997,7 +997,6 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        y = y.astype(np.uint)
         n_classes = self.stimulus.shape[0]
 
         # Correct for raster latency
@@ -1005,9 +1004,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
             X = correct_latency(X, y, -self.latency, self.fs, axis=2)
 
         # Set decoding matrix
-        X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
+        if int(self.decoding_length * self.fs) > 1:
+            X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
 
-        # Get encoding window
+        # Get encoding matrix
         M = self._get_M(X.shape[2])
 
         # Fit w and r
@@ -1019,7 +1019,8 @@ class rCCA(BaseEstimator, ClassifierMixin):
                 self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
                                      estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m,
                                      alpha_x=self.alpha_x, alpha_y=self.alpha_m))
-                self.cca_[i_class].fit(X[y == i_class, :, :], np.tile(M[[i_class], :, :], (np.sum(y == i_class), 1, 1)))
+                self.cca_[i_class].fit(X[y == i_class, :, :],
+                                       np.tile(M[[i_class], :, :], ((y == i_class).sum(), 1, 1)))
                 self.w_[:, :, i_class] = self.cca_[i_class].w_x_
                 self.r_[:, :, i_class] = self.cca_[i_class].w_y_
         else:

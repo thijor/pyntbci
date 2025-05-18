@@ -114,8 +114,6 @@ class CCA(BaseEstimator, TransformerMixin):
             Data matrix of shape (n_samples, n_features_y).
         """
         assert X.shape[0] == Y.shape[0], f"Unequal samples in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
-        X = X.astype("float")
-        Y = Y.astype("float")
 
         # Compute covariances
         Z = np.concatenate((X, Y), axis=1)
@@ -194,8 +192,6 @@ class CCA(BaseEstimator, TransformerMixin):
         Y: NDArray
             Data matrix of shape (n_trials, n_features_y, n_samples).
         """
-        X = X.astype("float")
-        Y = Y.astype("float")
         assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
         assert X.shape[2] == Y.shape[2], f"Unequal samples in X ({X.shape[2]}) and Y ({Y.shape[2]})!"
 
@@ -223,8 +219,6 @@ class CCA(BaseEstimator, TransformerMixin):
         Y: NDArray
             Label vector of shape (n_trials,).
         """
-        X = X.astype("float")
-        Y = Y.astype(np.uint)
         assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
 
         n_trials, n_channels, n_samples = X.shape
@@ -293,11 +287,9 @@ class CCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_samples, n_components).
         """
         if X is not None:
-            X = X.astype("float")
             X -= self.avg_x_
             X = np.dot(X, self.w_x_)
         if Y is not None:
-            Y = Y.astype("float")
             Y -= self.avg_y_
             Y = np.dot(Y, self.w_y_)
 
@@ -325,11 +317,9 @@ class CCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_trials, n_components, n_samples).
         """
         if X is not None:
-            X = X.astype("float")
             n_trials, n_features_x, n_samples = X.shape
             X = X.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_x))
         if Y is not None:
-            Y = Y.astype("float")
             n_trials, n_features_y, n_samples = Y.shape
             Y = Y.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_y))
 
@@ -435,7 +425,6 @@ class TRCA(BaseEstimator, TransformerMixin):
         self: TransformerMixin
             Returns the instance itself.
         """
-        X = X.astype("float")
         n_trials, n_channels, n_samples = X.shape
 
         # Covariance of all data
@@ -482,7 +471,6 @@ class TRCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_trials, n_components, n_samples).
         """
         check_is_fitted(self, ["w_"])
-        X = X.astype("float")
         n_trials, n_channels, n_samples = X.shape
 
         X = X.transpose((0, 2, 1))

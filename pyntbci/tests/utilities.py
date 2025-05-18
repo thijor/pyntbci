@@ -49,10 +49,10 @@ class TestCorrelation(unittest.TestCase):
         etime_corrcoef = np.zeros(1000)
         for i in range(1000):
             stime = time.time()
-            np.round(pyntbci.utilities.correlation(A, B), 6).flatten()
+            pyntbci.utilities.correlation(A, B)
             etime_correlation[i] = time.time() - stime
             stime = time.time()
-            np.round(np.corrcoef(A, B)[:A.shape[0]:, A.shape[0]:], 6).flatten()
+            np.corrcoef(A, B)
             etime_corrcoef[i] = time.time() - stime
         self.assertTrue(np.mean(etime_correlation[5:]) < np.mean(etime_corrcoef[5:]))
 

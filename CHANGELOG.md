@@ -1,9 +1,20 @@
 # Changelog
 
-## Version 1.8.2 (16-04-2025)
+## Version 1.8.3
 
 ### Added
 - Added `approach` in `BayesStopping` of `stopping`
+
+### Changed
+
+### Fixed
+- Fixed `astype` in all modules
+- Fixed `decoding_matrix` in `rCCA` of `classifiers` only called if required
+- Fixed `encoding_stride` in `rCCA` of `classifiers` to allow list input like `encoding_length`
+
+## Version 1.8.2 (16-04-2025)
+
+### Added
 
 ### Changed
 - Changed `stride` in `encoding_matrix` of `utilities` to allow list input like `length`
@@ -23,7 +34,7 @@
 ### Fixed
 - Fixed array `encoding_length` of `rCCA` in `classifiers`
 - Fixed `smooth_width` of `CriterionStopping` in `stopping`
-- Fixed 'stop_time_' of `CriterionStopping` in `stopping`
+- Fixed `stop_time_` of `CriterionStopping` in `stopping`
 - Fixed `gamma_x` and `gamma_y` regularization of `CCA` in `transformers`
 
 ## Version 1.8.0 (08-11-2024)

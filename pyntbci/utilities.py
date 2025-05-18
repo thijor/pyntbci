@@ -71,23 +71,18 @@ def correlation(
         B = B[np.newaxis, :]
     assert A.shape[1] == B.shape[1], f"Number of samples in A ({A.shape[1]}) does not equal B ({B.shape[1]})"
 
-    # Demean
-    Az = A - np.mean(A, axis=1, keepdims=True)
-    Bz = B - np.mean(B, axis=1, keepdims=True)
+    A -= A.mean(axis=1, keepdims=True)
+    B -= B.mean(axis=1, keepdims=True)
 
-    # Sum of squares
-    ssA = np.sum(Az ** 2, axis=1, keepdims=True)
-    ssB = np.sum(Bz ** 2, axis=1, keepdims=True)
-
-    # Correlation coefficient
-    outer = np.dot(ssA, ssB.T)
-    scores = np.dot(Az, Bz.T) / np.sqrt(outer)
+    ssA = (A ** 2).sum(axis=1, keepdims=True)
+    ssB = (B ** 2).sum(axis=1, keepdims=True)
+    scores = A @ B.T / np.sqrt(ssA * ssB.T)
 
     return scores
 
 
 def covariance(
-        X: NDArray,
+        data: NDArray,
         n_old: int = 0,
         avg_old: NDArray = None,
         cov_old: NDArray = None,
@@ -98,7 +93,7 @@ def covariance(
 
     Parameters
     ----------
-    X: NDArray
+    data: NDArray
         Data matrix of shape (n_samples, n_features).
     n_old: int (default: 0)
         Number of already observed samples.
@@ -122,26 +117,26 @@ def covariance(
     cov_new: NDArray
         The covariance of shape (n_features, n_features).
     """
-    n_obs = X.shape[0]
-    avg_obs = np.mean(X, axis=0, keepdims=True)
+    n_obs = data.shape[0]
+    avg_obs = data.mean(axis=0, keepdims=True)
     if n_old == 0 or not running:
         n_new = n_obs
         avg_new = avg_obs
-        X1 = X - avg_obs
+        data -= avg_obs
         if estimator is None:
-            cov_obs = np.dot(X1.T, X1) / (n_new - 1)
+            cov_obs = data.T @ data / (n_new - 1)
         else:
-            cov_obs = estimator.fit(X1).covariance_
+            cov_obs = estimator.fit(data).covariance_
         cov_new = cov_obs
     else:
         n_new = n_old + n_obs
-        X1 = X - avg_old
+        data1 = data - avg_old
         avg_new = avg_old + (avg_obs - avg_old) * (n_obs / n_new)
-        X2 = X - avg_new
+        data2 = data - avg_new
         if estimator is None:
-            cov_obs = np.dot(X1.T, X2) / (n_new - 1)
+            cov_obs = data1.T @ data2 / (n_new - 1)
         else:
-            # TODO: Compute the cumulative cross-covariance X1 and X2 using estimator
+            # TODO: Compute the cumulative cross-covariance using estimator
             raise NotImplementedError
         cov_new = cov_obs + cov_old * ((n_new - n_obs - 1) / (n_new - 1))
     return n_new, avg_new, cov_new
@@ -219,36 +214,35 @@ def encoding_matrix(
     assert (isinstance(length, int) or isinstance(length, list) or isinstance(length, tuple) or
             isinstance(length, np.ndarray)), "length must be int, list[int], tuple[int], or np.ndarray()."
     if isinstance(length, int):
-        length = n_events * [length]
+        length = np.array(n_events * [length], dtype="int")
     elif isinstance(length, list) or isinstance(length, tuple):
         if len(length) == 1:
             length *= n_events
-        assert len(length) == n_events, "the number of events in length must match those in stimulus."
-        assert all([isinstance(value, int) for value in length]), "length must contain integer values."
+        length = np.array(length, dtype="int")
     elif isinstance(length, np.ndarray):
         if length.size == 1:
             length = np.repeat(length, n_events)
-        assert length.size == n_events, "the number of events in length must match those in stimulus."
-        assert np.issubdtype(length.dtype, np.integer), "length must contain integer values."
+    assert length.size == n_events, "the number of events in length must match those in stimulus."
+    assert np.issubdtype(length.dtype, np.integer), "length must contain integer values."
 
     assert (isinstance(stride, int) or isinstance(stride, list) or isinstance(stride, tuple) or
             isinstance(stride, np.ndarray)), "stride must be int, list[int], tuple[int], or np.ndarray()."
     if isinstance(stride, int):
-        stride = n_events * [stride]
+        stride = np.array(n_events * [stride], dtype="int")
     elif isinstance(stride, list) or isinstance(stride, tuple):
         if len(stride) == 1:
             stride *= n_events
-        assert len(stride) == n_events, "the number of events in stride must match those in stimulus."
-        assert all([isinstance(value, int) for value in stride]), "length must contain integer values."
+        stride = np.array(stride, dtype="int")
     elif isinstance(stride, np.ndarray):
         if stride.size == 1:
             stride = np.repeat(stride, n_events)
-        assert stride.size == n_events, "the number of events in stride must match those in stimulus."
-        assert np.issubdtype(stride.dtype, np.integer), "stride must contain integer values."
+    assert stride.size == n_events, "the number of events in stride must match those in stimulus."
+    assert np.issubdtype(stride.dtype, np.integer), "stride must contain integer values."
 
     # Create encoding window per event
     ematrix = []
     for i_event in range(n_events):
+        stride_ = int(stride[i_event])
 
         # Add amplitude information
         if amplitude is not None:
@@ -259,8 +253,8 @@ def encoding_matrix(
         tmp = np.zeros((n_classes, n_windows, n_samples), dtype=stimulus.dtype)
         tmp[:, 0, :] = stimulus[:, i_event, :]
         for i_window in range(1, n_windows):
-            tmp[:, i_window, :] = np.roll(tmp[:, i_window - 1, :], stride[i_event], axis=1)
-            tmp[:, i_window, :stride[i_event]] = 0
+            tmp[:, i_window, :] = np.roll(tmp[:, i_window - 1, :], stride_, axis=1)
+            tmp[:, i_window, :stride_] = 0
         ematrix.append(tmp)
 
     # Concatenate matrices per event
@@ -326,23 +320,25 @@ def event_matrix(
     Parameters
     ----------
     stimulus: NDArray
-        The stimulus used for stimulation of shape (n_stims, n_samples). Note, this can be any continuous time-series
+        The stimulus used for stimulation of shape (n_stimuli, n_samples). Note, this can be any continuous time-series
         per stimulus, it is not limited to binary sequences.
     event: str
         The event type to perform the transformation of codes to events with:
-            "id" | "identity": the events are continuous, the stimulus itself.
+            "id" | "identity" | "stim" | "stimulus": the events are continuous, the stimulus itself.
+            "on": whenever the stimulus value is larger than 0.
+            "off": whenever the stimulus value is 0.
+            "onoff": one event for on, one event for off.
             "dur" | "duration": each run-length of the same value is an event (e.g., 1, 11, 111, etc.).
             "re" | "rise" | "risingedge": each transition of a lower to a higher value is an event (e.g., 01).
             "fe" | "fall" | "fallingedge": each transition of a higher to a lower value is an event (i.e., 10).
-            "refe" | "risefall" | "risingedgefallingedge" | "contrast": one event for rising edges and one event for
-            falling edges (i.e., 01 and 10).
+            "refe" | "risefall" | "risingedgefallingedge" | "contrast": one event for rise and one event for fall
     onset_event: bool (default: False)
         Whether to model the onset of stimulation. This "onset" event is added as last event.
 
     Returns
     -------
     events: NDArray
-        An event matrix of zeros and ones denoting the onsets of events of shape (n_stims, n_events, n_samples).
+        An event matrix of zeros and ones denoting the onsets of events of shape (n_stimuli, n_events, n_samples).
     labels: tuple
         A tuple of event labels of shape (n_events).
     """
@@ -397,7 +393,7 @@ def event_matrix(
 
         # Convert dictionary to event matrix with sorted labels
         labels = sorted(events.keys())
-        events = np.array([events[duration] for duration in labels]).transpose((1, 0, 2)).astype("bool_")
+        events = np.array([events[duration] for duration in labels]).transpose((1, 0, 2))
         labels = tuple([str(label) for label in labels])
 
     # Get rising edges as event
@@ -545,13 +541,13 @@ def find_neighbours(
         border_value: int = -1
 ) -> NDArray:
     """
-    Find the neighbour pairs in a rectangular layout.
+    Find the neighbour pairs (horizontal, vertical, diagonal) in a rectangular layout.
 
     Parameters
     ----------
     layout: NDArray
         A matrix of identities of shape (rows, columns).
-    border_value
+    border_value: int (default: -1)
         A value not existing in the layout to represent a border to prevent wrapping around edges.
 
     Returns
@@ -565,11 +561,11 @@ def find_neighbours(
     layout = np.concatenate((
         np.full((1, layout.shape[1]), border_value),
         layout,
-        np.full((1, layout.shape[1]), border_value)), axis=0).astype("int")
+        np.full((1, layout.shape[1]), border_value)), axis=0)
     layout = np.concatenate((
         np.full((layout.shape[0], 1), border_value),
         layout,
-        np.full((layout.shape[0], 1), border_value)), axis=1).astype("int")
+        np.full((layout.shape[0], 1), border_value)), axis=1)
 
     # Find all neighbours
     neighbours = np.stack((
@@ -577,13 +573,13 @@ def find_neighbours(
         np.roll(layout, -1, axis=0).flatten(order="F"),
         np.roll(np.roll(layout, -1, axis=0), -1, axis=1).flatten(order="F"),
         np.roll(np.roll(layout, -1, axis=0), 1, axis=1).flatten(order="F"),
-    ), axis=1).astype("int")
+    ), axis=1)
 
     # Find all neighbour pairs
     neighbours = np.stack((
         np.tile(layout.flatten(order="F"), (1, neighbours.shape[1])).flatten(order="F"),
         neighbours.flatten(order="F"),
-    ), axis=1).astype("int")
+    ), axis=1)
 
     # Remove the border
     neighbours = neighbours[~np.any(neighbours == border_value, axis=1), :]
@@ -650,7 +646,7 @@ def pinv(
         d = 1 / d
     else:
         for i in range(d.size):
-            if np.sum(d[:d.size - i] / np.sum(d)) < alpha:
+            if (d[:d.size - i] / d.sum()).sum() < alpha:
                 d = 1 / d
                 d[d.size - i:] = 0
                 break
