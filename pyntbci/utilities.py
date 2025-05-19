@@ -65,6 +65,10 @@ def correlation(
     scores: NDArray
         The correlation matrix of shape (n_A, n_B).
     """
+    if not np.issubdtype(A.dtype, np.floating):
+        A = A.astype("float")
+    if not np.issubdtype(B.dtype, np.floating):
+        B = B.astype("float")
     if A.ndim == 1:
         A = A[np.newaxis, :]
     if B.ndim == 1:
@@ -117,6 +121,8 @@ def covariance(
     cov_new: NDArray
         The covariance of shape (n_features, n_features).
     """
+    if not np.issubdtype(data.dtype, np.floating):
+        data = data.astype("float")
     n_obs = data.shape[0]
     avg_obs = data.mean(axis=0, keepdims=True)
     if n_old == 0 or not running:
