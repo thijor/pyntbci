@@ -128,22 +128,28 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         return self
 
     def _fit_template_inner(self, X, y):
+        assert isinstance(self.estimator, pyntbci.classifiers.rCCA), "Approach template_inner works only for rCCA."
         n_samples = X.shape[2]
+        n_classes = self.estimator.Ts_.shape[0]
 
-        # Spatially filter data
-        X = self.estimator.cca_[0].transform(X=X)[0]
+        # Spatially filter data and flatten
+        X = self.estimator.cca_[0].transform(X=X)[0].reshape((-1, 1))
 
         # Get templates
-        T = self.estimator.get_T(n_samples)
-        n_classes = T.shape[0]
+        if n_samples < self.estimator.Ts_.shape[2]:
+            T = self.estimator.Ts_
+        else:
+            T = np.concatenate((self.estimator.Ts_, np.tile(self.estimator.Tw_, (1, 1, n_samples // self.estimator.Tw_.shape[2]))), axis=2)
+        T = T[:, :, :n_samples]
 
         # Obtain alpha from least squares
+        T_ = T[y, :, :].reshape((-1, 1))
         model = LinearRegression()
-        model.fit(T[y, :, :].reshape((-1, 1)), X.reshape((-1, 1)))
+        model.fit(T_, X)
         self.alpha_ = model.coef_[0, 0]
 
         # Obtain sigma from Gaussian fit to residuals
-        residuals = X.reshape((-1, 1)) - model.predict(T[y, :, :].reshape((-1, 1)))
+        residuals = X - model.predict(T_)
         self.sigma_ = norm.fit(residuals)[1]
 
         # Calculate b0, b1, s0, s1
