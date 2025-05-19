@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities.event_matrix &mdash; PyntBCI 1.8.2 documentation</title>
+  <title>pyntbci.utilities.event_matrix &mdash; PyntBCI 1.8.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=269e6701"></script>
+      <script src="../_static/documentation_options.js?v=82e6e318"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -96,15 +96,17 @@ event definition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stimulus</strong> (<em>NDArray</em>) – The stimulus used for stimulation of shape (n_stims, n_samples). Note, this can be any continuous time-series
+<li><p><strong>stimulus</strong> (<em>NDArray</em>) – The stimulus used for stimulation of shape (n_stimuli, n_samples). Note, this can be any continuous time-series
 per stimulus, it is not limited to binary sequences.</p></li>
 <li><p><strong>event</strong> (<em>str</em>) – <dl class="simple">
-<dt>The event type to perform the transformation of codes to events with:</dt><dd><p>”id” | “identity”: the events are continuous, the stimulus itself.
+<dt>The event type to perform the transformation of codes to events with:</dt><dd><p>”id” | “identity” | “stim” | “stimulus”: the events are continuous, the stimulus itself.
+“on”: whenever the stimulus value is larger than 0.
+“off”: whenever the stimulus value is 0.
+“onoff”: one event for on, one event for off.
 “dur” | “duration”: each run-length of the same value is an event (e.g., 1, 11, 111, etc.).
 “re” | “rise” | “risingedge”: each transition of a lower to a higher value is an event (e.g., 01).
 “fe” | “fall” | “fallingedge”: each transition of a higher to a lower value is an event (i.e., 10).
-“refe” | “risefall” | “risingedgefallingedge” | “contrast”: one event for rising edges and one event for
-falling edges (i.e., 01 and 10).</p>
+“refe” | “risefall” | “risingedgefallingedge” | “contrast”: one event for rise and one event for fall</p>
 </dd>
 </dl>
 </p></li>
@@ -113,7 +115,7 @@ falling edges (i.e., 01 and 10).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>events</strong> (<em>NDArray</em>) – An event matrix of zeros and ones denoting the onsets of events of shape (n_stims, n_events, n_samples).</p></li>
+<li><p><strong>events</strong> (<em>NDArray</em>) – An event matrix of zeros and ones denoting the onsets of events of shape (n_stimuli, n_events, n_samples).</p></li>
 <li><p><strong>labels</strong> (<em>tuple</em>) – A tuple of event labels of shape (n_events).</p></li>
 </ul>
 </p>

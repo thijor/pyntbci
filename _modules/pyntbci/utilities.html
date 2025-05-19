@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities &mdash; PyntBCI 1.8.2 documentation</title>
+  <title>pyntbci.utilities &mdash; PyntBCI 1.8.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=269e6701"></script>
+      <script src="../../_static/documentation_options.js?v=82e6e318"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -155,23 +155,22 @@
 <span class="sd">    scores: NDArray</span>
 <span class="sd">        The correlation matrix of shape (n_A, n_B).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
     <span class="k">if</span> <span class="n">B</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">B</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Number of samples in A (</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) does not equal B (</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
 
-    <span class="c1"># Demean</span>
-    <span class="n">Az</span> <span class="o">=</span> <span class="n">A</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">Bz</span> <span class="o">=</span> <span class="n">B</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">-=</span> <span class="n">A</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">-=</span> <span class="n">B</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># Sum of squares</span>
-    <span class="n">ssA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Az</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">ssB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Bz</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="c1"># Correlation coefficient</span>
-    <span class="n">outer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ssA</span><span class="p">,</span> <span class="n">ssB</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-    <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Az</span><span class="p">,</span> <span class="n">Bz</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">outer</span><span class="p">)</span>
+    <span class="n">ssA</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ssB</span> <span class="o">=</span> <span class="p">(</span><span class="n">B</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ssA</span> <span class="o">*</span> <span class="n">ssB</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">scores</span></div>
 
@@ -180,7 +179,7 @@
 <div class="viewcode-block" id="covariance">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.covariance.html#pyntbci.utilities.covariance">[docs]</a>
 <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span>
-        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">n_old</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">avg_old</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cov_old</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -191,7 +190,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X: NDArray</span>
+<span class="sd">    data: NDArray</span>
 <span class="sd">        Data matrix of shape (n_samples, n_features).</span>
 <span class="sd">    n_old: int (default: 0)</span>
 <span class="sd">        Number of already observed samples.</span>
@@ -215,26 +214,28 @@
 <span class="sd">    cov_new: NDArray</span>
 <span class="sd">        The covariance of shape (n_features, n_features).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n_obs</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">avg_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+    <span class="n">n_obs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">avg_obs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">n_old</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">running</span><span class="p">:</span>
         <span class="n">n_new</span> <span class="o">=</span> <span class="n">n_obs</span>
         <span class="n">avg_new</span> <span class="o">=</span> <span class="n">avg_obs</span>
-        <span class="n">X1</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">avg_obs</span>
+        <span class="n">data1</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">avg_obs</span>
         <span class="k">if</span> <span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">data1</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">data1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span><span class="o">.</span><span class="n">covariance_</span>
+            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data1</span><span class="p">)</span><span class="o">.</span><span class="n">covariance_</span>
         <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">n_new</span> <span class="o">=</span> <span class="n">n_old</span> <span class="o">+</span> <span class="n">n_obs</span>
-        <span class="n">X1</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">avg_old</span>
+        <span class="n">data1</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">avg_old</span>
         <span class="n">avg_new</span> <span class="o">=</span> <span class="n">avg_old</span> <span class="o">+</span> <span class="p">(</span><span class="n">avg_obs</span> <span class="o">-</span> <span class="n">avg_old</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_obs</span> <span class="o">/</span> <span class="n">n_new</span><span class="p">)</span>
-        <span class="n">X2</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">avg_new</span>
+        <span class="n">data2</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">avg_new</span>
         <span class="k">if</span> <span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">data1</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">data2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># TODO: Compute the cumulative cross-covariance X1 and X2 using estimator</span>
+            <span class="c1"># TODO: Compute the cumulative cross-covariance using estimator</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span> <span class="o">+</span> <span class="n">cov_old</span> <span class="o">*</span> <span class="p">((</span><span class="n">n_new</span> <span class="o">-</span> <span class="n">n_obs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">n_new</span><span class="p">,</span> <span class="n">avg_new</span><span class="p">,</span> <span class="n">cov_new</span></div>
@@ -318,36 +319,35 @@
     <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)),</span> <span class="s2">&quot;length must be int, list[int], tuple[int], or np.ndarray().&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">length</span> <span class="o">=</span> <span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">length</span><span class="p">]</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">length</span><span class="p">])</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">length</span> <span class="o">*=</span> <span class="n">n_events</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in length must match those in stimulus.&quot;</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">length</span><span class="p">]),</span> <span class="s2">&quot;length must contain integer values.&quot;</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">length</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">n_events</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">length</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in length must match those in stimulus.&quot;</span>
-        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">length</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span> <span class="s2">&quot;length must contain integer values.&quot;</span>
+    <span class="k">assert</span> <span class="n">length</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in length must match those in stimulus.&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">length</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span> <span class="s2">&quot;length must contain integer values.&quot;</span>
 
     <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)),</span> <span class="s2">&quot;stride must be int, list[int], tuple[int], or np.ndarray().&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">stride</span> <span class="o">=</span> <span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">stride</span><span class="p">]</span>
+        <span class="n">stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_events</span> <span class="o">*</span> <span class="p">[</span><span class="n">stride</span><span class="p">])</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">stride</span> <span class="o">*=</span> <span class="n">n_events</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in stride must match those in stimulus.&quot;</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stride</span><span class="p">]),</span> <span class="s2">&quot;length must contain integer values.&quot;</span>
+        <span class="n">stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">stride</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">n_events</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">stride</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in stride must match those in stimulus.&quot;</span>
-        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">stride</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span> <span class="s2">&quot;stride must contain integer values.&quot;</span>
+    <span class="k">assert</span> <span class="n">stride</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n_events</span><span class="p">,</span> <span class="s2">&quot;the number of events in stride must match those in stimulus.&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">stride</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span> <span class="s2">&quot;stride must contain integer values.&quot;</span>
 
     <span class="c1"># Create encoding window per event</span>
     <span class="n">ematrix</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i_event</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_events</span><span class="p">):</span>
+        <span class="n">stride_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stride</span><span class="p">[</span><span class="n">i_event</span><span class="p">])</span>
 
         <span class="c1"># Add amplitude information</span>
         <span class="k">if</span> <span class="n">amplitude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -358,8 +358,8 @@
         <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">n_windows</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">stimulus</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">tmp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">stimulus</span><span class="p">[:,</span> <span class="n">i_event</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">for</span> <span class="n">i_window</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_windows</span><span class="p">):</span>
-            <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_window</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_window</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">stride</span><span class="p">[</span><span class="n">i_event</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_window</span><span class="p">,</span> <span class="p">:</span><span class="n">stride</span><span class="p">[</span><span class="n">i_event</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_window</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_window</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">stride_</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">tmp</span><span class="p">[:,</span> <span class="n">i_window</span><span class="p">,</span> <span class="p">:</span><span class="n">stride_</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">ematrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
     <span class="c1"># Concatenate matrices per event</span>
@@ -431,23 +431,25 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    stimulus: NDArray</span>
-<span class="sd">        The stimulus used for stimulation of shape (n_stims, n_samples). Note, this can be any continuous time-series</span>
+<span class="sd">        The stimulus used for stimulation of shape (n_stimuli, n_samples). Note, this can be any continuous time-series</span>
 <span class="sd">        per stimulus, it is not limited to binary sequences.</span>
 <span class="sd">    event: str</span>
 <span class="sd">        The event type to perform the transformation of codes to events with:</span>
-<span class="sd">            &quot;id&quot; | &quot;identity&quot;: the events are continuous, the stimulus itself.</span>
+<span class="sd">            &quot;id&quot; | &quot;identity&quot; | &quot;stim&quot; | &quot;stimulus&quot;: the events are continuous, the stimulus itself.</span>
+<span class="sd">            &quot;on&quot;: whenever the stimulus value is larger than 0.</span>
+<span class="sd">            &quot;off&quot;: whenever the stimulus value is 0.</span>
+<span class="sd">            &quot;onoff&quot;: one event for on, one event for off.</span>
 <span class="sd">            &quot;dur&quot; | &quot;duration&quot;: each run-length of the same value is an event (e.g., 1, 11, 111, etc.).</span>
 <span class="sd">            &quot;re&quot; | &quot;rise&quot; | &quot;risingedge&quot;: each transition of a lower to a higher value is an event (e.g., 01).</span>
 <span class="sd">            &quot;fe&quot; | &quot;fall&quot; | &quot;fallingedge&quot;: each transition of a higher to a lower value is an event (i.e., 10).</span>
-<span class="sd">            &quot;refe&quot; | &quot;risefall&quot; | &quot;risingedgefallingedge&quot; | &quot;contrast&quot;: one event for rising edges and one event for</span>
-<span class="sd">            falling edges (i.e., 01 and 10).</span>
+<span class="sd">            &quot;refe&quot; | &quot;risefall&quot; | &quot;risingedgefallingedge&quot; | &quot;contrast&quot;: one event for rise and one event for fall</span>
 <span class="sd">    onset_event: bool (default: False)</span>
 <span class="sd">        Whether to model the onset of stimulation. This &quot;onset&quot; event is added as last event.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    events: NDArray</span>
-<span class="sd">        An event matrix of zeros and ones denoting the onsets of events of shape (n_stims, n_events, n_samples).</span>
+<span class="sd">        An event matrix of zeros and ones denoting the onsets of events of shape (n_stimuli, n_events, n_samples).</span>
 <span class="sd">    labels: tuple</span>
 <span class="sd">        A tuple of event labels of shape (n_events).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -502,7 +504,7 @@
 
         <span class="c1"># Convert dictionary to event matrix with sorted labels</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">events</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">events</span><span class="p">[</span><span class="n">duration</span><span class="p">]</span> <span class="k">for</span> <span class="n">duration</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;bool_&quot;</span><span class="p">)</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">events</span><span class="p">[</span><span class="n">duration</span><span class="p">]</span> <span class="k">for</span> <span class="n">duration</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">])</span>
 
     <span class="c1"># Get rising edges as event</span>
@@ -656,13 +658,13 @@
         <span class="n">border_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Find the neighbour pairs in a rectangular layout.</span>
+<span class="sd">    Find the neighbour pairs (horizontal, vertical, diagonal) in a rectangular layout.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    layout: NDArray</span>
 <span class="sd">        A matrix of identities of shape (rows, columns).</span>
-<span class="sd">    border_value</span>
+<span class="sd">    border_value: int (default: -1)</span>
 <span class="sd">        A value not existing in the layout to represent a border to prevent wrapping around edges.</span>
 
 <span class="sd">    Returns</span>
@@ -676,11 +678,11 @@
     <span class="n">layout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span>
         <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">layout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">border_value</span><span class="p">),</span>
         <span class="n">layout</span><span class="p">,</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">layout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">border_value</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">layout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">border_value</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">layout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span>
         <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">layout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">border_value</span><span class="p">),</span>
         <span class="n">layout</span><span class="p">,</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">layout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">border_value</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">layout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">border_value</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Find all neighbours</span>
     <span class="n">neighbours</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span>
@@ -688,13 +690,13 @@
         <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">),</span>
         <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">),</span>
         <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">),</span>
-    <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+    <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Find all neighbour pairs</span>
     <span class="n">neighbours</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span>
         <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">neighbours</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">),</span>
         <span class="n">neighbours</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">),</span>
-    <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+    <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Remove the border</span>
     <span class="n">neighbours</span> <span class="o">=</span> <span class="n">neighbours</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">neighbours</span> <span class="o">==</span> <span class="n">border_value</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">:]</span>
@@ -765,7 +767,7 @@
         <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">d</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d</span><span class="p">[:</span><span class="n">d</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[:</span><span class="n">d</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">:</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">d</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">i</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="k">break</span>
