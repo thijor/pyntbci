@@ -1,16 +1,18 @@
 # Changelog
 
-## Version 1.8.3
+## Version 1.8.3 (21-05-2025)
 
 ### Added
 - Added `approach` in `BayesStopping` of `stopping`
 
 ### Changed
+- Refactor `rCCA` of `classifiers`
 
 ### Fixed
 - Fixed `astype` in all modules
 - Fixed `decoding_matrix` in `rCCA` of `classifiers` only called if required
 - Fixed `encoding_stride` in `rCCA` of `classifiers` to allow list input like `encoding_length`
+- Fixed docs
 
 ## Version 1.8.2 (16-04-2025)
 
