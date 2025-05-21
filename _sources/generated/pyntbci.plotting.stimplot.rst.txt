@@ -1,0 +1,12 @@
+﻿pyntbci.plotting.stimplot
+=========================
+
+.. currentmodule:: pyntbci.plotting
+
+.. autofunction:: stimplot
+
+.. include:: pyntbci.plotting.stimplot.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

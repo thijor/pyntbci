@@ -10,4 +10,5 @@ Plotting
     :template: function.rst
 
     eventplot
+    stimplot
     topoplot

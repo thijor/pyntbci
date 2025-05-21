@@ -164,6 +164,8 @@
 
 
 
+<div class="viewcode-block" id="stimplot">
+<a class="viewcode-back" href="../../generated/pyntbci.plotting.stimplot.html#pyntbci.plotting.stimplot">[docs]</a>
 <span class="k">def</span> <span class="nf">stimplot</span><span class="p">(</span>
         <span class="n">S</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -215,7 +217,8 @@
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_stimuli</span><span class="p">,</span> <span class="s2">&quot;The number of provided labels does not match the number of stimuli.&quot;</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_stimuli</span><span class="p">),</span> <span class="n">labels</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time [s]&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="topoplot">

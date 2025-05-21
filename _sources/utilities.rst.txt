@@ -9,15 +9,17 @@ Utilities
     :toctree: generated/
     :template: function.rst
 
+    correct_latency
     correlation
-    euclidean
     covariance
+
     decoding_matrix
     encoding_matrix
+    euclidean
     event_matrix
-    correct_latency
     filterbank
     find_neighbours
     find_worst_neighbour
-    trials_to_epochs
+    pinv
     itr
+    trials_to_epochs

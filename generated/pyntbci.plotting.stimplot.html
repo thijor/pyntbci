@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.plotting.eventplot &mdash; PyntBCI 1.8.3 documentation</title>
+  <title>pyntbci.plotting.stimplot &mdash; PyntBCI 1.8.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
@@ -23,8 +23,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.plotting.stimplot" href="pyntbci.plotting.stimplot.html" />
-    <link rel="prev" title="pyntbci.gates.DifferenceGate" href="pyntbci.gates.DifferenceGate.html" /> 
+    <link rel="next" title="pyntbci.plotting.topoplot" href="pyntbci.plotting.topoplot.html" />
+    <link rel="prev" title="pyntbci.plotting.eventplot" href="pyntbci.plotting.eventplot.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -76,9 +76,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">pyntbci.plotting.eventplot</li>
+      <li class="breadcrumb-item active">pyntbci.plotting.stimplot</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/pyntbci.plotting.eventplot.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pyntbci.plotting.stimplot.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -86,23 +86,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pyntbci-plotting-eventplot">
-<h1>pyntbci.plotting.eventplot<a class="headerlink" href="#pyntbci-plotting-eventplot" title="Link to this heading"></a></h1>
+  <section id="pyntbci-plotting-stimplot">
+<h1>pyntbci.plotting.stimplot<a class="headerlink" href="#pyntbci-plotting-stimplot" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyntbci.plotting.eventplot">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.plotting.</span></span><span class="sig-name descname"><span class="pre">eventplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">S</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upsample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyntbci/plotting.html#eventplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.plotting.eventplot" title="Link to this definition"></a></dt>
-<dd><p>Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events across
-time.</p>
+<dt class="sig sig-object py" id="pyntbci.plotting.stimplot">
+<span class="sig-prename descclassname"><span class="pre">pyntbci.plotting.</span></span><span class="sig-name descname"><span class="pre">stimplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">S</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upsample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyntbci/plotting.html#stimplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.plotting.stimplot" title="Link to this definition"></a></dt>
+<dd><p>Plot the stimulus time-series.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>S</strong> (<em>NDArray</em>) – The stimulus time-series of shape (n_samples)</p></li>
-<li><p><strong>E</strong> (<em>NDArray</em>) – The event time-series of shape (n_events, n_samples)</p></li>
+<li><p><strong>S</strong> (<em>NDArray</em>) – The stimulus time-series of shape (n_stimuli, n_samples)</p></li>
 <li><p><strong>fs</strong> (<em>int</em>) – The sampling rate in Hz</p></li>
 <li><p><strong>ax</strong> (<em>Axes</em><em> (</em><em>default: None</em><em>)</em>) – The axis to plot in. If None, a new figure will be opened.</p></li>
 <li><p><strong>upsample</strong> (<em>int</em><em> (</em><em>default: 20</em><em>)</em>) – A scalar value to upsample the stimulus and event time-series with for improved visualization</p></li>
 <li><p><strong>plotfs</strong> (<em>bool</em><em> (</em><em>default: True</em><em>)</em>) – Whether to plot vertical gridlines at the original sampling rate fs</p></li>
-<li><p><strong>events</strong> (<em>tuple</em><em> (</em><em>default: None</em><em>)</em>) – A tuple with the names of each of the events</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>(</em><em>default: None</em><em>)</em>) – A list of string labels for each of the stimuli, used as y ticks in the stimulus plot. If None, stimulus labels
+of 1 to the number of stimuli is used.</p></li>
 </ul>
 </dd>
 </dl>
@@ -114,8 +113,8 @@ time.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.gates.DifferenceGate.html" class="btn btn-neutral float-left" title="pyntbci.gates.DifferenceGate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.plotting.stimplot.html" class="btn btn-neutral float-right" title="pyntbci.plotting.stimplot" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.plotting.eventplot.html" class="btn btn-neutral float-left" title="pyntbci.plotting.eventplot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.plotting.topoplot.html" class="btn btn-neutral float-right" title="pyntbci.plotting.topoplot" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
