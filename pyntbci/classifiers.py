@@ -813,8 +813,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
     cca_: list[TransformerMixin]
+    events_: list
     w_: NDArray
     r_: NDArray
+    Ms_: NDArray
+    Mw_: NDArray
     Ts_: NDArray
     Tw_: NDArray
 
@@ -908,7 +911,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
         T = T[:, :, :X.shape[2]]
 
         # Compute scores
-        scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
+        scores = np.zeros((X.shape[0], T.shape[0], self.n_components), dtype="float32")
         if self.ensemble:
             for i_class in range(T.shape[0]):
                 Xi = self.cca_[i_class].transform(X=X)[0]
@@ -964,30 +967,27 @@ class rCCA(BaseEstimator, ClassifierMixin):
         """
         n_classes = self.stimulus.shape[0]
 
-        # Correct for raster latency
-        if self.latency is not None:
-            X = correct_latency(X, y, -self.latency, self.fs, axis=2)
-
         # Set decoding matrix
         if int(self.decoding_length * self.fs) > 1:
             X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
 
-        # Fit w and r
+        # Set structure matrices to trial length
         if X.shape[2] < self.Ms_.shape[2]:
             M = self.Ms_
         else:
             M = np.concatenate((self.Ms_, np.tile(self.Mw_, (1, 1, X.shape[2] // self.Ms_.shape[2]))), axis=2)
         M = M[:, :, :X.shape[2]]
+
+        # Fit w and r
         self.cca_ = []
         if self.ensemble:
-            self.w_ = np.zeros((X.shape[1], self.n_components, n_classes))
-            self.r_ = np.zeros((M.shape[1], self.n_components, n_classes))
+            self.w_ = np.zeros((X.shape[1], self.n_components, n_classes), dtype=X.dtype)
+            self.r_ = np.zeros((M.shape[1], self.n_components, n_classes), dtype=X.dtype)
             for i_class in range(n_classes):
                 self.cca_.append(CCA(n_components=self.n_components, gamma_x=self.gamma_x, gamma_y=self.gamma_m,
                                      estimator_x=self.cov_estimator_x, estimator_y=self.cov_estimator_m,
                                      alpha_x=self.alpha_x, alpha_y=self.alpha_m))
-                self.cca_[i_class].fit(X[y == i_class, :, :],
-                                       np.tile(M[[i_class], :, :], ((y == i_class).sum(), 1, 1)))
+                self.cca_[i_class].fit(X[y == i_class, :, :], M[y[y == i_class], :, :])
                 self.w_[:, :, i_class] = self.cca_[i_class].w_x_
                 self.r_[:, :, i_class] = self.cca_[i_class].w_y_
         else:
@@ -1042,6 +1042,11 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.Ms_ = M[:, :, :self.stimulus.shape[1]]
         self.Mw_ = M[:, :, self.stimulus.shape[1]:]
 
+        # Correct for raster latency
+        if self.latency is not None:
+            self.Ms_ = correct_latency(self.Ms_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+            self.Mw_ = correct_latency(self.Mw_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
+
     def set_templates(
             self
     ) -> None:
@@ -1057,11 +1062,6 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.Ts_ = T[:, :, :self.stimulus.shape[1]]
         self.Tw_ = T[:, :, self.stimulus.shape[1]:]
 
-        # Correct for raster latency
-        if self.latency is not None:
-            self.Ts_ = correct_latency(self.Ts_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
-            self.Tw_ = correct_latency(self.Tw_, np.arange(len(self.latency)), self.latency, self.fs, axis=2)
-
     def set_stimulus(
             self,
             stimulus: NDArray,
@@ -1074,7 +1074,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
             The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
             one stimulus-repetition) is sufficient. If None, it is not changed.
         """
-        self.set_stimulus_amplitudes(stimulus, self.amplitudes)
+        self.stimulus = stimulus
+        self.set_encoding_matrix()
+        self.set_templates()
 
     def set_amplitudes(
             self,
@@ -1088,14 +1090,16 @@ class rCCA(BaseEstimator, ClassifierMixin):
             The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs. If None, it is not
             changed.
         """
-        self.set_stimulus_amplitudes(self.stimulus, amplitudes)
+        self.amplitudes = amplitudes
+        self.set_encoding_matrix()
+        self.set_templates()
 
     def set_stimulus_amplitudes(
             self,
             stimulus: NDArray,
             amplitudes: NDArray,
     ) -> None:
-        """Set the stimulus and/or the amplitudes, and as such change the templates.
+        """Set the stimulus and the amplitudes, and as such change the templates.
 
         Parameters
         ----------

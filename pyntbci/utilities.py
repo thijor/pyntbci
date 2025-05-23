@@ -187,8 +187,8 @@ def decoding_matrix(
 
 def encoding_matrix(
         stimulus: np.array,
-        length: Union[int, list[int], tuple[int,...], NDArray],
-        stride: Union[int, list[int], tuple[int,...], NDArray] = 1,
+        length: Union[int, list[int], tuple[int, ...], NDArray],
+        stride: Union[int, list[int], tuple[int, ...], NDArray] = 1,
         amplitude: NDArray = None,
         tmin: float = 0,
 ) -> NDArray:
