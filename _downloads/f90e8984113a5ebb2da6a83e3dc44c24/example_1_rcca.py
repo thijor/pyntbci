@@ -50,9 +50,9 @@ y = tmp["y"]
 V = tmp["V"]
 fs = int(tmp["fs"])
 fr = 60
-print("X", X.shape, "(trials x channels x samples)")  # EEG
-print("y", y.shape, "(trials)")  # labels
-print("V", V.shape, "(classes, samples)")  # codes
+print("X", X.shape, "(trials x channels x samples)", X.dtype)  # EEG
+print("y", y.shape, "(trials)", y.dtype)  # labels
+print("V", V.shape, "(classes, samples)", V.dtype)  # codes
 print("fs", fs, "Hz")  # sampling frequency
 print("fr", fr, "Hz")  # presentation rate
 
@@ -111,7 +111,7 @@ ax.set_title("Stimulus time-series")
 
 # Create event matrix
 E, events = pyntbci.utilities.event_matrix(V, event="duration", onset_event=True)
-print("E:", E.shape, "(classes x events x samples)")
+print("E:", E.shape, "(classes x events x samples)", E.dtype)
 print("Events:", ", ".join([str(event) for event in events]))
 
 # Visualize event time-series
@@ -147,7 +147,7 @@ plt.tight_layout()
 # Create structure matrix
 encoding_length = int(0.3 * fs)  # 300 ms responses
 M = pyntbci.utilities.encoding_matrix(E, encoding_length)
-print("M: shape:", M.shape, "(classes x encoding_length*events x samples)")
+print("M: shape:", M.shape, "(classes x encoding_length*events x samples)", M.dtype)
 
 # Plot structure matrix
 i_class = 0  # the class to visualize
@@ -430,4 +430,4 @@ plt.tight_layout()
 # Print accuracy
 print(f"Average accuracy: {avg.mean():.2f}")
 
-plt.show()
+# plt.show()

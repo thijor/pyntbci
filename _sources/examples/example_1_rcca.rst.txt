@@ -99,9 +99,9 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
     V = tmp["V"]
     fs = int(tmp["fs"])
     fr = 60
-    print("X", X.shape, "(trials x channels x samples)")  # EEG
-    print("y", y.shape, "(trials)")  # labels
-    print("V", V.shape, "(classes, samples)")  # codes
+    print("X", X.shape, "(trials x channels x samples)", X.dtype)  # EEG
+    print("y", y.shape, "(trials)", y.dtype)  # labels
+    print("V", V.shape, "(classes, samples)", V.dtype)  # codes
     print("fs", fs, "Hz")  # sampling frequency
     print("fr", fr, "Hz")  # presentation rate
 
@@ -176,9 +176,9 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 
  .. code-block:: none
 
-    X (100, 8, 2520) (trials x channels x samples)
-    y (100,) (trials)
-    V (20, 504) (classes, samples)
+    X (100, 8, 2520) (trials x channels x samples) float32
+    y (100,) (trials) uint8
+    V (20, 504) (classes, samples) uint8
     fs 240 Hz
     fr 60 Hz
     Channels: Fpz, T7, O1, POz, Oz, Iz, O2, T8
@@ -209,7 +209,7 @@ generalising over the length of a flash.
 
     # Create event matrix
     E, events = pyntbci.utilities.event_matrix(V, event="duration", onset_event=True)
-    print("E:", E.shape, "(classes x events x samples)")
+    print("E:", E.shape, "(classes x events x samples)", E.dtype)
     print("Events:", ", ".join([str(event) for event in events]))
 
     # Visualize event time-series
@@ -255,7 +255,7 @@ generalising over the length of a flash.
 
  .. code-block:: none
 
-    E: (20, 3, 504) (classes x events x samples)
+    E: (20, 3, 504) (classes x events x samples) float32
     Events: 4, 8, onset
 
 
@@ -282,7 +282,7 @@ the responses to each of the events. However, one could also set different lengt
     # Create structure matrix
     encoding_length = int(0.3 * fs)  # 300 ms responses
     M = pyntbci.utilities.encoding_matrix(E, encoding_length)
-    print("M: shape:", M.shape, "(classes x encoding_length*events x samples)")
+    print("M: shape:", M.shape, "(classes x encoding_length*events x samples)", M.dtype)
 
     # Plot structure matrix
     i_class = 0  # the class to visualize
@@ -308,7 +308,7 @@ the responses to each of the events. However, one could also set different lengt
 
  .. code-block:: none
 
-    M: shape: (20, 216, 504) (classes x encoding_length*events x samples)
+    M: shape: (20, 216, 504) (classes x encoding_length*events x samples) float32
 
 
 
@@ -675,7 +675,7 @@ Analyse multiple participants
     # Print accuracy
     print(f"Average accuracy: {avg.mean():.2f}")
 
-    plt.show()
+    # plt.show()
 
 
 
@@ -697,7 +697,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 52.399 seconds)
+   **Total running time of the script:** (1 minutes 56.851 seconds)
 
 
 .. _sphx_glr_download_examples_example_1_rcca.py:

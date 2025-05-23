@@ -155,9 +155,9 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 <span class="n">V</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">]</span>
 <span class="n">fs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">])</span>
 <span class="n">fr</span> <span class="o">=</span> <span class="mi">60</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials x channels x samples)&quot;</span><span class="p">)</span>  <span class="c1"># EEG</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials)&quot;</span><span class="p">)</span>  <span class="c1"># labels</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes, samples)&quot;</span><span class="p">)</span>  <span class="c1"># codes</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials x channels x samples)&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># EEG</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials)&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># labels</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes, samples)&quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># codes</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fs&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="s2">&quot;Hz&quot;</span><span class="p">)</span>  <span class="c1"># sampling frequency</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fr&quot;</span><span class="p">,</span> <span class="n">fr</span><span class="p">,</span> <span class="s2">&quot;Hz&quot;</span><span class="p">)</span>  <span class="c1"># presentation rate</span>
 
@@ -206,9 +206,9 @@ the codes are upsampled to match the EEG sampling frequency and contain only one
 <li><img src="../_images/sphx_glr_example_1_rcca_002.png" srcset="../_images/sphx_glr_example_1_rcca_002.png" alt="Single-trial labels" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_1_rcca_003.png" srcset="../_images/sphx_glr_example_1_rcca_003.png" alt="Stimulus time-series" class = "sphx-glr-multi-img"/></li>
 </ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X (100, 8, 2520) (trials x channels x samples)
-y (100,) (trials)
-V (20, 504) (classes, samples)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X (100, 8, 2520) (trials x channels x samples) float32
+y (100,) (trials) uint8
+V (20, 504) (classes, samples) uint8
 fs 240 Hz
 fr 60 Hz
 Channels: Fpz, T7, O1, POz, Oz, Iz, O2, T8
@@ -230,7 +230,7 @@ instance, <cite>event=”contrast”</cite> is a useful event definition as well
 generalising over the length of a flash.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create event matrix</span>
 <span class="n">E</span><span class="p">,</span> <span class="n">events</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">event_matrix</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E:&quot;</span><span class="p">,</span> <span class="n">E</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes x events x samples)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E:&quot;</span><span class="p">,</span> <span class="n">E</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes x events x samples)&quot;</span><span class="p">,</span> <span class="n">E</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Events:&quot;</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">]))</span>
 
 <span class="c1"># Visualize event time-series</span>
@@ -256,7 +256,7 @@ generalising over the length of a flash.</p>
 <li><img src="../_images/sphx_glr_example_1_rcca_004.png" srcset="../_images/sphx_glr_example_1_rcca_004.png" alt="Event time-series (code 0)" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_1_rcca_005.png" srcset="../_images/sphx_glr_example_1_rcca_005.png" alt="Event matrix (class 0)" class = "sphx-glr-multi-img"/></li>
 </ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>E: (20, 3, 504) (classes x events x samples)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>E: (20, 3, 504) (classes x events x samples) float32
 Events: 4, 8, onset
 </pre></div>
 </div>
@@ -273,7 +273,7 @@ the responses to each of the events. However, one could also set different lengt
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create structure matrix</span>
 <span class="n">encoding_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>  <span class="c1"># 300 ms responses</span>
 <span class="n">M</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">encoding_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">encoding_length</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;M: shape:&quot;</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes x encoding_length*events x samples)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;M: shape:&quot;</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes x encoding_length*events x samples)&quot;</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
 <span class="c1"># Plot structure matrix</span>
 <span class="n">i_class</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># the class to visualize</span>
@@ -287,7 +287,7 @@ the responses to each of the events. However, one could also set different lengt
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_1_rcca_006.png" srcset="../_images/sphx_glr_example_1_rcca_006.png" alt="Structure matrix (class 0)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>M: shape: (20, 216, 504) (classes x encoding_length*events x samples)
+<img src="../_images/sphx_glr_example_1_rcca_006.png" srcset="../_images/sphx_glr_example_1_rcca_006.png" alt="Structure matrix (class 0)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>M: shape: (20, 216, 504) (classes x encoding_length*events x samples) float32
 </pre></div>
 </div>
 </section>
@@ -565,13 +565,13 @@ need during testing to classify single-trials.</p>
 <span class="c1"># Print accuracy</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average accuracy: </span><span class="si">{</span><span class="n">avg</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="c1"># plt.show()</span>
 </pre></div>
 </div>
 <img src="../_images/sphx_glr_example_1_rcca_011.png" srcset="../_images/sphx_glr_example_1_rcca_011.png" alt="Decoding performance full dataset" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Average accuracy: 0.98
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 52.399 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 56.851 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-1-rcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/9ef3725a40f654dafd08ce8fa218b937/example_1_rcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_1_rcca.ipynb</span></code></a></p>
