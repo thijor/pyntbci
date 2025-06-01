@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.stopping &mdash; PyntBCI 1.8.3 documentation</title>
+  <title>pyntbci.stopping &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=d2d258e8" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=82e6e318"></script>
+      <script src="../../_static/documentation_options.js?v=496f73d5"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -325,7 +325,10 @@
 <span class="sd">            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the</span>
 <span class="sd">            trial cannot yet be stopped.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;alpha_&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_&quot;</span><span class="p">,</span> <span class="s2">&quot;b0_&quot;</span><span class="p">,</span> <span class="s2">&quot;b1_&quot;</span><span class="p">,</span> <span class="s2">&quot;s0_&quot;</span><span class="p">,</span> <span class="s2">&quot;s1_&quot;</span><span class="p">,</span> <span class="s2">&quot;pf_&quot;</span><span class="p">,</span> <span class="s2">&quot;pm_&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">approach</span> <span class="o">==</span> <span class="s2">&quot;template_inner&quot;</span><span class="p">:</span>
+            <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;alpha_&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_&quot;</span><span class="p">,</span> <span class="s2">&quot;b0_&quot;</span><span class="p">,</span> <span class="s2">&quot;b1_&quot;</span><span class="p">,</span> <span class="s2">&quot;s0_&quot;</span><span class="p">,</span> <span class="s2">&quot;s1_&quot;</span><span class="p">,</span> <span class="s2">&quot;pf_&quot;</span><span class="p">,</span> <span class="s2">&quot;pm_&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b0_&quot;</span><span class="p">,</span> <span class="s2">&quot;b1_&quot;</span><span class="p">,</span> <span class="s2">&quot;s0_&quot;</span><span class="p">,</span> <span class="s2">&quot;s1_&quot;</span><span class="p">,</span> <span class="s2">&quot;pf_&quot;</span><span class="p">,</span> <span class="s2">&quot;pm_&quot;</span><span class="p">])</span>
 
         <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
