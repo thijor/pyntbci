@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 1.8.4
+
+### Added
+- 
+
+### Changed
+- 
+
+### Fixed
+- Fixed `BayesStopping` in `stopping` check fitted if score-based
+
 ## Version 1.8.3 (21-05-2025)
 
 ### Added

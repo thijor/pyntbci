@@ -57,7 +57,7 @@ class TestGoldCodes(unittest.TestCase):
         poly2 = [1, 1, 0, 0, 1, 1]
         codes = pyntbci.stimulus.make_gold_codes(poly1=poly1, poly2=poly2)
         self.assertEqual(codes.shape[0], 2**len(poly1)-1)
-        self.assertEqual(codes.shape[1], 2 ** len(poly1) - 1)
+        self.assertEqual(codes.shape[1], 2**len(poly1) - 1)
 
     def test_codes_elements(self):
         poly1 = [1, 0, 0, 0, 0, 1]
@@ -79,7 +79,7 @@ class TestMSequence(unittest.TestCase):
         poly = [1, 0, 0, 0, 0, 1]
         code = pyntbci.stimulus.make_m_sequence(poly=poly, base=base)
         self.assertEqual(code.shape[0], 1)
-        self.assertEqual(code.shape[1], base ** len(poly) - 1)
+        self.assertEqual(code.shape[1], base**len(poly) - 1)
 
     def test_code_elements(self):
         base = 2

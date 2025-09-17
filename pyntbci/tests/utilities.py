@@ -5,81 +5,89 @@ import unittest
 import pyntbci
 
 
+FS = 120
+N_TRIALS = 11
+N_CHANNELS = 7
+N_SAMPLES = 2 * FS
+N_CLASSES = 5
+DECODING_LENGTH = 0.1
+DECODING_STRIDE = 1 / 60
+ENCODING_LENGTH = 0.3
+ENCODING_STRIDE = 1 / 60
+CYCLE_SIZE = 1.0
+
+
 class TestCorrectLatency(unittest.TestCase):
 
     def test_correction(self):
-        fs = 200
-        X = np.random.rand(32, 64, fs)
-        y = np.arange(32)
-        latency = 10 * np.random.rand(32) / fs
-        Z = pyntbci.utilities.correct_latency(X, y, latency, fs, axis=2)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        y = np.random.permutation(np.tile(np.arange(N_CLASSES), int(np.ceil(N_TRIALS / N_CLASSES)))[:N_TRIALS])
+        latency = 10 * np.random.rand(N_CLASSES) / FS
+        Z = pyntbci.utilities.correct_latency(X, y, latency, FS, axis=2)
         self.assertEqual(X.shape, Z.shape)
 
 
 class TestCorrelation(unittest.TestCase):
 
     def test_correlation_shape(self):
-        A = np.random.rand(100)
-        B = np.random.rand(100)
+        A = np.random.rand(FS)
+        B = np.random.rand(FS)
         rho = pyntbci.utilities.correlation(A, B)
         self.assertEqual(rho.shape, (1, 1))
 
-        A = np.random.rand(1, 100)
-        B = np.random.rand(1, 100)
+        A = np.random.rand(1, FS)
+        B = np.random.rand(1, FS)
         rho = pyntbci.utilities.correlation(A, B)
         self.assertEqual(rho.shape, (1, 1))
 
-        A = np.random.rand(17, 100)
-        B = np.random.rand(23, 100)
+        A = np.random.rand(N_TRIALS, FS)
+        B = np.random.rand(N_CLASSES, FS)
         rho = pyntbci.utilities.correlation(A, B)
-        self.assertEqual(rho.shape, (17, 23))
+        self.assertEqual(rho.shape, (N_TRIALS, N_CLASSES))
 
     def test_correlation_equivalence_corrcoef(self):
-        A = np.random.rand(17, 100)
-        B = np.random.rand(23, 100)
+        A = np.random.rand(N_TRIALS, FS)
+        B = np.random.rand(N_CLASSES, FS)
         rho1 = np.round(pyntbci.utilities.correlation(A, B), 6).flatten()
         rho2 = np.round(np.corrcoef(A, B)[:A.shape[0]:, A.shape[0]:], 6).flatten()
         self.assertTrue(np.all(rho1 == rho2))
 
     def test_correlation_faster_corrcoef(self):
-        A = np.random.rand(17, 100)
-        B = np.random.rand(23, 100)
+        A = np.random.rand(N_TRIALS, FS)
+        B = np.random.rand(N_CLASSES, FS)
 
-        etime_correlation = np.zeros(1000)
-        etime_corrcoef = np.zeros(1000)
-        for i in range(1000):
+        n_tests = 100
+        etime_correlation = np.zeros(n_tests)
+        etime_corrcoef = np.zeros(n_tests)
+        for i_test in range(n_tests):
             stime = time.time()
             pyntbci.utilities.correlation(A, B)
-            etime_correlation[i] = time.time() - stime
+            etime_correlation[i_test] = time.time() - stime
             stime = time.time()
             np.corrcoef(A, B)
-            etime_corrcoef[i] = time.time() - stime
+            etime_corrcoef[i_test] = time.time() - stime
         self.assertTrue(np.mean(etime_correlation[5:]) < np.mean(etime_corrcoef[5:]))
 
 
 class TestCovariance(unittest.TestCase):
 
     def test_covariance(self):
-        for i in range(100):
-
-            X = np.random.rand(2000, 17)
-
+        n_tests = 100
+        for i_test in range(n_tests):
+            X = np.random.rand(N_SAMPLES, N_CHANNELS)
             n, avg, cov = pyntbci.utilities.covariance(X)
-
-            self.assertEqual(n, 2000)
+            self.assertEqual(n, N_SAMPLES)
             self.assertTrue(np.allclose(avg, np.mean(X, axis=0), atol=1e-6))
             self.assertTrue(np.allclose(cov, np.cov(X.T), atol=1e-6))
 
     def test_covariance_running(self):
-        X = np.random.rand(100, 2000, 17)
-
+        X = np.random.rand(N_TRIALS, N_SAMPLES, N_CHANNELS)
         n = 0
         avg = None
         cov = None
-        for i in range(100):
-            n, avg, cov = pyntbci.utilities.covariance(X[i, :, :], n, avg, cov, running=True)
-
-        X = X.reshape((-1, 17))
+        for i_trial in range(N_TRIALS):
+            n, avg, cov = pyntbci.utilities.covariance(X[i_trial, :, :], n, avg, cov, running=True)
+        X = X.reshape((-1, N_CHANNELS))
         self.assertEqual(n, X.shape[0])
         self.assertTrue(np.allclose(avg, np.mean(X, axis=0), atol=1e-6))
         self.assertTrue(np.allclose(cov, np.cov(X.T), atol=1e-6))
@@ -88,91 +96,66 @@ class TestCovariance(unittest.TestCase):
 class TestDecodingMatrix(unittest.TestCase):
 
     def test_decoding_matrix_shape(self):
-        decoding_length = 31
-        X = np.random.rand(17, 11, 1234)
-        Z = pyntbci.utilities.decoding_matrix(data=X, length=decoding_length)
-        self.assertEqual(Z.shape[0], X.shape[0])  # trials
-        self.assertEqual(Z.shape[1], decoding_length * X.shape[1])  # filter length(s)
-        self.assertEqual(Z.shape[2], X.shape[2])  # samples
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        Z = pyntbci.utilities.decoding_matrix(data=X, length=int(FS * DECODING_LENGTH))
+        self.assertEqual(Z.shape, (N_TRIALS, int(FS * DECODING_LENGTH) * N_CHANNELS, N_SAMPLES))
 
     def test_decoding_matrix_stride(self):
-        decoding_length = 31
-        decoding_stride = 7
-        X = np.random.rand(17, 11, 1234)
-        Z = pyntbci.utilities.decoding_matrix(data=X, length=decoding_length, stride=decoding_stride)
-        self.assertEqual(Z.shape[0], X.shape[0])  # trials
-        self.assertEqual(Z.shape[1], int(decoding_length / decoding_stride) * X.shape[1])  # filter length(s)
-        self.assertEqual(Z.shape[2], X.shape[2])  # samples
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        Z = pyntbci.utilities.decoding_matrix(data=X, length=int(FS * DECODING_LENGTH),
+                                              stride=int(FS * DECODING_STRIDE))
+        self.assertEqual(Z.shape, (N_TRIALS, int(DECODING_LENGTH / DECODING_STRIDE) * N_CHANNELS, N_SAMPLES))
 
     def test_decoding_matrix_channels_prime(self):
-        decoding_length = 31
-        decoding_stride = 1
-        X = np.random.rand(17, 11, 1234)
-        Z = pyntbci.utilities.decoding_matrix(data=X, length=decoding_length, stride=decoding_stride)
-        self.assertTrue(np.all(Z[:, :11, :].flatten() == X.flatten()))
-        for i in range(1, decoding_length):
-            self.assertTrue(np.all(Z[:, i * 11:(1 + i) * 11, :-i].flatten() == X[:, :, i:].flatten()))
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        Z = pyntbci.utilities.decoding_matrix(data=X, length=int(FS * DECODING_LENGTH))
+        self.assertTrue(np.all(Z[:, :N_CHANNELS, :].flatten() == X.flatten()))
+        for i in range(1, int(FS * DECODING_LENGTH)):
+            self.assertTrue(np.all(Z[:, i * N_CHANNELS:(1 + i) * N_CHANNELS, :-i].flatten() == X[:, :, i:].flatten()))
 
 
 class TestEncodingMatrix(unittest.TestCase):
 
     def test_encoding_matrix_shape(self):
-        encoding_length = 31
-        S = np.random.rand(17, 1234) > 0.5
-        E = pyntbci.utilities.event_matrix(stimulus=S, event="dur")[0]
-        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=encoding_length)
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], encoding_length * E.shape[1])  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        V = np.random.rand(N_CLASSES, int(FS * CYCLE_SIZE)) > 0.6
+        E, events = pyntbci.utilities.event_matrix(stimulus=V, event="dur")
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=int(FS * ENCODING_LENGTH))
+        self.assertEqual(M.shape, (N_CLASSES, int(FS * ENCODING_LENGTH) * len(events), int(FS * CYCLE_SIZE)))
 
     def test_encoding_matrix_stride(self):
-        encoding_length = 31
-        encoding_stride = 7
-        S = np.random.rand(17, 1234) > 0.5
-        E = pyntbci.utilities.event_matrix(stimulus=S, event="dur")[0]
-        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=encoding_length, stride=encoding_stride)
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], int(encoding_length / encoding_stride) * E.shape[1])  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        V = np.random.rand(N_CLASSES, int(FS * CYCLE_SIZE)) > 0.6
+        E, events = pyntbci.utilities.event_matrix(stimulus=V, event="dur")
+        M = pyntbci.utilities.encoding_matrix(stimulus=E, length=int(FS * ENCODING_LENGTH),
+                                              stride=int(FS * ENCODING_STRIDE))
+        self.assertEqual(
+            M.shape,
+            (N_CLASSES, int((ENCODING_LENGTH / ENCODING_STRIDE) * len(events)), int(FS * CYCLE_SIZE))
+        )
 
     def test_encoding_matrix_encoding_length(self):
         S = np.tile(np.array([0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0]), reps=10).reshape([1, -1])  # 3 events
         E, events = pyntbci.utilities.event_matrix(stimulus=S, event="dur")
 
         M = pyntbci.utilities.encoding_matrix(stimulus=E, length=31)
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        self.assertEqual(M.shape, (S.shape[0], 3 * 31, S.shape[1]))
 
         M = pyntbci.utilities.encoding_matrix(stimulus=E, length=[31])
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        self.assertEqual(M.shape, (S.shape[0], 3 * 31, S.shape[1]))
 
         M = pyntbci.utilities.encoding_matrix(stimulus=E, length=(31,))
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        self.assertEqual(M.shape, (S.shape[0], 3 * 31, S.shape[1]))
 
         M = pyntbci.utilities.encoding_matrix(stimulus=E, length=np.array([31]))
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], 3 * 31)  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        self.assertEqual(M.shape, (S.shape[0], 3 * 31, S.shape[1]))
 
         M = pyntbci.utilities.encoding_matrix(stimulus=E, length=[31, 41, 51])
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], sum([31, 41, 51]))  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        self.assertEqual(M.shape, (S.shape[0], sum([31, 41, 51]), S.shape[1]))
 
         M = pyntbci.utilities.encoding_matrix(stimulus=E, length=(31, 41, 51))
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], sum([31, 41, 51]))  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        self.assertEqual(M.shape, (S.shape[0], sum([31, 41, 51]), S.shape[1]))
 
         M = pyntbci.utilities.encoding_matrix(stimulus=E, length=np.array([31, 41, 51]))
-        self.assertEqual(M.shape[0], S.shape[0])  # classes
-        self.assertEqual(M.shape[1], np.array([31, 41, 51]).sum())  # response length(s)
-        self.assertEqual(M.shape[2], S.shape[1])  # samples
+        self.assertEqual(M.shape, (S.shape[0], sum([31, 41, 51]), S.shape[1]))
 
         self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, 31.0)  # float
         self.assertRaises(AssertionError, pyntbci.utilities.encoding_matrix, E, [31, 41])  # too few
@@ -189,168 +172,123 @@ class TestEncodingMatrix(unittest.TestCase):
 class TestEventMatrix(unittest.TestCase):
 
     def test_event_matrix_shape(self):
-        S = np.random.rand(17, 123) > 0.5
-        E, events = pyntbci.utilities.event_matrix(stimulus=S, event="dur")
-        self.assertEqual(E.shape[0], S.shape[0])  # classes
-        self.assertEqual(E.shape[1], len(events))  # events
-        self.assertEqual(E.shape[2], S.shape[1])  # samples
+        V = np.random.rand(N_CLASSES, int(FS * CYCLE_SIZE)) > 0.6
+        E, events = pyntbci.utilities.event_matrix(stimulus=V, event="dur")
+        self.assertEqual(E.shape, (N_CLASSES, len(events), int(FS * CYCLE_SIZE)))
 
     def test_events(self):
-        S = np.random.rand(17, 123) > 0.5
+        V = np.random.rand(N_CLASSES, int(FS * CYCLE_SIZE)) > 0.6
         for event in pyntbci.utilities.EVENTS:
-            E, events = pyntbci.utilities.event_matrix(stimulus=S, event=event)
+            E, events = pyntbci.utilities.event_matrix(stimulus=V, event=event)
             self.assertEqual(E.shape[1], len(events))
 
 
 class TestEuclidean(unittest.TestCase):
 
     def test_euclidean_shape(self):
-        A = np.random.rand(100)
-        B = np.random.rand(100)
+        A = np.random.rand(FS)
+        B = np.random.rand(FS)
         euc = pyntbci.utilities.euclidean(A, B)
         self.assertEqual(euc.shape, (1, 1))
 
-        A = np.random.rand(1, 100)
-        B = np.random.rand(1, 100)
+        A = np.random.rand(1, FS)
+        B = np.random.rand(1, FS)
         euc = pyntbci.utilities.euclidean(A, B)
         self.assertEqual(euc.shape, (1, 1))
 
-        A = np.random.rand(17, 100)
-        B = np.random.rand(23, 100)
+        A = np.random.rand(N_TRIALS, FS)
+        B = np.random.rand(N_CLASSES, FS)
         euc = pyntbci.utilities.euclidean(A, B)
-        self.assertEqual(euc.shape, (17, 23))
+        self.assertEqual(euc.shape, (N_TRIALS, N_CLASSES))
 
 
 class TestFilterbank(unittest.TestCase):
 
     def test_filterbank_passband_incorrect(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [1, 10]
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, pyntbci.utilities.filterbank, X, passbands, fs)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, pyntbci.utilities.filterbank, X, [1, 10], FS)
 
     def test_filterbank_passband(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [(1, 10)]
-        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        X_filtered = pyntbci.utilities.filterbank(X, [(1, 10)], FS)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
-        self.assertEqual(X_filtered.shape[-1], len(passbands))
+        self.assertEqual(X_filtered.shape[-1], 1)
 
     def test_filterbank_passbands(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [(1, 10), (11, 20)]
-        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        X_filtered = pyntbci.utilities.filterbank(X, [(1, 10), (11, 20)], FS)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
-        self.assertEqual(X_filtered.shape[-1], len(passbands))
+        self.assertEqual(X_filtered.shape[-1], 2)
 
     def test_filterbank_tmin(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [(1, 10), (11, 20)]
-        tmin = 0.1
-        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, tmin=tmin)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        X_filtered = pyntbci.utilities.filterbank(X, [(1, 10), (11, 20)], FS, tmin=0.1)
         self.assertEqual(X_filtered.ndim, 4)
-        self.assertEqual(X_filtered.shape[0], X.shape[0])
-        self.assertEqual(X_filtered.shape[1], X.shape[1])
-        self.assertEqual(X_filtered.shape[2], int(2.0 * fs))
-        self.assertEqual(X_filtered.shape[3], len(passbands))
+        self.assertEqual(X_filtered.shape, (N_TRIALS, N_CHANNELS, N_SAMPLES - int(FS * 0.1), 2))
 
     def test_filterbank_passbands_order(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [(1, 10), (11, 20)]
-        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, N=6)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        X_filtered = pyntbci.utilities.filterbank(X, [(1, 10), (11, 20)], FS, N=6)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
         self.assertEqual(X_filtered.shape[-1], 2)
 
     def test_filterbank_passbands_chebyshev1(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [(1, 10), (11, 20)]
-        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, ftype="chebyshev1")
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        X_filtered = pyntbci.utilities.filterbank(X, [(1, 10), (11, 20)], FS, ftype="chebyshev1")
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
         self.assertEqual(X_filtered.shape[-1], 2)
 
     def test_filterbank_passbands_chebyshev1_order(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [(1, 10), (11, 20)]
-        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, ftype="chebyshev1", N=6)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        X_filtered = pyntbci.utilities.filterbank(X, [(1, 10), (11, 20)], FS, ftype="chebyshev1", N=6)
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
         self.assertEqual(X_filtered.shape[-1], 2)
 
     def test_filterbank_stopband(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
 
-        passbands = [(1, 10), (11, 20)]
-        stopbands = [(0.1, 15)]  # too few
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, stopbands=stopbands)
-
-        passbands = [(1, 10), (11, 20)]
-        stopbands = [(0.1, 15), (10, 21), (30, 40)]  # too many
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, stopbands=stopbands)
-
-        passbands = [(1, 10), (11, 20)]
-        stopbands = [(2, 11), (10, 21)]  # wrong first stopband
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, stopbands=stopbands)
+        # too few
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, [(1, 10), (11, 20)], FS,
+                          stopbands=[(0.1, 15)])
+        # too many
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X,  [(1, 10), (11, 20)], FS,
+                          stopbands=[(0.1, 15), (10, 21), (30, 40)])
+        # wrong first stopband
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, [(1, 10), (11, 20)], FS,
+                          stopbands=[(2, 11), (10, 21)])
 
     def test_filterbank_gpass_gstop(self):
-        fs = 256
-        X = np.random.rand(101, 32, int(2.1 * fs))
-        passbands = [(1, 10), (11, 20)]
-        gpass = [2, 3]
-        gstop = [20, 30]
-        X_filtered = pyntbci.utilities.filterbank(X, passbands, fs, gpass=gpass, gstop=gstop)
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        X_filtered = pyntbci.utilities.filterbank(X, [(1, 10), (11, 20)], FS, gpass=[2, 3], gstop=[20, 30])
         self.assertEqual(X_filtered.ndim, 4)
         self.assertEqual(X_filtered.shape[:3], X.shape)
-        self.assertEqual(X_filtered.shape[-1], len(passbands))
+        self.assertEqual(X_filtered.shape[-1], 2)
 
-        gpass = [2]  # too few
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, gpass=gpass)
-        gpass = [2, 3, 4]  # too many
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, gpass=gpass)
+        # too few
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, [(1, 10), (11, 20)], FS, gpass=[2])
+        # too many
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, [(1, 10), (11, 20)], FS, gpass=[2, 3, 4])
 
-        gstop = [20]  # too few
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, gstop=gstop)
-        gstop = [20, 30, 40]  # too many
-        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, passbands, fs, gstop=gstop)
+        # too few
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, [(1, 10), (11, 20)], FS, gstop=[20])
+        # too many
+        self.assertRaises(AssertionError, pyntbci.utilities.filterbank, X, [(1, 10), (11, 20)], FS, gstop=[20, 30, 40])
 
 
 class TestITR(unittest.TestCase):
 
     def test_itr_scalar(self):
-        n = 32
-        p = 0.9618
-        t = 1.05 + 0.85
-        itr = pyntbci.utilities.itr(n, p, t)[0]
-        self.assertEqual(int(itr), 144)
-
-        n = 32
-        p = 1.0
-        t = 1.05 + 0.85
-        itr = pyntbci.utilities.itr(n, p, t)[0]
-        self.assertEqual(int(itr), 157)
-
-        n = 32
-        p = 0.0
-        t = 1.05 + 0.85
-        itr = pyntbci.utilities.itr(n, p, t)[0]
-        self.assertEqual(int(itr), 1)
+        self.assertEqual(int(pyntbci.utilities.itr(32, 0.9618, 1.05 + 0.85)[0]), 144)
+        self.assertEqual(int(pyntbci.utilities.itr(32, 1.0, 1.05 + 0.85)[0]), 157)
+        self.assertEqual(int(pyntbci.utilities.itr(32, 0.0, 1.05 + 0.85)[0]), 1)
 
     def test_itr_list(self):
-        n = 32
-        p = np.random.rand(7)
-        t = np.random.rand(7) * 5
-        itr = pyntbci.utilities.itr(n, p, t)
-        self.assertEqual(itr.size, 7)
+        self.assertEqual(pyntbci.utilities.itr(32, np.random.rand(7), np.random.rand(7) * 5).size, 7)
 
 
 if __name__ == "__main__":

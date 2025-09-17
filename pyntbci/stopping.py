@@ -233,7 +233,10 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """
-        check_is_fitted(self, ["alpha_", "sigma_", "b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
+        if self.approach == "template_inner":
+            check_is_fitted(self, ["alpha_", "sigma_", "b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
+        else:
+            check_is_fitted(self, ["b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
 
         ctime = X.shape[2] / self.fs
 
