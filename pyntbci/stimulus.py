@@ -279,10 +279,10 @@ def make_gold_codes(
     ----------
     poly1: list[int] (default: None)
         The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.
-        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
+        Example: 1 + x + x^6 is represented as [1, 0, 0, 0, 0, 1] while 1 + x^5 + x^6 as [0, 0, 0, 0, 1, 1].
     poly2: list[int] (default: None)
         The feedback tap points defined by a primitive polynomial. If None, [1, 1, 0, 0, 1, 1] is used.
-        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
+        Example: 1 + x + x^6 is represented as [1, 0, 0, 0, 0, 1] while 1 + x^5 + x^6 as [0, 0, 0, 0, 1, 1].
     seed1: list[int] (default: None)
         Seed for the initial shift register of poly1. If None, an all ones initial register is used.
     seed2: list[int] (default: None)
@@ -326,7 +326,7 @@ def make_m_sequence(
     ----------
     poly: list[int] (default: None)
         The feedback tap points defined by a primitive polynomial. If None, [1, 0, 0, 0, 0, 1] is used.
-        Example: 1 + x + x^6 is represented as (1, 0, 0, 0, 0, 1) and 1 + 4x + 3x^2 as (4, 3).
+        Example: 1 + x + x^6 is represented as [1, 0, 0, 0, 0, 1] while 1 + x^5 + x^6 as [0, 0, 0, 0, 1, 1].
     base: int (default: 2)
         The base of the sequence (related to the Galois Field), i.e. base 2 generates a binary sequence, base 3 a
         tertiary sequence, etc.
