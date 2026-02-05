@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyntbci.utilities.event_matrix &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
@@ -18,8 +18,8 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=496f73d5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -106,7 +106,9 @@ per stimulus, it is not limited to binary sequences.</p></li>
 “dur” | “duration”: each run-length of the same value is an event (e.g., 1, 11, 111, etc.).
 “re” | “rise” | “risingedge”: each transition of a lower to a higher value is an event (e.g., 01).
 “fe” | “fall” | “fallingedge”: each transition of a higher to a lower value is an event (i.e., 10).
-“refe” | “risefall” | “risingedgefallingedge” | “contrast”: one event for rise and one event for fall</p>
+“refe” | “risefall” | “risingedgefallingedge” | “contrast”: one event for rise and one event for fall
+“diff” | “difference” | “derivative”: the derivative of the stimulus
+“diffsplit” | “differencesplit” | “derivativesplit”: the derivative of the stimulus split in pos and neg.</p>
 </dd>
 </dl>
 </p></li>

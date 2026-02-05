@@ -21,7 +21,7 @@ These tutorials demonstrate how to get started using PyntBCI.
   .. image:: /tutorials/images/thumb/sphx_glr_tutorial_1_getting_started_thumb.png
     :alt:
 
-  :ref:`sphx_glr_tutorials_tutorial_1_getting_started.py`
+  :doc:`/tutorials/tutorial_1_getting_started`
 
 .. raw:: html
 
@@ -38,7 +38,7 @@ These tutorials demonstrate how to get started using PyntBCI.
   .. image:: /tutorials/images/thumb/sphx_glr_tutorial_2_noise_codes_thumb.png
     :alt:
 
-  :ref:`sphx_glr_tutorials_tutorial_2_noise_codes.py`
+  :doc:`/tutorials/tutorial_2_noise_codes`
 
 .. raw:: html
 
@@ -55,7 +55,7 @@ These tutorials demonstrate how to get started using PyntBCI.
   .. image:: /tutorials/images/thumb/sphx_glr_tutorial_3_reconvolution_events_thumb.png
     :alt:
 
-  :ref:`sphx_glr_tutorials_tutorial_3_reconvolution_events.py`
+  :doc:`/tutorials/tutorial_3_reconvolution_events`
 
 .. raw:: html
 

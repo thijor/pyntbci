@@ -21,7 +21,7 @@ These examples demonstrate how to use PyntBCI.
   .. image:: /examples/images/thumb/sphx_glr_example_1_rcca_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_example_1_rcca.py`
+  :doc:`/examples/example_1_rcca`
 
 .. raw:: html
 
@@ -38,7 +38,7 @@ These examples demonstrate how to use PyntBCI.
   .. image:: /examples/images/thumb/sphx_glr_example_2_ecca_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_example_2_ecca.py`
+  :doc:`/examples/example_2_ecca`
 
 .. raw:: html
 
@@ -55,7 +55,7 @@ These examples demonstrate how to use PyntBCI.
   .. image:: /examples/images/thumb/sphx_glr_example_3_etrca_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_example_3_etrca.py`
+  :doc:`/examples/example_3_etrca`
 
 .. raw:: html
 
@@ -72,7 +72,7 @@ These examples demonstrate how to use PyntBCI.
   .. image:: /examples/images/thumb/sphx_glr_example_4_fbrcca_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_example_4_fbrcca.py`
+  :doc:`/examples/example_4_fbrcca`
 
 .. raw:: html
 
@@ -89,7 +89,7 @@ These examples demonstrate how to use PyntBCI.
   .. image:: /examples/images/thumb/sphx_glr_example_5_early_stopping_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_example_5_early_stopping.py`
+  :doc:`/examples/example_5_early_stopping`
 
 .. raw:: html
 
@@ -106,7 +106,7 @@ These examples demonstrate how to use PyntBCI.
   .. image:: /examples/images/thumb/sphx_glr_example_6_bitwise_decoding_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_example_6_bitwise_decoding.py`
+  :doc:`/examples/example_6_bitwise_decoding`
 
 .. raw:: html
 
@@ -123,7 +123,7 @@ These examples demonstrate how to use PyntBCI.
   .. image:: /examples/images/thumb/sphx_glr_example_7_stimulus_optimization_thumb.png
     :alt:
 
-  :ref:`sphx_glr_examples_example_7_stimulus_optimization.py`
+  :doc:`/examples/example_7_stimulus_optimization`
 
 .. raw:: html
 

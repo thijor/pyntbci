@@ -513,6 +513,13 @@ training data they require to estimate their parameters.
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:166: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.4875729092977963e-08.
+      iCyy = np.real(sqrtm(inv(Cyy)))
+
 
 
 
@@ -697,7 +704,7 @@ Analyse multiple participants
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 50.602 seconds)
+   **Total running time of the script:** (1 minutes 34.333 seconds)
 
 
 .. _sphx_glr_download_examples_example_1_rcca.py:
