@@ -6,7 +6,7 @@ from sklearn.base import BaseEstimator
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
 
 
-EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe")
+EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe", "diff", "diffsplit")
 
 
 def correct_latency(
@@ -338,6 +338,8 @@ def event_matrix(
             "re" | "rise" | "risingedge": each transition of a lower to a higher value is an event (e.g., 01).
             "fe" | "fall" | "fallingedge": each transition of a higher to a lower value is an event (i.e., 10).
             "refe" | "risefall" | "risingedgefallingedge" | "contrast": one event for rise and one event for fall
+            "diff" | "difference" | "derivative": the derivative of the stimulus
+            "diffsplit" | "differencesplit" | "derivativesplit": the derivative of the stimulus split in pos and neg.
     onset_event: bool (default: False)
         Whether to model the onset of stimulation. This "onset" event is added as last event.
 
@@ -423,6 +425,18 @@ def event_matrix(
         fall = diff < 0
         events = np.concatenate((rise[:, np.newaxis, :], fall[:, np.newaxis, :]), axis=1)
         labels = ("rise", "fall")
+
+    elif event == "diff" or event == "difference" or event == "derivative":
+        diff = np.diff(np.concatenate((np.zeros((n_stims, 1)), stimulus), axis=1), axis=1)
+        events = diff[:, np.newaxis, :]
+        labels = ("diff",)
+
+    elif event == "diffsplit" or event == "differencesplit" or event == "derivativesplit":
+        diff = np.diff(np.concatenate((np.zeros((n_stims, 1)), stimulus), axis=1), axis=1)
+        posdiff = np.where(diff > 0, diff, 0)
+        negdiff = np.where(diff < 0, diff, 0)
+        events = np.concatenate((posdiff[:, np.newaxis, :], negdiff[:, np.newaxis, :]), axis=1)
+        labels = ("posdiff", "negdiff")
 
     else:
         raise Exception(f"Unknown event: {event}.")
