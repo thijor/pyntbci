@@ -3,7 +3,7 @@
 ## Version 1.8.4
 
 ### Added
-- 
+- Added `vmin` and `vmax` to `topoplot` in `plotting`
 
 ### Changed
 - 

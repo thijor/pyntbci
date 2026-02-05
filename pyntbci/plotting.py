@@ -137,6 +137,8 @@ def topoplot(
         ax: Axes = None,
         iso: bool = False,
         chan: bool = True,
+        vmin: float = None,
+        vmax: float = None,
 ) -> None:
     """Plot a topoplot. The values at each electrode are interpolated on an outline of a head using an electrode
     position file (loc file).
@@ -155,6 +157,10 @@ def topoplot(
         Whether to add iso lines.
     chan: bool (default: True)
         Whether to plot the channel positions.
+    vmin: float (default: None)
+        Minimum value for color range.
+    vmax: float (default: None)
+        Maximum value for color range.
     """
     assert locfile[-4:] == ".loc", "The topoplot function accepts .loc files only."
 
@@ -167,6 +173,9 @@ def topoplot(
             t = (float(t) + 90) / 180 * np.pi
             r = float(r) * 2
             xy[i, :] = r * np.cos(t), r * np.sin(t)
+
+    assert z.size == xy.shape[0], \
+        f"Number of values in z ({z.size}) and number of electrodes in locfile ({xy.shape[0]}) does not match."
 
     # Add additional points for interpolation to edge of head
     edge = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1]])
@@ -206,7 +215,7 @@ def topoplot(
     ax.add_patch(polygon)
 
     # Add the interpolated data
-    cs = ax.contourf(xi, yi, zi, 60, cmap="RdYlBu_r", zorder=2)
+    cs = ax.contourf(xi, yi, zi, 60, cmap="RdYlBu_r", zorder=2, vmin=vmin, vmax=vmax)
 
     # Add iso-lines
     if iso:
