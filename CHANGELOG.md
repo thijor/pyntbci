@@ -4,6 +4,7 @@
 
 ### Added
 - Added `vmin` and `vmax` to `topoplot` in `plotting`
+- Added `diff` event to `event_matrix` in `utilities`
 
 ### Changed
 - 
