@@ -384,7 +384,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         n_segments = int(n_samples / int(self.segment_time * self.fs))
 
         folds = np.arange(self.n_folds).repeat(np.ceil(n_trials / self.n_folds))[:n_trials]
-        scores = np.zeros((self.n_folds, n_segments))
+        scores = np.zeros((self.n_folds, n_segments), dtype="float32")
 
         for i_fold in range(self.n_folds):
 

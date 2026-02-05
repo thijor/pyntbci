@@ -290,6 +290,11 @@ class TestITR(unittest.TestCase):
     def test_itr_list(self):
         self.assertEqual(pyntbci.utilities.itr(32, np.random.rand(7), np.random.rand(7) * 5).size, 7)
 
+    def test_itr_shape(self):
+        self.assertIsInstance(pyntbci.utilities.itr(32, 0.9, 1.0), float)
+        self.assertEqual(pyntbci.utilities.itr(32, np.random.rand(2), 1.0).shape, (2,))
+        self.assertEqual(pyntbci.utilities.itr(32, np.random.rand(10), 1.0).shape, (10,))
+        self.assertEqual(pyntbci.utilities.itr(32, np.random.rand(1), 1.0).shape, (1,))
 
 if __name__ == "__main__":
     unittest.main()

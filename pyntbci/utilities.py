@@ -699,7 +699,10 @@ def itr(
     p[p >= 1] = 1.0 - np.finfo(p.dtype).eps
     p[p <= 0] = np.finfo(p.dtype).eps
     b = np.log2(n) + p * np.log2(p) + (1 - p) * np.log2((1 - p) / (n - 1))
-    return b * (60 / t)
+    itr = (b * (60 / t)).squeeze()
+    if itr.ndim == 0:
+        itr = float(itr)
+    return itr
 
 
 def trials_to_epochs(
