@@ -98,7 +98,7 @@ def is_gold_code(
     stimulus = 2 * stimulus - 1
 
     # Compute correlations
-    rho = np.zeros((n_classes, n_classes, n_bits))
+    rho = np.empty((n_classes, n_classes, n_bits))
     for i in range(n_classes):
         for j in range(n_classes):
             for k in range(n_bits):
@@ -152,7 +152,7 @@ def is_m_sequence(
     stimulus = 2 * stimulus - 1
 
     # Compute correlations
-    rho = np.zeros(n_bits)
+    rho = np.empty(n_bits)
     for i in range(n_bits):
         rho[i] = np.sum(stimulus * np.roll(stimulus, i)) / n_bits
 
@@ -185,7 +185,7 @@ def make_apa_sequence(
     # Credit: Wei et al. (2018) doi: 10.1109/TNSRE.2018.2837501
     stimulus = [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0,
                 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0]
-    stimulus = np.array(stimulus).astype("uint8")[np.newaxis, :]
+    stimulus = np.array(stimulus)[np.newaxis, :].astype("uint8")
     return stimulus
 
 
@@ -236,7 +236,7 @@ def make_de_bruijn_sequence(
         return seq
 
     sequence = db(seq=[], reg=register, t=1, p=1)
-    stimulus = np.array([alphabet[i] for i in sequence])[np.newaxis, :]
+    stimulus = np.array([alphabet[i] for i in sequence])[np.newaxis, :].astype("uint8")
     return stimulus
 
 
@@ -352,7 +352,7 @@ def make_m_sequence(
     assert n == len(seed), "The polynomial and seed must contain an equal number of items."
     register = np.array(seed).astype("uint8")
     assert not np.all(register == 0), "The seed cannot be all zero."
-    stimulus = np.zeros(2**n-1, dtype="uint8")
+    stimulus = np.empty(2**n-1, dtype="uint8")
     for i in range(2**n-1):
         bit = np.sum(poly * register) % base
         register = np.roll(register, shift=1)
@@ -449,7 +449,7 @@ def optimize_layout_incremental(
             ), axis=0)
 
             # Try all candidate swaps
-            values = np.zeros(swaps.shape[0])
+            values = np.empty(swaps.shape[0])
             for k in range(swaps.shape[0]):
                 values[k] = find_worst_neighbour(rho, neighbours, swap_pair(lay, swaps[k, :]))[1]
 
@@ -507,7 +507,7 @@ def optimize_subset_clustering(
     rho[np.eye(rho.shape[0]) == 1] = np.nan
 
     # Estimate order of clusters (maximum correlation with any code outside the cluster)
-    rho_max = np.zeros(n_subset)
+    rho_max = np.empty(n_subset)
     for i in range(n_subset):
         rho_ = rho[model.labels_ == i, :][:, model.labels_ != i]
         rho_max[i] = np.nanmax(rho_)
@@ -548,7 +548,7 @@ def shift(
         stimulus = stimulus[np.newaxis, :]
     assert stimulus.shape[0] == 1, "The stimulus matrix must have only one stimulus."
     tmp = stimulus
-    stimulus = np.zeros((int(stimulus.shape[1] / stride), stimulus.shape[1]))
+    stimulus = np.empty((int(stimulus.shape[1] / stride), stimulus.shape[1]), stimulus.dtype)
     stimulus[0, :] = tmp
     for i in range(1, int(stimulus.shape[1] / stride)):
         stimulus[i, :] = np.roll(stimulus[i-1, :], stride)

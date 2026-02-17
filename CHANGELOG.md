@@ -12,6 +12,7 @@
 ### Fixed
 - Fixed `BayesStopping` in `stopping` check fitted if score-based
 - Fixed `itr` in `utilities` output shape is input shape
+- Fixed retaining dtype in `stimulus`
 
 ## Version 1.8.3 (21-05-2025)
 
