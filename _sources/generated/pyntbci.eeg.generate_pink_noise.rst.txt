@@ -1,0 +1,12 @@
+﻿pyntbci.eeg.generate_pink_noise
+===============================
+
+.. currentmodule:: pyntbci.eeg
+
+.. autofunction:: generate_pink_noise
+
+.. include:: pyntbci.eeg.generate_pink_noise.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

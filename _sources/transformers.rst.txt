@@ -11,3 +11,4 @@ Transformers
 
     CCA
     TRCA
+    Vectorizer

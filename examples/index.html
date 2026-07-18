@@ -9,7 +9,7 @@
   <title>Examples &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -20,6 +20,7 @@
       <script src="../_static/documentation_options.js?v=496f73d5"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -52,15 +53,14 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="example_1_rcca.html">rCCA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example_2_ecca.html">eCCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example_3_etrca.html">eTRCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example_4_fbrcca.html">FBrCCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example_5_early_stopping.html">Early stopping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example_6_bitwise_decoding.html">Bitwise decoding</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example_7_stimulus_optimization.html">Stimulus optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_3_early_stopping.html">Early stopping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_4_bitwise_decoding.html">Bitwise decoding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_5_stimulus_optimization.html">Stimulus optimization</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.eeg">EEG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
@@ -97,26 +97,20 @@
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
 <p>These examples demonstrate how to use PyntBCI.</p>
-<div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_1_rcca_thumb.png" />
+<div id='sg-tag-list' class='sphx-glr-tag-list'></div><div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain        computer interface. DOI: https://doi.org/10.34973/9txv-z787 .. [2] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. DOI: https://doi.org/10.1088/1741-2552/abecef"><img alt="" src="../_images/sphx_glr_example_1_rcca_thumb.png" />
 <p><a class="reference internal" href="example_1_rcca.html"><span class="doc">rCCA</span></a></p>
   <div class="sphx-glr-thumbnail-title">rCCA</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_2_ecca_thumb.png" />
+</div><div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain        computer interface. DOI: https://doi.org/10.34973/9txv-z787 .. [2] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. DOI: https://doi.org/10.1088/1741-2552/abecef"><img alt="" src="../_images/sphx_glr_example_2_ecca_thumb.png" />
 <p><a class="reference internal" href="example_2_ecca.html"><span class="doc">eCCA</span></a></p>
   <div class="sphx-glr-thumbnail-title">eCCA</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_3_etrca_thumb.png" />
-<p><a class="reference internal" href="example_3_etrca.html"><span class="doc">eTRCA</span></a></p>
-  <div class="sphx-glr-thumbnail-title">eTRCA</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_4_fbrcca_thumb.png" />
-<p><a class="reference internal" href="example_4_fbrcca.html"><span class="doc">FBrCCA</span></a></p>
-  <div class="sphx-glr-thumbnail-title">FBrCCA</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_5_early_stopping_thumb.png" />
-<p><a class="reference internal" href="example_5_early_stopping.html"><span class="doc">Early stopping</span></a></p>
+</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_3_early_stopping_thumb.png" />
+<p><a class="reference internal" href="example_3_early_stopping.html"><span class="doc">Early stopping</span></a></p>
   <div class="sphx-glr-thumbnail-title">Early stopping</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_6_bitwise_decoding_thumb.png" />
-<p><a class="reference internal" href="example_6_bitwise_decoding.html"><span class="doc">Bitwise decoding</span></a></p>
+</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_."><img alt="" src="../_images/sphx_glr_example_4_bitwise_decoding_thumb.png" />
+<p><a class="reference internal" href="example_4_bitwise_decoding.html"><span class="doc">Bitwise decoding</span></a></p>
   <div class="sphx-glr-thumbnail-title">Bitwise decoding</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script are simulated."><img alt="" src="../_images/sphx_glr_example_7_stimulus_optimization_thumb.png" />
-<p><a class="reference internal" href="example_7_stimulus_optimization.html"><span class="doc">Stimulus optimization</span></a></p>
+</div><div class="sphx-glr-thumbcontainer" tooltip="The data used in this script are simulated."><img alt="" src="../_images/sphx_glr_example_5_stimulus_optimization_thumb.png" />
+<p><a class="reference internal" href="example_5_stimulus_optimization.html"><span class="doc">Stimulus optimization</span></a></p>
   <div class="sphx-glr-thumbnail-title">Stimulus optimization</div>
 </div></div><div class="toctree-wrapper compound">
 </div>

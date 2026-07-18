@@ -9,7 +9,7 @@
   <title>Noise codes &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -20,6 +20,7 @@
       <script src="../_static/documentation_options.js?v=496f73d5"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -57,6 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.eeg">EEG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
@@ -112,11 +114,8 @@ evoke the code-modulated visual evoked potential (c-VEP) as measured by EEG. For
 <p>Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): a literature review. Journal of
 Neural Engineering, 18(6), 061002. DOI: 10.1088/1741-2552/ac38cf</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">seaborn</span>
 
 <span class="kn">import</span> <span class="nn">pyntbci</span>
-
-<span class="n">seaborn</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -152,7 +151,7 @@ routines exist to check whether a code is of a certain code family.</p>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Is m-sequence: True
 
-Text(21.916666666666664, 0.5, &#39;stimulus&#39;)
+Text(29.22222222222222, 0.5, &#39;stimulus&#39;)
 </pre></div>
 </div>
 </section>
@@ -180,7 +179,7 @@ Text(21.916666666666664, 0.5, &#39;stimulus&#39;)
 <li><img src="../_images/sphx_glr_tutorial_2_noise_codes_003.png" srcset="../_images/sphx_glr_tutorial_2_noise_codes_003.png" alt="tutorial 2 noise codes" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_tutorial_2_noise_codes_004.png" srcset="../_images/sphx_glr_tutorial_2_noise_codes_004.png" alt="tutorial 2 noise codes" class = "sphx-glr-multi-img"/></li>
 </ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(21.916666666666664, 0.5, &#39;stimulus&#39;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(29.22222222222222, 0.5, &#39;stimulus&#39;)
 </pre></div>
 </div>
 </section>
@@ -215,7 +214,7 @@ shift register that was used. To limit this, codes can be modulated to contain o
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Is Gold code: True
 
-Text(21.916666666666664, 0.5, &#39;stimulus&#39;)
+Text(29.22222222222222, 0.5, &#39;stimulus&#39;)
 </pre></div>
 </div>
 </section>
@@ -241,8 +240,6 @@ Text(21.916666666666664, 0.5, &#39;stimulus&#39;)
 <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
@@ -250,9 +247,11 @@ Text(21.916666666666664, 0.5, &#39;stimulus&#39;)
 <li><img src="../_images/sphx_glr_tutorial_2_noise_codes_008.png" srcset="../_images/sphx_glr_tutorial_2_noise_codes_008.png" alt="tutorial 2 noise codes" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Is de Bruijn sequence: True
+
+Text(29.22222222222222, 0.5, &#39;stimulus&#39;)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.706 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.795 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-tutorial-2-noise-codes-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/cb6422d13da83c6da0d2353993cc1ec5/tutorial_2_noise_codes.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tutorial_2_noise_codes.ipynb</span></code></a></p>

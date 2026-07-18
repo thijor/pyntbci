@@ -5,6 +5,10 @@ Examples
 
 These examples demonstrate how to use PyntBCI.
 
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
 
 .. raw:: html
 
@@ -14,7 +18,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain        computer interface. DOI: https://doi.org/10.34973/9txv-z787 .. [2] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. DOI: https://doi.org/10.1088/1741-2552/abecef">
 
 .. only:: html
 
@@ -31,7 +35,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain        computer interface. DOI: https://doi.org/10.34973/9txv-z787 .. [2] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. DOI: https://doi.org/10.1088/1741-2552/abecef">
 
 .. only:: html
 
@@ -52,44 +56,10 @@ These examples demonstrate how to use PyntBCI.
 
 .. only:: html
 
-  .. image:: /examples/images/thumb/sphx_glr_example_3_etrca_thumb.png
+  .. image:: /examples/images/thumb/sphx_glr_example_3_early_stopping_thumb.png
     :alt:
 
-  :doc:`/examples/example_3_etrca`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">eTRCA</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
-
-.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_example_4_fbrcca_thumb.png
-    :alt:
-
-  :doc:`/examples/example_4_fbrcca`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">FBrCCA</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
-
-.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_example_5_early_stopping_thumb.png
-    :alt:
-
-  :doc:`/examples/example_5_early_stopping`
+  :doc:`/examples/example_3_early_stopping`
 
 .. raw:: html
 
@@ -103,10 +73,10 @@ These examples demonstrate how to use PyntBCI.
 
 .. only:: html
 
-  .. image:: /examples/images/thumb/sphx_glr_example_6_bitwise_decoding_thumb.png
+  .. image:: /examples/images/thumb/sphx_glr_example_4_bitwise_decoding_thumb.png
     :alt:
 
-  :doc:`/examples/example_6_bitwise_decoding`
+  :doc:`/examples/example_4_bitwise_decoding`
 
 .. raw:: html
 
@@ -120,10 +90,10 @@ These examples demonstrate how to use PyntBCI.
 
 .. only:: html
 
-  .. image:: /examples/images/thumb/sphx_glr_example_7_stimulus_optimization_thumb.png
+  .. image:: /examples/images/thumb/sphx_glr_example_5_stimulus_optimization_thumb.png
     :alt:
 
-  :doc:`/examples/example_7_stimulus_optimization`
+  :doc:`/examples/example_5_stimulus_optimization`
 
 .. raw:: html
 
@@ -143,11 +113,9 @@ These examples demonstrate how to use PyntBCI.
 
    /examples/example_1_rcca
    /examples/example_2_ecca
-   /examples/example_3_etrca
-   /examples/example_4_fbrcca
-   /examples/example_5_early_stopping
-   /examples/example_6_bitwise_decoding
-   /examples/example_7_stimulus_optimization
+   /examples/example_3_early_stopping
+   /examples/example_4_bitwise_decoding
+   /examples/example_5_stimulus_optimization
 
 
 .. only:: html

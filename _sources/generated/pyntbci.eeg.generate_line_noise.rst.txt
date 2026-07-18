@@ -1,0 +1,12 @@
+﻿pyntbci.eeg.generate_line_noise
+===============================
+
+.. currentmodule:: pyntbci.eeg
+
+.. autofunction:: generate_line_noise
+
+.. include:: pyntbci.eeg.generate_line_noise.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

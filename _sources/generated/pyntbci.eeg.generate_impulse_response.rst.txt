@@ -1,0 +1,12 @@
+﻿pyntbci.eeg.generate_impulse_response
+=====================================
+
+.. currentmodule:: pyntbci.eeg
+
+.. autofunction:: generate_impulse_response
+
+.. include:: pyntbci.eeg.generate_impulse_response.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

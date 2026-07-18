@@ -17,11 +17,8 @@ References
 """
 
 import matplotlib.pyplot as plt
-import seaborn
 
 import pyntbci
-
-seaborn.set_context("paper", font_scale=1.5)
 
 # %%
 # The stimulus
@@ -60,5 +57,3 @@ for event in events:
     pyntbci.plotting.eventplot(V[i_class, :], E[i_class, :, :], fs=60, ax=ax, events=events)
     ax.set_title(f"Event time-series {event} (code {i_class})")
     plt.tight_layout()
-
-# plt.show()

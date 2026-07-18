@@ -8,7 +8,7 @@
   <title>Index &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -19,6 +19,7 @@
       <script src="_static/documentation_options.js?v=496f73d5"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -49,6 +50,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.eeg">EEG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.envelope">Envelope</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.gates">Gates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html#module-pyntbci.plotting">Plotting</a></li>
@@ -110,6 +112,8 @@
       <li><a href="generated/pyntbci.gates.AggregateGate.html#pyntbci.gates.AggregateGate">AggregateGate() (in module pyntbci.gates)</a>
 </li>
       <li><a href="generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping.alpha_">alpha_ (pyntbci.stopping.BayesStopping attribute)</a>
+</li>
+      <li><a href="generated/pyntbci.eeg.apply_mixing_matrix.html#pyntbci.eeg.apply_mixing_matrix">apply_mixing_matrix() (in module pyntbci.eeg)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -174,8 +178,6 @@
       <ul>
         <li><a href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble.decision_function">(pyntbci.classifiers.Ensemble method)</a>
 </li>
-        <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.decision_function">(pyntbci.classifiers.eTRCA method)</a>
-</li>
         <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.decision_function">(pyntbci.classifiers.rCCA method)</a>
 </li>
       </ul></li>
@@ -205,13 +207,13 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA">eTRCA (class in pyntbci.classifiers)</a>
-</li>
       <li><a href="generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean">euclidean() (in module pyntbci.utilities)</a>
 </li>
       <li><a href="generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix">event_matrix() (in module pyntbci.utilities)</a>
 </li>
       <li><a href="generated/pyntbci.plotting.eventplot.html#pyntbci.plotting.eventplot">eventplot() (in module pyntbci.plotting)</a>
+</li>
+      <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.events_">events_ (pyntbci.classifiers.rCCA attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -230,8 +232,6 @@
       <ul>
         <li><a href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble.fit">(pyntbci.classifiers.Ensemble method)</a>
 </li>
-        <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.fit">(pyntbci.classifiers.eTRCA method)</a>
-</li>
         <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.fit">(pyntbci.classifiers.rCCA method)</a>
 </li>
         <li><a href="generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping.fit">(pyntbci.stopping.BayesStopping method)</a>
@@ -246,7 +246,7 @@
 </li>
         <li><a href="generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA.fit">(pyntbci.transformers.CCA method)</a>
 </li>
-        <li><a href="generated/pyntbci.transformers.TRCA.html#pyntbci.transformers.TRCA.fit">(pyntbci.transformers.TRCA method)</a>
+        <li><a href="generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer.fit">(pyntbci.transformers.Vectorizer method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -257,14 +257,26 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/pyntbci.envelope.gammatone.html#pyntbci.envelope.gammatone">gammatone() (in module pyntbci.envelope)</a>
 </li>
+      <li><a href="generated/pyntbci.eeg.generate_c_vep.html#pyntbci.eeg.generate_c_vep">generate_c_vep() (in module pyntbci.eeg)</a>
+</li>
+      <li><a href="generated/pyntbci.eeg.generate_c_vep_source.html#pyntbci.eeg.generate_c_vep_source">generate_c_vep_source() (in module pyntbci.eeg)</a>
+</li>
+      <li><a href="generated/pyntbci.eeg.generate_impulse_response.html#pyntbci.eeg.generate_impulse_response">generate_impulse_response() (in module pyntbci.eeg)</a>
+</li>
+      <li><a href="generated/pyntbci.eeg.generate_line_noise.html#pyntbci.eeg.generate_line_noise">generate_line_noise() (in module pyntbci.eeg)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA.get_T">get_T() (pyntbci.classifiers.eCCA method)</a>
-
-      <ul>
-        <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.get_T">(pyntbci.classifiers.eTRCA method)</a>
+      <li><a href="generated/pyntbci.eeg.generate_mixing_matrix.html#pyntbci.eeg.generate_mixing_matrix">generate_mixing_matrix() (in module pyntbci.eeg)</a>
 </li>
-      </ul></li>
+      <li><a href="generated/pyntbci.eeg.generate_noise.html#pyntbci.eeg.generate_noise">generate_noise() (in module pyntbci.eeg)</a>
+</li>
+      <li><a href="generated/pyntbci.eeg.generate_pink_noise.html#pyntbci.eeg.generate_pink_noise">generate_pink_noise() (in module pyntbci.eeg)</a>
+</li>
+      <li><a href="generated/pyntbci.eeg.generate_white_noise.html#pyntbci.eeg.generate_white_noise">generate_white_noise() (in module pyntbci.eeg)</a>
+</li>
+      <li><a href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA.get_T">get_T() (pyntbci.classifiers.eCCA method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -305,13 +317,13 @@
 </li>
       <li><a href="generated/pyntbci.stimulus.modulate.html#pyntbci.stimulus.modulate">modulate() (in module pyntbci.stimulus)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
       <ul>
         <li><a href="api.html#module-pyntbci.classifiers">pyntbci.classifiers</a>, <a href="classifiers.html#module-pyntbci.classifiers">[1]</a>
+</li>
+        <li><a href="api.html#module-pyntbci.eeg">pyntbci.eeg</a>, <a href="eeg.html#module-pyntbci.eeg">[1]</a>
 </li>
         <li><a href="api.html#module-pyntbci.envelope">pyntbci.envelope</a>, <a href="envelope.html#module-pyntbci.envelope">[1]</a>
 </li>
@@ -328,6 +340,12 @@
         <li><a href="api.html#module-pyntbci.utilities">pyntbci.utilities</a>, <a href="utilities.html#module-pyntbci.utilities">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.Ms_">Ms_ (pyntbci.classifiers.rCCA attribute)</a>
+</li>
+      <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.Mw_">Mw_ (pyntbci.classifiers.rCCA attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -371,8 +389,6 @@
       <ul>
         <li><a href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble.predict">(pyntbci.classifiers.Ensemble method)</a>
 </li>
-        <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.predict">(pyntbci.classifiers.eTRCA method)</a>
-</li>
         <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.predict">(pyntbci.classifiers.rCCA method)</a>
 </li>
         <li><a href="generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping.predict">(pyntbci.stopping.BayesStopping method)</a>
@@ -391,6 +407,13 @@
 
       <ul>
         <li><a href="api.html#module-pyntbci.classifiers">module</a>, <a href="classifiers.html#module-pyntbci.classifiers">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    pyntbci.eeg
+
+      <ul>
+        <li><a href="api.html#module-pyntbci.eeg">module</a>, <a href="eeg.html#module-pyntbci.eeg">[1]</a>
 </li>
       </ul></li>
   </ul></td>
@@ -452,9 +475,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.r_">r_ (pyntbci.classifiers.rCCA attribute)</a>
 </li>
+      <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA">rCCA (class in pyntbci.classifiers)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA">rCCA (class in pyntbci.classifiers)</a>
+      <li><a href="generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA.rho_">rho_ (pyntbci.transformers.CCA attribute)</a>
 </li>
       <li><a href="generated/pyntbci.envelope.rms.html#pyntbci.envelope.rms">rms() (in module pyntbci.envelope)</a>
 </li>
@@ -476,8 +501,6 @@
 
       <ul>
         <li><a href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble.set_score_request">(pyntbci.classifiers.Ensemble method)</a>
-</li>
-        <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.set_score_request">(pyntbci.classifiers.eTRCA method)</a>
 </li>
         <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.set_score_request">(pyntbci.classifiers.rCCA method)</a>
 </li>
@@ -515,25 +538,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA.T_">T_ (pyntbci.classifiers.eCCA attribute)</a>
-
-      <ul>
-        <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.T_">(pyntbci.classifiers.eTRCA attribute)</a>
 </li>
-      </ul></li>
       <li><a href="generated/pyntbci.plotting.topoplot.html#pyntbci.plotting.topoplot">topoplot() (in module pyntbci.plotting)</a>
 </li>
       <li><a href="generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA.transform">transform() (pyntbci.transformers.CCA method)</a>
 
       <ul>
-        <li><a href="generated/pyntbci.transformers.TRCA.html#pyntbci.transformers.TRCA.transform">(pyntbci.transformers.TRCA method)</a>
+        <li><a href="generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer.transform">(pyntbci.transformers.Vectorizer method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/pyntbci.transformers.TRCA.html#pyntbci.transformers.TRCA">TRCA (class in pyntbci.transformers)</a>
-</li>
-      <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.trca_">trca_ (pyntbci.classifiers.eTRCA attribute)</a>
-</li>
       <li><a href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs">trials_to_epochs() (in module pyntbci.utilities)</a>
 </li>
       <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.Ts_">Ts_ (pyntbci.classifiers.rCCA attribute)</a>
@@ -552,6 +567,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/pyntbci.stopping.ValueStopping.html#pyntbci.stopping.ValueStopping">ValueStopping (class in pyntbci.stopping)</a>
 </li>
+      <li><a href="generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer">Vectorizer (class in pyntbci.transformers)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -561,11 +578,7 @@
       <li><a href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA.w_">w_ (pyntbci.classifiers.eCCA attribute)</a>
 
       <ul>
-        <li><a href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA.w_">(pyntbci.classifiers.eTRCA attribute)</a>
-</li>
         <li><a href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.w_">(pyntbci.classifiers.rCCA attribute)</a>
-</li>
-        <li><a href="generated/pyntbci.transformers.TRCA.html#pyntbci.transformers.TRCA.w_">(pyntbci.transformers.TRCA attribute)</a>
 </li>
       </ul></li>
   </ul></td>

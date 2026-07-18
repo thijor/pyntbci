@@ -20,7 +20,7 @@ To install PyntBCI, use:
 Getting started
 ---------------
 
-Various tutorials and example analysis pipelines are provided in the `tutorials/` (under Getting Started) and `examples/` (under Examples) folder, which operate on limited preprocessed data as provided with PyNTBCI. Furthermore, please find various pipelines for several of the datasets referenced below in the `pipelines/` folder.
+Various tutorials and example analysis pipelines are provided in the `tutorials/` (under Getting Started) and `examples/` (under Examples) folder, which operate on synthetic EEG data generated on the fly (see `pyntbci.eeg`).
 
 References
 ----------

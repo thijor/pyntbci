@@ -1,0 +1,12 @@
+﻿pyntbci.eeg.generate_white_noise
+================================
+
+.. currentmodule:: pyntbci.eeg
+
+.. autofunction:: generate_white_noise
+
+.. include:: pyntbci.eeg.generate_white_noise.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -9,7 +9,7 @@
   <title>API Reference &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
@@ -20,11 +20,12 @@
       <script src="_static/documentation_options.js?v=496f73d5"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pyntbci.classifiers.rCCA" href="generated/pyntbci.classifiers.rCCA.html" />
-    <link rel="prev" title="Stimulus optimization" href="examples/example_7_stimulus_optimization.html" /> 
+    <link rel="prev" title="Stimulus optimization" href="examples/example_5_stimulus_optimization.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,8 +55,19 @@
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.classifiers">Classifiers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html">pyntbci.classifiers.rCCA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html">pyntbci.classifiers.eCCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html">pyntbci.classifiers.eTRCA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html">pyntbci.classifiers.Ensemble</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.eeg">EEG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_impulse_response.html">pyntbci.eeg.generate_impulse_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_c_vep_source.html">pyntbci.eeg.generate_c_vep_source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_mixing_matrix.html">pyntbci.eeg.generate_mixing_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.apply_mixing_matrix.html">pyntbci.eeg.apply_mixing_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_white_noise.html">pyntbci.eeg.generate_white_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_pink_noise.html">pyntbci.eeg.generate_pink_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_line_noise.html">pyntbci.eeg.generate_line_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_noise.html">pyntbci.eeg.generate_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.eeg.generate_c_vep.html">pyntbci.eeg.generate_c_vep</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.envelope">Envelope</a><ul>
@@ -99,7 +111,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.transformers">Transformers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.transformers.CCA.html">pyntbci.transformers.CCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.transformers.TRCA.html">pyntbci.transformers.TRCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.transformers.Vectorizer.html">pyntbci.transformers.Vectorizer</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.utilities">Utilities</a><ul>
@@ -157,11 +169,42 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
 <td><p>ERP CCA classifier.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eTRCA.html#pyntbci.classifiers.eTRCA" title="pyntbci.classifiers.eTRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eTRCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
-<td><p>ERP TRCA classifier.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble" title="pyntbci.classifiers.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(estimator, gate)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble" title="pyntbci.classifiers.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(estimator, gate)</p></td>
 <td><p>Ensemble classifier.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-pyntbci.eeg">
+<span id="eeg"></span><h1>EEG<a class="headerlink" href="#module-pyntbci.eeg" title="Link to this heading"></a></h1>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_impulse_response.html#pyntbci.eeg.generate_impulse_response" title="pyntbci.eeg.generate_impulse_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_impulse_response</span></code></a>(fs[, components])</p></td>
+<td><p>Generate a temporal response function (i.e., a VEP / impulse response kernel) as the sum of one or more Ricker wavelets (a biphasic bump, similar to a single-component visual evoked potential).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_c_vep_source.html#pyntbci.eeg.generate_c_vep_source" title="pyntbci.eeg.generate_c_vep_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_c_vep_source</span></code></a>(stimulus, y, n_samples, fs)</p></td>
+<td><p>Generate a single-source c-VEP signal per trial.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_mixing_matrix.html#pyntbci.eeg.generate_mixing_matrix" title="pyntbci.eeg.generate_mixing_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_mixing_matrix</span></code></a>(n_channels[, ...])</p></td>
+<td><p>Generate a mixing matrix that projects one or more sources to channel space, simulating volume conduction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.eeg.apply_mixing_matrix.html#pyntbci.eeg.apply_mixing_matrix" title="pyntbci.eeg.apply_mixing_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_mixing_matrix</span></code></a>(source, mixing_matrix)</p></td>
+<td><p>Project one or more source signals to channel space using a mixing matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_white_noise.html#pyntbci.eeg.generate_white_noise" title="pyntbci.eeg.generate_white_noise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_white_noise</span></code></a>(n_trials, n_channels, ...)</p></td>
+<td><p>Generate white sensor / measurement noise, i.e., independent and identically distributed Gaussian noise per channel and sample.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_pink_noise.html#pyntbci.eeg.generate_pink_noise" title="pyntbci.eeg.generate_pink_noise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_pink_noise</span></code></a>(n_trials, n_channels, ...)</p></td>
+<td><p>Generate 1/f (pink) noise per channel, approximating the aperiodic background spectrum of EEG.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_line_noise.html#pyntbci.eeg.generate_line_noise" title="pyntbci.eeg.generate_line_noise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_line_noise</span></code></a>(n_trials, n_channels, ...)</p></td>
+<td><p>Generate electrical line noise (e.g., 50 Hz mains interference and its harmonics), shared (with only small gain variations) across channels, with a random phase per trial.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_noise.html#pyntbci.eeg.generate_noise" title="pyntbci.eeg.generate_noise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_noise</span></code></a>(n_trials, n_channels, ...[, ...])</p></td>
+<td><p>Generate multi-channel EEG background noise as the sum of white sensor noise, 1/f pink noise, and electrical line noise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_c_vep.html#pyntbci.eeg.generate_c_vep" title="pyntbci.eeg.generate_c_vep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_c_vep</span></code></a>(n_trials, n_channels, ...[, ...])</p></td>
+<td><p>Generate a synthetic multi-channel c-VEP EEG dataset.</p></td>
 </tr>
 </tbody>
 </table>
@@ -239,8 +282,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.modulate.html#pyntbci.stimulus.modulate" title="pyntbci.stimulus.modulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modulate</span></code></a>(stimulus)</p></td>
 <td><p>Modulate a stimulus.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.shift.html#pyntbci.stimulus.shift" title="pyntbci.stimulus.shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift</span></code></a>(stimulus[, stride])</p></td>
-<td><p>Shift a code to create multiple.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.shift.html#pyntbci.stimulus.shift" title="pyntbci.stimulus.shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift</span></code></a>(stimulus, stride)</p></td>
+<td><p>Shift a code to create multiple circularly shifted versions of it.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.stimulus.optimize_subset_clustering.html#pyntbci.stimulus.optimize_subset_clustering" title="pyntbci.stimulus.optimize_subset_clustering"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_subset_clustering</span></code></a>(X, n_subset)</p></td>
 <td><p>Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each cluster.</p></td>
@@ -280,8 +323,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA" title="pyntbci.transformers.CCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CCA</span></code></a>(n_components[, gamma_x, gamma_y, ...])</p></td>
 <td><p>Canonical correlation analysis (CCA).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.transformers.TRCA.html#pyntbci.transformers.TRCA" title="pyntbci.transformers.TRCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TRCA</span></code></a>([n_components])</p></td>
-<td><p>Task related component analysis (TRCA).</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer" title="pyntbci.transformers.Vectorizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Vectorizer</span></code></a>([channel_prime])</p></td>
+<td><p>Vectorizer.</p></td>
 </tr>
 </tbody>
 </table>
@@ -337,7 +380,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="examples/example_7_stimulus_optimization.html" class="btn btn-neutral float-left" title="Stimulus optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples/example_5_stimulus_optimization.html" class="btn btn-neutral float-left" title="Stimulus optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="generated/pyntbci.classifiers.rCCA.html" class="btn btn-neutral float-right" title="pyntbci.classifiers.rCCA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

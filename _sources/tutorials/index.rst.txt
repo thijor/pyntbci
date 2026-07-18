@@ -5,6 +5,10 @@ Getting Started
 
 These tutorials demonstrate how to get started using PyntBCI.
 
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
 
 .. raw:: html
 

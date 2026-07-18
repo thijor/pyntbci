@@ -1,0 +1,12 @@
+﻿pyntbci.eeg.apply_mixing_matrix
+===============================
+
+.. currentmodule:: pyntbci.eeg
+
+.. autofunction:: apply_mixing_matrix
+
+.. include:: pyntbci.eeg.apply_mixing_matrix.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
