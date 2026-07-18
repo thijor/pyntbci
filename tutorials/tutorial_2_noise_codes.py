@@ -14,11 +14,8 @@ Neural Engineering, 18(6), 061002. DOI: 10.1088/1741-2552/ac38cf
 """
 
 import matplotlib.pyplot as plt
-import seaborn
 
 import pyntbci
-
-seaborn.set_context("paper", font_scale=1.5)
 
 # %%
 # The m-sequence
@@ -118,5 +115,3 @@ cbar = plt.colorbar()
 cbar.set_label("correlation")
 plt.xlabel("stimulus")
 plt.ylabel("stimulus")
-
-plt.show()

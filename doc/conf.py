@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = 'PyntBCI'
-copyright = '2021, Jordy Thielen'
+project = "PyntBCI"
+copyright = "2021, Jordy Thielen"
 author = pyntbci.__author__
 version = pyntbci.__version__
 release = pyntbci.__version__
@@ -25,20 +25,20 @@ needs_sphinx = "2.0"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',  # include documentation from docstrings
-    'sphinx.ext.autosummary',  # generate autodoc summaries
-    'sphinx.ext.coverage',  # collect doc coverage stats
-    'sphinx.ext.napoleon',  # support for numpy and google style docstrings
-    'sphinx.ext.todo',  # support for to-do items
-    'sphinx.ext.viewcode',  # add links to highlighted sourcecode
-    'sphinx_gallery.gen_gallery',  # add example scripts
+    "sphinx.ext.autodoc",  # include documentation from docstrings
+    "sphinx.ext.autosummary",  # generate autodoc summaries
+    "sphinx.ext.coverage",  # collect doc coverage stats
+    "sphinx.ext.napoleon",  # support for numpy and google style docstrings
+    "sphinx.ext.todo",  # support for to-do items
+    "sphinx.ext.viewcode",  # add links to highlighted sourcecode
+    "sphinx_gallery.gen_gallery",  # add example scripts
 ]
 
 sphinx_gallery_conf = {
-    'examples_dirs': ['../examples', '../tutorials'],   # path to your example scripts
-    'gallery_dirs': ['examples', 'tutorials'],  # path to where to save gallery generated output
-    'filename_pattern': "(/example_|/tutorial_|)",
-    'within_subsection_order': "FileNameSortKey",
+    "examples_dirs": ["../examples", "../tutorials"],  # path to your example scripts
+    "gallery_dirs": ["examples", "tutorials"],  # path to where to save gallery generated output
+    "filename_pattern": "(/example_|/tutorial_|)",
+    "within_subsection_order": "FileNameSortKey",
 }
 
 autosummary_generate = True
@@ -48,12 +48,12 @@ autodoc_default_flags = {"inherited-members": None}
 numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', "_templates", 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "_templates", "Thumbs.db", ".DS_Store"]
 
 source_suffix = [".rst", ".md"]
 
@@ -78,9 +78,9 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]

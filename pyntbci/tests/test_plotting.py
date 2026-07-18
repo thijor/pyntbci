@@ -7,7 +7,6 @@ import pyntbci
 
 
 class TestTopoPlot(unittest.TestCase):
-
     def test_input_values(self):
         locfile = os.path.join(os.path.dirname(pyntbci.__file__), "capfiles", "biosemi64.loc")
 
@@ -16,7 +15,7 @@ class TestTopoPlot(unittest.TestCase):
             pyntbci.plotting.topoplot(z=z, locfile=locfile)
         except AssertionError:
             pass
-        except Exception as e:
+        except Exception:
             self.fail("topoplot raised an unexpected error!")
 
         z = np.random.rand(64)

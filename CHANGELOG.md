@@ -5,14 +5,21 @@
 ### Added
 - Added `vmin` and `vmax` to `topoplot` in `plotting`
 - Added `diff` event to `event_matrix` in `utilities`
+- Added `eeg` module to generate synthetic multi-channel EEG data (c-VEP signal, and noise) 
+- Added `Vectorizer` to `transformers`
 
 ### Changed
-- 
+- Removed the bundled example/tutorial EEG data (`data/`) from the package; `tutorials/` and `examples/` now generate
+  synthetic data with `eeg` instead
+- Removed the `pipelines/` folder of standalone analysis scripts for external published datasets
+- Removed the `mne` dependency; `examples/` now use `Vectorizer` in `transformers` instead of `mne.decoding.Vectorizer`
+- Removed the 'seaborn' dependency; now simply relies on matplotlib
 
 ### Fixed
 - Fixed `BayesStopping` in `stopping` check fitted if score-based
 - Fixed `itr` in `utilities` output shape is input shape
 - Fixed retaining dtype in `stimulus`
+- Fixed `DistributionStopping` in `stopping` not checking fitted status when `trained=False`
 
 ## Version 1.8.3 (21-05-2025)
 

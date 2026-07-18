@@ -17,18 +17,12 @@ References
        056007. DOI: https://doi.org/10.1088/1741-2552/abecef
 """
 
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn
-from mne.decoding import Vectorizer
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.pipeline import make_pipeline
 
 import pyntbci
-
-seaborn.set_context("paper", font_scale=1.5)
 
 # %%
 # Simulate data
@@ -56,8 +50,9 @@ ENCODING_LENGTH = 0.3
 SEED = 42
 
 y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
-X, y, V = pyntbci.eeg.generate_c_vep(N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8,
-                                     random_state=SEED)
+X, y, V = pyntbci.eeg.generate_c_vep(
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+)
 
 # %%
 # Epoch decoding
@@ -136,10 +131,12 @@ folds = np.repeat(np.arange(n_folds), N_TRIALS / n_folds)
 
 # Set up codebook for trial classification
 n = int(np.ceil(N_SAMPLES / V.shape[1]))
-_V = np.tile(V, (1, n)).astype("float32")[:, : - encoding_length : encoding_stride]
+_V = np.tile(V, (1, n)).astype("float32")[:, :-encoding_length:encoding_stride]
 
 # Setup pipeline
-pipeline = make_pipeline(Vectorizer(), LinearDiscriminantAnalysis(solver="eigen", shrinkage="auto"))
+pipeline = make_pipeline(
+    pyntbci.transformers.Vectorizer(), LinearDiscriminantAnalysis(solver="eigen", shrinkage="auto")
+)
 
 # Loop folds
 accuracy_epoch = np.zeros(n_folds)
@@ -227,11 +224,11 @@ folds = np.repeat(np.arange(n_folds), N_TRIALS / n_folds)
 
 # Set up codebook for trial classification
 n = int(np.ceil(N_SAMPLES / V.shape[1]))
-_V = np.tile(V, (1, n)).astype("float32")[:, : - encoding_length : encoding_stride]
+_V = np.tile(V, (1, n)).astype("float32")[:, :-encoding_length:encoding_stride]
 
 # Setup pipeline
 cca = pyntbci.transformers.CCA(n_components=1)
-vec = Vectorizer()
+vec = pyntbci.transformers.Vectorizer()
 lda = LinearDiscriminantAnalysis(solver="eigen", shrinkage="auto")
 
 # Loop folds
@@ -294,5 +291,3 @@ plt.ylabel("accuracy")
 plt.title(
     "CCA+LDA: classification accuracy (trial): " + f"avg={np.mean(accuracy_trial):.2f} std={np.std(accuracy_trial):.2f}"
 )
-
-plt.show()

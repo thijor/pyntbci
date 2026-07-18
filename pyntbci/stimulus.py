@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.cluster import AgglomerativeClustering
@@ -6,9 +8,9 @@ from pyntbci.utilities import correlation, find_worst_neighbour
 
 
 def is_de_bruijn_sequence(
-        stimulus: NDArray,
-        k: int = 2,
-        n: int = 6,
+    stimulus: NDArray,
+    k: int = 2,
+    n: int = 6,
 ) -> bool:
     """Check whether a stimulus is a de Bruijn sequence. A de Bruijn sequence [1]_ should contain all possible
     substrings of the alphabet.
@@ -16,7 +18,7 @@ def is_de_bruijn_sequence(
     Parameters
     ----------
     stimulus: NDArray
-        A vector with the de Bruijn sequence of shape (1, n_bits).
+        A matrix with the de Bruijn sequence of shape (1, n_bits).
     k: int (default: 2)
         The size of the alphabet.
     n: int (default: 6)
@@ -43,10 +45,10 @@ def is_de_bruijn_sequence(
     seen = set()
     seen.add(k**n)
 
-    # Initialize current to correspond to the word formed by the (n-1) 
+    # Initialize current to correspond to the word formed by the (n-1)
     # last elements
     current = 0
-    for i in range(n-1):
+    for i in range(n - 1):
         current = k * current + stimulus[-n + i + 1]
 
     # Stop if the same word has been met twice
@@ -59,24 +61,24 @@ def is_de_bruijn_sequence(
 
 
 def is_gold_code(
-        stimulus: NDArray,
+    stimulus: NDArray,
 ) -> bool:
     """Check whether a stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function
     [4]_. If the length of the linear feedback shift register m is even:
-    * 1/(2^n−1) 
+    * 1/(2^n−1)
     * −(2^{(n+2)/2}+1)/(2^n−1)
-    * (2^{(n+2)/2}−1)/(2^n−1) 
+    * (2^{(n+2)/2}−1)/(2^n−1)
     in ratio ~3/4, ~1/8, ~1/8.
     If the length of the linear feedback shift register n is odd:
     * 1/(2^n−1)
     * −(2^{(n+1)/2}+1)/(2^n−1)
-    * (2^{(n+1)/2}−1)/(2^n−1) 
+    * (2^{(n+1)/2}−1)/(2^n−1)
     in ratio ~1/2, ~1/4, ~1/4
 
     Parameters
     ----------
     stimulus: NDArray
-        A vector with the Gold code of shape (n_classes, n_bits).
+        A matrix with the Gold codes of shape (n_classes, n_bits).
 
     Returns
     -------
@@ -111,20 +113,20 @@ def is_gold_code(
     if not cond1:
         return False
     if n % 2 == 0:
-        cond2 = unique[0] == np.round(-(2**((n+2)/2)+1)/n_bits, 6)
-        cond3 = unique[1] == np.round(-1/n_bits, 6)
-        cond4 = unique[2] == np.round((2**((n+2)/2)-1)/n_bits, 6)
-        cond5 = unique[3] == 1.
+        cond2 = unique[0] == np.round(-(2 ** ((n + 2) / 2) + 1) / n_bits, 6)
+        cond3 = unique[1] == np.round(-1 / n_bits, 6)
+        cond4 = unique[2] == np.round((2 ** ((n + 2) / 2) - 1) / n_bits, 6)
+        cond5 = unique[3] == 1.0
     else:
-        cond2 = unique[0] == np.round(-(2**((n+1)/2)+1)/n_bits, 6)
-        cond3 = unique[1] == np.round(-1/n_bits, 6)
-        cond4 = unique[2] == np.round((2**((n+1)/2)-1)/n_bits, 6)
-        cond5 = unique[3] == 1.
+        cond2 = unique[0] == np.round(-(2 ** ((n + 1) / 2) + 1) / n_bits, 6)
+        cond3 = unique[1] == np.round(-1 / n_bits, 6)
+        cond4 = unique[2] == np.round((2 ** ((n + 1) / 2) - 1) / n_bits, 6)
+        cond5 = unique[3] == 1.0
     return cond1 and cond2 and cond3 and cond4 and cond5
 
 
 def is_m_sequence(
-        stimulus: NDArray,
+    stimulus: NDArray,
 ) -> bool:
     """Check whether a stimulus is an m-sequence. An m-sequence [5]_ should have an auto-correlation function that is 1
     at time-shift 0 and -1/n elsewhere [6]_.
@@ -132,7 +134,7 @@ def is_m_sequence(
     Parameters
     ----------
     stimulus: NDArray
-        A vector with the m-sequence of shape (1, n_bits).
+        A matrix with the m-sequence of shape (1, n_bits).
 
     Returns
     -------
@@ -159,13 +161,12 @@ def is_m_sequence(
     # Check correlations
     unique = np.unique(np.round(rho, 6))
     cond1 = unique.size == 2  # two-valued
-    cond2 = unique[0] == np.round(-1/n_bits, 6)  # other shifts are -1/n
-    cond3 = unique[1] == 1.  # zero-shift is 1
+    cond2 = unique[0] == np.round(-1 / n_bits, 6)  # other shifts are -1/n
+    cond3 = unique[1] == 1.0  # zero-shift is 1
     return cond1 and cond2 and cond3
-    
 
-def make_apa_sequence(
-) -> NDArray:
+
+def make_apa_sequence() -> NDArray:
     """Make an almost perfect auto-correlation (APA) sequence. APA sequence [7]_ examples are taken from [8]_.
 
     Returns
@@ -183,16 +184,80 @@ def make_apa_sequence(
            DOI: 10.1109/TNSRE.2018.2837501
     """
     # Credit: Wei et al. (2018) doi: 10.1109/TNSRE.2018.2837501
-    stimulus = [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0,
-                0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0]
+    stimulus = [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+    ]
     stimulus = np.array(stimulus)[np.newaxis, :].astype("uint8")
     return stimulus
 
 
 def make_de_bruijn_sequence(
-        k: int = 2,
-        n: int = 6,
-        seed: list[int] = None,
+    k: int = 2,
+    n: int = 6,
+    seed: list[int] = None,
 ) -> NDArray:
     """Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.
 
@@ -220,13 +285,13 @@ def make_de_bruijn_sequence(
         register = [0] * k * n
     else:
         register = seed
-    assert len(register) == n * k, "The register must be of length n*k."  
+    assert len(register) == n * k, "The register must be of length n*k."
     alphabet = list(range(k))
 
     def db(seq, reg, t, p):
         if t > n:
             if n % p == 0:
-                seq.extend(reg[1: p + 1])
+                seq.extend(reg[1 : p + 1])
         else:
             reg[t] = reg[t - p]
             seq = db(seq, reg, t + 1, p)
@@ -240,8 +305,7 @@ def make_de_bruijn_sequence(
     return stimulus
 
 
-def make_golay_sequence(
-) -> NDArray:
+def make_golay_sequence() -> NDArray:
     """Make complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.
 
     Returns
@@ -258,23 +322,151 @@ def make_golay_sequence(
             10.1109/TNSRE.2018.2837501
     """
     # Credit: Wei et al. (2018) doi: 10.1109/TNSRE.2018.2837501
-    ga = [1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1,
-          1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]
-    gb = [0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
-          0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0]
+    ga = [
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+    ]
+    gb = [
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+    ]
     stimulus = np.array([ga, gb]).astype("uint8")
     return stimulus
 
 
 def make_gold_codes(
-        poly1: list[int] = None,
-        poly2: list[int] = None,
-        seed1: list[int] = None,
-        seed2: list[int] = None,
+    poly1: list[int] = None,
+    poly2: list[int] = None,
+    seed1: list[int] = None,
+    seed2: list[int] = None,
 ) -> NDArray:
     """Make a set of Gold codes. The Gold codes [13]_ should be generated with two polynomials that define a preferred
     pair of m-sequences.
-    
+
     Parameters
     ----------
     poly1: list[int] (default: None)
@@ -287,7 +479,7 @@ def make_gold_codes(
         Seed for the initial shift register of poly1. If None, an all ones initial register is used.
     seed2: list[int] (default: None)
         Seed for the initial shift register of poly2. If None, an all ones initial register is used.
-        
+
     Returns
     -------
     stimulus: NDArray
@@ -308,20 +500,20 @@ def make_gold_codes(
     assert n == len(poly2), "Both polynomials should be the same length."
     m_sequence1 = make_m_sequence(poly1, 2, seed1).flatten()
     m_sequence2 = make_m_sequence(poly2, 2, seed2).flatten()
-    stimulus = np.empty((2**n-1, 2**n-1), dtype="uint8")
-    for i in range(2**n-1):
+    stimulus = np.empty((2**n - 1, 2**n - 1), dtype="uint8")
+    for i in range(2**n - 1):
         stimulus[i, :] = (m_sequence1 + m_sequence2) % 2
         m_sequence2 = np.roll(m_sequence2, -1)
     return stimulus
 
 
 def make_m_sequence(
-        poly: list[int] = None,
-        base: int = 2,
-        seed: list[int] = None,
+    poly: list[int] = None,
+    base: int = 2,
+    seed: list[int] = None,
 ) -> NDArray:
     """Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.
-    
+
     Parameters
     ----------
     poly: list[int] (default: None)
@@ -332,7 +524,7 @@ def make_m_sequence(
         tertiary sequence, etc.
     seed: list[int] (default: None)
         The seed for the initial shift register. If None, an all ones initial register is used.
-        
+
     Returns
     -------
     stimulus: NDArray
@@ -352,8 +544,8 @@ def make_m_sequence(
     assert n == len(seed), "The polynomial and seed must contain an equal number of items."
     register = np.array(seed).astype("uint8")
     assert not np.all(register == 0), "The seed cannot be all zero."
-    stimulus = np.empty(2**n-1, dtype="uint8")
-    for i in range(2**n-1):
+    stimulus = np.empty(2**n - 1, dtype="uint8")
+    for i in range(2**n - 1):
         bit = np.sum(poly * register) % base
         register = np.roll(register, shift=1)
         register[0] = bit
@@ -362,11 +554,11 @@ def make_m_sequence(
 
 
 def modulate(
-        stimulus: NDArray,
+    stimulus: NDArray,
 ) -> NDArray:
     """Modulate a stimulus. Modulation is done by xoring with a double frequency bit-clock [15]_. This limits
     low-frequency content as well as the event distribution (i.e., limits to shorter (only two) run-lengths).
-    
+
     Parameters
     ----------
     stimulus: NDArray
@@ -389,14 +581,10 @@ def modulate(
 
 
 def optimize_layout_incremental(
-        X: NDArray,
-        neighbours: NDArray,
-        n_initializations: int = 100,
-        n_iterations: int = 100
+    X: NDArray, neighbours: NDArray, n_initializations: int = 100, n_iterations: int = 100
 ) -> NDArray:
-    """
-    Optimize the allocation of codes to a layout by considering the correlation between neighboring codes. This method
-    was developed and evaluated as part of [17]_.
+    """Optimize the allocation of codes to a layout by considering the correlation between neighboring codes. This
+    method was developed and evaluated as part of [16]_.
 
     Parameters
     ----------
@@ -404,9 +592,9 @@ def optimize_layout_incremental(
         Data matrix of shape (n_codes, n_samples).
     neighbours: NDArray
         A matrix of neighbouring pairs of shape (n_neighbours, 2).
-    n_initializations: int (default: 50)
+    n_initializations: int (default: 100)
         The number of random initial layouts to test.
-    n_iterations: int (default: 50)
+    n_iterations: int (default: 100)
         The maximum number of iterations to improve a specific initial layout.
 
     Returns
@@ -432,21 +620,22 @@ def optimize_layout_incremental(
     layout = np.arange(n_codes)
     value = find_worst_neighbour(rho, neighbours, layout)[1]
     for i in range(n_initializations):
-
         # Random initial layout
         lay = np.random.permutation(layout)
 
         for j in range(n_iterations):
-
             # Find worst neighbours
             idx, val = find_worst_neighbour(rho, neighbours, lay)
 
             # Find all candidate swaps
             others = np.setxor1d(idx, np.arange(n_codes))
-            swaps = np.concatenate((
-                np.stack((np.full(others.size, idx[0]), others), axis=1),
-                np.stack((np.full(others.size, idx[1]), others), axis=1)
-            ), axis=0)
+            swaps = np.concatenate(
+                (
+                    np.stack((np.full(others.size, idx[0]), others), axis=1),
+                    np.stack((np.full(others.size, idx[1]), others), axis=1),
+                ),
+                axis=0,
+            )
 
             # Try all candidate swaps
             values = np.empty(swaps.shape[0])
@@ -469,12 +658,8 @@ def optimize_layout_incremental(
     return layout
 
 
-def optimize_subset_clustering(
-        X: NDArray,
-        n_subset: int
-) -> NDArray:
-    """
-    Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each
+def optimize_subset_clustering(X: NDArray, n_subset: int) -> NDArray:
+    """Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each
     cluster. The best candidate from each cluster is defined by the minimum maximum correlation with any code outside
     the cluster. This method was developed and evaluated as part of [17]_.
 
@@ -525,18 +710,14 @@ def optimize_subset_clustering(
     return subset
 
 
-def shift(
-        stimulus: NDArray,
-        stride: int = 1,
-) -> NDArray:
-    """
-    Shift a code to create multiple.
+def shift(stimulus: NDArray, stride: Union[int, tuple[int]]) -> NDArray:
+    """Shift a code to create multiple circularly shifted versions of it.
 
     Parameters
     ----------
     stimulus: NDArray
         The stimulus to shift of shape (1, n_bits).
-    stride: int (default: 1)
+    stride: int | tuple[int]
         The number of bits to shift.
 
     Returns
@@ -547,9 +728,10 @@ def shift(
     if stimulus.ndim == 1:
         stimulus = stimulus[np.newaxis, :]
     assert stimulus.shape[0] == 1, "The stimulus matrix must have only one stimulus."
-    tmp = stimulus
-    stimulus = np.empty((int(stimulus.shape[1] / stride), stimulus.shape[1]), stimulus.dtype)
-    stimulus[0, :] = tmp
-    for i in range(1, int(stimulus.shape[1] / stride)):
-        stimulus[i, :] = np.roll(stimulus[i-1, :], stride)
+    if isinstance(stride, int):
+        stride = np.arange(0, stimulus.shape[1], stride, dtype="int")
+    stim = np.copy(stimulus)
+    stimulus = np.empty((stride.size, stim.shape[1]), stim.dtype)
+    for i, s in enumerate(stride):
+        stimulus[i, :] = np.roll(stim, s, axis=1)
     return stimulus

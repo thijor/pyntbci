@@ -13,7 +13,6 @@ N_COMPONENTS = 3
 
 
 class TestCCA(unittest.TestCase):
-
     def test_X2D_Y2D(self):
         X = np.random.rand(N_SAMPLES, N_CHANNELS)
         Y = np.random.rand(N_SAMPLES, N_CHANNELS - 1)
@@ -145,34 +144,40 @@ class TestCCA(unittest.TestCase):
         self.assertEqual(cca0.w_x_.shape, cca1.w_x_.shape)
         self.assertEqual(cca0.w_y_.shape, cca1.w_y_.shape)
 
-        cca1 = pyntbci.transformers.CCA(n_components=1,
-                                        gamma_x=np.random.rand(N_CHANNELS), gamma_y=np.random.rand(N_CHANNELS - 1))
+        cca1 = pyntbci.transformers.CCA(
+            n_components=1, gamma_x=np.random.rand(N_CHANNELS), gamma_y=np.random.rand(N_CHANNELS - 1)
+        )
         cca1.fit(X, Y)
         self.assertEqual(cca0.w_x_.shape, cca1.w_x_.shape)
         self.assertEqual(cca0.w_y_.shape, cca1.w_y_.shape)
 
 
-class TestTRCA(unittest.TestCase):
-
-    def test_trca(self):
+class TestVectorizer(unittest.TestCase):
+    def test_shape(self):
         X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        vec = pyntbci.transformers.Vectorizer()
+        vec.fit(X)
+        Xv = vec.transform(X)
+        self.assertEqual(Xv.shape, (N_TRIALS, N_CHANNELS * N_SAMPLES))
 
-        trca = pyntbci.transformers.TRCA()
-        trca.fit(X)
-        self.assertEqual(trca.w_.shape, (N_CHANNELS, 1))
-
-        Z = trca.transform(X)
-        self.assertEqual(Z.shape, (N_TRIALS, 1, N_SAMPLES))
-
-    def test_trca_components(self):
+    def test_sample_prime(self):
         X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        vec = pyntbci.transformers.Vectorizer(channel_prime=False)
+        vec.fit(X)
+        Xv = vec.transform(X)
+        np.testing.assert_array_equal(Xv, X.reshape((N_TRIALS, -1)))
 
-        trca = pyntbci.transformers.TRCA(n_components=N_COMPONENTS)
-        trca.fit(X)
-        self.assertEqual(trca.w_.shape, (N_CHANNELS, N_COMPONENTS))
+    def test_channel_prime(self):
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        vec = pyntbci.transformers.Vectorizer(channel_prime=True)
+        vec.fit(X)
+        Xv = vec.transform(X)
+        np.testing.assert_array_equal(Xv, X.transpose((0, 2, 1)).reshape((N_TRIALS, -1)))
 
-        Z = trca.transform(X)
-        self.assertEqual(Z.shape, (N_TRIALS, N_COMPONENTS, N_SAMPLES))
+    def test_not_fitted(self):
+        X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)
+        vec = pyntbci.transformers.Vectorizer()
+        self.assertRaises(Exception, vec.transform, X)
 
 
 if __name__ == "__main__":

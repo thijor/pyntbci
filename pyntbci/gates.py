@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.utils.validation import check_is_fitted
 
 
 AGGREGATES = ("mean", "median", "sum", "min", "max")
@@ -15,15 +16,12 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         The aggregate function to use. Options: mean, median, sum, min, max.
     """
 
-    def __init__(
-            self,
-            aggregate: str = "mean"
-    ) -> None:
+    def __init__(self, aggregate: str = "mean") -> None:
         self.aggregate = aggregate.lower()
 
     def decision_function(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
         """Compute gated scores for X.
 
@@ -37,6 +35,7 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         scores: NDArray
             Score matrix of shape (n_trials, n_classes).
         """
+        check_is_fitted(self)
         if self.aggregate == "mean":
             return np.mean(X, axis=2)
         elif self.aggregate == "median":
@@ -51,9 +50,9 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
             raise Exception("Unknown aggregate function:", self.aggregate)
 
     def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
+        self,
+        X: NDArray,
+        y: NDArray,
     ) -> ClassifierMixin:
         """Fit an aggregate gate. Note, does not involve learning.
 
@@ -69,11 +68,12 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
+        self._is_fitted = True
         return self
 
     def predict(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
         """Predict the labels of X.
 
@@ -87,7 +87,18 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         y: NDArray
             Predicted label vector of shape (n_trials).
         """
+        check_is_fitted(self)
         return np.argmax(self.decision_function(X), axis=1)
+
+    def __sklearn_is_fitted__(self) -> bool:
+        """Check fitted status and return a Boolean value.
+
+        Returns
+        -------
+        fitted: bool
+            Whether the classifier is fitted.
+        """
+        return hasattr(self, "_is_fitted") and self._is_fitted
 
 
 class DifferenceGate(BaseEstimator, ClassifierMixin):
@@ -98,20 +109,17 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
     ----------
     estimator: ClassifierMixin
         The estimator used to classify difference scores.
-
-    Attributes
-    ----------
     """
 
     def __init__(
-            self,
-            estimator: ClassifierMixin,
+        self,
+        estimator: ClassifierMixin,
     ) -> None:
         self.estimator = estimator
 
     def _compute_difference_scores(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
         """Compute difference scores.
 
@@ -123,7 +131,7 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         Returns
         -------
         scores: NDArray
-            Difference score matrix of shape (n_trials, (n_classes * (n_classes - 1)) / 2 * n_items)
+            Difference score matrix of shape (n_trials, (n_classes * (n_classes - 1)) / 2 * n_items).
         """
         Z = []
         for i in range(X.shape[1]):
@@ -131,10 +139,7 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
                 Z.append(X[:, i, :] - X[:, j, :])
         return np.stack(Z, axis=1).reshape((X.shape[0], -1))
 
-    def decision_function(
-            self,
-            X: NDArray
-    ) -> NDArray:
+    def decision_function(self, X: NDArray) -> NDArray:
         """Compute gated scores for X.
 
         Parameters
@@ -147,12 +152,13 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         scores: NDArray
             Score matrix of shape (n_trials, n_classes).
         """
+        check_is_fitted(self)
         return self.estimator.decision_function(self._compute_difference_scores(X))
 
     def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
+        self,
+        X: NDArray,
+        y: NDArray,
     ) -> ClassifierMixin:
         """Fit a difference scores gate. Note, calibrates the estimator on difference scores.
 
@@ -169,11 +175,12 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
             Returns the instance itself.
         """
         self.estimator.fit(self._compute_difference_scores(X), y)
+        self._is_fitted = True
         return self
 
     def predict(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
         """Predict the labels of X.
 
@@ -187,4 +194,15 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         y: NDArray
             Predicted label vector of shape (n_trials).
         """
+        check_is_fitted(self)
         return self.estimator.predict(self._compute_difference_scores(X))
+
+    def __sklearn_is_fitted__(self) -> bool:
+        """Check fitted status and return a Boolean value.
+
+        Returns
+        -------
+        fitted: bool
+            Whether the classifier is fitted.
+        """
+        return hasattr(self, "_is_fitted") and self._is_fitted

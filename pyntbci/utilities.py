@@ -10,18 +10,18 @@ EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe", "diff", "diffsp
 
 
 def correct_latency(
-        X: NDArray,
-        y: NDArray,
-        latency: NDArray,
-        fs: int,
-        axis: int = -1,
+    X: NDArray,
+    y: NDArray,
+    latency: NDArray,
+    fs: int,
+    axis: int = -1,
 ) -> NDArray:
     """Correct for a latency in data. This is done by shifting data according to the class-specific latencies.
 
     Parameters
     ----------
     X: NDArray
-        The EEG data of shape (n_trials, ...)
+        The EEG data of shape (n_trials, ...).
     y: NDArray
         The labels of the EEG data of shape (n_trials) that indicate which latency to use for which trials.
     latency: NDArray
@@ -30,7 +30,7 @@ def correct_latency(
         The sampling frequency of the EEG data in Hz.
     axis: int (default: -1)
         The axis in X to perform the correction to.
-    
+
     Returns
     -------
     X: NDArray
@@ -48,8 +48,8 @@ def correct_latency(
 
 
 def correlation(
-        A: NDArray,
-        B: NDArray,
+    A: NDArray,
+    B: NDArray,
 ) -> NDArray:
     """Compute the correlation coefficient. Computed between two sets of variables.
 
@@ -78,20 +78,20 @@ def correlation(
     A -= A.mean(axis=1, keepdims=True)
     B -= B.mean(axis=1, keepdims=True)
 
-    ssA = (A ** 2).sum(axis=1, keepdims=True)
-    ssB = (B ** 2).sum(axis=1, keepdims=True)
+    ssA = (A**2).sum(axis=1, keepdims=True)
+    ssB = (B**2).sum(axis=1, keepdims=True)
     scores = A @ B.T / np.sqrt(ssA * ssB.T)
 
     return scores
 
 
 def covariance(
-        data: NDArray,
-        n_old: int = 0,
-        avg_old: NDArray = None,
-        cov_old: NDArray = None,
-        estimator: BaseEstimator = None,
-        running: bool = False,
+    data: NDArray,
+    n_old: int = 0,
+    avg_old: NDArray = None,
+    cov_old: NDArray = None,
+    estimator: BaseEstimator = None,
+    running: bool = False,
 ) -> tuple[int, NDArray, NDArray]:
     """Compute the covariance matrix.
 
@@ -102,7 +102,7 @@ def covariance(
     n_old: int (default: 0)
         Number of already observed samples.
     avg_old: NDArray (default: None)
-        Already observed average of shape (n_features).
+        Already observed average of shape (1, n_features).
     cov_old: NDArray (default: None)
         Already observed covariance of shape (n_features, n_features).
     estimator: BaseEstimator (default: None)
@@ -149,9 +149,9 @@ def covariance(
 
 
 def decoding_matrix(
-        data: NDArray,
-        length: int,
-        stride: int = 1,
+    data: NDArray,
+    length: int,
+    stride: int = 1,
 ) -> NDArray:
     """Make a Hankel-like decoding matrix. Used to phase-shift the data (i.e., backward / decoding model), to learn a
     spatio-spectral filter (i.e., a spectral filter per channel).
@@ -186,11 +186,11 @@ def decoding_matrix(
 
 
 def encoding_matrix(
-        stimulus: np.array,
-        length: Union[int, list[int], tuple[int, ...], NDArray],
-        stride: Union[int, list[int], tuple[int, ...], NDArray] = 1,
-        amplitude: NDArray = None,
-        tmin: float = 0,
+    stimulus: NDArray,
+    length: Union[int, list[int], tuple[int, ...], NDArray],
+    stride: Union[int, list[int], tuple[int, ...], NDArray] = 1,
+    amplitude: NDArray = None,
+    tmin: float = 0,
 ) -> NDArray:
     """Make a Toeplitz-like encoding matrix. Used to phase-shift the stimulus (forward / encoding model), per event to
     learn a (or several) temporal filter(s). Also called a "structure matrix" or "design matrix".
@@ -199,26 +199,32 @@ def encoding_matrix(
     ----------
     stimulus: NDArray
         Stimulus matrix of shape (n_classes, n_events, n_samples).
-    length: int | list[int] | tuple[int] | NDArray
+    length: int | list[int] | tuple[int, ...] | NDArray
         The length in samples of the temporal filter, i.e., the number of phase-shifted stimulus per event. If an array
         is provided, it denotes the length per event. If one value is provided, it is assumed all event responses are of
         the same length.
-    stride: int | list[int] | tuple[int] | NDArray (default: 1)
+    stride: int | list[int] | tuple[int, ...] | NDArray (default: 1)
         The step size in samples over the length of the temporal filter. If an array is provided, it denotes the stride
         per event. If one value is provided, it is assumed all event responses have the same stride.
     amplitude: NDArray (default: None)
         Amplitude information to embed in the encoding matrix of shape (n_classes, n_samples). If None, it is ignored.
     tmin: float (default: 0)
         The start of stimulation in samples. Can be used if there was a delay in the marker.
+
     Returns
     -------
     ematrix: NDArray
-        Encoding matrix of shape (n_classes, n_events * length / stride, n_samples).
+        Encoding matrix of shape (n_classes, n_features, n_samples), where n_features is the sum over events of
+        length / stride (i.e., n_events * length / stride if length and stride are the same for each event).
     """
     n_classes, n_events, n_samples = stimulus.shape
 
-    assert (isinstance(length, int) or isinstance(length, list) or isinstance(length, tuple) or
-            isinstance(length, np.ndarray)), "length must be int, list[int], tuple[int], or np.ndarray()."
+    assert (
+        isinstance(length, int)
+        or isinstance(length, list)
+        or isinstance(length, tuple)
+        or isinstance(length, np.ndarray)
+    ), "length must be int, list[int], tuple[int], or np.ndarray()."
     if isinstance(length, int):
         length = np.array(n_events * [length])
     elif isinstance(length, list) or isinstance(length, tuple):
@@ -231,8 +237,12 @@ def encoding_matrix(
     assert length.size == n_events, "the number of events in length must match those in stimulus."
     assert np.issubdtype(length.dtype, np.integer), "length must contain integer values."
 
-    assert (isinstance(stride, int) or isinstance(stride, list) or isinstance(stride, tuple) or
-            isinstance(stride, np.ndarray)), "stride must be int, list[int], tuple[int], or np.ndarray()."
+    assert (
+        isinstance(stride, int)
+        or isinstance(stride, list)
+        or isinstance(stride, tuple)
+        or isinstance(stride, np.ndarray)
+    ), "stride must be int, list[int], tuple[int], or np.ndarray()."
     if isinstance(stride, int):
         stride = np.array(n_events * [stride])
     elif isinstance(stride, list) or isinstance(stride, tuple):
@@ -269,23 +279,19 @@ def encoding_matrix(
     # Add delay
     if tmin < 0:
         # Stimulation started earlier, pad with zeros at the end
-        ematrix = np.concatenate((
-            ematrix[:, :, np.abs(tmin):],
-            np.zeros((ematrix.shape[0], ematrix.shape[1], np.abs(tmin)))
-        ), axis=2)
+        ematrix = np.concatenate(
+            (ematrix[:, :, np.abs(tmin) :], np.zeros((ematrix.shape[0], ematrix.shape[1], np.abs(tmin)))), axis=2
+        )
     elif tmin > 0:
         # Stimulation started later, pad with zeros at the start
-        ematrix = np.concatenate((
-            np.zeros((ematrix.shape[0], ematrix.shape[1], tmin)),
-            ematrix[:, :, :-tmin]
-        ), axis=2)
+        ematrix = np.concatenate((np.zeros((ematrix.shape[0], ematrix.shape[1], tmin)), ematrix[:, :, :-tmin]), axis=2)
 
     return ematrix
 
 
 def euclidean(
-        A: NDArray,
-        B: NDArray,
+    A: NDArray,
+    B: NDArray,
 ) -> NDArray:
     """Compute the Euclidean distance. Computed between two sets of variables.
 
@@ -299,7 +305,7 @@ def euclidean(
     Returns
     -------
     scores: NDArray
-        The correlation matrix of shape (n_A, n_B).
+        The distance matrix of shape (n_A, n_B).
     """
     if A.ndim == 1:
         A = A[np.newaxis, :]
@@ -316,9 +322,9 @@ def euclidean(
 
 
 def event_matrix(
-        stimulus: NDArray,
-        event: str,
-        onset_event: bool = False,
+    stimulus: NDArray,
+    event: str,
+    onset_event: bool = False,
 ) -> tuple[NDArray, tuple[str]]:
     """Make an event matrix. The event matrix describes the onset of events in a stimulus sequence, given a particular
     event definition.
@@ -337,8 +343,8 @@ def event_matrix(
             "dur" | "duration": each run-length of the same value is an event (e.g., 1, 11, 111, etc.).
             "re" | "rise" | "risingedge": each transition of a lower to a higher value is an event (e.g., 01).
             "fe" | "fall" | "fallingedge": each transition of a higher to a lower value is an event (i.e., 10).
-            "refe" | "risefall" | "risingedgefallingedge" | "contrast": one event for rise and one event for fall
-            "diff" | "difference" | "derivative": the derivative of the stimulus
+            "refe" | "risefall" | "risingedgefallingedge" | "contrast": one event for rise and one event for fall.
+            "diff" | "difference" | "derivative": the derivative of the stimulus.
             "diffsplit" | "differencesplit" | "derivativesplit": the derivative of the stimulus split in pos and neg.
     onset_event: bool (default: False)
         Whether to model the onset of stimulation. This "onset" event is added as last event.
@@ -373,7 +379,6 @@ def event_matrix(
         labels = ("on", "off")
 
     elif event == "dur" or event == "duration":
-
         # Get rising and falling edges
         diff = np.diff(stimulus, axis=1)
         change = diff != 0
@@ -381,7 +386,6 @@ def event_matrix(
         # Create event dictionary
         events = dict()
         for i_code in range(n_stims):
-
             # Get rising and falling edge locations
             idx = 1 + np.concatenate(([-1], np.where(change[i_code, :])[0], [n_samples - 1]))
 
@@ -451,15 +455,15 @@ def event_matrix(
 
 
 def filterbank(
-        X: NDArray,
-        passbands: list[tuple[float, float]],
-        fs: float,
-        tmin: float = None,
-        ftype: str = "butterworth",
-        N: Union[int, list[int]] = None,
-        stopbands: list[tuple[float, float]] = None,
-        gpass: Union[float, list[float]] = 3.0,
-        gstop: Union[float, list[float]] = 40.0,
+    X: NDArray,
+    passbands: list[tuple[float, float]],
+    fs: float,
+    tmin: float = None,
+    ftype: str = "butterworth",
+    N: Union[int, list[int]] = None,
+    stopbands: list[tuple[float, float]] = None,
+    gpass: Union[float, list[float]] = 3.0,
+    gstop: Union[float, list[float]] = 40.0,
 ) -> NDArray:
     """Apply a filterbank. Note, the order of the filter is set according to the maximum loss in the passband and the
     minimum loss in the stopband.
@@ -470,13 +474,13 @@ def filterbank(
         The matrix of EEG data of shape (n_trials, n_channels, n_samples).
     passbands: list[tuple[float, float]]
         A list of tuples with passbands defined as (lower, higher) cutoff in Hz.
-    fs: int
+    fs: float
         The sampling frequency of the EEG data in Hz.
     tmin: float (default: None)
         The window before trial onset that can catch any filter artefacts and will be cut off after filtering. If None,
         no data will be cut away.
     ftype: str (default: "butterworth")
-        The filter type: "butterworth" | "chebyshev1"
+        The filter type: "butterworth" | "chebyshev1".
     N: int | list[int] (default: None)
         The filter order. If a list is provided, it is the order for each passband. If None, the order is set given the
         stopbands, gpass and gstop.
@@ -486,7 +490,7 @@ def filterbank(
     gpass: float | list[float] (default: 3.0)
         The maximum loss in the passband (dB). If a list is provided, it is the gpass for each passband. Only used if
         N=None.
-    gstop: float | list[float] (default: 30.0)
+    gstop: float | list[float] (default: 40.0)
         The minimum attenuation in the stopband (dB). If a list is provided, it is the gstop for each stopband. Only
         used if N=None.
 
@@ -503,7 +507,7 @@ def filterbank(
     # Set default stopband to lower-2 and higher+7
     if N is None:
         if stopbands is None:
-            stopbands = [[max([l - 2.0, 0.1]), min([h + 7.0, fs / 2])] for (l, h) in passbands]
+            stopbands = [[max([lo - 2.0, 0.1]), min([h + 7.0, fs / 2])] for (lo, h) in passbands]
         else:
             assert len(passbands) == len(stopbands), "Number of bands in passbands and stopbands should be equal."
         for passband, stopband in zip(passbands, stopbands):
@@ -524,12 +528,12 @@ def filterbank(
     # Filter the data
     Xf = np.zeros((X.shape + (len(passbands),)), dtype=X.dtype)
     for i_band in range(len(passbands)):
-
         # Butterworth filter design
         if ftype == "butterworth":
             if N is None:
-                N, Wn = buttord(wp=passbands[i_band], ws=stopbands[i_band], gpass=gpass[i_band], gstop=gstop[i_band],
-                                fs=fs)
+                N, Wn = buttord(
+                    wp=passbands[i_band], ws=stopbands[i_band], gpass=gpass[i_band], gstop=gstop[i_band], fs=fs
+                )
             else:
                 Wn = passbands[i_band]
             b, a = butter(N=N, Wn=Wn, btype="bandpass", fs=fs)
@@ -537,8 +541,9 @@ def filterbank(
         # Chebyshev Type I filter design
         elif ftype == "chebyshev1":
             if N is None:
-                N, Wn = cheb1ord(wp=passbands[i_band], ws=stopbands[i_band], gpass=gpass[i_band], gstop=gstop[i_band],
-                                 fs=fs)
+                N, Wn = cheb1ord(
+                    wp=passbands[i_band], ws=stopbands[i_band], gpass=gpass[i_band], gstop=gstop[i_band], fs=fs
+                )
             else:
                 Wn = passbands[i_band]
             b, a = cheby1(N=N, rp=0.5, Wn=Wn, btype="bandpass", fs=fs)
@@ -551,55 +556,55 @@ def filterbank(
 
     # Cut away initial window that can capture filter artefacts
     if tmin is not None:
-        Xf = Xf[:, :, int(abs(tmin * fs)):, :]
+        Xf = Xf[:, :, int(abs(tmin * fs)) :, :]
 
     return Xf
 
 
-def find_neighbours(
-        layout: NDArray,
-        border_value: int = -1
-) -> NDArray:
-    """
-    Find the neighbour pairs (horizontal, vertical, diagonal) in a rectangular layout.
+def find_neighbours(layout: NDArray, border_value: int = -1) -> NDArray:
+    """Find the neighbour pairs (horizontal, vertical, diagonal) in a rectangular layout.
 
     Parameters
     ----------
     layout: NDArray
-        A matrix of identities of shape (rows, columns).
+        A matrix of identities of shape (n_rows, n_columns).
     border_value: int (default: -1)
         A value not existing in the layout to represent a border to prevent wrapping around edges.
 
     Returns
     -------
     neighbours: NDArray
-        A matrix of neighbour pairs of shape (n_neighbours, 2).
+        A matrix of neighbour pairs of shape (n_pairs, 2).
     """
     assert border_value not in layout, "The border_value must not be in the layout."
 
     # Add a border around the layout
-    layout = np.concatenate((
-        np.full((1, layout.shape[1]), border_value),
-        layout,
-        np.full((1, layout.shape[1]), border_value)), axis=0)
-    layout = np.concatenate((
-        np.full((layout.shape[0], 1), border_value),
-        layout,
-        np.full((layout.shape[0], 1), border_value)), axis=1)
+    layout = np.concatenate(
+        (np.full((1, layout.shape[1]), border_value), layout, np.full((1, layout.shape[1]), border_value)), axis=0
+    )
+    layout = np.concatenate(
+        (np.full((layout.shape[0], 1), border_value), layout, np.full((layout.shape[0], 1), border_value)), axis=1
+    )
 
     # Find all neighbours
-    neighbours = np.stack((
-        np.roll(layout, -1, axis=1).flatten(order="F"),
-        np.roll(layout, -1, axis=0).flatten(order="F"),
-        np.roll(np.roll(layout, -1, axis=0), -1, axis=1).flatten(order="F"),
-        np.roll(np.roll(layout, -1, axis=0), 1, axis=1).flatten(order="F"),
-    ), axis=1)
+    neighbours = np.stack(
+        (
+            np.roll(layout, -1, axis=1).flatten(order="F"),
+            np.roll(layout, -1, axis=0).flatten(order="F"),
+            np.roll(np.roll(layout, -1, axis=0), -1, axis=1).flatten(order="F"),
+            np.roll(np.roll(layout, -1, axis=0), 1, axis=1).flatten(order="F"),
+        ),
+        axis=1,
+    )
 
     # Find all neighbour pairs
-    neighbours = np.stack((
-        np.tile(layout.flatten(order="F"), (1, neighbours.shape[1])).flatten(order="F"),
-        neighbours.flatten(order="F"),
-    ), axis=1)
+    neighbours = np.stack(
+        (
+            np.tile(layout.flatten(order="F"), (1, neighbours.shape[1])).flatten(order="F"),
+            neighbours.flatten(order="F"),
+        ),
+        axis=1,
+    )
 
     # Remove the border
     neighbours = neighbours[~np.any(neighbours == border_value, axis=1), :]
@@ -610,13 +615,8 @@ def find_neighbours(
     return neighbours
 
 
-def find_worst_neighbour(
-        score: NDArray,
-        neighbours: NDArray,
-        layout: NDArray
-) -> tuple[tuple[int, int], float]:
-    """
-    Find the neighbouring pair with maximum score.
+def find_worst_neighbour(score: NDArray, neighbours: NDArray, layout: NDArray) -> tuple[tuple[int, int], float]:
+    """Find the neighbouring pair with maximum score.
 
     Parameters
     ----------
@@ -639,24 +639,20 @@ def find_worst_neighbour(
     return idx, val
 
 
-def pinv(
-        A: NDArray,
-        alpha: float = None
-) -> NDArray:
-    """
-    Compute the pseudo-inverse of a matrix.
+def pinv(A: NDArray, alpha: float = None) -> NDArray:
+    """Compute the pseudo-inverse of a matrix.
 
     Parameters
     ----------
     A: NDArray
-        Matrix of shape p x q to compute pseudo-inverse for.
+        Matrix of shape (n_rows, n_columns) to compute pseudo-inverse for.
     alpha: float (default: None)
-        The amount of variance the retain.
+        The amount of variance to retain.
 
     Returns
     -------
     iA: NDArray
-        The pseudo-inverse of A of shape p x q.
+        The pseudo-inverse of A of shape (n_rows, n_columns).
     """
     assert A.ndim == 2, "A should be a matrix."
     assert not np.isnan(A).any(), "A should not contains NaNs."
@@ -666,54 +662,54 @@ def pinv(
         d = 1 / d
     else:
         for i in range(d.size):
-            if (d[:d.size - i] / d.sum()).sum() < alpha:
+            if (d[: d.size - i] / d.sum()).sum() < alpha:
                 d = 1 / d
-                d[d.size - i:] = 0
+                d[d.size - i :] = 0
                 break
     iA = np.dot(U * d, V)
     return iA
 
 
 def itr(
-        n: Union[int, NDArray],
-        p: Union[float, NDArray],
-        t: Union[float, NDArray],
+    n: Union[int, list, NDArray],
+    p: Union[float, list, NDArray],
+    t: Union[float, list, NDArray],
 ) -> NDArray:
     """Compute the information-transfer rate (ITR).
 
     Parameters
     ----------
-    n: int | NDArray:
+    n: int | list | NDArray
         The number of classes.
-    p: float | NDArray:
+    p: float | list | NDArray
         The decoding accuracy between 0 and 1.
-    t: float | NDArray:
+    t: float | list | NDArray
         The decoding time in seconds (including inter-trial time).
 
     Returns
     -------
-    itr: float | NDArray
+    itr: NDArray
         The ITR in bits per minute.
     """
+    n = np.atleast_1d(n)
     p = np.atleast_1d(p)
+    t = np.atleast_1d(t)
     p[p >= 1] = 1.0 - np.finfo(p.dtype).eps
     p[p <= 0] = np.finfo(p.dtype).eps
     b = np.log2(n) + p * np.log2(p) + (1 - p) * np.log2((1 - p) / (n - 1))
     itr = (b * (60 / t)).squeeze()
-    if itr.ndim == 0:
-        itr = float(itr)
     return itr
 
 
 def trials_to_epochs(
-        X: NDArray,
-        y: NDArray,
-        codes: NDArray,
-        epoch_size: int,
-        step_size: int,
+    X: NDArray,
+    y: NDArray,
+    codes: NDArray,
+    epoch_size: int,
+    step_size: int,
 ) -> tuple[NDArray, NDArray]:
     """Slice trials to epochs.
-    
+
     Parameters
     ----------
     X: NDArray
@@ -729,9 +725,9 @@ def trials_to_epochs(
 
     Returns
     -------
-    NDArray
+    X_sliced: NDArray
         The sliced EEG data of shape (n_trials, n_epochs, n_channels, epoch_size).
-    NDArray
+    y_sliced: NDArray
         The sliced label information of shape (n_trials, n_epochs).
     """
     n_trials, n_channels, n_samples = X.shape
@@ -741,7 +737,7 @@ def trials_to_epochs(
     y_sliced = np.zeros((n_trials, n_epochs), dtype="uint8")
     for i_epoch in range(n_epochs):
         start = i_epoch * step_size
-        X_sliced[:, i_epoch, :, :] = X[:, :, start:start + epoch_size]
+        X_sliced[:, i_epoch, :, :] = X[:, :, start : start + epoch_size]
         y_sliced[:, i_epoch] = codes[y, start % codes.shape[1]]
 
     return X_sliced, y_sliced

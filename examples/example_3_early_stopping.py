@@ -20,11 +20,8 @@ References
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn
 
 import pyntbci
-
-seaborn.set_context("paper", font_scale=1.5)
 
 # %%
 # Simulate data
@@ -52,8 +49,9 @@ ENCODING_LENGTH = 0.3
 SEED = 42
 
 y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
-X, y, V = pyntbci.eeg.generate_c_vep(N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8,
-                                     random_state=SEED)
+X, y, V = pyntbci.eeg.generate_c_vep(
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+)
 
 N_FOLDS = 4
 folds = np.repeat(np.arange(N_FOLDS), int(N_TRIALS / N_FOLDS))
@@ -296,9 +294,7 @@ print(f"\tITR: avg={itr_tgt_acc.mean():.1f} with std={itr_tgt_acc.std():.2f}")
 target_p = 0.90 ** (1 / N_SEGMENTS)
 
 # Fit classifier
-rcca = pyntbci.classifiers.rCCA(
-    stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="correlation"
-)
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="correlation")
 margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=target_p, max_time=MAX_TIME)
 margin.fit(X, y)
 
@@ -467,9 +463,7 @@ print(f"\tITR: avg={itr_beta.mean():.1f} with std={itr_beta.std():.2f}")
 cr = 1.0
 
 # Fit classifier
-rcca = pyntbci.classifiers.rCCA(
-    stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner"
-)
+rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner")
 bayes = pyntbci.stopping.BayesStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, cr=cr, max_time=MAX_TIME)
 bayes.fit(X, y)
 
@@ -499,9 +493,7 @@ for i_fold in range(N_FOLDS):
     X_tst, y_tst = X[folds == i_fold, :, :], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(
-        stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner"
-    )
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(
         rcca, segment_time=SEGMENT_TIME, fs=FS, method="bds0", cr=cr, max_time=MAX_TIME
     )
@@ -573,9 +565,7 @@ for i_fold in range(N_FOLDS):
     X_tst, y_tst = X[folds == i_fold, :, :], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(
-        stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner"
-    )
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(
         rcca,
         segment_time=SEGMENT_TIME,
@@ -654,9 +644,7 @@ for i_fold in range(N_FOLDS):
     X_tst, y_tst = X[folds == i_fold, :, :], y[folds == i_fold]
 
     # Train template-matching classifier
-    rcca = pyntbci.classifiers.rCCA(
-        stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner"
-    )
+    rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="inner")
     bayes = pyntbci.stopping.BayesStopping(
         rcca,
         segment_time=SEGMENT_TIME,

@@ -15,7 +15,11 @@ Available modules
 -----------------
 classifiers
     Core classification models.
-classifiers
+eeg
+    Basic functions to generate synthetic EEG data, e.g., for testing and examples.
+envelope
+    Basic functions to compute the envelope of an audio signal.
+gates
     Core gating functions.
 plotting
     Basic functions to visualize data.
@@ -35,4 +39,4 @@ __credits__ = "Radboud University; Donders Institute for Brain, Cognition and Be
 __license__ = "BSD"
 __version__ = "1.8.4"
 
-from pyntbci import classifiers, envelope, gates, plotting, stimulus, stopping, transformers, utilities
+from pyntbci import classifiers, eeg, envelope, gates, plotting, stimulus, stopping, transformers, utilities

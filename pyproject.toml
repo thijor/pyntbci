@@ -1,3 +1,11 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.lint.per-file-ignores]
+"pyntbci/__init__.py" = ["F401"]  # intentional re-exports forming the package's public API
+"pyntbci/tests/__init__.py" = ["F403", "F405"]  # intentional star imports to aggregate tests

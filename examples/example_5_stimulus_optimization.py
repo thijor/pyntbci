@@ -16,11 +16,8 @@ References
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 
 import pyntbci
-
-sns.set_context("paper", font_scale=1.5)
 
 # %%
 # Simulate data
@@ -48,8 +45,9 @@ ENCODING_LENGTH = 0.3
 SEED = 42
 
 y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
-X, y, V = pyntbci.eeg.generate_c_vep(N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8,
-                                     random_state=SEED)
+X, y, V = pyntbci.eeg.generate_c_vep(
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+)
 
 # %%
 # Extract templates with rCCA
@@ -96,20 +94,18 @@ random_vals = rho[random_subset, :][:, random_subset].flatten()
 random_vals = random_vals[~np.isnan(random_vals)]
 
 # Visualize tested and optimized layouts
-colors = sns.color_palette("colorblind")
 plt.figure(figsize=(15, 3))
-plt.axvline(optimized, color=colors[0], label="optimized")
-plt.axvline(random.min(), color=colors[1], label=f"best random (N={n_random})")
-plt.hist(random, color=colors[2], label="maximum within random layout")
+plt.axvline(optimized, label="optimized")
+plt.axvline(random.min(), label=f"best random (N={n_random})")
+plt.hist(random, label="maximum within random layout")
 plt.legend()
 plt.xlabel("maximum correlation across layouts")
 plt.ylabel("count")
 
 # Visualize optimized layouts
-colors = sns.color_palette("colorblind")
 plt.figure(figsize=(15, 3))
-plt.hist(optimized_vals, 10, alpha=0.6, color=colors[0], label="optimized")
-plt.hist(random_vals, 10, alpha=0.6, color=colors[1], label=f"best random (N={n_random})")
+plt.hist(optimized_vals, 10, alpha=0.6, label="optimized")
+plt.hist(random_vals, 10, alpha=0.6, label=f"best random (N={n_random})")
 plt.legend()
 plt.xlabel("maximum correlation within layouts")
 plt.ylabel("norm. count")
@@ -150,22 +146,18 @@ random_vals = rho[random_layout[neighbours[:, 0]], random_layout[neighbours[:, 1
 random_vals = random_vals[~np.isnan(random_vals)]
 
 # Visualize tested and optimized layouts
-colors = sns.color_palette("colorblind")
 plt.figure(figsize=(15, 3))
-plt.axvline(optimized, color=colors[0], label="optimized")
-plt.axvline(random.min(), color=colors[1], label=f"best random (N={n_random})")
-plt.hist(random, color=colors[2], label="maximum within random layout")
+plt.axvline(optimized, label="optimized")
+plt.axvline(random.min(), label=f"best random (N={n_random})")
+plt.hist(random, label="maximum within random layout")
 plt.legend()
 plt.xlabel("maximum correlation across layouts")
 plt.ylabel("count")
 
 # Visualize optimized layouts
-colors = sns.color_palette("colorblind")
 plt.figure(figsize=(15, 3))
-plt.hist(optimized_vals, 10, alpha=0.6, color=colors[0], label="optimized")
-plt.hist(random_vals, 10, alpha=0.6, color=colors[1], label=f"best random (N={n_random})")
+plt.hist(optimized_vals, 10, alpha=0.6, label="optimized")
+plt.hist(random_vals, 10, alpha=0.6, label=f"best random (N={n_random})")
 plt.legend()
 plt.xlabel("maximum correlation within layouts")
 plt.ylabel("norm. count")
-
-plt.show()

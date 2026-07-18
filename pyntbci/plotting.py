@@ -7,34 +7,33 @@ from numpy.typing import NDArray
 
 
 def eventplot(
-        S: NDArray,
-        E: NDArray,
-        fs: int,
-        ax: Axes = None,
-        upsample: int = 20,
-        plotfs: bool = True,
-        events: tuple[str] = None,
+    S: NDArray,
+    E: NDArray,
+    fs: int,
+    ax: Axes = None,
+    upsample: int = 20,
+    plotfs: bool = True,
+    events: tuple[str] = None,
 ) -> None:
-    """
-    Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events across
-    time.
+    """Plot the event time-series. Specifically, shows a figure with the original stimulus and the decomposed events
+    across time.
 
     Parameters
     ----------
     S: NDArray
-        The stimulus time-series of shape (n_samples)
+        The stimulus time-series of shape (n_samples).
     E: NDArray
-        The event time-series of shape (n_events, n_samples)
+        The event time-series of shape (n_events, n_samples).
     fs: int
-        The sampling rate in Hz
+        The sampling rate in Hz.
     ax: Axes (default: None)
         The axis to plot in. If None, a new figure will be opened.
     upsample: int (default: 20)
-        A scalar value to upsample the stimulus and event time-series with for improved visualization
+        A scalar value to upsample the stimulus and event time-series with for improved visualization.
     plotfs: bool (default: True)
-        Whether to plot vertical gridlines at the original sampling rate fs
-    events: tuple (default: None)
-        A tuple with the names of each of the events
+        Whether to plot vertical gridlines at the original sampling rate fs.
+    events: tuple[str] (default: None)
+        A tuple with the names of each of the events.
     """
     # Make figure
     if ax is None:
@@ -46,8 +45,8 @@ def eventplot(
     E = E.astype("float")
 
     # Upsample for better visibility
-    S = S.repeat(20)
-    E = E.repeat(20, axis=1)
+    S = S.repeat(upsample)
+    E = E.repeat(upsample, axis=1)
 
     # Plot stimulus
     S -= S.min()
@@ -77,28 +76,27 @@ def eventplot(
 
 
 def stimplot(
-        S: NDArray,
-        fs: int,
-        ax: Axes = None,
-        upsample: int = 20,
-        plotfs: bool = True,
-        labels: list[str] = None,
+    S: NDArray,
+    fs: int,
+    ax: Axes = None,
+    upsample: int = 20,
+    plotfs: bool = True,
+    labels: list[str] = None,
 ) -> None:
-    """
-    Plot the stimulus time-series.
+    """Plot the stimulus time-series.
 
     Parameters
     ----------
     S: NDArray
-        The stimulus time-series of shape (n_stimuli, n_samples)
+        The stimulus time-series of shape (n_stimuli, n_samples).
     fs: int
-        The sampling rate in Hz
+        The sampling rate in Hz.
     ax: Axes (default: None)
         The axis to plot in. If None, a new figure will be opened.
     upsample: int (default: 20)
-        A scalar value to upsample the stimulus and event time-series with for improved visualization
+        A scalar value to upsample the stimulus and event time-series with for improved visualization.
     plotfs: bool (default: True)
-        Whether to plot vertical gridlines at the original sampling rate fs
+        Whether to plot vertical gridlines at the original sampling rate fs.
     labels: list[str] (default: None)
         A list of string labels for each of the stimuli, used as y ticks in the stimulus plot. If None, stimulus labels
         of 1 to the number of stimuli is used.
@@ -131,14 +129,14 @@ def stimplot(
 
 
 def topoplot(
-        z: NDArray,
-        locfile: str,
-        cbar: bool = False,
-        ax: Axes = None,
-        iso: bool = False,
-        chan: bool = True,
-        vmin: float = None,
-        vmax: float = None,
+    z: NDArray,
+    locfile: str,
+    cbar: bool = False,
+    ax: Axes = None,
+    iso: bool = False,
+    chan: bool = True,
+    vmin: float = None,
+    vmax: float = None,
 ) -> None:
     """Plot a topoplot. The values at each electrode are interpolated on an outline of a head using an electrode
     position file (loc file).
@@ -174,8 +172,9 @@ def topoplot(
             r = float(r) * 2
             xy[i, :] = r * np.cos(t), r * np.sin(t)
 
-    assert z.size == xy.shape[0], \
+    assert z.size == xy.shape[0], (
         f"Number of values in z ({z.size}) and number of electrodes in locfile ({xy.shape[0]}) does not match."
+    )
 
     # Add additional points for interpolation to edge of head
     edge = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1]])
@@ -201,13 +200,13 @@ def topoplot(
         ax = fig.add_subplot(111, aspect=1)
 
     # Add head
-    circle = Circle(xy=(0., 0.), radius=1, edgecolor="k", facecolor="w", zorder=1)
+    circle = Circle(xy=(0.0, 0.0), radius=1, edgecolor="k", facecolor="w", zorder=1)
     ax.add_patch(circle)
 
     # Add ears
-    circle = Ellipse(xy=(-1., 0.), width=0.25, height=0.5, angle=0, edgecolor="k", facecolor="w", zorder=0)
+    circle = Ellipse(xy=(-1.0, 0.0), width=0.25, height=0.5, angle=0, edgecolor="k", facecolor="w", zorder=0)
     ax.add_patch(circle)
-    circle = Ellipse(xy=(1., 0.), width=0.25, height=0.5, angle=0, edgecolor="k", facecolor="w", zorder=0)
+    circle = Ellipse(xy=(1.0, 0.0), width=0.25, height=0.5, angle=0, edgecolor="k", facecolor="w", zorder=0)
     ax.add_patch(circle)
 
     # Add a nose

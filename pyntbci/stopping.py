@@ -18,7 +18,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
     estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time: float
-        The size of a segment of data at which classification is performed ins seconds.
+        The size of a segment of data at which classification is performed in seconds.
     fs: int
         The sampling frequency of the EEG data in Hz.
     method: str (default: "bds0")
@@ -65,6 +65,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
     .. [1] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
            brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
     """
+
     alpha_: float
     sigma_: float
     b0_: NDArray
@@ -76,17 +77,17 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
     pm_: NDArray
 
     def __init__(
-            self,
-            estimator: ClassifierMixin,
-            segment_time: float,
-            fs: int,
-            method: str = "bds0",
-            cr: float = 1.0,
-            target_pf: float = 0.05,
-            target_pd: float = 0.80,
-            max_time: float = None,
-            min_time: float = None,
-            approach: str = "template_inner",
+        self,
+        estimator: ClassifierMixin,
+        segment_time: float,
+        fs: int,
+        method: str = "bds0",
+        cr: float = 1.0,
+        target_pf: float = 0.05,
+        target_pd: float = 0.80,
+        max_time: float = None,
+        min_time: float = None,
+        approach: str = "template_inner",
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -100,9 +101,9 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.approach = approach
 
     def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
+        self,
+        X: NDArray,
+        y: NDArray,
     ) -> ClassifierMixin:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
@@ -139,7 +140,10 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         if n_samples < self.estimator.Ts_.shape[2]:
             T = self.estimator.Ts_
         else:
-            T = np.concatenate((self.estimator.Ts_, np.tile(self.estimator.Tw_, (1, 1, n_samples // self.estimator.Tw_.shape[2]))), axis=2)
+            T = np.concatenate(
+                (self.estimator.Ts_, np.tile(self.estimator.Tw_, (1, 1, n_samples // self.estimator.Tw_.shape[2]))),
+                axis=2,
+            )
         T = T[:, :, :n_samples]
 
         # Obtain alpha from least squares
@@ -165,17 +169,22 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             inner_xx = inner[np.eye(n_classes, dtype=bool)]
             self.b0_[i_segment] = inner_xy.mean()
             self.b1_[i_segment] = inner_xx.mean()
-            self.s0_[i_segment] = np.sqrt(self.b1_[i_segment] * self.sigma_ ** 2 +
-                                          np.mean((self.alpha_ * inner_xy - self.alpha_ * self.b0_[i_segment]) ** 2))
-            self.s1_[i_segment] = np.sqrt(self.b1_[i_segment] * self.sigma_ ** 2 +
-                                          np.mean((self.alpha_ * inner_xx - self.alpha_ * self.b1_[i_segment]) ** 2))
+            self.s0_[i_segment] = np.sqrt(
+                self.b1_[i_segment] * self.sigma_**2
+                + np.mean((self.alpha_ * inner_xy - self.alpha_ * self.b0_[i_segment]) ** 2)
+            )
+            self.s1_[i_segment] = np.sqrt(
+                self.b1_[i_segment] * self.sigma_**2
+                + np.mean((self.alpha_ * inner_xx - self.alpha_ * self.b1_[i_segment]) ** 2)
+            )
 
         # Calculate eta
-        a = self.s1_ ** 2 - self.s0_ ** 2
-        b = -2 * self.alpha_ * (self.s1_ ** 2 * self.b0_ - self.s0_ ** 2 * self.b1_)
-        c = -self.alpha_ ** 2 * (self.s1_ ** 2 * self.b0_ ** 2 + self.s0_ ** 2 * self.b1_ ** 2) + \
-            2 * self.s0_ ** 2 * self.s1_ ** 2 * np.log(self.s0_ / (self.s1_ * (n_classes - 1) * self.cr))
-        self.eta_ = (-b + np.sqrt(np.clip(b ** 2 - 4 * a * c, 0, None))) / (2 * a)
+        a = self.s1_**2 - self.s0_**2
+        b = -2 * self.alpha_ * (self.s1_**2 * self.b0_ - self.s0_**2 * self.b1_)
+        c = -(self.alpha_**2) * (
+            self.s1_**2 * self.b0_**2 + self.s0_**2 * self.b1_**2
+        ) + 2 * self.s0_**2 * self.s1_**2 * np.log(self.s0_ / (self.s1_ * (n_classes - 1) * self.cr))
+        self.eta_ = (-b + np.sqrt(np.clip(b**2 - 4 * a * c, 0, None))) / (2 * a)
 
         # Calculate predicted error vectors (corrected for multiple comparisons)
         self.pf_ = ((n_classes - 1) / n_classes) * (1 - norm.cdf(self.eta_, self.alpha_ * self.b0_, self.s0_))
@@ -204,11 +213,12 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             self.s1_[i_segment] = scores[mask].std()
 
         # Calculate eta
-        a = self.s1_ ** 2 - self.s0_ ** 2
-        b = -2 * (self.s1_ ** 2 * self.b0_ - self.s0_ ** 2 * self.b1_)
-        c = -(self.s1_ ** 2 * self.b0_ ** 2 + self.s0_ ** 2 * self.b1_ ** 2) + \
-            2 * self.s0_ ** 2 * self.s1_ ** 2 * np.log(self.s0_ / (self.s1_ * (n_classes - 1) * self.cr))
-        self.eta_ = (-b + np.sqrt(np.clip(b ** 2 - 4 * a * c, 0, None))) / (2 * a)
+        a = self.s1_**2 - self.s0_**2
+        b = -2 * (self.s1_**2 * self.b0_ - self.s0_**2 * self.b1_)
+        c = -(self.s1_**2 * self.b0_**2 + self.s0_**2 * self.b1_**2) + 2 * self.s0_**2 * self.s1_**2 * np.log(
+            self.s0_ / (self.s1_ * (n_classes - 1) * self.cr)
+        )
+        self.eta_ = (-b + np.sqrt(np.clip(b**2 - 4 * a * c, 0, None))) / (2 * a)
 
         # Calculate predicted error vectors (corrected for multiple comparisons)
         self.pf_ = ((n_classes - 1) / n_classes) * (1 - norm.cdf(self.eta_, self.b0_, self.s0_))
@@ -217,8 +227,8 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.pm_ = 1 - (1 - self.pm_) ** n_classes
 
     def predict(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using Bayesian dynamic stopping.
 
@@ -316,7 +326,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         The criterion to use: accuracy, itr.
     optimization: str (default: "max")
         The optimization to use: max, target.
-    n_folds: int (n_folds: 4)
+    n_folds: int (default: 4)
         The number of folds to evaluate the optimization.
     target: float (default: None)
         The targeted value for the criterion to optimize for. Only used if optimization="target".
@@ -334,20 +344,21 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
     stop_time_: float
         The trained static stopping time.
     """
+
     stop_time_: float
 
     def __init__(
-            self,
-            estimator: ClassifierMixin,
-            segment_time: float,
-            fs: int,
-            criterion: str = "accuracy",
-            optimization: str = "max",
-            n_folds: int = 4,
-            target: float = None,
-            smooth_width: float = None,
-            max_time: float = None,
-            min_time: float = None,
+        self,
+        estimator: ClassifierMixin,
+        segment_time: float,
+        fs: int,
+        criterion: str = "accuracy",
+        optimization: str = "max",
+        n_folds: int = 4,
+        target: float = None,
+        smooth_width: float = None,
+        max_time: float = None,
+        min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -361,9 +372,9 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         self.min_time = min_time
 
     def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
+        self,
+        X: NDArray,
+        y: NDArray,
     ) -> ClassifierMixin:
         """The training procedure to fit the static procedure on supervised EEG data.
 
@@ -387,7 +398,6 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         scores = np.zeros((self.n_folds, n_segments), dtype="float32")
 
         for i_fold in range(self.n_folds):
-
             X_trn = X[folds != i_fold, :, :]
             X_tst = X[folds == i_fold, :, :]
             y_trn = y[folds != i_fold]
@@ -397,7 +407,6 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
             self.estimator.fit(X_trn, y_trn)
 
             for i_segment in range(n_segments):
-
                 # Predict labels for this segment
                 idx = (1 + i_segment) * int(self.segment_time * self.fs)
                 yh = self.estimator.predict(X_tst[:, :, :idx])
@@ -414,7 +423,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         # Smoothen
         if self.smooth_width is not None:
             width = int(self.smooth_width / self.segment_time)
-            kernel = np.full(width, 1/width)
+            kernel = np.full(width, 1 / width)
             for i_fold in range(self.n_folds):
                 scores[i_fold, :] = np.convolve(scores[i_fold, :], kernel, mode="same")
 
@@ -438,8 +447,8 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using criterion static stopping.
 
@@ -468,6 +477,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
         return yh
 
+
 class DistributionStopping(BaseEstimator, ClassifierMixin):
     """Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability
     of the target / maximum score to be an outlier of that distribution [2]_.
@@ -477,9 +487,9 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
     estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time: float
-        The size of a segment of data at which classification is performed ins seconds.
+        The size of a segment of data at which classification is performed in seconds.
     fs: int
-        The sampling frequency of the EEG data in Hz. Required for max_time.
+        The sampling frequency of the EEG data in Hz.
     trained: bool (default: False)
         Whether to calibrate the beta distributions on training data.
     distribution: str (default: "beta")
@@ -509,15 +519,15 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
     distributions_: list[dict]
 
     def __init__(
-            self,
-            estimator: ClassifierMixin,
-            segment_time: float,
-            fs: int,
-            trained: bool = False,
-            distribution: str = "beta",
-            target_p: float = 0.95,
-            max_time: float = None,
-            min_time: float = None,
+        self,
+        estimator: ClassifierMixin,
+        segment_time: float,
+        fs: int,
+        trained: bool = False,
+        distribution: str = "beta",
+        target_p: float = 0.95,
+        max_time: float = None,
+        min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -531,9 +541,9 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         assert self.distribution in ["beta", "norm"], "Distribution must be beta or norm."
 
     def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
+        self,
+        X: NDArray,
+        y: NDArray,
     ) -> ClassifierMixin:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
@@ -557,7 +567,6 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
             self.distributions_ = []
             n_segments = int(X.shape[2] / int(self.segment_time * self.fs))
             for i_segment in range(n_segments):
-
                 # Estimate scores for this segment
                 idx = (1 + i_segment) * int(self.segment_time * self.fs)
                 scores = self.estimator.decision_function(X[:, :, :idx])
@@ -574,13 +583,14 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
                     loc, scale = norm.fit(scores[:, 1:].flatten())
                     self.distributions_.append(dict(loc=loc, scale=scale))
 
+        self._is_fitted = True
         return self
 
     def predict(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
-        """The testing procedure to apply the estimator to novel EEG data using dynamic stopping.
+        """The testing procedure to apply the estimator to novel EEG data using distribution dynamic stopping.
 
         Parameters
         ----------
@@ -593,7 +603,7 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """
-
+        check_is_fitted(self, ["_is_fitted"])
         ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
@@ -615,7 +625,6 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
             # Calculate probability of maximum score being a "true" maximum
             p = np.zeros(scores.shape[0])
             for i_trial in range(scores.shape[0]):
-
                 if self.trained:
                     # Look-up pre-fit distribution parameters
                     if self.distribution == "beta":
@@ -629,7 +638,7 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
                             a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=-1, fscale=2)
                         elif self.distribution == "norm":
                             loc, scale = norm.fit(scores_sorted[i_trial, :-1])
-                    except:
+                    except Exception:
                         p[i_trial] = 0.0
                         continue
 
@@ -658,7 +667,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
     estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time: float
-        The size of a segment of data at which classification is performed ins seconds.
+        The size of a segment of data at which classification is performed in seconds.
     fs: int
         The sampling frequency of the EEG data in Hz.
     target_p: float (default: 0.95)
@@ -686,19 +695,20 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
     .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
+
     margins_: NDArray
 
     def __init__(
-            self,
-            estimator: ClassifierMixin,
-            segment_time: float,
-            fs: int,
-            target_p: float = 0.95,
-            margin_min: float = 0.0,
-            margin_max: float = 1.0,
-            margin_step: float = 0.05,
-            max_time: float = None,
-            min_time: float = None,
+        self,
+        estimator: ClassifierMixin,
+        segment_time: float,
+        fs: int,
+        target_p: float = 0.95,
+        margin_min: float = 0.0,
+        margin_max: float = 1.0,
+        margin_step: float = 0.05,
+        max_time: float = None,
+        min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -711,9 +721,9 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         self.min_time = min_time
 
     def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
+        self,
+        X: NDArray,
+        y: NDArray,
     ) -> ClassifierMixin:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
@@ -739,7 +749,6 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         n_segments = int(n_samples / int(self.segment_time * self.fs))
         self.margins_ = np.zeros(n_segments)
         for i_segment in range(n_segments):
-
             # Compute scores for this segment
             idx = (1 + i_segment) * int(self.segment_time * self.fs)
             scores = self.estimator.decision_function(X[:, :, :idx])
@@ -772,8 +781,8 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using margin dynamic stopping.
 
@@ -829,17 +838,17 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
     estimator: ClassifierMixin
         The classifier object that performs the classification.
     segment_time: float
-        The size of a segment of data at which classification is performed ins seconds.
+        The size of a segment of data at which classification is performed in seconds.
     fs: int
         The sampling frequency of the EEG data in Hz.
     target_p: float (default: 0.95)
         The targeted probability of correct classification.
     value_min: float (default: 0.0)
-        The minimum value for the possible threshold margin to stop at.
+        The minimum value for the possible threshold value to stop at.
     value_max: float (default: 1.0)
-        The maximum value for the possible threshold margin to stop at.
+        The maximum value for the possible threshold value to stop at.
     value_step: float (default: 0.05)
-        The step size defining the resolution of the threshold margins at which to stop.
+        The step size defining the resolution of the threshold values at which to stop.
     max_time: float (default: None)
         The maximum time in seconds at which to force a stop, i.e., a classification. Trials will not be longer than
         this maximum time. If None, the algorithm will always emit -1 if it cannot stop.
@@ -849,22 +858,23 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
-    values_: float
+    values_: NDArray
         The trained stopping values of shape (n_segments).
     """
+
     values_: NDArray
 
     def __init__(
-            self,
-            estimator: ClassifierMixin,
-            segment_time: float,
-            fs: int,
-            target_p: float = 0.95,
-            value_min: float = 0.0,
-            value_max: float = 1.0,
-            value_step: float = 0.05,
-            max_time: float = None,
-            min_time: float = None,
+        self,
+        estimator: ClassifierMixin,
+        segment_time: float,
+        fs: int,
+        target_p: float = 0.95,
+        value_min: float = 0.0,
+        value_max: float = 1.0,
+        value_step: float = 0.05,
+        max_time: float = None,
+        min_time: float = None,
     ) -> None:
         self.estimator = estimator
         self.segment_time = segment_time
@@ -877,9 +887,9 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         self.min_time = min_time
 
     def fit(
-            self,
-            X: NDArray,
-            y: NDArray,
+        self,
+        X: NDArray,
+        y: NDArray,
     ) -> ClassifierMixin:
         """The training procedure to fit the dynamic procedure on supervised EEG data.
 
@@ -906,7 +916,6 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         n_segments = int(n_samples / int(self.segment_time * self.fs))
         self.values_ = np.zeros(n_segments)
         for i_segment in range(n_segments):
-
             # Compute scores for this segment
             idx = (1 + i_segment) * int(self.segment_time * self.fs)
             scores = self.estimator.decision_function(X[:, :, :idx])
@@ -938,10 +947,10 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(
-            self,
-            X: NDArray,
+        self,
+        X: NDArray,
     ) -> NDArray:
-        """The testing procedure to apply the estimator to novel EEG data using margin dynamic stopping.
+        """The testing procedure to apply the estimator to novel EEG data using value dynamic stopping.
 
         Parameters
         ----------

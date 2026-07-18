@@ -4,10 +4,10 @@ from scipy import signal
 
 
 def aud_space_bw(
-        fmin: float,
-        fmax: float,
-        bw: float = 1.0,
-        scale: str = "erb",
+    fmin: float,
+    fmax: float,
+    bw: float = 1.0,
+    scale: str = "erb",
 ) -> NDArray:
     """Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
     frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two
@@ -53,8 +53,8 @@ def aud_space_bw(
 
 
 def aud_to_freq(
-        aud: NDArray,
-        scale: str = "erb",
+    aud: NDArray,
+    scale: str = "erb",
 ) -> NDArray:
     """Convert auditory units at the auditory scale to frequency (Hz).
 
@@ -80,15 +80,15 @@ def aud_to_freq(
 
 
 def gammatone(
-        audio: NDArray,
-        fs: int,
-        fs_inter: int = 8000,
-        fs_target: int = 32,
-        power: float = 0.6,
-        lowpass: float = 9.0,
-        fmin: float = 150.0,
-        fmax: float = 4000.0,
-        spacing: float = 1.5,
+    audio: NDArray,
+    fs: int,
+    fs_inter: int = 8000,
+    fs_target: int = 32,
+    power: float = 0.6,
+    lowpass: float = 9.0,
+    fmin: float = 150.0,
+    fmax: float = 4000.0,
+    spacing: float = 1.5,
 ) -> NDArray:
     """Compute the envelope of audio using a gammatone filterbank.
 
@@ -117,14 +117,14 @@ def gammatone(
     fmin: float (default: 150.0)
         The minimum center frequency.
     fmax: float (default: 4000.0)
-        The maxmum center frequency.
+        The maximum center frequency.
     spacing: float (default: 1.5)
         The bandwidth or spacing between center frequencies.
 
     Returns
     -------
     envelope: NDArray
-        The envelope for each of the subbands in the gammatone filterbank of shape (samples, subbands).
+        The envelope for each of the subbands in the gammatone filterbank of shape (n_samples, n_subbands).
     """
     freqs = erb_space_bw(fmin, fmax, spacing)
 
@@ -139,7 +139,7 @@ def gammatone(
     envelope = []
     for freq in freqs:
         # Build gammatone filter subband
-        bgamma, agamma = signal.gammatone(freq, 'fir', order=4, fs=fs_inter)
+        bgamma, agamma = signal.gammatone(freq, "fir", order=4, fs=fs_inter)
 
         # Compute envelope of gammatone filter subband
         env = np.real(signal.filtfilt(bgamma, agamma, audio))
@@ -162,10 +162,10 @@ def gammatone(
 
 
 def rms(
-        audio: NDArray,
-        fs: int,
-        fs_inter: int = 8000,
-        fs_target: int = 32,
+    audio: NDArray,
+    fs: int,
+    fs_inter: int = 8000,
+    fs_target: int = 32,
 ) -> NDArray:
     """Compute the envelope of the audio as the root mean square (RMS) of the signal.
 
@@ -183,7 +183,7 @@ def rms(
     Returns
     -------
     envelope: NDArray
-        The envelope using the RMS of the audio.
+        The envelope using the RMS of the audio of shape (n_samples,).
     """
     # Resample stimulus
     audio = signal.resample(audio, int(audio.size / fs) * fs_inter)
@@ -192,15 +192,15 @@ def rms(
     audio = audio.reshape((-1, int(fs_inter / fs_target)))
 
     # Compute envelope using RMS
-    envelope = np.sqrt(np.mean(audio ** 2, axis=1))
+    envelope = np.sqrt(np.mean(audio**2, axis=1))
 
     return envelope
 
 
 def erb_space_bw(
-        fmin: float,
-        fmax: float,
-        bw: float = 1.0,
+    fmin: float,
+    fmax: float,
+    bw: float = 1.0,
 ) -> NDArray:
     """Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
     frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two
@@ -227,8 +227,8 @@ def erb_space_bw(
 
 
 def freq_to_aud(
-        freq: NDArray,
-        scale: str = "erb",
+    freq: NDArray,
+    scale: str = "erb",
 ) -> NDArray:
     """Convert frequencies (Hz) to auditory units at the auditory scale.
 
