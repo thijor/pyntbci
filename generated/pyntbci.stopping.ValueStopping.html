@@ -112,6 +112,18 @@ algorithm will always emit -1. If None, the algorithm allows a stop already afte
 </dd>
 </dl>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.ValueStopping.classes_">
+<span class="sig-name descname"><span class="pre">classes_</span></span><a class="headerlink" href="#pyntbci.stopping.ValueStopping.classes_" title="Link to this definition"></a></dt>
+<dd><p>The classes that can be predicted, taken from the wrapped estimator’s <a href="#id1"><span class="problematic" id="id2">classes_</span></a> after fitting. Note, predict()
+may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="pyntbci.stopping.ValueStopping.values_">
 <span class="sig-name descname"><span class="pre">values_</span></span><a class="headerlink" href="#pyntbci.stopping.ValueStopping.values_" title="Link to this definition"></a></dt>
 <dd><p>The trained stopping values of shape (n_segments).</p>

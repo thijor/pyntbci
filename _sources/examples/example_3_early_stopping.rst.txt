@@ -514,7 +514,7 @@ References:
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_005.png
-         :alt: Margin dynamic stopping: avg acc 0.94 | avg dur 0.25 | avg itr 1087.6
+         :alt: Margin dynamic stopping: avg acc 0.97 | avg dur 0.27 | avg itr 1052.9
          :srcset: /examples/images/sphx_glr_example_3_early_stopping_005.png
          :class: sphx-glr-multi-img
 
@@ -524,9 +524,9 @@ References:
  .. code-block:: none
 
     Margin:
-            Accuracy: avg=0.94 with std=0.06
-            Duration: avg=0.25 with std=0.02
-            ITR: avg=1087.6 with std=192.38
+            Accuracy: avg=0.97 with std=0.05
+            Duration: avg=0.27 with std=0.01
+            ITR: avg=1052.9 with std=116.29
 
 
 
@@ -621,7 +621,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_006.png
-   :alt: Beta dynamic stopping: avg acc 1.00 | avg dur 0.55 | avg itr 547.6
+   :alt: Beta dynamic stopping: avg acc 1.00 | avg dur 0.54 | avg itr 557.3
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_006.png
    :class: sphx-glr-single-img
 
@@ -632,8 +632,8 @@ References:
 
     Beta:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.55 with std=0.03
-            ITR: avg=547.6 with std=34.97
+            Duration: avg=0.54 with std=0.04
+            ITR: avg=557.3 with std=36.62
 
 
 
@@ -752,7 +752,7 @@ response brain-computer interfacing
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_008.png
-         :alt: BDS0 dynamic stopping: avg acc 0.94 | avg dur 0.43 | avg itr 639.5
+         :alt: BDS0 dynamic stopping: avg acc 0.94 | avg dur 0.42 | avg itr 650.8
          :srcset: /examples/images/sphx_glr_example_3_early_stopping_008.png
          :class: sphx-glr-multi-img
 
@@ -763,8 +763,8 @@ response brain-computer interfacing
 
     BDS0:
             Accuracy: avg=0.94 with std=0.11
-            Duration: avg=0.43 with std=0.07
-            ITR: avg=639.5 with std=124.56
+            Duration: avg=0.42 with std=0.03
+            ITR: avg=650.8 with std=152.25
 
 
 
@@ -858,7 +858,7 @@ response brain-computer interfacing
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_009.png
-   :alt: BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.65 | avg itr 462.4
+   :alt: BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.62 | avg itr 487.6
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_009.png
    :class: sphx-glr-single-img
 
@@ -869,8 +869,8 @@ response brain-computer interfacing
 
     BDS1:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.65 with std=0.05
-            ITR: avg=462.4 with std=37.69
+            Duration: avg=0.62 with std=0.02
+            ITR: avg=487.6 with std=12.79
 
 
 
@@ -964,7 +964,7 @@ response brain-computer interfacing
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_010.png
-   :alt: BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.52 | avg itr 586.0
+   :alt: BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.51 | avg itr 597.6
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_010.png
    :class: sphx-glr-single-img
 
@@ -975,8 +975,8 @@ response brain-computer interfacing
 
     BDS2:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.52 with std=0.06
-            ITR: avg=586.0 with std=63.68
+            Duration: avg=0.51 with std=0.05
+            ITR: avg=597.6 with std=53.97
 
 
 
@@ -1043,7 +1043,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 8.594 seconds)
+   **Total running time of the script:** (0 minutes 7.197 seconds)
 
 
 .. _sphx_glr_download_examples_example_3_early_stopping.py:

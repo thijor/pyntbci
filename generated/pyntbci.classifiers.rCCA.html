@@ -134,6 +134,18 @@ None, a custom empirical covariance is used.</p></li>
 </dd>
 </dl>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.classes_">
+<span class="sig-name descname"><span class="pre">classes_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.classes_" title="Link to this definition"></a></dt>
+<dd><p>The classes that can be predicted, of shape (n_classes), i.e., the number of classes in stimulus,
+independent of which classes were actually observed in y during fit().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.cca_">
 <span class="sig-name descname"><span class="pre">cca_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.cca_" title="Link to this definition"></a></dt>
 <dd><p>The CCA used to fit the spatial and temporal filters. If ensemble=False, len(<a href="#id7"><span class="problematic" id="id8">cca_</span></a>)=1, otherwise

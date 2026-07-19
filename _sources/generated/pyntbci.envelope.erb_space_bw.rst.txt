@@ -1,0 +1,12 @@
+﻿pyntbci.envelope.erb_space_bw
+=============================
+
+.. currentmodule:: pyntbci.envelope
+
+.. autofunction:: erb_space_bw
+
+.. include:: pyntbci.envelope.erb_space_bw.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

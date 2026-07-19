@@ -115,6 +115,18 @@ approach using the empirical scores from the estimator object.</p></li>
 </dd>
 </dl>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.classes_">
+<span class="sig-name descname"><span class="pre">classes_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.classes_" title="Link to this definition"></a></dt>
+<dd><p>The classes that can be predicted, taken from the wrapped estimator’s <a href="#id3"><span class="problematic" id="id4">classes_</span></a> after fitting. Note, predict()
+may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="pyntbci.stopping.BayesStopping.alpha_">
 <span class="sig-name descname"><span class="pre">alpha_</span></span><a class="headerlink" href="#pyntbci.stopping.BayesStopping.alpha_" title="Link to this definition"></a></dt>
 <dd><p>The scaling parameter between observed and predicted responses.</p>

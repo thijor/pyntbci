@@ -11,5 +11,4 @@ Classifiers
 
     rCCA
     eCCA
-    eTRCA
     Ensemble

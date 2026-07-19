@@ -113,6 +113,19 @@ algorithm will always emit -1. If None, the algorithm allows a stop already afte
 </dd>
 </dl>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="pyntbci.stopping.CriterionStopping.classes_">
+<span class="sig-name descname"><span class="pre">classes_</span></span><a class="headerlink" href="#pyntbci.stopping.CriterionStopping.classes_" title="Link to this definition"></a></dt>
+<dd><p>The classes that can be predicted, taken from the wrapped estimator’s <a href="#id1"><span class="problematic" id="id2">classes_</span></a> after fitting (i.e., after the
+internal cross-validation, fit on the last fold, matching what predict() uses). Note, predict() may
+additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="pyntbci.stopping.CriterionStopping.stop_time_">
 <span class="sig-name descname"><span class="pre">stop_time_</span></span><a class="headerlink" href="#pyntbci.stopping.CriterionStopping.stop_time_" title="Link to this definition"></a></dt>
 <dd><p>The trained static stopping time.</p>

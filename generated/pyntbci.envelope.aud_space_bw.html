@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.gates.AggregateGate &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>pyntbci.envelope.aud_space_bw &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -24,8 +24,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pyntbci.gates.DifferenceGate" href="pyntbci.gates.DifferenceGate.html" />
-    <link rel="prev" title="pyntbci.envelope.freq_to_aud" href="pyntbci.envelope.freq_to_aud.html" /> 
+    <link rel="next" title="pyntbci.envelope.aud_to_freq" href="pyntbci.envelope.aud_to_freq.html" />
+    <link rel="prev" title="pyntbci.eeg.generate_c_vep" href="pyntbci.eeg.generate_c_vep.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -78,9 +78,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">pyntbci.gates.AggregateGate</li>
+      <li class="breadcrumb-item active">pyntbci.envelope.aud_space_bw</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/pyntbci.gates.AggregateGate.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pyntbci.envelope.aud_space_bw.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -88,29 +88,32 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pyntbci-gates-aggregategate">
-<h1>pyntbci.gates.AggregateGate<a class="headerlink" href="#pyntbci-gates-aggregategate" title="Link to this heading"></a></h1>
+  <section id="pyntbci-envelope-aud-space-bw">
+<h1>pyntbci.envelope.aud_space_bw<a class="headerlink" href="#pyntbci-envelope-aud-space-bw" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyntbci.gates.AggregateGate">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.gates.</span></span><span class="sig-name descname"><span class="pre">AggregateGate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggregate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyntbci/gates.html#AggregateGate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.gates.AggregateGate" title="Link to this definition"></a></dt>
-<dd><p>Gate described by an aggregate function.</p>
+<dt class="sig sig-object py" id="pyntbci.envelope.aud_space_bw">
+<span class="sig-prename descclassname"><span class="pre">pyntbci.envelope.</span></span><span class="sig-name descname"><span class="pre">aud_space_bw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'erb'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/envelope.html#aud_space_bw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.envelope.aud_space_bw" title="Link to this definition"></a></dt>
+<dd><p>Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
+frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two
+consecutive values is bw on the auditory scale, and the points will be centered on the auditory scale between fmin
+and fmax.</p>
+<p>Adapted from LTFAT: <a class="reference external" href="https://ltfat.org/doc/auditory/audspacebw">https://ltfat.org/doc/auditory/audspacebw</a> audspacebw.m (Peter L. Søndergaard)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>aggregate</strong> (<em>str</em><em> (</em><em>default: &quot;mean&quot;</em><em>)</em>) – The aggregate function to use. Options: mean, median, sum, min, max.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fmin</strong> (<em>float</em>) – Minimum center frequency.</p></li>
+<li><p><strong>fmax</strong> (<em>float</em>) – Maximum center frequency.</p></li>
+<li><p><strong>bw</strong> (<em>float</em><em> (</em><em>default: 1.0</em><em>)</em>) – Bandwidth or spacing between center frequencies.</p></li>
+<li><p><strong>scale</strong> (<em>str</em><em> (</em><em>default: &quot;erb&quot;</em><em>)</em>) – Auditory scale.</p></li>
+</ul>
 </dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.gates.classes_">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.gates.</span></span><span class="sig-name descname"><span class="pre">classes_</span></span><a class="headerlink" href="#pyntbci.gates.classes_" title="Link to this definition"></a></dt>
-<dd><p>The classes that can be predicted, of shape (n_classes), taken from the number of classes (second
-dimension) of the score matrix X passed to fit(), independent of which classes were observed in y.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>y</strong> – A vector containing the center frequencies.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
-</dd></dl>
-
 </dd></dl>
 
 <div style='clear:both'></div></section>
@@ -119,8 +122,8 @@ dimension) of the score matrix X passed to fit(), independent of which classes w
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.envelope.freq_to_aud.html" class="btn btn-neutral float-left" title="pyntbci.envelope.freq_to_aud" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyntbci.gates.DifferenceGate.html" class="btn btn-neutral float-right" title="pyntbci.gates.DifferenceGate" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyntbci.eeg.generate_c_vep.html" class="btn btn-neutral float-left" title="pyntbci.eeg.generate_c_vep" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.envelope.aud_to_freq.html" class="btn btn-neutral float-right" title="pyntbci.envelope.aud_to_freq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -98,7 +98,7 @@
 
 <div class="viewcode-block" id="CCA">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA">[docs]</a>
-<span class="k">class</span> <span class="nc">CCA</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">CCA</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.</span>
 <span class="sd">    Here, CCA is implemented as the SVD of (cross)covariance matrices [1]_.</span>
 
@@ -388,11 +388,9 @@
 <span class="sd">            Projected data matrix of shape (n_samples, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_x_</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_x_</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_x_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_x_</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">Y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">Y</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_y_</span>
-            <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_y_</span><span class="p">)</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_y_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_y_</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span>
 
@@ -487,7 +485,7 @@
 
 <div class="viewcode-block" id="Vectorizer">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer">[docs]</a>
-<span class="k">class</span> <span class="nc">Vectorizer</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Vectorizer</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorizer. Flattens a multi-dimensional data matrix per trial into a single feature vector, e.g. to use</span>
 <span class="sd">    multi-channel time-series data with generic (non multi-dimensional) scikit-learn estimators.</span>
 

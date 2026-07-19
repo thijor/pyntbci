@@ -501,15 +501,15 @@ training data they require to estimate their parameters.
 
  .. code-block:: none
 
-    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.262704510335138e-19.
+    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.1711921373129642e-19.
       iCyy = np.real(sqrtm(inv(Cyy)))
-    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6700562817508102e-18.
+    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.5072190869220997e-19.
       iCyy = np.real(sqrtm(inv(Cyy)))
-    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.613635827250211e-19.
+    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.3396714502471204e-19.
       iCyy = np.real(sqrtm(inv(Cyy)))
-    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6946092922472132e-19.
+    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.76851037148156e-18.
       iCyy = np.real(sqrtm(inv(Cyy)))
-    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.56115044567611e-18.
+    /home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.894321858886181e-18.
       iCyy = np.real(sqrtm(inv(Cyy)))
 
 
@@ -593,7 +593,7 @@ need during testing to classify single-trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 21.239 seconds)
+   **Total running time of the script:** (0 minutes 18.816 seconds)
 
 
 .. _sphx_glr_download_examples_example_1_rcca.py:

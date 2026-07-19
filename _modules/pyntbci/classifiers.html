@@ -101,7 +101,7 @@
 
 <div class="viewcode-block" id="eCCA">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA">[docs]</a>
-<span class="k">class</span> <span class="nc">eCCA</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">eCCA</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ERP CCA classifier. Also called the &quot;reference&quot; method [1]_. It computes ERPs as templates for full sequences and</span>
 <span class="sd">    performs a CCA for spatial filtering.</span>
 
@@ -151,6 +151,10 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, of shape (n_classes). Equal to numpy.arange(len(lags)) if lags is set</span>
+<span class="sd">        (i.e., all circularly shifted classes can be predicted, whether or not they were observed in y during fit),</span>
+<span class="sd">        otherwise the sorted unique labels observed in y.</span>
 <span class="sd">    cca_: list[TransformerMixin]</span>
 <span class="sd">        The CCA used to fit the spatial filters. If ensemble=False, len(cca_)=1, otherwise len(cca_)=n_classes.</span>
 <span class="sd">    w_: NDArray</span>
@@ -166,6 +170,7 @@
 <span class="sd">           review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">cca_</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TransformerMixin</span><span class="p">]</span>
     <span class="n">w_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">T_</span><span class="p">:</span> <span class="n">NDArray</span>
@@ -403,6 +408,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">T_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -426,7 +432,7 @@
 <span class="sd">            The templates of shape (n_classes, n_components, n_samples).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_samples</span><span class="p">:</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
@@ -471,7 +477,7 @@
 
 <div class="viewcode-block" id="Ensemble">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble">[docs]</a>
-<span class="k">class</span> <span class="nc">Ensemble</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Ensemble</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensemble classifier. It wraps an ensemble classifier around another classifier object. The classifiers are</span>
 <span class="sd">    applied to each item in a databank separately. A gating function combines the outputs of the individual</span>
 <span class="sd">    classifications to arrive at a single final combined classification.</span>
@@ -485,10 +491,13 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, taken from the gate&#39;s classes_ after fitting.</span>
 <span class="sd">    models_: list[ClassifierMixin]</span>
 <span class="sd">        A list containing all models learned for each of the databanks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">models_</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ClassifierMixin</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -553,6 +562,7 @@
         <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">classes_</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -595,7 +605,7 @@
 
 <div class="viewcode-block" id="rCCA">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA">[docs]</a>
-<span class="k">class</span> <span class="nc">rCCA</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">rCCA</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reconvolution CCA classifier. It performs a spatial and temporal decomposition (reconvolution [3]_) within a</span>
 <span class="sd">    CCA [4]_ to perform spatial filtering as well as template prediction [5]_.</span>
 
@@ -657,6 +667,9 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, of shape (n_classes), i.e., the number of classes in stimulus,</span>
+<span class="sd">        independent of which classes were actually observed in y during fit().</span>
 <span class="sd">    cca_: list[TransformerMixin]</span>
 <span class="sd">        The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise</span>
 <span class="sd">        len(cca_)=n_classes.</span>
@@ -695,6 +708,7 @@
 <span class="sd">           056007. doi: 10.1088/1741-2552/abecef</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">cca_</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TransformerMixin</span><span class="p">]</span>
     <span class="n">events_</span><span class="p">:</span> <span class="nb">list</span>
     <span class="n">w_</span><span class="p">:</span> <span class="n">NDArray</span>
@@ -732,22 +746,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span> <span class="o">=</span> <span class="n">onset_event</span>
-        <span class="k">if</span> <span class="n">decoding_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">fs</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">=</span> <span class="n">decoding_length</span>
-        <span class="k">if</span> <span class="n">decoding_stride</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">fs</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">=</span> <span class="n">decoding_stride</span>
-        <span class="k">if</span> <span class="n">encoding_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">encoding_length</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">encoding_stride</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">encoding_stride</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">=</span> <span class="n">decoding_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">=</span> <span class="n">decoding_stride</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">=</span> <span class="n">encoding_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">=</span> <span class="n">encoding_stride</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span> <span class="o">=</span> <span class="n">score_metric</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="o">=</span> <span class="n">latency</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span> <span class="o">=</span> <span class="n">ensemble</span>
@@ -762,8 +764,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span> <span class="o">=</span> <span class="n">alpha_m</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tmin</span> <span class="o">=</span> <span class="n">tmin</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding_matrix</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_resolve_decoding_length_stride</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve decoding_length and decoding_stride, defaulting to 1/fs (i.e., no phase-shifting) if None.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        decoding_length: float</span>
+<span class="sd">            The resolved decoding length in seconds.</span>
+<span class="sd">        decoding_stride: float</span>
+<span class="sd">            The resolved decoding stride in seconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">decoding_length</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span>
+        <span class="n">decoding_stride</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span>
+        <span class="k">return</span> <span class="n">decoding_length</span><span class="p">,</span> <span class="n">decoding_stride</span>
 
 <div class="viewcode-block" id="rCCA.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.decision_function">[docs]</a>
@@ -787,8 +800,9 @@
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># Set decoding matrix</span>
-        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">decoding_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">decoding_length</span><span class="p">,</span> <span class="n">decoding_stride</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_decoding_length_stride</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">decoding_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
 
         <span class="c1"># Set templates to trial length</span>
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
@@ -856,11 +870,15 @@
 <span class="sd">        self: ClassifierMixin</span>
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Set encoding matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding_matrix</span><span class="p">()</span>
         <span class="n">n_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># Set decoding matrix</span>
-        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">decoding_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">decoding_length</span><span class="p">,</span> <span class="n">decoding_stride</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_decoding_length_stride</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">decoding_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
 
         <span class="c1"># Set structure matrices to trial length</span>
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
@@ -905,6 +923,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">w_x_</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">w_y_</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_templates</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span></div>
@@ -939,19 +958,21 @@
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the encoding matrix.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">encoding_length</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">encoding_length</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">encoding_stride</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">encoding_stride</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="n">amplitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="n">amplitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))[:,</span> <span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
         <span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_</span> <span class="o">=</span> <span class="n">event_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span><span class="p">)</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">encoding_matrix</span><span class="p">(</span>
-            <span class="n">E</span><span class="p">,</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint&quot;</span><span class="p">),</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint&quot;</span><span class="p">),</span>
-            <span class="n">amplitude</span><span class="p">,</span>
-            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmin</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">encoding_matrix</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">encoding_length</span><span class="p">,</span> <span class="n">encoding_stride</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmin</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Ms_</span> <span class="o">=</span> <span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Mw_</span> <span class="o">=</span> <span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>
 

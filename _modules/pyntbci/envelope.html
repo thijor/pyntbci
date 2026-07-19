@@ -90,6 +90,8 @@
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
 
 
+<div class="viewcode-block" id="aud_space_bw">
+<a class="viewcode-back" href="../../generated/pyntbci.envelope.aud_space_bw.html#pyntbci.envelope.aud_space_bw">[docs]</a>
 <span class="k">def</span> <span class="nf">aud_space_bw</span><span class="p">(</span>
     <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -136,9 +138,12 @@
     <span class="c1"># Convert auditory scale to frequencies</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">aud_to_freq</span><span class="p">(</span><span class="n">aud_points</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">y</span>
+    <span class="k">return</span> <span class="n">y</span></div>
 
 
+
+<div class="viewcode-block" id="aud_to_freq">
+<a class="viewcode-back" href="../../generated/pyntbci.envelope.aud_to_freq.html#pyntbci.envelope.aud_to_freq">[docs]</a>
 <span class="k">def</span> <span class="nf">aud_to_freq</span><span class="p">(</span>
     <span class="n">aud</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
@@ -163,7 +168,8 @@
         <span class="n">freq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">0.00437</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">aud</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">aud</span><span class="p">)</span> <span class="o">/</span> <span class="mf">9.2645</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown auditory scale:&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">freq</span>
+    <span class="k">return</span> <span class="n">freq</span></div>
+
 
 
 <div class="viewcode-block" id="gammatone">
@@ -290,6 +296,8 @@
 
 
 
+<div class="viewcode-block" id="erb_space_bw">
+<a class="viewcode-back" href="../../generated/pyntbci.envelope.erb_space_bw.html#pyntbci.envelope.erb_space_bw">[docs]</a>
 <span class="k">def</span> <span class="nf">erb_space_bw</span><span class="p">(</span>
     <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -316,9 +324,12 @@
 <span class="sd">        A vector containing the center frequencies.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">aud_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="s2">&quot;erb&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">y</span>
+    <span class="k">return</span> <span class="n">y</span></div>
 
 
+
+<div class="viewcode-block" id="freq_to_aud">
+<a class="viewcode-back" href="../../generated/pyntbci.envelope.freq_to_aud.html#pyntbci.envelope.freq_to_aud">[docs]</a>
 <span class="k">def</span> <span class="nf">freq_to_aud</span><span class="p">(</span>
     <span class="n">freq</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
@@ -343,7 +354,8 @@
         <span class="n">aud</span> <span class="o">=</span> <span class="mf">9.2645</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.00437</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown auditory scale:&quot;</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">aud</span>
+    <span class="k">return</span> <span class="n">aud</span></div>
+
 </pre></div>
 
            </div>

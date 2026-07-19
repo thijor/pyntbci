@@ -98,7 +98,7 @@
 
 <div class="viewcode-block" id="BayesStopping">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping">[docs]</a>
-<span class="k">class</span> <span class="nc">BayesStopping</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">BayesStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Bayesian dynamic stopping. Fits Gaussian distributions for target and non-target responses, and calculates a</span>
 <span class="sd">    stopping threshold using these and a cost criterion [1]_.</span>
 
@@ -130,6 +130,9 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, taken from the wrapped estimator&#39;s classes_ after fitting. Note, predict()</span>
+<span class="sd">        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</span>
 <span class="sd">    alpha_: float</span>
 <span class="sd">        The scaling parameter between observed and predicted responses.</span>
 <span class="sd">    sigma_: float</span>
@@ -155,6 +158,7 @@
 <span class="sd">           brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">alpha_</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">sigma_</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">b0_</span><span class="p">:</span> <span class="n">NDArray</span>
@@ -211,6 +215,7 @@
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">classes_</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">approach</span> <span class="o">==</span> <span class="s2">&quot;template_inner&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit_template_inner</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -220,7 +225,21 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_fit_template_inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_fit_template_inner</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the Bayesian dynamic stopping model using the analytic template-based approach, i.e., using the inner</span>
+<span class="sd">        product between the rCCA templates. Sets alpha_, sigma_, b0_, b1_, s0_, s1_, eta_, pf_, and pm_.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">        y: NDArray</span>
+<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">),</span> <span class="s2">&quot;Approach template_inner works only for rCCA.&quot;</span>
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">n_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">Ts_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -284,7 +303,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">)</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span> <span class="o">**</span> <span class="n">n_classes</span>
 
-    <span class="k">def</span> <span class="nf">_fit_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_fit_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the Bayesian dynamic stopping model using the empirical approach, i.e., using the empirical scores</span>
+<span class="sd">        obtained from the estimator object. Sets b0_, b1_, s0_, s1_, eta_, pf_, and pm_.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">        y: NDArray</span>
+<span class="sd">            The vector of ground-truth labels of the trials in X of shape (n_trials).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
         <span class="c1"># Calculate b0, b1, s0, s1</span>
@@ -409,7 +442,7 @@
 
 <div class="viewcode-block" id="CriterionStopping">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.CriterionStopping.html#pyntbci.stopping.CriterionStopping">[docs]</a>
-<span class="k">class</span> <span class="nc">CriterionStopping</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">CriterionStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Criterion static stopping. Fits an optimal stopping time given some criterion to optimize.</span>
 
 <span class="sd">    Parameters</span>
@@ -439,10 +472,15 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, taken from the wrapped estimator&#39;s classes_ after fitting (i.e., after the</span>
+<span class="sd">        internal cross-validation, fit on the last fold, matching what predict() uses). Note, predict() may</span>
+<span class="sd">        additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</span>
 <span class="sd">    stop_time_: float</span>
 <span class="sd">        The trained static stopping time.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">stop_time_</span><span class="p">:</span> <span class="nb">float</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -544,6 +582,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown optimization:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">classes_</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -585,7 +624,7 @@
 
 <div class="viewcode-block" id="DistributionStopping">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.DistributionStopping.html#pyntbci.stopping.DistributionStopping">[docs]</a>
-<span class="k">class</span> <span class="nc">DistributionStopping</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">DistributionStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability</span>
 <span class="sd">    of the target / maximum score to be an outlier of that distribution [2]_.</span>
 
@@ -612,6 +651,9 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, taken from the wrapped estimator&#39;s classes_ after fitting. Note, predict()</span>
+<span class="sd">        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</span>
 <span class="sd">    distributions_: list[dict]</span>
 <span class="sd">        A list of dictionaries containing the parameters of the distribution for each data segment. Only used if</span>
 <span class="sd">        trained=True.</span>
@@ -623,6 +665,7 @@
 <span class="sd">           056007. doi: 10.1088/1741-2552/abecef</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">distributions_</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -645,8 +688,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="o">=</span> <span class="n">min_time</span>
 
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">],</span> <span class="s2">&quot;Distribution must be beta or norm.&quot;</span>
-
 <div class="viewcode-block" id="DistributionStopping.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.DistributionStopping.html#pyntbci.stopping.DistributionStopping.fit">[docs]</a>
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
@@ -668,8 +709,11 @@
 <span class="sd">        self: ClassifierMixin</span>
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">],</span> <span class="s2">&quot;Distribution must be beta or norm.&quot;</span>
+
         <span class="c1"># Fit estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">classes_</span>
 
         <span class="c1"># Fit beta distributions</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained</span><span class="p">:</span>
@@ -774,7 +818,7 @@
 
 <div class="viewcode-block" id="MarginStopping">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.MarginStopping.html#pyntbci.stopping.MarginStopping">[docs]</a>
-<span class="k">class</span> <span class="nc">MarginStopping</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MarginStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Margin dynamic stopping. Learns threshold margins (difference between best and second-best score) to stop at</span>
 <span class="sd">    such that a targeted accuracy is reached [3]_.</span>
 
@@ -803,6 +847,9 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, taken from the wrapped estimator&#39;s classes_ after fitting. Note, predict()</span>
+<span class="sd">        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</span>
 <span class="sd">    margins_: NDArray</span>
 <span class="sd">        The trained stopping margins of shape (n_segments).</span>
 
@@ -812,6 +859,7 @@
 <span class="sd">           re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">margins_</span><span class="p">:</span> <span class="n">NDArray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -858,6 +906,7 @@
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">classes_</span>
 
         <span class="c1"># Set margin axis (possible margins to stop at)</span>
         <span class="n">margin_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">margin_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin_step</span><span class="p">)</span>
@@ -955,7 +1004,7 @@
 
 <div class="viewcode-block" id="ValueStopping">
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.ValueStopping.html#pyntbci.stopping.ValueStopping">[docs]</a>
-<span class="k">class</span> <span class="nc">ValueStopping</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ValueStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Value dynamic stopping. Learns threshold values to stop at such that a targeted accuracy is reached.</span>
 
 <span class="sd">    Parameters</span>
@@ -983,10 +1032,14 @@
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The classes that can be predicted, taken from the wrapped estimator&#39;s classes_ after fitting. Note, predict()</span>
+<span class="sd">        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</span>
 <span class="sd">    values_: NDArray</span>
 <span class="sd">        The trained stopping values of shape (n_segments).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">values_</span><span class="p">:</span> <span class="n">NDArray</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -1037,6 +1090,7 @@
 
         <span class="c1"># Fit estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">classes_</span>
 
         <span class="c1"># Calculate a value per segment</span>
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>

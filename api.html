@@ -71,8 +71,12 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.envelope">Envelope</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.envelope.aud_space_bw.html">pyntbci.envelope.aud_space_bw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.envelope.aud_to_freq.html">pyntbci.envelope.aud_to_freq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.envelope.gammatone.html">pyntbci.envelope.gammatone</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.envelope.rms.html">pyntbci.envelope.rms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.envelope.erb_space_bw.html">pyntbci.envelope.erb_space_bw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.envelope.freq_to_aud.html">pyntbci.envelope.freq_to_aud</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.gates">Gates</a><ul>
@@ -213,11 +217,23 @@
 <span id="envelope"></span><h1>Envelope<a class="headerlink" href="#module-pyntbci.envelope" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.envelope.aud_space_bw.html#pyntbci.envelope.aud_space_bw" title="pyntbci.envelope.aud_space_bw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aud_space_bw</span></code></a>(fmin, fmax[, bw, scale])</p></td>
+<td><p>Auditory scale points specified by bandwidth.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.envelope.aud_to_freq.html#pyntbci.envelope.aud_to_freq" title="pyntbci.envelope.aud_to_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aud_to_freq</span></code></a>(aud[, scale])</p></td>
+<td><p>Convert auditory units at the auditory scale to frequency (Hz).</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.envelope.gammatone.html#pyntbci.envelope.gammatone" title="pyntbci.envelope.gammatone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gammatone</span></code></a>(audio, fs[, fs_inter, fs_target, ...])</p></td>
 <td><p>Compute the envelope of audio using a gammatone filterbank.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.envelope.rms.html#pyntbci.envelope.rms" title="pyntbci.envelope.rms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rms</span></code></a>(audio, fs[, fs_inter, fs_target])</p></td>
 <td><p>Compute the envelope of the audio as the root mean square (RMS) of the signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.envelope.erb_space_bw.html#pyntbci.envelope.erb_space_bw" title="pyntbci.envelope.erb_space_bw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">erb_space_bw</span></code></a>(fmin, fmax[, bw])</p></td>
+<td><p>Auditory scale points specified by bandwidth.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.envelope.freq_to_aud.html#pyntbci.envelope.freq_to_aud" title="pyntbci.envelope.freq_to_aud"><code class="xref py py-obj docutils literal notranslate"><span class="pre">freq_to_aud</span></code></a>(freq[, scale])</p></td>
+<td><p>Convert frequencies (Hz) to auditory units at the auditory scale.</p></td>
 </tr>
 </tbody>
 </table>

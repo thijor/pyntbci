@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Computation times &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>pyntbci.envelope.erb_space_bw &mdash; PyntBCI 1.8.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -23,7 +23,9 @@
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyntbci.envelope.freq_to_aud" href="pyntbci.envelope.freq_to_aud.html" />
+    <link rel="prev" title="pyntbci.envelope.rms" href="pyntbci.envelope.rms.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,7 +50,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.eeg">EEG</a></li>
@@ -75,9 +77,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Computation times</li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+      <li class="breadcrumb-item active">pyntbci.envelope.erb_space_bw</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/examples/sg_execution_times.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pyntbci.envelope.erb_space_bw.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -85,58 +88,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="computation-times">
-<span id="sphx-glr-examples-sg-execution-times"></span><h1>Computation times<a class="headerlink" href="#computation-times" title="Link to this heading"></a></h1>
-<p><strong>00:31.104</strong> total execution time for 5 files <strong>from examples</strong>:</p>
-<div class="docutils container">
-<style scoped>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
-<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-</style>
-<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script type="text/javascript" class="init">
-$(document).ready( function () {
-    $('table.sg-datatable').DataTable({order: [[1, 'desc']]});
-} );
-</script><table class="table table-striped sg-datatable docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Example</p></th>
-<th class="head"><p>Time</p></th>
-<th class="head"><p>Mem (MB)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference internal" href="example_1_rcca.html#sphx-glr-examples-example-1-rcca-py"><span class="std std-ref">rCCA</span></a> (<code class="docutils literal notranslate"><span class="pre">example_1_rcca.py</span></code>)</p></td>
-<td><p>00:18.816</p></td>
-<td><p>0.0</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="example_3_early_stopping.html#sphx-glr-examples-example-3-early-stopping-py"><span class="std std-ref">Early stopping</span></a> (<code class="docutils literal notranslate"><span class="pre">example_3_early_stopping.py</span></code>)</p></td>
-<td><p>00:07.197</p></td>
-<td><p>0.0</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="example_5_stimulus_optimization.html#sphx-glr-examples-example-5-stimulus-optimization-py"><span class="std std-ref">Stimulus optimization</span></a> (<code class="docutils literal notranslate"><span class="pre">example_5_stimulus_optimization.py</span></code>)</p></td>
-<td><p>00:02.437</p></td>
-<td><p>0.0</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="example_4_bitwise_decoding.html#sphx-glr-examples-example-4-bitwise-decoding-py"><span class="std std-ref">Bitwise decoding</span></a> (<code class="docutils literal notranslate"><span class="pre">example_4_bitwise_decoding.py</span></code>)</p></td>
-<td><p>00:01.698</p></td>
-<td><p>0.0</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="example_2_ecca.html#sphx-glr-examples-example-2-ecca-py"><span class="std std-ref">eCCA</span></a> (<code class="docutils literal notranslate"><span class="pre">example_2_ecca.py</span></code>)</p></td>
-<td><p>00:00.956</p></td>
-<td><p>0.0</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
+  <section id="pyntbci-envelope-erb-space-bw">
+<h1>pyntbci.envelope.erb_space_bw<a class="headerlink" href="#pyntbci-envelope-erb-space-bw" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyntbci.envelope.erb_space_bw">
+<span class="sig-prename descclassname"><span class="pre">pyntbci.envelope.</span></span><span class="sig-name descname"><span class="pre">erb_space_bw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/envelope.html#erb_space_bw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.envelope.erb_space_bw" title="Link to this definition"></a></dt>
+<dd><p>Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between
+frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two
+consecutive values is bw on ERB auditory scale, and the points will be centered on the scale between fmin and fmax.</p>
+<p>Adapted from LTFAT: <a class="reference external" href="https://ltfat.org/doc/auditory/erbspacebw">https://ltfat.org/doc/auditory/erbspacebw</a> erbspacebw.m (Peter L. Søndergaard)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fmin</strong> (<em>float</em>) – Minimum center frequency.</p></li>
+<li><p><strong>fmax</strong> (<em>float</em>) – Maximum center frequency.</p></li>
+<li><p><strong>bw</strong> (<em>float</em><em> (</em><em>default: 1.0</em><em>)</em>) – Bandwidth or spacing between center frequencies.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>y</strong> – A vector containing the center frequencies.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div style='clear:both'></div></section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyntbci.envelope.rms.html" class="btn btn-neutral float-left" title="pyntbci.envelope.rms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.envelope.freq_to_aud.html" class="btn btn-neutral float-right" title="pyntbci.envelope.freq_to_aud" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
