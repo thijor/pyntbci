@@ -9,7 +9,7 @@ from sklearn.utils.validation import check_is_fitted
 from pyntbci.utilities import covariance, pinv
 
 
-class CCA(BaseEstimator, TransformerMixin):
+class CCA(TransformerMixin, BaseEstimator):
     """Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.
     Here, CCA is implemented as the SVD of (cross)covariance matrices [1]_.
 
@@ -296,11 +296,9 @@ class CCA(BaseEstimator, TransformerMixin):
             Projected data matrix of shape (n_samples, n_components).
         """
         if X is not None:
-            X -= self.avg_x_
-            X = np.dot(X, self.w_x_)
+            X = np.dot(X - self.avg_x_, self.w_x_)
         if Y is not None:
-            Y -= self.avg_y_
-            Y = np.dot(Y, self.w_y_)
+            Y = np.dot(Y - self.avg_y_, self.w_y_)
 
         return X, Y
 
@@ -389,7 +387,7 @@ class CCA(BaseEstimator, TransformerMixin):
         return hasattr(self, "_is_fitted") and self._is_fitted
 
 
-class Vectorizer(BaseEstimator, TransformerMixin):
+class Vectorizer(TransformerMixin, BaseEstimator):
     """Vectorizer. Flattens a multi-dimensional data matrix per trial into a single feature vector, e.g. to use
     multi-channel time-series data with generic (non multi-dimensional) scikit-learn estimators.
 

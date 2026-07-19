@@ -7,6 +7,8 @@
 - Added `diff` event to `event_matrix` in `utilities`
 - Added `eeg` module to generate synthetic multi-channel EEG data (c-VEP signal, and noise) 
 - Added `Vectorizer` to `transformers`
+- Added `classes_` attribute to `eCCA`, `Ensemble`, `rCCA` in `classifiers`, `AggregateGate`, `DifferenceGate` in
+  `gates`, and all classes in `stopping`, for scikit-learn `ClassifierMixin` compatibility
 
 ### Changed
 - Removed the bundled example/tutorial EEG data (`data/`) from the package; `tutorials/` and `examples/` now generate
@@ -14,12 +16,23 @@
 - Removed the `pipelines/` folder of standalone analysis scripts for external published datasets
 - Removed the `mne` dependency; `examples/` now use `Vectorizer` in `transformers` instead of `mne.decoding.Vectorizer`
 - Removed the 'seaborn' dependency; now simply relies on matplotlib
+- Removed `eTRCA` from `classifiers` and `TRCA` from `transformers`
+- Dropped Python 3.8 support (minimum is now 3.9), since the codebase already relied on builtin generic type hints
+  (e.g. `tuple[...]`) that are not subscriptable at runtime on 3.8
 
 ### Fixed
 - Fixed `BayesStopping` in `stopping` check fitted if score-based
 - Fixed `itr` in `utilities` output shape is input shape
 - Fixed retaining dtype in `stimulus`
 - Fixed `DistributionStopping` in `stopping` not checking fitted status when `trained=False`
+- Fixed `AggregateGate` in `gates` modifying its `aggregate` parameter in `__init__`, which broke scikit-learn
+  `clone()`
+- Fixed `rCCA` in `classifiers` doing parameter resolution and computation in `__init__` instead of `fit`, which left
+  the estimator in a stale, inconsistent state after `set_params()`
+- Fixed `DistributionStopping` in `stopping` validating `distribution` eagerly in `__init__` instead of `fit`
+- Fixed `correlation` in `utilities`, `encoding_matrix` in `utilities` (`stimulus` and length-1 `length`/`stride`
+  lists), `itr` in `utilities`, `get_T` in `eCCA` of `classifiers`, and `transform` in `CCA` of `transformers` all
+  mutating their input arguments in place as a side effect
 
 ## Version 1.8.3 (21-05-2025)
 

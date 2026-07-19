@@ -75,8 +75,8 @@ def correlation(
         B = B[np.newaxis, :]
     assert A.shape[1] == B.shape[1], f"Number of samples in A ({A.shape[1]}) does not equal B ({B.shape[1]})"
 
-    A -= A.mean(axis=1, keepdims=True)
-    B -= B.mean(axis=1, keepdims=True)
+    A = A - A.mean(axis=1, keepdims=True)
+    B = B - B.mean(axis=1, keepdims=True)
 
     ssA = (A**2).sum(axis=1, keepdims=True)
     ssB = (B**2).sum(axis=1, keepdims=True)
@@ -229,7 +229,7 @@ def encoding_matrix(
         length = np.array(n_events * [length])
     elif isinstance(length, list) or isinstance(length, tuple):
         if len(length) == 1:
-            length *= n_events
+            length = length * n_events
         length = np.array(length)
     elif isinstance(length, np.ndarray):
         if length.size == 1:
@@ -247,7 +247,7 @@ def encoding_matrix(
         stride = np.array(n_events * [stride])
     elif isinstance(stride, list) or isinstance(stride, tuple):
         if len(stride) == 1:
-            stride *= n_events
+            stride = stride * n_events
         stride = np.array(stride)
     elif isinstance(stride, np.ndarray):
         if stride.size == 1:
@@ -256,6 +256,9 @@ def encoding_matrix(
     assert np.issubdtype(stride.dtype, np.integer), "stride must contain integer values."
 
     # Create encoding window per event
+    if amplitude is not None:
+        stimulus = stimulus.copy()
+
     ematrix = []
     for i_event in range(n_events):
         stride_ = int(stride[i_event])
@@ -692,7 +695,7 @@ def itr(
         The ITR in bits per minute.
     """
     n = np.atleast_1d(n)
-    p = np.atleast_1d(p)
+    p = np.atleast_1d(p).copy()
     t = np.atleast_1d(t)
     p[p >= 1] = 1.0 - np.finfo(p.dtype).eps
     p[p <= 0] = np.finfo(p.dtype).eps

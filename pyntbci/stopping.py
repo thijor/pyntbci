@@ -9,7 +9,7 @@ import pyntbci.classifiers
 from pyntbci.utilities import itr
 
 
-class BayesStopping(BaseEstimator, ClassifierMixin):
+class BayesStopping(ClassifierMixin, BaseEstimator):
     """Bayesian dynamic stopping. Fits Gaussian distributions for target and non-target responses, and calculates a
     stopping threshold using these and a cost criterion [1]_.
 
@@ -41,6 +41,9 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     alpha_: float
         The scaling parameter between observed and predicted responses.
     sigma_: float
@@ -66,6 +69,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
            brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
     """
 
+    classes_: NDArray
     alpha_: float
     sigma_: float
     b0_: NDArray
@@ -120,6 +124,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
             Returns the instance itself.
         """
         self.estimator.fit(X, y)
+        self.classes_ = self.estimator.classes_
 
         if self.approach == "template_inner":
             self._fit_template_inner(X, y)
@@ -128,7 +133,21 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def _fit_template_inner(self, X, y):
+    def _fit_template_inner(
+        self,
+        X: NDArray,
+        y: NDArray,
+    ) -> None:
+        """Fit the Bayesian dynamic stopping model using the analytic template-based approach, i.e., using the inner
+        product between the rCCA templates. Sets alpha_, sigma_, b0_, b1_, s0_, s1_, eta_, pf_, and pm_.
+
+        Parameters
+        ----------
+        X: NDArray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+        y: NDArray
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
+        """
         assert isinstance(self.estimator, pyntbci.classifiers.rCCA), "Approach template_inner works only for rCCA."
         n_samples = X.shape[2]
         n_classes = self.estimator.Ts_.shape[0]
@@ -192,7 +211,21 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         self.pm_ = (1 / n_classes) * norm.cdf(self.eta_, self.alpha_ * self.b1_, self.s1_)
         self.pm_ = 1 - (1 - self.pm_) ** n_classes
 
-    def _fit_score(self, X, y):
+    def _fit_score(
+        self,
+        X: NDArray,
+        y: NDArray,
+    ) -> None:
+        """Fit the Bayesian dynamic stopping model using the empirical approach, i.e., using the empirical scores
+        obtained from the estimator object. Sets b0_, b1_, s0_, s1_, eta_, pf_, and pm_.
+
+        Parameters
+        ----------
+        X: NDArray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+        y: NDArray
+            The vector of ground-truth labels of the trials in X of shape (n_trials).
+        """
         n_samples = X.shape[2]
 
         # Calculate b0, b1, s0, s1
@@ -311,7 +344,7 @@ class BayesStopping(BaseEstimator, ClassifierMixin):
         return yh
 
 
-class CriterionStopping(BaseEstimator, ClassifierMixin):
+class CriterionStopping(ClassifierMixin, BaseEstimator):
     """Criterion static stopping. Fits an optimal stopping time given some criterion to optimize.
 
     Parameters
@@ -341,10 +374,15 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting (i.e., after the
+        internal cross-validation, fit on the last fold, matching what predict() uses). Note, predict() may
+        additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     stop_time_: float
         The trained static stopping time.
     """
 
+    classes_: NDArray
     stop_time_: float
 
     def __init__(
@@ -444,6 +482,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         else:
             raise Exception("Unknown optimization:", self.optimization)
 
+        self.classes_ = self.estimator.classes_
         return self
 
     def predict(
@@ -478,7 +517,7 @@ class CriterionStopping(BaseEstimator, ClassifierMixin):
         return yh
 
 
-class DistributionStopping(BaseEstimator, ClassifierMixin):
+class DistributionStopping(ClassifierMixin, BaseEstimator):
     """Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability
     of the target / maximum score to be an outlier of that distribution [2]_.
 
@@ -505,6 +544,9 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     distributions_: list[dict]
         A list of dictionaries containing the parameters of the distribution for each data segment. Only used if
         trained=True.
@@ -516,6 +558,7 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
 
+    classes_: NDArray
     distributions_: list[dict]
 
     def __init__(
@@ -538,8 +581,6 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         self.max_time = max_time
         self.min_time = min_time
 
-        assert self.distribution in ["beta", "norm"], "Distribution must be beta or norm."
-
     def fit(
         self,
         X: NDArray,
@@ -559,8 +600,11 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
+        assert self.distribution in ["beta", "norm"], "Distribution must be beta or norm."
+
         # Fit estimator
         self.estimator.fit(X, y)
+        self.classes_ = self.estimator.classes_
 
         # Fit beta distributions
         if self.trained:
@@ -658,7 +702,7 @@ class DistributionStopping(BaseEstimator, ClassifierMixin):
         return yh
 
 
-class MarginStopping(BaseEstimator, ClassifierMixin):
+class MarginStopping(ClassifierMixin, BaseEstimator):
     """Margin dynamic stopping. Learns threshold margins (difference between best and second-best score) to stop at
     such that a targeted accuracy is reached [3]_.
 
@@ -687,6 +731,9 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     margins_: NDArray
         The trained stopping margins of shape (n_segments).
 
@@ -696,6 +743,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
 
+    classes_: NDArray
     margins_: NDArray
 
     def __init__(
@@ -740,6 +788,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
             Returns the instance itself.
         """
         self.estimator.fit(X, y)
+        self.classes_ = self.estimator.classes_
 
         # Set margin axis (possible margins to stop at)
         margin_axis = np.arange(self.margin_min, self.margin_max, self.margin_step)
@@ -830,7 +879,7 @@ class MarginStopping(BaseEstimator, ClassifierMixin):
         return yh
 
 
-class ValueStopping(BaseEstimator, ClassifierMixin):
+class ValueStopping(ClassifierMixin, BaseEstimator):
     """Value dynamic stopping. Learns threshold values to stop at such that a targeted accuracy is reached.
 
     Parameters
@@ -858,10 +907,14 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     values_: NDArray
         The trained stopping values of shape (n_segments).
     """
 
+    classes_: NDArray
     values_: NDArray
 
     def __init__(
@@ -910,6 +963,7 @@ class ValueStopping(BaseEstimator, ClassifierMixin):
 
         # Fit estimator
         self.estimator.fit(X, y)
+        self.classes_ = self.estimator.classes_
 
         # Calculate a value per segment
         n_samples = X.shape[2]

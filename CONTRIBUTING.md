@@ -17,7 +17,7 @@ Tests live in `pyntbci/tests/` and are written with `unittest`, discoverable by 
 
 	pytest pyntbci/tests
 
-Please add or update tests for any change in behavior. All tests must pass before a pull request can be merged; this is enforced by CI (`.github/workflows/test.yml`) on Python 3.8 through 3.12.
+Please add or update tests for any change in behavior. All tests must pass before a pull request can be merged; this is enforced by CI (`.github/workflows/test.yml`) on Python 3.9 through 3.12.
 
 ## Linting and formatting
 

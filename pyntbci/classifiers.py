@@ -12,7 +12,7 @@ from pyntbci.transformers import CCA
 from pyntbci.utilities import correct_latency, correlation, decoding_matrix, encoding_matrix, euclidean, event_matrix
 
 
-class eCCA(BaseEstimator, ClassifierMixin):
+class eCCA(ClassifierMixin, BaseEstimator):
     """ERP CCA classifier. Also called the "reference" method [1]_. It computes ERPs as templates for full sequences and
     performs a CCA for spatial filtering.
 
@@ -62,6 +62,10 @@ class eCCA(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, of shape (n_classes). Equal to numpy.arange(len(lags)) if lags is set
+        (i.e., all circularly shifted classes can be predicted, whether or not they were observed in y during fit),
+        otherwise the sorted unique labels observed in y.
     cca_: list[TransformerMixin]
         The CCA used to fit the spatial filters. If ensemble=False, len(cca_)=1, otherwise len(cca_)=n_classes.
     w_: NDArray
@@ -77,6 +81,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
            review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf
     """
 
+    classes_: NDArray
     cca_: list[TransformerMixin]
     w_: NDArray
     T_: NDArray
@@ -309,6 +314,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         else:
             self.T_ = self.cca_[0].transform(T)[0]
 
+        self.classes_ = np.arange(n_classes)
         self._is_fitted = True
         return self
 
@@ -329,7 +335,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
             The templates of shape (n_classes, n_components, n_samples).
         """
         if n_samples is None or self.T_.shape[2] == n_samples:
-            T = self.T_
+            T = self.T_.copy()
         else:
             n = int(np.ceil(n_samples / self.T_.shape[2]))
             T = np.tile(self.T_, (1, 1, n))[:, :, :n_samples]
@@ -367,7 +373,7 @@ class eCCA(BaseEstimator, ClassifierMixin):
         return hasattr(self, "_is_fitted") and self._is_fitted
 
 
-class Ensemble(BaseEstimator, ClassifierMixin):
+class Ensemble(ClassifierMixin, BaseEstimator):
     """Ensemble classifier. It wraps an ensemble classifier around another classifier object. The classifiers are
     applied to each item in a databank separately. A gating function combines the outputs of the individual
     classifications to arrive at a single final combined classification.
@@ -381,10 +387,13 @@ class Ensemble(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, taken from the gate's classes_ after fitting.
     models_: list[ClassifierMixin]
         A list containing all models learned for each of the databanks.
     """
 
+    classes_: NDArray
     models_: list[ClassifierMixin]
 
     def __init__(
@@ -444,6 +453,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
         self.gate.fit(scores, y)
 
+        self.classes_ = self.gate.classes_
         self._is_fitted = True
         return self
 
@@ -479,7 +489,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         return hasattr(self, "_is_fitted") and self._is_fitted
 
 
-class rCCA(BaseEstimator, ClassifierMixin):
+class rCCA(ClassifierMixin, BaseEstimator):
     """Reconvolution CCA classifier. It performs a spatial and temporal decomposition (reconvolution [3]_) within a
     CCA [4]_ to perform spatial filtering as well as template prediction [5]_.
 
@@ -541,6 +551,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_: NDArray
+        The classes that can be predicted, of shape (n_classes), i.e., the number of classes in stimulus,
+        independent of which classes were actually observed in y during fit().
     cca_: list[TransformerMixin]
         The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise
         len(cca_)=n_classes.
@@ -579,6 +592,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
            056007. doi: 10.1088/1741-2552/abecef
     """
 
+    classes_: NDArray
     cca_: list[TransformerMixin]
     events_: list
     w_: NDArray
@@ -616,22 +630,10 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.fs = fs
         self.event = event
         self.onset_event = onset_event
-        if decoding_length is None:
-            self.decoding_length = 1 / fs
-        else:
-            self.decoding_length = decoding_length
-        if decoding_stride is None:
-            self.decoding_stride = 1 / fs
-        else:
-            self.decoding_stride = decoding_stride
-        if encoding_length is None:
-            self.encoding_length = np.atleast_1d(1 / fs)
-        else:
-            self.encoding_length = np.atleast_1d(encoding_length)
-        if encoding_stride is None:
-            self.encoding_stride = np.atleast_1d(1 / fs)
-        else:
-            self.encoding_stride = np.atleast_1d(encoding_stride)
+        self.decoding_length = decoding_length
+        self.decoding_stride = decoding_stride
+        self.encoding_length = encoding_length
+        self.encoding_stride = encoding_stride
         self.score_metric = score_metric
         self.latency = latency
         self.ensemble = ensemble
@@ -646,8 +648,19 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self.alpha_m = alpha_m
         self.tmin = tmin
 
-        if self.stimulus is not None:
-            self.set_encoding_matrix()
+    def _resolve_decoding_length_stride(self) -> tuple[float, float]:
+        """Resolve decoding_length and decoding_stride, defaulting to 1/fs (i.e., no phase-shifting) if None.
+
+        Returns
+        -------
+        decoding_length: float
+            The resolved decoding length in seconds.
+        decoding_stride: float
+            The resolved decoding stride in seconds.
+        """
+        decoding_length = 1 / self.fs if self.decoding_length is None else self.decoding_length
+        decoding_stride = 1 / self.fs if self.decoding_stride is None else self.decoding_stride
+        return decoding_length, decoding_stride
 
     def decision_function(
         self,
@@ -669,8 +682,9 @@ class rCCA(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
 
         # Set decoding matrix
-        if int(self.decoding_length * self.fs) > 1:
-            X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
+        decoding_length, decoding_stride = self._resolve_decoding_length_stride()
+        if int(decoding_length * self.fs) > 1:
+            X = decoding_matrix(X, int(decoding_length * self.fs), int(decoding_stride * self.fs))
 
         # Set templates to trial length
         if X.shape[2] < self.Ts_.shape[2]:
@@ -735,11 +749,15 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
+
+        # Set encoding matrix
+        self.set_encoding_matrix()
         n_classes = self.Ms_.shape[0]
 
         # Set decoding matrix
-        if int(self.decoding_length * self.fs) > 1:
-            X = decoding_matrix(X, int(self.decoding_length * self.fs), int(self.decoding_stride * self.fs))
+        decoding_length, decoding_stride = self._resolve_decoding_length_stride()
+        if int(decoding_length * self.fs) > 1:
+            X = decoding_matrix(X, int(decoding_length * self.fs), int(decoding_stride * self.fs))
 
         # Set structure matrices to trial length
         if X.shape[2] < self.Ms_.shape[2]:
@@ -784,6 +802,7 @@ class rCCA(BaseEstimator, ClassifierMixin):
             self.w_ = self.cca_[0].w_x_
             self.r_ = self.cca_[0].w_y_
 
+        self.classes_ = np.arange(n_classes)
         self._is_fitted = True
         self.set_templates()
         return self
@@ -812,19 +831,21 @@ class rCCA(BaseEstimator, ClassifierMixin):
         self,
     ) -> None:
         """Set the encoding matrix."""
+        if self.encoding_length is None:
+            encoding_length = 1
+        else:
+            encoding_length = (np.atleast_1d(self.encoding_length) * self.fs).astype("int")
+        if self.encoding_stride is None:
+            encoding_stride = 1
+        else:
+            encoding_stride = (np.atleast_1d(self.encoding_stride) * self.fs).astype("int")
         if self.amplitudes is None or self.amplitudes.shape[1] == 2 * self.stimulus.shape[1]:
             amplitude = self.amplitudes
         else:
             n = int(np.ceil(2 * self.stimulus.shape[1] / self.amplitudes.shape[1]))
             amplitude = np.tile(self.amplitudes, (1, n))[:, : 2 * self.stimulus.shape[1]]
         E, self.events_ = event_matrix(np.tile(self.stimulus, (1, 2)), self.event, self.onset_event)
-        M = encoding_matrix(
-            E,
-            (self.encoding_length * self.fs).astype("uint"),
-            (self.encoding_stride * self.fs).astype("uint"),
-            amplitude,
-            int(self.tmin * self.fs),
-        )
+        M = encoding_matrix(E, encoding_length, encoding_stride, amplitude, int(self.tmin * self.fs))
         self.Ms_ = M[:, :, : self.stimulus.shape[1]]
         self.Mw_ = M[:, :, self.stimulus.shape[1] :]
 

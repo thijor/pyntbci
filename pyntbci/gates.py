@@ -14,10 +14,18 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
     ----------
     aggregate: str (default: "mean")
         The aggregate function to use. Options: mean, median, sum, min, max.
+
+    Attributes
+    ----------
+    classes_: NDArray
+        The classes that can be predicted, of shape (n_classes), taken from the number of classes (second
+        dimension) of the score matrix X passed to fit(), independent of which classes were observed in y.
     """
 
+    classes_: NDArray
+
     def __init__(self, aggregate: str = "mean") -> None:
-        self.aggregate = aggregate.lower()
+        self.aggregate = aggregate
 
     def decision_function(
         self,
@@ -36,15 +44,15 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
             Score matrix of shape (n_trials, n_classes).
         """
         check_is_fitted(self)
-        if self.aggregate == "mean":
+        if self.aggregate.lower() == "mean":
             return np.mean(X, axis=2)
-        elif self.aggregate == "median":
+        elif self.aggregate.lower() == "median":
             return np.median(X, axis=2)
-        elif self.aggregate == "sum":
+        elif self.aggregate.lower() == "sum":
             return np.sum(X, axis=2)
-        elif self.aggregate == "min":
+        elif self.aggregate.lower() == "min":
             return np.min(X, axis=2)
-        elif self.aggregate == "max":
+        elif self.aggregate.lower() == "max":
             return np.max(X, axis=2)
         else:
             raise Exception("Unknown aggregate function:", self.aggregate)
@@ -68,6 +76,7 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         self: ClassifierMixin
             Returns the instance itself.
         """
+        self.classes_ = np.arange(X.shape[1])
         self._is_fitted = True
         return self
 
@@ -109,7 +118,15 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
     ----------
     estimator: ClassifierMixin
         The estimator used to classify difference scores.
+
+    Attributes
+    ----------
+    classes_: NDArray
+        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting it on the
+        difference scores.
     """
+
+    classes_: NDArray
 
     def __init__(
         self,
@@ -175,6 +192,7 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
             Returns the instance itself.
         """
         self.estimator.fit(self._compute_difference_scores(X), y)
+        self.classes_ = self.estimator.classes_
         self._is_fitted = True
         return self
 

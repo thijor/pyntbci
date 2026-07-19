@@ -10,5 +10,4 @@ Transformers
     :template: class.rst
 
     CCA
-    TRCA
     Vectorizer
