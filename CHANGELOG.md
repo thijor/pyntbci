@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.9.0
+## Version 1.9.0 (20-07-2026)
 
 ### Added
 - Added `vmin` and `vmax` to `topoplot` in `plotting`
