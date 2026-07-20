@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.8.4
+## Version 1.9.0
 
 ### Added
 - Added `vmin` and `vmax` to `topoplot` in `plotting`
@@ -9,6 +9,42 @@
 - Added `Vectorizer` to `transformers`
 - Added `classes_` attribute to `eCCA`, `Ensemble`, `rCCA` in `classifiers`, `AggregateGate`, `DifferenceGate` in
   `gates`, and all classes in `stopping`, for scikit-learn `ClassifierMixin` compatibility
+- Added a clear, actionable error message in `CCA` of `transformers` when a covariance matrix is singular or too
+  ill-conditioned to invert (e.g. `ensemble=True` in `eCCA`/`rCCA` with too little data per class), instead of a bare
+  "singular matrix" error or, worse, a silently corrupted result; documented this risk on `ensemble` in `eCCA`/`rCCA`
+- Added a `dtype` parameter (default: `"float32"`) to every generator function in `eeg`; all computation is still
+  done internally in float64 (float64/complex128 for the FFT in `generate_pink_noise`) for numerical precision, and
+  only cast to the requested `dtype` on the returned array
+- Added `inner` and a `running` mode (with a `*_old`/`n_old`-style state, matching `covariance`'s existing convention)
+  to `correlation` and `euclidean` in `utilities`, letting a score matrix be updated with only newly observed samples
+  instead of recomputed from scratch; `correlation`'s running mode is implemented by reusing `covariance`'s existing
+  running mechanism directly (correlation is covariance normalized by the two variances, verified numerically
+  identical), while `euclidean`/`inner` accumulate their own (simpler, since they need no running mean) raw sums
+- Added `running`/`reset` parameters to `decision_function`/`predict` in `eCCA`/`rCCA` of `classifiers` (not
+  `ensemble=True`), letting them be fed only the newly observed samples of a growing trial instead of recomputing
+  the full spatial (and, for `rCCA`, spatio-spectral) filter and score from scratch every call; for `rCCA`,
+  `decoding_matrix`'s forward-looking window is handled by keeping a small raw-sample buffer and only committing a
+  position's contribution once no future sample can still change it. All 5 `stopping` classes now use this
+  internally in `fit()`'s calibration loop, and expose the same `running`/`reset` parameters on their own
+  `predict()`; for a wrapped `estimator` that isn't an `eCCA`/`rCCA` (or has `ensemble=True`), a transparent
+  fallback buffers the raw data and recomputes from scratch instead, so `running=True` still works (just without
+  the speedup). Verified numerically identical to the non-running computation (max abs error ~1e-13, floating-point
+  noise) across every score metric, `n_components`, and `rCCA`'s `decoding_length`/`decoding_stride` combinations;
+  measured 21x faster `decision_function` calls and 2x faster `fit()` calibration on an 8.4s trial (84 segments).
+  This targets the *predict-time* per-trial scoring loop specifically; `CCA` in `transformers` already has a
+  separate, pre-existing `running` mode for *fit-time* incremental covariance estimation across successive `fit()`
+  calls (used to train the spatial filter itself) — the two are unrelated to each other by design, since predict-time
+  running state (an in-progress trial's scores) and fit-time running state (the model's learned covariance) have
+  different lifecycles, but both are built on the same underlying `covariance()` primitive
+- Added test coverage for `Ensemble` in `classifiers` (previously untested), the entire `envelope` module (previously
+  had no test file), `eventplot`/`stimplot` in `plotting` (previously only `topoplot` was tested), `find_neighbours`,
+  `find_worst_neighbour`, `pinv`, and `trials_to_epochs` in `utilities` (previously untested), and a new
+  `test_sklearn_compliance.py` that checks `get_params()`/`set_params()`/`clone()` round-tripping across every
+  classifier, gate, and stopping estimator in the library
+- Added classification-correctness tests (`accuracy = mean(yh == y)` against a threshold, not just output shape) for
+  `eCCA`, `rCCA`, `Ensemble` in `classifiers`, `AggregateGate`, `DifferenceGate` in `gates`, and all classes in
+  `stopping`; previously every one of these tests only checked output shape, so a classifier that always predicted
+  a constant class, or a `decision_function` computed backwards, would have still passed the whole suite
 
 ### Changed
 - Removed the bundled example/tutorial EEG data (`data/`) from the package; `tutorials/` and `examples/` now generate
@@ -19,6 +55,9 @@
 - Removed `eTRCA` from `classifiers` and `TRCA` from `transformers`
 - Dropped Python 3.8 support (minimum is now 3.9), since the codebase already relied on builtin generic type hints
   (e.g. `tuple[...]`) that are not subscriptable at runtime on 3.8
+- Migrated packaging metadata from the legacy `setup.cfg` to a PEP 621 `[project]` table in `pyproject.toml`
+  (`version` and `readme` remain dynamic, sourced from `pyntbci.__version__` and `README.md`/`CHANGELOG.md`
+  respectively, as before); verified the built sdist/wheel metadata and bundled files are unchanged
 
 ### Fixed
 - Fixed `BayesStopping` in `stopping` check fitted if score-based
@@ -33,6 +72,65 @@
 - Fixed `correlation` in `utilities`, `encoding_matrix` in `utilities` (`stimulus` and length-1 `length`/`stride`
   lists), `itr` in `utilities`, `get_T` in `eCCA` of `classifiers`, and `transform` in `CCA` of `transformers` all
   mutating their input arguments in place as a side effect
+- Fixed `gamma_x`/`gamma_y` regularization in `CCA` of `transformers` silently computing wrong (asymmetric, not
+  positive semi-definite) covariance matrices whenever a per-feature array (rather than a single scalar) was used;
+  scalar `gamma_x`/`gamma_y` behavior is unchanged
+- Fixed `examples/` and tests pre-computing an unseeded `y` externally and passing it into `generate_c_vep` of `eeg`,
+  which bypassed `eeg`'s own seeded label assignment and made `random_state` not actually reproduce the data;
+  `generate_c_vep` itself was already correctly reproducible when `y` is left to be generated internally (i.e. by
+  passing `n_classes` instead of a pre-computed `y`)
+- Fixed `gammatone` in `envelope` not applying its lowpass filter to the envelope at all (`filtfilt` was called with
+  the denominator coefficients replaced by `1`, i.e. an FIR-only pass), and switched that filter to second-order
+  sections (`sosfiltfilt`) since the transfer-function (`b`/`a`) form of the actual (high-order) filter is
+  numerically unstable and produced `NaN` once the filter was applied at all
+- Fixed `DistributionStopping` in `stopping` swapping the wrong axis when moving the target class's score to index 0
+  before fitting the non-target score distribution (`trained=True`), which corrupted every fitted distribution and
+  could raise an `IndexError`
+- Fixed `BayesStopping` in `stopping` mutating its own `target_pf`/`target_pd` parameters as a side effect of
+  `predict()` (methods `bds1`/`bds2`), which meant repeated `predict()` calls could return different results and
+  `clone()`/`get_params()` no longer reflected the original estimator after a prediction; the (per-prediction) target
+  adjustment is now local instead, and reported with `warnings.warn` instead of `print`
+- Fixed `BayesStopping` in `stopping` (`method="bds2"`) raising an unguarded `IndexError` when no segment jointly
+  satisfies both the `target_pf` and `target_pd` constraints; now falls back to the most conservative (last) segment
+- Fixed `CriterionStopping` in `stopping` silently producing `nan` scores (and thus a meaningless `stop_time_`) when
+  `n_trials < n_folds` left some cross-validation folds with no test data; now raises an assertion instead
+- Fixed `topoplot` in `plotting` raising a `ValueError` when reading a `.loc` file with a trailing newline
+- Fixed `optimize_layout_incremental` in `stimulus` using the unseeded global `np.random.permutation` for its random
+  initial layouts, unlike every other randomized function in the library; added a `random_state` parameter
+- Fixed minor internal consistency issues: `AggregateGate`/`DifferenceGate` in `gates` now use the same
+  `ClassifierMixin, BaseEstimator` MRO order as every other estimator in the library; `CriterionStopping.predict` in
+  `stopping` now returns `int64` (not `float64`) for unstopped (`-1`) trials, matching every other stopping class;
+  `DistributionStopping` in `stopping` now implements `__sklearn_is_fitted__` instead of checking a private attribute
+  directly through `check_is_fitted`, matching `Ensemble` in `classifiers`
+- Fixed `stimplot`'s `upsample` docstring in `plotting`, copy-pasted from `eventplot` and referring to a
+  non-existent "event time-series"
+- Fixed `eventplot` in `plotting` not validating that `events` (if provided) has one name per row of `E`, unlike the
+  equivalent `labels` check in `stimplot`
+- Fixed the `documentation` CI workflow committing and pushing to `gh-pages` on pull requests as well as pushes to
+  `main`; the build now only deploys on `push`, and still runs as a build-only check on pull requests
+- Fixed `test_correlation_faster_corrcoef` in the test suite being a wall-clock timing comparison that could fail
+  under CI load for reasons unrelated to the implementation; it is now skipped by default and kept for manual
+  benchmarking only
+- Fixed `pinv` in `utilities` computing `U @ diag(1/d) @ Vh` instead of the true Moore-Penrose pseudo-inverse
+  `Vh.T @ diag(1/d) @ U.T`; both are equivalent (and both were already correct) for the symmetric covariance
+  matrices `pinv` is used on internally in `CCA` of `transformers`, but the old formula silently returned a
+  wrong-shaped, mathematically incorrect result for any general (non-symmetric or non-square) matrix
+- Improved performance of `euclidean` in `utilities` (vectorized, was an O(n_A * n_B) Python loop), `decoding_matrix`
+  and `encoding_matrix` in `utilities` (avoid computing and discarding the wrapped-around part of `np.roll` on every
+  window), the inverse square root in `CCA` of `transformers` (uses the symmetric eigendecomposition instead of
+  the general-purpose `scipy.linalg.sqrtm`, which also removes the need to discard spurious imaginary numerical
+  noise with `np.real`), `is_gold_code` in `stimulus` (replaced the O(n_classes^2 * n_bits) loop of `np.roll`
+  calls with a single vectorized correlation over all circular shifts, gathered by indexing into two concatenated
+  code cycles), `transform` in `CCA` of `transformers` for 3D input (batched matmul directly on the 3D array
+  instead of a transpose+reshape that forced a full copy of the data on every call), `_compute_difference_scores` in
+  `DifferenceGate` of `gates` (replaced the Python double loop over class pairs with a single `np.triu_indices`
+  gather), and `topoplot` in `plotting` (replaced the Python double loop over the 300x300 interpolation grid that
+  masked points outside the head radius with a single vectorized broadcast comparison)
+- Fixed `decision_function`/`predict` in `eCCA`/`rCCA` of `classifiers` silently returning a meaningless, always-the-
+  same-class prediction (`argmax` over a NaN or all-equal-score row) instead of raising, when `running=True` was
+  called with a zero-sample chunk on the very first call of a sequence (before any real data had been observed);
+  now asserts at least 1 sample is available before the first score can be computed. A zero-sample chunk *after*
+  real data has already been observed remains a well-defined no-op, as intended
 
 ## Version 1.8.3 (21-05-2025)
 

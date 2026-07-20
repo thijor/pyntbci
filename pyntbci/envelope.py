@@ -129,8 +129,10 @@ def gammatone(
     freqs = erb_space_bw(fmin, fmax, spacing)
 
     # Build bandpass filter
+    # Note: second-order sections (rather than b/a transfer function coefficients) are used here, as the resulting
+    # filter order can be high (e.g. lowpass close to fs_inter), for which the b/a form is numerically unstable.
     N, Wn = signal.buttord(wp=lowpass - 0.45, ws=lowpass + 0.45, gpass=0.5, gstop=15, fs=fs_inter)
-    bbutter, abutter = signal.butter(N=N, Wn=Wn, btype="low", fs=fs_inter)
+    sos_butter = signal.butter(N=N, Wn=Wn, btype="low", fs=fs_inter, output="sos")
 
     # Resample stimulus
     audio = signal.resample(audio, int(audio.size / fs) * fs_inter)
@@ -148,7 +150,7 @@ def gammatone(
         env = np.abs(env) ** power
 
         # Lowpass filter the envelope
-        env = signal.filtfilt(bbutter, 1, env)
+        env = signal.sosfiltfilt(sos_butter, env)
 
         # Downsample to ultimate frequency
         env = signal.resample(env, int(env.size / fs_inter) * fs_target)

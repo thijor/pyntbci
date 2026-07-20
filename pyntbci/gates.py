@@ -7,7 +7,7 @@ from sklearn.utils.validation import check_is_fitted
 AGGREGATES = ("mean", "median", "sum", "min", "max")
 
 
-class AggregateGate(BaseEstimator, ClassifierMixin):
+class AggregateGate(ClassifierMixin, BaseEstimator):
     """Gate described by an aggregate function.
 
     Parameters
@@ -110,7 +110,7 @@ class AggregateGate(BaseEstimator, ClassifierMixin):
         return hasattr(self, "_is_fitted") and self._is_fitted
 
 
-class DifferenceGate(BaseEstimator, ClassifierMixin):
+class DifferenceGate(ClassifierMixin, BaseEstimator):
     """Gate described by classification of difference scores. Difference scores are defined as all differences between
     all pairs of classes.
 
@@ -150,11 +150,8 @@ class DifferenceGate(BaseEstimator, ClassifierMixin):
         scores: NDArray
             Difference score matrix of shape (n_trials, (n_classes * (n_classes - 1)) / 2 * n_items).
         """
-        Z = []
-        for i in range(X.shape[1]):
-            for j in range(1 + i, X.shape[1]):
-                Z.append(X[:, i, :] - X[:, j, :])
-        return np.stack(Z, axis=1).reshape((X.shape[0], -1))
+        i, j = np.triu_indices(X.shape[1], k=1)
+        return (X[:, i, :] - X[:, j, :]).reshape((X.shape[0], -1))
 
     def decision_function(self, X: NDArray) -> NDArray:
         """Compute gated scores for X.

@@ -22,9 +22,11 @@ N_COMPONENTS = 3
 N_FILTER_BANDS = 4
 ENCODING_LENGTH = 0.3
 SEED = 42
+ACCURACY_THRESHOLD = 0.9
 
-y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
-X, y, V = pyntbci.eeg.generate_c_vep(N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, random_state=SEED)
+X, y, V = pyntbci.eeg.generate_c_vep(
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, random_state=SEED, dtype="float64"
+)
 
 
 class TestECCA(unittest.TestCase):
@@ -116,6 +118,92 @@ class TestECCA(unittest.TestCase):
 
         yh = ecca.predict(X)
         self.assertEqual(yh.shape, (N_TRIALS,))
+
+    def test_ecca_accuracy(self):
+        # Correctness check (not just shape): on synthetic c-VEP data specifically generated for classification, a
+        # correctly implemented eCCA must actually classify well above chance (1 / N_CLASSES), not just run.
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS)
+        ecca.fit(X, y)
+        yh = ecca.predict(X)
+        self.assertGreaterEqual(np.mean(yh == y), ACCURACY_THRESHOLD)
+
+    def test_ecca_running_matches_batch(self):
+        # running=True, fed only new chunks each call, must produce the exact same cumulative scores as running=False
+        # on the full prefix so far -- for every score_metric, since each has a different running implementation.
+        for metric in ["correlation", "euclidean", "inner"]:
+            with self.subTest(metric=metric):
+                ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, score_metric=metric)
+                ecca.fit(X, y)
+
+                seg = 17  # deliberately not a divisor of N_SAMPLES
+                prev = 0
+                running_result = None
+                for idx in list(range(seg, N_SAMPLES, seg)) + [N_SAMPLES]:
+                    running_result = ecca.decision_function(X[:, :, prev:idx], running=True, reset=(prev == 0))
+                    prev = idx
+                batch_result = ecca.decision_function(X)
+                self.assertTrue(np.allclose(running_result, batch_result, atol=1e-4))
+
+    def test_ecca_predict_running_matches_batch(self):
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS)
+        ecca.fit(X, y)
+
+        seg = 21
+        prev = 0
+        yh_running = None
+        for idx in list(range(seg, N_SAMPLES, seg)) + [N_SAMPLES]:
+            yh_running = ecca.predict(X[:, :, prev:idx], running=True, reset=(prev == 0))
+            prev = idx
+        yh_batch = ecca.predict(X)
+        self.assertTrue(np.array_equal(yh_running, yh_batch))
+
+    def test_ecca_running_ensemble_not_supported(self):
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, ensemble=True)
+        ecca.fit(X, y)
+        with self.assertRaises(AssertionError):
+            ecca.decision_function(X[:, :, :20], running=True, reset=True)
+
+    def test_ecca_running_trial_mismatch(self):
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS)
+        ecca.fit(X, y)
+        ecca.decision_function(X[:, :, :20], running=True, reset=True)
+        with self.assertRaises(AssertionError):
+            ecca.decision_function(X[:10, :, 20:40], running=True, reset=False)
+
+    def test_ecca_running_empty_first_chunk_rejected(self):
+        # A zero-sample chunk starting a new sequence carries no information at all (e.g. for "euclidean"/"inner",
+        # get_T()'s per-call de-meaning mean is undefined over zero samples); must raise, not silently return a
+        # meaningless (e.g. all-NaN, or all-zero) score that argmax then turns into "always predict class 0".
+        for metric in ["correlation", "euclidean", "inner"]:
+            with self.subTest(metric=metric):
+                ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, score_metric=metric)
+                ecca.fit(X, y)
+                with self.assertRaises(AssertionError):
+                    ecca.decision_function(X[:, :, :0], running=True, reset=True)
+
+    def test_ecca_running_empty_mid_sequence_chunk_ok(self):
+        # A zero-sample chunk mid-sequence (real data already observed) is well-defined and must be a no-op.
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, score_metric="inner")
+        ecca.fit(X, y)
+        ecca.decision_function(X[:, :, :20], running=True, reset=True)
+        scores = ecca.decision_function(X[:, :, 20:20], running=True, reset=False)
+        self.assertFalse(np.any(np.isnan(scores)))
+
+    def test_ecca_running_reset_by_fit(self):
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS)
+        ecca.fit(X, y)
+        ecca.decision_function(X[:, :, :20], running=True, reset=True)
+        self.assertIsNotNone(ecca._running_)
+        ecca.fit(X, y)
+        self.assertIsNone(ecca._running_)
+
+    def test_ecca_running_reset_false_on_fresh_instance(self):
+        # A never-yet-used instance has self._running_ is None; running=True with reset=False (i.e. omitted) must
+        # still behave like a fresh start rather than erroring or reading undefined state.
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS)
+        ecca.fit(X, y)
+        scores = ecca.decision_function(X[:, :, :20], running=True)
+        self.assertFalse(np.any(np.isnan(scores)))
 
 
 class TestRCCA(unittest.TestCase):
@@ -359,6 +447,148 @@ class TestRCCA(unittest.TestCase):
         self.assertEqual(z.shape, (N_TRIALS, N_CLASSES))
 
         yh = rcca.predict(X)
+        self.assertEqual(yh.shape, (N_TRIALS,))
+
+    def test_rcca_accuracy(self):
+        # Correctness check (not just shape): on synthetic c-VEP data specifically generated for classification, a
+        # correctly implemented rCCA must actually classify well above chance (1 / N_CLASSES), not just run.
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH)
+        rcca.fit(X, y)
+        yh = rcca.predict(X)
+        self.assertGreaterEqual(np.mean(yh == y), ACCURACY_THRESHOLD)
+
+    def test_rcca_running_matches_batch(self):
+        # running=True, fed only new chunks each call, must produce the exact same cumulative scores as running=False
+        # on the full prefix so far -- for every score_metric, and both with and without decoding_matrix enabled
+        # (decoding_length > 1/fs), since the latter needs extra boundary handling (see decision_function).
+        for decoding_length, decoding_stride in [(None, None), (0.15, None), (0.15, 0.15)]:
+            for metric in ["correlation", "euclidean", "inner"]:
+                with self.subTest(decoding_length=decoding_length, decoding_stride=decoding_stride, metric=metric):
+                    rcca = pyntbci.classifiers.rCCA(
+                        stimulus=V,
+                        fs=FS,
+                        event="refe",
+                        encoding_length=ENCODING_LENGTH,
+                        decoding_length=decoding_length,
+                        decoding_stride=decoding_stride,
+                        score_metric=metric,
+                    )
+                    rcca.fit(X, y)
+
+                    seg = 13  # deliberately not a divisor of N_SAMPLES
+                    prev = 0
+                    running_result = None
+                    for idx in list(range(seg, N_SAMPLES, seg)) + [N_SAMPLES]:
+                        running_result = rcca.decision_function(X[:, :, prev:idx], running=True, reset=(prev == 0))
+                        prev = idx
+                    batch_result = rcca.decision_function(X)
+                    self.assertTrue(np.allclose(running_result, batch_result, atol=1e-4))
+
+    def test_rcca_predict_running_matches_batch(self):
+        rcca = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, decoding_length=0.15
+        )
+        rcca.fit(X, y)
+
+        seg = 19
+        prev = 0
+        yh_running = None
+        for idx in list(range(seg, N_SAMPLES, seg)) + [N_SAMPLES]:
+            yh_running = rcca.predict(X[:, :, prev:idx], running=True, reset=(prev == 0))
+            prev = idx
+        yh_batch = rcca.predict(X)
+        self.assertTrue(np.array_equal(yh_running, yh_batch))
+
+    def test_rcca_running_ensemble_not_supported(self):
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, ensemble=True)
+        rcca.fit(X, y)
+        with self.assertRaises(AssertionError):
+            rcca.decision_function(X[:, :, :20], running=True, reset=True)
+
+    def test_rcca_running_trial_mismatch(self):
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH)
+        rcca.fit(X, y)
+        rcca.decision_function(X[:, :, :20], running=True, reset=True)
+        with self.assertRaises(AssertionError):
+            rcca.decision_function(X[:10, :, 20:40], running=True, reset=False)
+
+    def test_rcca_running_empty_first_chunk_rejected(self):
+        # A zero-sample chunk starting a new sequence carries no information at all; must raise, not silently
+        # return a meaningless (all-equal, so argmax picks class 0 for every trial) score.
+        for metric in ["correlation", "euclidean", "inner"]:
+            with self.subTest(metric=metric):
+                rcca = pyntbci.classifiers.rCCA(
+                    stimulus=V,
+                    fs=FS,
+                    event="refe",
+                    encoding_length=ENCODING_LENGTH,
+                    decoding_length=0.15,
+                    score_metric=metric,
+                )
+                rcca.fit(X, y)
+                with self.assertRaises(AssertionError):
+                    rcca.decision_function(X[:, :, :0], running=True, reset=True)
+
+    def test_rcca_running_empty_mid_sequence_chunk_ok(self):
+        rcca = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, decoding_length=0.15
+        )
+        rcca.fit(X, y)
+        rcca.decision_function(X[:, :, :20], running=True, reset=True)
+        scores = rcca.decision_function(X[:, :, 20:20], running=True, reset=False)
+        self.assertFalse(np.any(np.isnan(scores)))
+
+    def test_rcca_running_reset_by_fit_and_set_stimulus(self):
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH)
+        rcca.fit(X, y)
+
+        rcca.decision_function(X[:, :, :20], running=True, reset=True)
+        self.assertIsNotNone(rcca._running_)
+        rcca.fit(X, y)
+        self.assertIsNone(rcca._running_)
+
+        rcca.decision_function(X[:, :, :20], running=True, reset=True)
+        self.assertIsNotNone(rcca._running_)
+        U = np.repeat(pyntbci.stimulus.make_gold_codes(), FS // PR, axis=1)
+        rcca.set_stimulus(U)
+        self.assertIsNone(rcca._running_)
+
+
+class TestEnsemble(unittest.TestCase):
+    def test_ensemble_shape(self):
+        n_items = 2
+        Xb = np.stack([X, X], axis=3)
+
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH)
+        gate = pyntbci.gates.AggregateGate("mean")
+        ensemble = pyntbci.classifiers.Ensemble(estimator=rcca, gate=gate)
+        ensemble.fit(Xb, y)
+        self.assertEqual(len(ensemble.models_), n_items)
+        self.assertTrue(np.array_equal(ensemble.classes_, np.unique(y)))
+
+        z = ensemble.decision_function(Xb)
+        self.assertEqual(z.shape, (N_TRIALS, N_CLASSES))
+
+        yh = ensemble.predict(Xb)
+        self.assertEqual(yh.shape, (N_TRIALS,))
+        self.assertGreaterEqual(np.mean(yh == y), ACCURACY_THRESHOLD)
+
+    def test_ensemble_difference_gate(self):
+        from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+        n_items = 2
+        Xb = np.stack([X, X], axis=3)
+
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS)
+        gate = pyntbci.gates.DifferenceGate(LinearDiscriminantAnalysis())
+        ensemble = pyntbci.classifiers.Ensemble(estimator=ecca, gate=gate)
+        ensemble.fit(Xb, y)
+        self.assertEqual(len(ensemble.models_), n_items)
+
+        z = ensemble.decision_function(Xb)
+        self.assertEqual(z.shape, (N_TRIALS, N_CLASSES))
+
+        yh = ensemble.predict(Xb)
         self.assertEqual(yh.shape, (N_TRIALS,))
 
 

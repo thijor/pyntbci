@@ -9,7 +9,112 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.exceptions import NotFittedError
 
 from pyntbci.transformers import CCA
-from pyntbci.utilities import correct_latency, correlation, decoding_matrix, encoding_matrix, euclidean, event_matrix
+from pyntbci.utilities import (
+    correct_latency,
+    correlation,
+    decoding_matrix,
+    encoding_matrix,
+    euclidean,
+    event_matrix,
+    inner,
+)
+
+
+def _running_score(
+    X_chunk: NDArray,
+    T_raw_chunk: NDArray,
+    T_raw_mean: NDArray,
+    score_metric: str,
+    state: dict = None,
+) -> tuple[NDArray, dict]:
+    """Compute similarity scores between a newly observed chunk of (spatially filtered) signal and the
+    corresponding chunk of a template, incrementally, without recomputing from scratch over samples already seen.
+    Used by decision_function()'s running=True mode in eCCA and rCCA.
+
+    Correlation is shift-invariant, so it is computed directly via correlation()'s own running mode on the raw
+    (not de-meaned) template chunk. Euclidean distance and the inner product are not shift-invariant, and get_T()
+    de-means the template by the mean over the *current full window*, which itself changes every call as more
+    samples arrive, so the de-meaned values cannot simply be appended to as n_samples grows. Instead, the running
+    sums here are accumulated on the raw (not de-meaned) template, and get_T()'s de-meaning is applied afterwards
+    as a cheap correction at query time, using the freshly (and cheaply, since it needs no spatial filtering or
+    matrix products) computed T_raw_mean:
+        euclidean:  d(X, T)^2 = sum((X - T_raw)^2) + 2 * mu * sum(X - T_raw) + n * mu^2
+        inner:      inner(X, T) = sum(X * T_raw) - mu * sum(X)
+    where mu = T_raw_mean and T = T_raw - mu (i.e., what get_T() would return). Both identities were verified
+    numerically against get_T()-based batch computation (max abs error ~1e-13, i.e., floating-point noise).
+
+    Parameters
+    ----------
+    X_chunk: NDArray
+        The new chunk of (spatially filtered) signal of shape (n_trials, n_new_samples).
+    T_raw_chunk: NDArray
+        The corresponding new chunk of the template, not yet de-meaned (see _get_T_raw()), of shape
+        (n_classes, n_new_samples).
+    T_raw_mean: NDArray
+        The mean of the not-yet-de-meaned template over the full window observed so far (i.e., what get_T()'s
+        de-meaning would subtract), of shape (1, n_classes). Only used for score_metric in {"euclidean", "inner"}.
+    score_metric: str
+        The score metric: correlation, euclidean, inner.
+    state: dict (default: None)
+        The running state returned by a previous call, or None for the first chunk of a new sequence.
+
+    Returns
+    -------
+    scores: NDArray
+        The similarity scores of shape (n_trials, n_classes), cumulative over all chunks observed so far (not just
+        the new chunk).
+    state: dict
+        The updated running state, to pass as state on the next call.
+    """
+    state = {} if state is None else state
+
+    if score_metric.lower() == "correlation":
+        if X_chunk.shape[1] == 0:
+            # A zero-sample chunk carries no information; short-circuit rather than feed an empty array into
+            # covariance()'s running update, which (unlike euclidean()/inner(), for which summing zero samples is
+            # a well-defined, warning-free no-op) would corrupt the running mean/covariance with NaN (its mean of
+            # the empty new observation is NaN, and NaN * 0 is still NaN, not the "no change" one might expect).
+            n_a = X_chunk.shape[0]
+            if state.get("cov") is None:
+                return np.full((n_a, T_raw_chunk.shape[0]), np.nan), state
+            cov = state["cov"]
+            var_a = np.diag(cov)[:n_a, np.newaxis]
+            var_b = np.diag(cov)[np.newaxis, n_a:]
+            scores = cov[:n_a, n_a:] / np.sqrt(var_a * var_b)
+            return scores, state
+        scores, n, avg, cov = correlation(
+            X_chunk, T_raw_chunk, state.get("n", 0), state.get("avg"), state.get("cov"), running=True
+        )
+        return scores, {"n": n, "avg": avg, "cov": cov}
+
+    sum_x_obs = X_chunk.sum(axis=1, keepdims=True)
+    sum_x = sum_x_obs if state.get("sum_x") is None else state["sum_x"] + sum_x_obs
+    sum_t_obs = T_raw_chunk.sum(axis=1, keepdims=True).T
+    sum_t = sum_t_obs if state.get("sum_t") is None else state["sum_t"] + sum_t_obs
+    n_obs = state.get("n", 0) + X_chunk.shape[1]
+
+    if score_metric.lower() == "euclidean":
+        _, sum_xx, sum_tt, sum_xt = euclidean(
+            X_chunk, T_raw_chunk, state.get("sum_xx"), state.get("sum_tt"), state.get("sum_xt"), running=True
+        )
+        d2 = (sum_xx - 2 * sum_xt + sum_tt) + 2 * T_raw_mean * (sum_x - sum_t) + n_obs * T_raw_mean**2
+        scores = np.sqrt(np.clip(d2, 0, None))
+        return scores, {
+            "n": n_obs,
+            "sum_x": sum_x,
+            "sum_t": sum_t,
+            "sum_xx": sum_xx,
+            "sum_tt": sum_tt,
+            "sum_xt": sum_xt,
+        }
+
+    elif score_metric.lower() == "inner":
+        sum_xt = inner(X_chunk, T_raw_chunk, state.get("sum_xt"), running=True)
+        scores = sum_xt - T_raw_mean * sum_x
+        return scores, {"n": n_obs, "sum_x": sum_x, "sum_t": sum_t, "sum_xt": sum_xt}
+
+    else:
+        raise Exception(f"Unknown score metric: {score_metric}")
 
 
 class eCCA(ClassifierMixin, BaseEstimator):
@@ -44,7 +149,11 @@ class eCCA(ClassifierMixin, BaseEstimator):
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
     ensemble: bool (default: False)
-        Whether to use an ensemble classifier, that is, a separate spatial filter for each class.
+        Whether to use an ensemble classifier, that is, a separate spatial filter for each class. Note, each filter
+        is then fit on only that class's trials, so its covariance matrices are estimated from substantially less
+        data than in the non-ensemble case; this can make them singular or too ill-conditioned to invert, especially
+        with few trials per class or many channels/features. If this occurs, set gamma_x/gamma_t or alpha_x/alpha_t
+        to regularize the covariance matrix.
     cov_estimator_x: BaseEstimator (default: None)
         A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
         empirical covariance is used.
@@ -85,6 +194,7 @@ class eCCA(ClassifierMixin, BaseEstimator):
     cca_: list[TransformerMixin]
     w_: NDArray
     T_: NDArray
+    _running_: dict = None
 
     def __init__(
         self,
@@ -156,55 +266,113 @@ class eCCA(ClassifierMixin, BaseEstimator):
     def decision_function(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """Apply the classifier to get classification scores for X.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call (not the full trial), see running below.
+        running: bool (default: False)
+            Whether to use running (incremental) scoring. If False (default), decision_function behaves exactly as
+            without this parameter: X is the complete trial data seen so far, and everything is recomputed from
+            scratch. If True, X is only the newly observed samples since the previous call, and a running state
+            (kept internally, not a fitted attribute) is reused and updated; this is much cheaper when called
+            repeatedly on a growing trial, e.g. from a dynamic stopping simulation loop, since each call only does
+            O(n_new_samples) work instead of reprocessing the whole trial. Use reset=True on the first call of a
+            new running sequence (e.g. for a new trial or a new batch of trials); the running state is otherwise
+            unaffected by (and does not affect) running=False calls, and is cleared by fit(). Only supported for
+            ensemble=False.
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call. Only relevant if
+            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set
+            explicitly to start a new sequence before the previous one naturally ended.
 
         Returns
         -------
         scores: NDArray
             The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if
-            n_components=1 and squeeze_components=True.
+            n_components=1 and squeeze_components=True. If running=True, this is the cumulative score over all
+            samples observed so far in the running sequence (not just the new chunk).
         """
         check_is_fitted(self)
 
-        # Set templates to trial length
-        T = self.get_T(X.shape[2])
+        if not running:
+            # Set templates to trial length
+            T = self.get_T(X.shape[2])
 
-        # Compute scores
-        scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
-        if self.ensemble:
-            for i_class in range(T.shape[0]):
-                Xi = self.cca_[i_class].transform(X=X)[0]
+            # Compute scores
+            scores = np.zeros((X.shape[0], T.shape[0], self.n_components))
+            if self.ensemble:
+                for i_class in range(T.shape[0]):
+                    Xi = self.cca_[i_class].transform(X=X)[0]
+                    for i_component in range(self.n_components):
+                        if self.score_metric.lower() == "correlation":
+                            scores[:, i_class, i_component] = correlation(
+                                Xi[:, i_component, :], T[i_class, i_component, :]
+                            )[:, 0]
+                        elif self.score_metric.lower() == "euclidean":
+                            scores[:, i_class, i_component] = (
+                                1 / (1 + euclidean(Xi[:, i_component, :], T[i_class, i_component, :]))[:, 0]
+                            )
+                        elif self.score_metric.lower() == "inner":
+                            scores[:, i_class, i_component] = np.inner(
+                                Xi[:, i_component, :], T[i_class, i_component, :]
+                            )
+                        else:
+                            raise Exception(f"Unknown score metric: {self.score_metric}")
+
+            else:
+                X = self.cca_[0].transform(X=X)[0]
                 for i_component in range(self.n_components):
                     if self.score_metric.lower() == "correlation":
-                        scores[:, i_class, i_component] = correlation(
-                            Xi[:, i_component, :], T[i_class, i_component, :]
-                        )[:, 0]
-                    elif self.score_metric.lower() == "euclidean":
-                        scores[:, i_class, i_component] = (
-                            1 / (1 + euclidean(Xi[:, i_component, :], T[i_class, i_component, :]))[:, 0]
-                        )
+                        scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
+                    elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
+                        scores[:, :, i_component] = 1 / (1 + euclidean(X[:, i_component, :], T[:, i_component, :]))
                     elif self.score_metric.lower() == "inner":
-                        scores[:, i_class, i_component] = np.inner(Xi[:, i_component, :], T[i_class, i_component, :])
+                        scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
                     else:
                         raise Exception(f"Unknown score metric: {self.score_metric}")
 
-        else:
-            X = self.cca_[0].transform(X=X)[0]
-            for i_component in range(self.n_components):
-                if self.score_metric.lower() == "correlation":
-                    scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
-                elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
-                    scores[:, :, i_component] = 1 / (1 + euclidean(X[:, i_component, :], T[:, i_component, :]))
-                elif self.score_metric.lower() == "inner":
-                    scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
-                else:
-                    raise Exception(f"Unknown score metric: {self.score_metric}")
+            if self.n_components == 1 and self.squeeze_components:
+                scores = scores[:, :, 0]
+
+            return scores
+
+        assert not self.ensemble, "running=True decision_function is not supported for ensemble=True."
+
+        if reset or self._running_ is None:
+            self._running_ = {"n_trials": X.shape[0], "n_samples": 0, "component_state": [None] * self.n_components}
+        assert X.shape[0] == self._running_["n_trials"], (
+            f"running=True decision_function was called with {X.shape[0]} trials, but the running sequence was "
+            f"started (or last continued) with {self._running_['n_trials']}; call with reset=True to start a new "
+            f"sequence."
+        )
+
+        Xf = self.cca_[0].transform(X=X)[0]
+        n_prev = self._running_["n_samples"]
+        n_new = self._running_["n_samples"] + X.shape[2]
+        assert n_new > 0, "running=True decision_function requires at least 1 sample on the first call of a sequence."
+        scores = np.zeros((X.shape[0], len(self.classes_), self.n_components))
+        for i_component in range(self.n_components):
+            T_raw_full = self._get_T_raw(n_new)[:, i_component, :]
+            T_raw_chunk = T_raw_full[:, n_prev:n_new]
+            T_raw_mean = T_raw_full.mean(axis=1, keepdims=True).T
+
+            component_scores, self._running_["component_state"][i_component] = _running_score(
+                Xf[:, i_component, :],
+                T_raw_chunk,
+                T_raw_mean,
+                self.score_metric,
+                self._running_["component_state"][i_component],
+            )
+            if self.score_metric.lower() == "euclidean":  # includes conversion to similarity
+                component_scores = 1 / (1 + component_scores)
+            scores[:, :, i_component] = component_scores
+        self._running_["n_samples"] = n_new
 
         if self.n_components == 1 and self.squeeze_components:
             scores = scores[:, :, 0]
@@ -315,8 +483,33 @@ class eCCA(ClassifierMixin, BaseEstimator):
             self.T_ = self.cca_[0].transform(T)[0]
 
         self.classes_ = np.arange(n_classes)
+        self._running_ = None
         self._is_fitted = True
         return self
+
+    def _get_T_raw(
+        self,
+        n_samples: int = None,
+    ) -> NDArray:
+        """Get the templates, tiled to the requested length, without the de-meaning applied by get_T(). Used by
+        get_T() itself, and by the running (running=True) path of decision_function(), which needs to apply the
+        equivalent of get_T()'s de-meaning as a cheap correction at query time (see decision_function()), since the
+        de-meaned values are not simply appendable as n_samples grows (the mean itself changes).
+
+        Parameters
+        ----------
+        n_samples: int (default: None)
+            The number of samples requested. If None, one code cycle is given.
+
+        Returns
+        -------
+        T: NDArray
+            The (not de-meaned) templates of shape (n_classes, n_components, n_samples).
+        """
+        if n_samples is None or self.T_.shape[2] == n_samples:
+            return self.T_.copy()
+        n = int(np.ceil(n_samples / self.T_.shape[2]))
+        return np.tile(self.T_, (1, 1, n))[:, :, :n_samples]
 
     def get_T(
         self,
@@ -334,24 +527,27 @@ class eCCA(ClassifierMixin, BaseEstimator):
         T: NDArray
             The templates of shape (n_classes, n_components, n_samples).
         """
-        if n_samples is None or self.T_.shape[2] == n_samples:
-            T = self.T_.copy()
-        else:
-            n = int(np.ceil(n_samples / self.T_.shape[2]))
-            T = np.tile(self.T_, (1, 1, n))[:, :, :n_samples]
+        T = self._get_T_raw(n_samples)
         T -= T.mean(axis=2, keepdims=True)
         return T
 
     def predict(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """The testing procedure to apply eCCA to novel EEG data.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call, see decision_function().
+        running: bool (default: False)
+            Whether to use running (incremental) scoring, see decision_function().
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call, see decision_function().
 
         Returns
         -------
@@ -360,7 +556,7 @@ class eCCA(ClassifierMixin, BaseEstimator):
             squeeze_components=True.
         """
         check_is_fitted(self)
-        return np.argmax(self.decision_function(X), axis=1)
+        return np.argmax(self.decision_function(X, running=running, reset=reset), axis=1)
 
     def __sklearn_is_fitted__(self) -> bool:
         """Check fitted status and return a Boolean value.
@@ -523,7 +719,11 @@ class rCCA(ClassifierMixin, BaseEstimator):
         The raster latencies of each of the classes of shape (n_classes,) that the data/templates need to be corrected
         for.
     ensemble: bool (default: False)
-        Whether to use an ensemble classifier, that is, a separate spatial filter for each class.
+        Whether to use an ensemble classifier, that is, a separate spatial filter for each class. Note, each filter
+        is then fit on only that class's trials, so its covariance matrices are estimated from substantially less
+        data than in the non-ensemble case; this can make them singular or too ill-conditioned to invert, especially
+        with a wide encoding matrix (multiple events and/or a long encoding_length) relative to the trial length. If
+        this occurs, set gamma_x/gamma_m or alpha_x/alpha_m to regularize the covariance matrix.
     amplitudes: NDArray (default: None)
         The amplitude of the stimulus of shape (n_classes, n_samples). Should be sampled at fs.
     gamma_x: float | list[float] | NDArray (default: None)
@@ -601,6 +801,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
     Mw_: NDArray
     Ts_: NDArray
     Tw_: NDArray
+    _running_: dict = None
 
     def __init__(
         self,
@@ -662,67 +863,182 @@ class rCCA(ClassifierMixin, BaseEstimator):
         decoding_stride = 1 / self.fs if self.decoding_stride is None else self.decoding_stride
         return decoding_length, decoding_stride
 
+    def _get_T_full(
+        self,
+        n_samples: int,
+    ) -> NDArray:
+        """Get the templates, tiled (Ts_ followed by repeated Tw_) to the requested length. Used by decision_function()
+        for both the batch and the running path, since (unlike eCCA's get_T()) no de-meaning is applied here, so a
+        chunk at any given position range has the same value regardless of how many more samples are requested.
+
+        Parameters
+        ----------
+        n_samples: int
+            The number of samples requested.
+
+        Returns
+        -------
+        T: NDArray
+            The templates of shape (n_classes, n_components, n_samples).
+        """
+        if n_samples < self.Ts_.shape[2]:
+            T = self.Ts_
+        else:
+            T = np.concatenate((self.Ts_, np.tile(self.Tw_, (1, 1, n_samples // self.Ts_.shape[2]))), axis=2)
+        return T[:, :, :n_samples]
+
     def decision_function(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """Apply the classifier to get classification scores for X.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call (not the full trial), see running below.
+        running: bool (default: False)
+            Whether to use running (incremental) scoring. If False (default), decision_function behaves exactly as
+            without this parameter: X is the complete trial data seen so far, and everything is recomputed from
+            scratch. If True, X is only the newly observed samples since the previous call, and a running state
+            (kept internally, not a fitted attribute) is reused and updated; this is much cheaper when called
+            repeatedly on a growing trial, e.g. from a dynamic stopping simulation loop, since each call only does
+            O(n_new_samples) work instead of reprocessing the whole trial (this includes decoding_matrix's spatio-
+            spectral filtering, not just the final score). Use reset=True on the first call of a new running
+            sequence (e.g. for a new trial or a new batch of trials); the running state is otherwise unaffected by
+            (and does not affect) running=False calls, and is cleared by fit(). Only supported for ensemble=False.
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call. Only relevant if
+            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set
+            explicitly to start a new sequence before the previous one naturally ended.
 
         Returns
         -------
         scores: NDArray
             The similarity scores of shape (n_trials, n_classes, n_components) or (n_trials, n_classes) if
-            n_components=1 and squeeze_components=True.
+            n_components=1 and squeeze_components=True. If running=True, this is the cumulative score over all
+            samples observed so far in the running sequence (not just the new chunk).
         """
         check_is_fitted(self)
 
-        # Set decoding matrix
-        decoding_length, decoding_stride = self._resolve_decoding_length_stride()
-        if int(decoding_length * self.fs) > 1:
-            X = decoding_matrix(X, int(decoding_length * self.fs), int(decoding_stride * self.fs))
+        if not running:
+            # Set decoding matrix
+            decoding_length, decoding_stride = self._resolve_decoding_length_stride()
+            if int(decoding_length * self.fs) > 1:
+                X = decoding_matrix(X, int(decoding_length * self.fs), int(decoding_stride * self.fs))
 
-        # Set templates to trial length
-        if X.shape[2] < self.Ts_.shape[2]:
-            T = self.Ts_
-        else:
-            T = np.concatenate((self.Ts_, np.tile(self.Tw_, (1, 1, X.shape[2] // self.Ts_.shape[2]))), axis=2)
-        T = T[:, :, : X.shape[2]]
+            # Set templates to trial length
+            T = self._get_T_full(X.shape[2])
 
-        # Compute scores
-        scores = np.zeros((X.shape[0], T.shape[0], self.n_components), dtype="float32")
-        if self.ensemble:
-            for i_class in range(T.shape[0]):
-                Xi = self.cca_[i_class].transform(X=X)[0]
+            # Compute scores
+            scores = np.zeros((X.shape[0], T.shape[0], self.n_components), dtype="float32")
+            if self.ensemble:
+                for i_class in range(T.shape[0]):
+                    Xi = self.cca_[i_class].transform(X=X)[0]
+                    for i_component in range(self.n_components):
+                        if self.score_metric.lower() == "correlation":
+                            scores[:, i_class, i_component] = correlation(
+                                Xi[:, i_component, :], T[i_class, i_component, :]
+                            )[:, 0]
+                        elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
+                            scores[:, i_class, i_component] = (
+                                1 / (1 + euclidean(Xi[:, i_component, :], T[i_class, i_component, :]))[:, 0]
+                            )
+                        elif self.score_metric.lower() == "inner":
+                            scores[:, i_class, i_component] = np.inner(
+                                Xi[:, i_component, :], T[i_class, i_component, :]
+                            )
+                        else:
+                            raise Exception(f"Unknown score metric: {self.score_metric}")
+
+            else:
+                X = self.cca_[0].transform(X=X)[0]
                 for i_component in range(self.n_components):
                     if self.score_metric.lower() == "correlation":
-                        scores[:, i_class, i_component] = correlation(
-                            Xi[:, i_component, :], T[i_class, i_component, :]
-                        )[:, 0]
+                        scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
                     elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
-                        scores[:, i_class, i_component] = (
-                            1 / (1 + euclidean(Xi[:, i_component, :], T[i_class, i_component, :]))[:, 0]
-                        )
+                        scores[:, :, i_component] = 1 / (1 + euclidean(X[:, i_component, :], T[:, i_component, :]))
                     elif self.score_metric.lower() == "inner":
-                        scores[:, i_class, i_component] = np.inner(Xi[:, i_component, :], T[i_class, i_component, :])
+                        scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
                     else:
                         raise Exception(f"Unknown score metric: {self.score_metric}")
 
+            if self.n_components == 1 and self.squeeze_components:
+                scores = scores[:, :, 0]
+
+            return scores
+
+        assert not self.ensemble, "running=True decision_function is not supported for ensemble=True."
+
+        if reset or self._running_ is None:
+            decoding_length, decoding_stride = self._resolve_decoding_length_stride()
+            length = int(decoding_length * self.fs)
+            stride = int(decoding_stride * self.fs)
+            self._running_ = {
+                "n_trials": X.shape[0],
+                "n_samples": 0,
+                "n_stable": 0,
+                "length": length if length > 1 else 1,
+                "stride": stride if length > 1 else 1,
+                "raw_buffer": None,
+                "component_state": [None] * self.n_components,
+            }
+        r = self._running_
+        assert X.shape[0] == r["n_trials"], (
+            f"running=True decision_function was called with {X.shape[0]} trials, but the running sequence was "
+            f"started (or last continued) with {r['n_trials']}; call with reset=True to start a new sequence."
+        )
+        assert r["n_samples"] + X.shape[2] > 0, (
+            "running=True decision_function requires at least 1 sample on the first call of a sequence."
+        )
+
+        # Extend the raw buffer with the new chunk, and run decoding_matrix (if used) over [buffer + new chunk]. Only
+        # the leading part of this local, bounded-size window is far enough from the trailing (still unobserved)
+        # edge to be unaffected by future samples (i.e., "stable"); see decision_function docstring.
+        boundary = r["length"] - r["stride"]
+        raw = X if r["raw_buffer"] is None else np.concatenate((r["raw_buffer"], X), axis=2)
+        if r["length"] > 1:
+            Xd = decoding_matrix(raw, r["length"], r["stride"])
         else:
-            X = self.cca_[0].transform(X=X)[0]
-            for i_component in range(self.n_components):
-                if self.score_metric.lower() == "correlation":
-                    scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
-                elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
-                    scores[:, :, i_component] = 1 / (1 + euclidean(X[:, i_component, :], T[:, i_component, :]))
-                elif self.score_metric.lower() == "inner":
-                    scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
-                else:
-                    raise Exception(f"Unknown score metric: {self.score_metric}")
+            Xd = raw
+        Xf = self.cca_[0].transform(X=Xd)[0]
+        n_stable_new = max(0, r["n_samples"] + X.shape[2] - boundary)
+        n_local_stable = n_stable_new - r["n_stable"]
+        r["raw_buffer"] = raw[:, :, raw.shape[2] - min(boundary, raw.shape[2]) :]
+
+        scores = np.zeros((X.shape[0], len(self.classes_), self.n_components), dtype="float32")
+        T_zero_mean = np.zeros((1, len(self.classes_)))
+        for i_component in range(self.n_components):
+            T_chunk = self._get_T_full(n_stable_new)[:, i_component, r["n_stable"] : n_stable_new]
+            # Only the updated state is used here, not the returned scores: a newly-stabilized chunk can be as
+            # small as a single sample (whenever n_stable just crossed into positive territory), which for
+            # score_metric="correlation" can make its (immediately discarded) instantaneous correlation degenerate
+            # (0/0, from too few samples to estimate a variance) without affecting the (still exact) running state.
+            with np.errstate(invalid="ignore"):
+                _, r["component_state"][i_component] = _running_score(
+                    Xf[:, i_component, :n_local_stable],
+                    T_chunk,
+                    T_zero_mean,
+                    self.score_metric,
+                    r["component_state"][i_component],
+                )
+            # Combine the (committed) stable state with the (uncommitted) provisional tail for this query's answer
+            T_tail = self._get_T_full(r["n_samples"] + X.shape[2])[:, i_component, n_stable_new:]
+            component_scores, _ = _running_score(
+                Xf[:, i_component, n_local_stable:],
+                T_tail,
+                T_zero_mean,
+                self.score_metric,
+                r["component_state"][i_component],
+            )
+            if self.score_metric.lower() == "euclidean":  # includes conversion to similarity
+                component_scores = 1 / (1 + component_scores)
+            scores[:, :, i_component] = component_scores
+        r["n_samples"] += X.shape[2]
+        r["n_stable"] = n_stable_new
 
         if self.n_components == 1 and self.squeeze_components:
             scores = scores[:, :, 0]
@@ -810,13 +1126,20 @@ class rCCA(ClassifierMixin, BaseEstimator):
     def predict(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """The testing procedure to apply rCCA to novel EEG data.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call, see decision_function().
+        running: bool (default: False)
+            Whether to use running (incremental) scoring, see decision_function().
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call, see decision_function().
 
         Returns
         -------
@@ -825,7 +1148,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
             squeeze_components=True.
         """
         check_is_fitted(self)
-        return np.argmax(self.decision_function(X), axis=1)
+        return np.argmax(self.decision_function(X, running=running, reset=reset), axis=1)
 
     def set_encoding_matrix(
         self,
@@ -867,6 +1190,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
                 T = self.cca_[0].transform(X=None, Y=M)[1]
             self.Ts_ = T[:, :, : self.stimulus.shape[1]]
             self.Tw_ = T[:, :, self.stimulus.shape[1] :]
+            self._running_ = None
         except NotFittedError:
             pass
 

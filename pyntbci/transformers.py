@@ -2,11 +2,86 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.linalg import sqrtm, svd, inv
+from scipy.linalg import svd, inv, eigh, LinAlgError
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from pyntbci.utilities import covariance, pinv
+
+
+def _ill_conditioned_message(name: str, shape: tuple) -> str:
+    """Build an error message for a singular or too ill-conditioned covariance matrix.
+
+    Parameters
+    ----------
+    name: str
+        The name of the side ("X" or "Y") the covariance matrix was derived from.
+    shape: tuple
+        The shape of the covariance matrix.
+
+    Returns
+    -------
+    message: str
+        The error message.
+    """
+    other = "y" if name.lower() == "x" else "x"
+    return (
+        f"The {name} covariance matrix of shape {shape} is singular or too ill-conditioned to invert. This usually "
+        f"means there is too little data relative to the number of features, e.g. when fitting a separate CCA per "
+        f"class on a small per-class subset of the data (ensemble=True in eCCA/rCCA). Consider setting "
+        f"gamma_{name.lower()}/alpha_{name.lower()} (or gamma_{other}/alpha_{other} if the other side is the "
+        f"problem) to regularize the covariance matrix, or providing more training data."
+    )
+
+
+def _sym_sqrt(M: NDArray, name: str = "X") -> NDArray:
+    """Compute the square root of a symmetric positive semi-definite matrix via its eigendecomposition. Equivalent
+    to scipy.linalg.sqrtm(M) for such matrices, but exploits symmetry to be faster, more numerically stable, and
+    guaranteed real (avoiding the small imaginary numerical noise that the general-purpose scipy.linalg.sqrtm can
+    introduce). Also checks, using the already-computed eigenvalues, that M is not so ill-conditioned that inverting
+    it has produced a numerically corrupted (i.e., no longer positive semi-definite) result.
+
+    Parameters
+    ----------
+    M: NDArray
+        A symmetric positive semi-definite matrix of shape (n, n).
+    name: str (default: "X")
+        The name of the side ("X" or "Y") that M was derived from, used only to phrase the error message if M turns
+        out not to be (numerically) positive semi-definite.
+
+    Returns
+    -------
+    sqrtM: NDArray
+        The square root of M of shape (n, n), such that sqrtM @ sqrtM == M.
+    """
+    w, V = eigh(M)
+    if w.min() < -1e-8 * w.max():
+        raise LinAlgError(_ill_conditioned_message(name, M.shape))
+    w = np.clip(w, 0, None)
+    return (V * np.sqrt(w)) @ V.T
+
+
+def _safe_inv(C: NDArray, name: str) -> NDArray:
+    """Invert a covariance matrix, raising a clear, actionable error instead of a bare "singular matrix" if it
+    cannot be inverted.
+
+    Parameters
+    ----------
+    C: NDArray
+        A covariance matrix of shape (n, n) to invert.
+    name: str
+        The name of the side ("X" or "Y") that C was derived from, used only to phrase the error message if C turns
+        out to be singular.
+
+    Returns
+    -------
+    iC: NDArray
+        The inverse of C of shape (n, n).
+    """
+    try:
+        return inv(C)
+    except LinAlgError as e:
+        raise LinAlgError(_ill_conditioned_message(name, C.shape)) from e
 
 
 class CCA(TransformerMixin, BaseEstimator):
@@ -145,35 +220,37 @@ class CCA(TransformerMixin, BaseEstimator):
         Cyy = self.cov_y_
         Cxy = self.cov_xy_[: X.shape[1], X.shape[1] :]
 
-        # Regularization
+        # Regularization. Shrink towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the
+        # result stays symmetric for a per-feature gamma (for scalar gamma this is identical to (1 - gamma) * Cxx,
+        # since both terms are then equal).
         if self.gamma_x is not None:
             nu_x = np.trace(Cxx) / Cxx.shape[1]
-            if isinstance(self.gamma_x, int) or isinstance(self.gamma_x, float):
+            if isinstance(self.gamma_x, (int, float)):
                 gamma_x = np.full(Cxx.shape[1], self.gamma_x)
-            elif np.array(self.gamma_x).ndim == 1:
-                gamma_x = np.array(self.gamma_x)[np.newaxis, :]
             else:
-                gamma_x = self.gamma_x
-            Cxx = (1 - gamma_x) * Cxx + nu_x * np.diag(gamma_x)
+                gamma_x = np.asarray(self.gamma_x).flatten()
+            Cxx = 0.5 * ((1 - gamma_x)[:, np.newaxis] * Cxx + Cxx * (1 - gamma_x)[np.newaxis, :]) + nu_x * np.diag(
+                gamma_x
+            )
         if self.gamma_y is not None:
             nu_y = np.trace(Cyy) / Cyy.shape[1]
-            if isinstance(self.gamma_y, int) or isinstance(self.gamma_y, float):
+            if isinstance(self.gamma_y, (int, float)):
                 gamma_y = np.full(Cyy.shape[1], self.gamma_y)
-            elif np.array(self.gamma_y).ndim == 1:
-                gamma_y = np.array(self.gamma_y)[np.newaxis, :]
             else:
-                gamma_y = self.gamma_y
-            Cyy = (1 - gamma_y) * Cyy + nu_y * np.diag(gamma_y)
+                gamma_y = np.asarray(self.gamma_y).flatten()
+            Cyy = 0.5 * ((1 - gamma_y)[:, np.newaxis] * Cyy + Cyy * (1 - gamma_y)[np.newaxis, :]) + nu_y * np.diag(
+                gamma_y
+            )
 
         # Inverse square root
         if self.alpha_x is None:
-            iCxx = np.real(sqrtm(inv(Cxx)))
+            iCxx = _sym_sqrt(_safe_inv(Cxx, "X"), name="X")
         else:
-            iCxx = np.real(sqrtm(pinv(Cxx, self.alpha_x)))
+            iCxx = _sym_sqrt(pinv(Cxx, self.alpha_x), name="X")
         if self.alpha_y is None:
-            iCyy = np.real(sqrtm(inv(Cyy)))
+            iCyy = _sym_sqrt(_safe_inv(Cyy, "Y"), name="Y")
         else:
-            iCyy = np.real(sqrtm(pinv(Cyy, self.alpha_y)))
+            iCyy = _sym_sqrt(pinv(Cyy, self.alpha_y), name="Y")
 
         # SVD
         U, self.rho_, V = svd(iCxx @ Cxy @ iCyy)
@@ -323,19 +400,13 @@ class CCA(TransformerMixin, BaseEstimator):
         Y: NDArray
             Projected data matrix of shape (n_trials, n_components, n_samples).
         """
+        # Batched matmul: (n_components, n_features) @ (n_trials, n_features, n_samples) broadcasts the weight
+        # matrix across trials, avoiding the transpose+reshape (and the copy it forces) needed to route through
+        # _transform_X2D.
         if X is not None:
-            n_trials, n_features_x, n_samples = X.shape
-            X = X.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_x))
+            X = self.w_x_.T @ (X - self.avg_x_[:, :, np.newaxis])
         if Y is not None:
-            n_trials, n_features_y, n_samples = Y.shape
-            Y = Y.transpose((0, 2, 1)).reshape((n_trials * n_samples, n_features_y))
-
-        X, Y = self._transform_X2D(X, Y)
-
-        if X is not None:
-            X = X.reshape((n_trials, n_samples, self.n_components)).transpose(0, 2, 1)
-        if Y is not None:
-            Y = Y.reshape((n_trials, n_samples, self.n_components)).transpose(0, 2, 1)
+            Y = self.w_y_.T @ (Y - self.avg_y_[:, :, np.newaxis])
 
         return X, Y
 

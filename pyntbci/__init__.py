@@ -37,6 +37,6 @@ __author__ = "Jordy Thielen"
 __contact__ = "jordy.thielen@donders.ru.nl"
 __credits__ = "Radboud University; Donders Institute for Brain, Cognition and Behaviour"
 __license__ = "BSD"
-__version__ = "1.8.4"
+__version__ = "1.9.0"
 
 from pyntbci import classifiers, eeg, envelope, gates, plotting, stimulus, stopping, transformers, utilities

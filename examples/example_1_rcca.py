@@ -43,9 +43,8 @@ N_FILTER_BANDS = 4
 ENCODING_LENGTH = 0.3
 SEED = 42
 
-y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
 )
 
 # %%
@@ -257,8 +256,11 @@ for i_fold in range(n_folds):
 
     # Loop train trials
     for i_trial in range(n_train_trials):
-        # Train classifier
-        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="duration", encoding_length=0.3, onset_event=True)
+        # Train classifier. Note, gamma_m regularizes the (216-feature) encoding-matrix covariance, which is needed
+        # here because the low end of this learning curve fits on very few trials (down to a single one).
+        rcca = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="duration", encoding_length=0.3, onset_event=True, gamma_m=0.1
+        )
         rcca.fit(X_trn[: train_trials[i_trial], :, :], y_trn[: train_trials[i_trial]])
 
         # Apply classifier

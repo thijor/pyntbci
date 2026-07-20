@@ -49,9 +49,8 @@ N_FILTER_BANDS = 4
 ENCODING_LENGTH = 0.3
 SEED = 42
 
-y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
 )
 
 # %%

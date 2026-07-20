@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
+from scipy.spatial.distance import cdist
 
 
 EVENTS = ("id", "on", "off", "onoff", "dur", "re", "fe", "refe", "diff", "diffsplit")
@@ -50,7 +51,11 @@ def correct_latency(
 def correlation(
     A: NDArray,
     B: NDArray,
-) -> NDArray:
+    n_old: int = 0,
+    avg_old: NDArray = None,
+    cov_old: NDArray = None,
+    running: bool = False,
+) -> Union[NDArray, tuple[NDArray, int, NDArray, NDArray]]:
     """Compute the correlation coefficient. Computed between two sets of variables.
 
     Parameters
@@ -59,11 +64,30 @@ def correlation(
         The first set of variables of shape (n_A, n_samples).
     B: NDArray
         The second set of variables of shape (n_B, n_samples).
+    n_old: int (default: 0)
+        Number of already observed samples. Only used if running=True.
+    avg_old: NDArray (default: None)
+        Already observed average of concat(A, B) of shape (1, n_A + n_B). Only used if running=True.
+    cov_old: NDArray (default: None)
+        Already observed covariance of concat(A, B) of shape (n_A + n_B, n_A + n_B). Only used if running=True.
+    running: bool (default: False)
+        Whether to use a running correlation, adding samples to a previously accumulated covariance rather than
+        recomputing from scratch. If True, A and B are taken to be only the newly observed samples (not the full
+        history), and n_old/avg_old/cov_old the state accumulated so far (as returned by a previous call); use
+        n_old=0 (default) for the first call in a sequence. Internally reuses covariance() (see its running=True
+        mode) on concat(A, B), since correlation is simply covariance normalized by the two variances, so it is
+        exactly as numerically stable as covariance()'s own running mode.
 
     Returns
     -------
     scores: NDArray
         The correlation matrix of shape (n_A, n_B).
+    n_new: int
+        Number of samples. Only returned if running=True.
+    avg_new: NDArray
+        The average of concat(A, B) of shape (1, n_A + n_B). Only returned if running=True.
+    cov_new: NDArray
+        The covariance of concat(A, B) of shape (n_A + n_B, n_A + n_B). Only returned if running=True.
     """
     if not np.issubdtype(A.dtype, np.floating):
         A = A.astype("float")
@@ -75,14 +99,26 @@ def correlation(
         B = B[np.newaxis, :]
     assert A.shape[1] == B.shape[1], f"Number of samples in A ({A.shape[1]}) does not equal B ({B.shape[1]})"
 
-    A = A - A.mean(axis=1, keepdims=True)
-    B = B - B.mean(axis=1, keepdims=True)
+    if not running:
+        A = A - A.mean(axis=1, keepdims=True)
+        B = B - B.mean(axis=1, keepdims=True)
 
-    ssA = (A**2).sum(axis=1, keepdims=True)
-    ssB = (B**2).sum(axis=1, keepdims=True)
-    scores = A @ B.T / np.sqrt(ssA * ssB.T)
+        ssA = (A**2).sum(axis=1, keepdims=True)
+        ssB = (B**2).sum(axis=1, keepdims=True)
+        scores = A @ B.T / np.sqrt(ssA * ssB.T)
 
-    return scores
+        return scores
+
+    n_a = A.shape[0]
+    n_new, avg_new, cov_new = covariance(
+        np.concatenate((A, B), axis=0).T, n_old, avg_old, cov_old, estimator=None, running=running
+    )
+    cov_ab = cov_new[:n_a, n_a:]
+    var_a = np.diag(cov_new)[:n_a, np.newaxis]
+    var_b = np.diag(cov_new)[np.newaxis, n_a:]
+    scores = cov_ab / np.sqrt(var_a * var_b)
+
+    return scores, n_new, avg_new, cov_new
 
 
 def covariance(
@@ -173,12 +209,15 @@ def decoding_matrix(
     n_trials, n_channels, n_samples = data.shape
     n_windows = int(length / stride)
 
-    # Create Toeplitz structure
+    # Create Toeplitz structure. Pad with zeros at the end so window i can be read as a plain slice starting at
+    # i * stride, instead of rolling (and discarding the wrapped-around part of) the previous window.
+    padded = np.concatenate(
+        (data, np.zeros((n_trials, n_channels, (n_windows - 1) * stride), dtype=data.dtype)), axis=2
+    )
     dmatrix = np.zeros((n_trials, n_windows, n_channels, n_samples), dtype=data.dtype)
-    dmatrix[:, 0, :, :] = data
-    for i_window in range(1, n_windows):
-        dmatrix[:, i_window, :, :] = np.roll(dmatrix[:, i_window - 1, :, :], -stride, axis=2)
-        dmatrix[:, i_window, :, -stride:] = 0
+    for i_window in range(n_windows):
+        idx = i_window * stride
+        dmatrix[:, i_window, :, :] = padded[:, :, idx : idx + n_samples]
 
     # Reshape to channel-prime
     dmatrix = dmatrix.reshape((n_trials, n_windows * n_channels, n_samples))
@@ -267,13 +306,16 @@ def encoding_matrix(
         if amplitude is not None:
             stimulus[:, i_event, :] *= amplitude
 
-        # Create Toeplitz structure
+        # Create Toeplitz structure. Pad with zeros at the start so window i can be read as a plain slice, instead
+        # of rolling (and discarding the wrapped-around part of) the previous window.
         n_windows = int(length[i_event] / stride[i_event])
+        padded = np.concatenate(
+            (np.zeros((n_classes, (n_windows - 1) * stride_), dtype=stimulus.dtype), stimulus[:, i_event, :]), axis=1
+        )
         tmp = np.zeros((n_classes, n_windows, n_samples), dtype=stimulus.dtype)
-        tmp[:, 0, :] = stimulus[:, i_event, :]
-        for i_window in range(1, n_windows):
-            tmp[:, i_window, :] = np.roll(tmp[:, i_window - 1, :], stride_, axis=1)
-            tmp[:, i_window, :stride_] = 0
+        for i_window in range(n_windows):
+            idx = (n_windows - 1 - i_window) * stride_
+            tmp[:, i_window, :] = padded[:, idx : idx + n_samples]
         ematrix.append(tmp)
 
     # Concatenate matrices per event
@@ -295,7 +337,11 @@ def encoding_matrix(
 def euclidean(
     A: NDArray,
     B: NDArray,
-) -> NDArray:
+    sum_aa_old: NDArray = None,
+    sum_bb_old: NDArray = None,
+    sum_ab_old: NDArray = None,
+    running: bool = False,
+) -> Union[NDArray, tuple[NDArray, NDArray, NDArray, NDArray]]:
     """Compute the Euclidean distance. Computed between two sets of variables.
 
     Parameters
@@ -304,11 +350,31 @@ def euclidean(
         The first set of variables of shape (n_A, n_samples).
     B: NDArray
         The second set of variables of shape (n_B, n_samples).
+    sum_aa_old: NDArray (default: None)
+        Already observed sum of A**2 of shape (n_A, 1). Only used if running=True.
+    sum_bb_old: NDArray (default: None)
+        Already observed sum of B**2 of shape (1, n_B). Only used if running=True.
+    sum_ab_old: NDArray (default: None)
+        Already observed sum of A @ B.T of shape (n_A, n_B). Only used if running=True.
+    running: bool (default: False)
+        Whether to use a running Euclidean distance, adding samples to previously accumulated sums rather than
+        recomputing from scratch. If True, A and B are taken to be only the newly observed samples (not the full
+        history), and sum_aa_old/sum_bb_old/sum_ab_old the state accumulated so far (as returned by a previous
+        call); omit them (default None) for the first call in a sequence. Unlike correlation()'s running mode,
+        this does not go through covariance(), since Euclidean distance is defined on the raw (uncentered) values,
+        so there is no mean to track; the three sums below are, by construction, exactly additive across chunks
+        (no correction term is needed, unlike a running mean/covariance), so this is not an approximation.
 
     Returns
     -------
     scores: NDArray
         The distance matrix of shape (n_A, n_B).
+    sum_aa_new: NDArray
+        The sum of A**2 of shape (n_A, 1). Only returned if running=True.
+    sum_bb_new: NDArray
+        The sum of B**2 of shape (1, n_B). Only returned if running=True.
+    sum_ab_new: NDArray
+        The sum of A @ B.T of shape (n_A, n_B). Only returned if running=True.
     """
     if A.ndim == 1:
         A = A[np.newaxis, :]
@@ -316,12 +382,60 @@ def euclidean(
         B = B[np.newaxis, :]
     assert A.shape[1] == B.shape[1], f"Number of samples in A ({A.shape[1]}) does not equal B ({B.shape[1]})"
 
-    scores = np.zeros((A.shape[0], B.shape[0]))
-    for i in range(A.shape[0]):
-        for j in range(B.shape[0]):
-            c = A[i, :] - B[j, :]
-            scores[i, j] = np.sqrt(np.inner(c, c))
-    return scores
+    if not running:
+        return cdist(A, B, metric="euclidean")
+
+    sum_aa_obs = (A**2).sum(axis=1, keepdims=True)
+    sum_bb_obs = (B**2).sum(axis=1, keepdims=True).T
+    sum_ab_obs = A @ B.T
+    sum_aa_new = sum_aa_obs if sum_aa_old is None else sum_aa_old + sum_aa_obs
+    sum_bb_new = sum_bb_obs if sum_bb_old is None else sum_bb_old + sum_bb_obs
+    sum_ab_new = sum_ab_obs if sum_ab_old is None else sum_ab_old + sum_ab_obs
+
+    scores = np.sqrt(np.clip(sum_aa_new - 2 * sum_ab_new + sum_bb_new, 0, None))
+
+    return scores, sum_aa_new, sum_bb_new, sum_ab_new
+
+
+def inner(
+    A: NDArray,
+    B: NDArray,
+    sum_old: NDArray = None,
+    running: bool = False,
+) -> NDArray:
+    """Compute the inner product. Computed between two sets of variables.
+
+    Parameters
+    ----------
+    A: NDArray
+        The first set of variables of shape (n_A, n_samples).
+    B: NDArray
+        The second set of variables of shape (n_B, n_samples).
+    sum_old: NDArray (default: None)
+        Already observed inner product of shape (n_A, n_B). Only used if running=True.
+    running: bool (default: False)
+        Whether to use a running inner product, adding samples to a previously accumulated sum rather than
+        recomputing from scratch. If True, A and B are taken to be only the newly observed samples (not the full
+        history), and sum_old the sum accumulated so far (as returned by a previous call); omit it (default None)
+        for the first call in a sequence. Since the inner product is exactly its own running sum, the returned
+        array is both the current score matrix and the state to pass as sum_old on the next call.
+
+    Returns
+    -------
+    scores: NDArray
+        The inner product matrix of shape (n_A, n_B). If running=True, this is the cumulative inner product over
+        all samples observed so far (i.e., also the state to pass as sum_old next call), not just the new ones.
+    """
+    if A.ndim == 1:
+        A = A[np.newaxis, :]
+    if B.ndim == 1:
+        B = B[np.newaxis, :]
+    assert A.shape[1] == B.shape[1], f"Number of samples in A ({A.shape[1]}) does not equal B ({B.shape[1]})"
+
+    sum_obs = A @ B.T
+    if not running or sum_old is None:
+        return sum_obs
+    return sum_old + sum_obs
 
 
 def event_matrix(
@@ -643,7 +757,7 @@ def find_worst_neighbour(score: NDArray, neighbours: NDArray, layout: NDArray) -
 
 
 def pinv(A: NDArray, alpha: float = None) -> NDArray:
-    """Compute the pseudo-inverse of a matrix.
+    """Compute the (Moore-Penrose) pseudo-inverse of a matrix.
 
     Parameters
     ----------
@@ -655,12 +769,12 @@ def pinv(A: NDArray, alpha: float = None) -> NDArray:
     Returns
     -------
     iA: NDArray
-        The pseudo-inverse of A of shape (n_rows, n_columns).
+        The pseudo-inverse of A of shape (n_columns, n_rows).
     """
     assert A.ndim == 2, "A should be a matrix."
     assert not np.isnan(A).any(), "A should not contains NaNs."
     assert not np.isinf(A).any(), "A should not contains Infs."
-    U, d, V = np.linalg.svd(A, full_matrices=False)
+    U, d, Vh = np.linalg.svd(A, full_matrices=False)
     if alpha is None:
         d = 1 / d
     else:
@@ -669,7 +783,7 @@ def pinv(A: NDArray, alpha: float = None) -> NDArray:
                 d = 1 / d
                 d[d.size - i :] = 0
                 break
-    iA = np.dot(U * d, V)
+    iA = np.dot(Vh.T * d, U.T)
     return iA
 
 

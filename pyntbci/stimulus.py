@@ -99,13 +99,14 @@ def is_gold_code(
     stimulus = stimulus.astype("int8")
     stimulus = 2 * stimulus - 1
 
-    # Compute correlations
-    rho = np.empty((n_classes, n_classes, n_bits))
-    for i in range(n_classes):
-        for j in range(n_classes):
-            for k in range(n_bits):
-                shifted = np.roll(stimulus[i, :], k)
-                rho[i, j, k] = np.sum(stimulus[j, :] * shifted) / n_bits
+    # Compute correlations. Instead of calling np.roll for every shift, concatenate two cycles of the stimulus and
+    # index into it: shift_starts[k] gives the offset at which a plain, contiguous slice of length n_bits equals
+    # np.roll(stimulus, k). This lets all shifts of all classes be gathered and correlated in one vectorized step.
+    doubled = np.concatenate((stimulus, stimulus), axis=1)
+    shift_starts = (n_bits - np.arange(n_bits)) % n_bits
+    idx = shift_starts[:, None] + np.arange(n_bits)[None, :]
+    shifted = doubled[:, idx].astype("int64")
+    rho = np.einsum("jt,ikt->ijk", stimulus.astype("int64"), shifted) / n_bits
 
     # Check correlations
     unique = np.unique(np.round(rho, 6))
@@ -581,7 +582,11 @@ def modulate(
 
 
 def optimize_layout_incremental(
-    X: NDArray, neighbours: NDArray, n_initializations: int = 100, n_iterations: int = 100
+    X: NDArray,
+    neighbours: NDArray,
+    n_initializations: int = 100,
+    n_iterations: int = 100,
+    random_state: Union[int, np.random.Generator] = None,
 ) -> NDArray:
     """Optimize the allocation of codes to a layout by considering the correlation between neighboring codes. This
     method was developed and evaluated as part of [16]_.
@@ -596,6 +601,8 @@ def optimize_layout_incremental(
         The number of random initial layouts to test.
     n_iterations: int (default: 100)
         The maximum number of iterations to improve a specific initial layout.
+    random_state: int | np.random.Generator (default: None)
+        A seed or numpy random number generator to draw the random initial layouts from. If None, a new one is used.
 
     Returns
     -------
@@ -608,6 +615,7 @@ def optimize_layout_incremental(
             re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
     """
     n_codes = X.shape[0]
+    rng = np.random.default_rng(random_state)
 
     def swap_pair(layout_, pair_):
         layout_ = np.copy(layout_)
@@ -621,7 +629,7 @@ def optimize_layout_incremental(
     value = find_worst_neighbour(rho, neighbours, layout)[1]
     for i in range(n_initializations):
         # Random initial layout
-        lay = np.random.permutation(layout)
+        lay = rng.permutation(layout)
 
         for j in range(n_iterations):
             # Find worst neighbours

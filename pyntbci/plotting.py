@@ -71,6 +71,7 @@ def eventplot(
     if events is None:
         ax.set_ylabel("events")
     else:
+        assert len(events) == n_events, "The number of provided events does not match the number of events in E."
         ax.set_ylabel("")
         ax.set_yticks(-1.5 * np.arange(0, 1 + n_events) + 0.5, ("stimulus",) + events)
 
@@ -94,7 +95,7 @@ def stimplot(
     ax: Axes (default: None)
         The axis to plot in. If None, a new figure will be opened.
     upsample: int (default: 20)
-        A scalar value to upsample the stimulus and event time-series with for improved visualization.
+        A scalar value to upsample the stimulus time-series with for improved visualization.
     plotfs: bool (default: True)
         Whether to plot vertical gridlines at the original sampling rate fs.
     labels: list[str] (default: None)
@@ -164,7 +165,7 @@ def topoplot(
 
     # Read electrode positions from .loc file
     with open(locfile) as fid:
-        lines = fid.read().split("\n")
+        lines = [line for line in fid.read().splitlines() if line.strip()]
         xy = np.zeros((len(lines), 2))
         for i, line in enumerate(lines):
             __, t, r, __ = line.split("\t")
@@ -189,10 +190,8 @@ def topoplot(
 
     # Set points outside radius to nan, so they will not be plotted.
     d = xi[1] - xi[0]
-    for i in range(N):
-        for j in range(N):
-            if np.sqrt(xi[i] ** 2 + yi[j] ** 2) + d > 1:
-                zi[j, i] = np.nan
+    mask = np.sqrt(xi[None, :] ** 2 + yi[:, None] ** 2) + d > 1
+    zi[mask] = np.nan
 
     # Make figure
     if ax is None:

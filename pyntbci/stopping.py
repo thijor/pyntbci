@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from numpy.typing import NDArray
 from scipy.stats import beta, norm
@@ -7,6 +9,157 @@ from sklearn.utils.validation import check_is_fitted
 
 import pyntbci.classifiers
 from pyntbci.utilities import itr
+
+
+def _supports_running(estimator: ClassifierMixin) -> bool:
+    """Whether estimator supports running (incremental) decision_function()/predict(), i.e. is an eCCA or rCCA with
+    ensemble=False (see their decision_function() docstrings). Used to decide, in the segment-by-segment loops
+    below, whether to feed the estimator only the newly observed segment each time (cheap) or, for any other
+    estimator (a user-supplied classifier, or ensemble=True), fall back to passing the whole growing prefix and
+    letting it recompute from scratch each time (safe, works for any ClassifierMixin, but O(n_segments^2)).
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The estimator to check.
+
+    Returns
+    -------
+    supported: bool
+        Whether estimator supports running decision_function()/predict().
+    """
+    return isinstance(estimator, (pyntbci.classifiers.eCCA, pyntbci.classifiers.rCCA)) and not getattr(
+        estimator, "ensemble", False
+    )
+
+
+def _iter_segment_scores(
+    estimator: ClassifierMixin,
+    X: NDArray,
+    segment_samples: int,
+    n_segments: int,
+):
+    """Yield (i_segment, scores) for each growing segment of X (i.e., scores as returned by decision_function() on
+    X[:, :, :(1 + i_segment) * segment_samples], for i_segment in range(n_segments)), using running=True (feeding
+    only the newly observed segment, not the whole growing prefix, each time) when estimator supports it (see
+    _supports_running()), and falling back to a from-scratch recompute on the full prefix otherwise.
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The (fitted) estimator to compute segment scores with.
+    X: NDArray
+        The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+    segment_samples: int
+        The size of a segment in samples.
+    n_segments: int
+        The number of segments to yield scores for.
+
+    Yields
+    ------
+    i_segment: int
+        The segment index.
+    scores: NDArray
+        The scores as returned by estimator.decision_function() for the growing prefix up to and including this
+        segment.
+    """
+    use_running = _supports_running(estimator)
+    prev = 0
+    for i_segment in range(n_segments):
+        idx = (1 + i_segment) * segment_samples
+        if use_running:
+            scores = estimator.decision_function(X[:, :, prev:idx], running=True, reset=(i_segment == 0))
+        else:
+            scores = estimator.decision_function(X[:, :, :idx])
+        prev = idx
+        yield i_segment, scores
+
+
+def _iter_segment_predictions(
+    estimator: ClassifierMixin,
+    X: NDArray,
+    segment_samples: int,
+    n_segments: int,
+):
+    """Like _iter_segment_scores(), but yielding (i_segment, yh) from estimator.predict() instead of scores from
+    decision_function().
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The (fitted) estimator to compute segment predictions with.
+    X: NDArray
+        The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+    segment_samples: int
+        The size of a segment in samples.
+    n_segments: int
+        The number of segments to yield predictions for.
+
+    Yields
+    ------
+    i_segment: int
+        The segment index.
+    yh: NDArray
+        The predicted labels as returned by estimator.predict() for the growing prefix up to and including this
+        segment.
+    """
+    use_running = _supports_running(estimator)
+    prev = 0
+    for i_segment in range(n_segments):
+        idx = (1 + i_segment) * segment_samples
+        if use_running:
+            yh = estimator.predict(X[:, :, prev:idx], running=True, reset=(i_segment == 0))
+        else:
+            yh = estimator.predict(X[:, :, :idx])
+        prev = idx
+        yield i_segment, yh
+
+
+def _running_predict(
+    stopping: ClassifierMixin,
+    X_chunk: NDArray,
+    reset: bool,
+    use_decision_function: bool,
+) -> NDArray:
+    """Get cumulative decision_function() (or predict()) results for a growing trial, given only the newest chunk
+    of data each call, for use by a *Stopping class's own predict()'s running=True mode. Works for any wrapped
+    estimator, not just eCCA/rCCA: if the estimator supports running scoring itself (see _supports_running()), the
+    chunk is forwarded directly and the estimator does the incremental work; otherwise, the raw chunks are
+    buffered here (in stopping, not in the estimator) and the estimator recomputes from scratch on the full
+    buffered prefix each call, exactly as if running=False had been used throughout, i.e. still correct, only not
+    faster. Either way, the caller only ever needs to supply the new chunk, and the running state (which estimator
+    predict()/decision_function() calls need, in the fallback case, or how many samples have been observed, in
+    both cases, to resolve the current segment index) lives in stopping._running_.
+
+    Parameters
+    ----------
+    stopping: ClassifierMixin
+        The *Stopping instance whose running state (stopping._running_) to use and update.
+    X_chunk: NDArray
+        The newly observed chunk of EEG data of shape (n_trials, n_channels, n_new_samples).
+    reset: bool
+        Whether to discard any existing running state before processing this call.
+    use_decision_function: bool
+        Whether to call the estimator's decision_function() (True) or predict() (False).
+
+    Returns
+    -------
+    result: NDArray
+        The cumulative decision_function() scores or predict() labels, as if computed from scratch on the full
+        trial observed so far (not just the new chunk).
+    """
+    if reset or stopping._running_ is None:
+        stopping._running_ = {"n_samples": 0, "raw_buffer": None}
+    r = stopping._running_
+    method_name = "decision_function" if use_decision_function else "predict"
+    method = getattr(stopping.estimator, method_name)
+    if _supports_running(stopping.estimator):
+        result = method(X_chunk, running=True, reset=reset)
+    else:
+        r["raw_buffer"] = X_chunk if r["raw_buffer"] is None else np.concatenate((r["raw_buffer"], X_chunk), axis=2)
+        result = method(r["raw_buffer"])
+    r["n_samples"] += X_chunk.shape[2]
+    return result
 
 
 class BayesStopping(ClassifierMixin, BaseEstimator):
@@ -79,6 +232,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
     eta_: NDArray
     pf_: NDArray
     pm_: NDArray
+    _running_: dict = None
 
     def __init__(
         self,
@@ -131,6 +285,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         else:
             self._fit_score(X, y)
 
+        self._running_ = None
         return self
 
     def _fit_template_inner(
@@ -234,9 +389,8 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         self.b1_ = np.zeros(n_segments)
         self.s0_ = np.zeros(n_segments)
         self.s1_ = np.zeros(n_segments)
-        for i_segment in range(n_segments):
-            idx = (1 + i_segment) * int(self.segment_time * self.fs)
-            scores = self.estimator.decision_function(X[:, :, :idx])
+        segment_samples = int(self.segment_time * self.fs)
+        for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
             n_classes = scores.shape[1]
             mask = np.full(scores.shape, False)
             mask[np.arange(y.size), y] = True
@@ -262,13 +416,31 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
     def predict(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using Bayesian dynamic stopping.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call (not the full trial so far), see running below.
+        running: bool (default: False)
+            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without
+            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch
+            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the
+            newly observed samples since the previous call, and a running state (kept internally, not a fitted
+            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or
+            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole
+            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,
+            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or
+            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False
+            calls, and is cleared by fit().
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call. Only relevant if
+            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set
+            explicitly to start a new sequence before the previous one naturally ended.
 
         Returns
         -------
@@ -281,20 +453,32 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         else:
             check_is_fitted(self, ["b0_", "b1_", "s0_", "s1_", "pf_", "pm_"])
 
-        ctime = X.shape[2] / self.fs
+        if running:
+            n_prev = 0 if (reset or self._running_ is None) else self._running_["n_samples"]
+            ctime = (n_prev + X.shape[2]) / self.fs
+        else:
+            ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
+            if running:
+                _running_predict(self, X, reset, use_decision_function=True)  # advance state, result unused
             yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
-            yh = self.estimator.predict(X)
+            if running:
+                yh = _running_predict(self, X, reset, use_decision_function=False)
+            else:
+                yh = self.estimator.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
             i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)
+            if running:
+                scores = _running_predict(self, X, reset, use_decision_function=True)
+            else:
+                scores = self.estimator.decision_function(X)
 
             # Check if stopped
             if self.method == "bds0":
@@ -302,34 +486,37 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
                 not_stopped = np.max(scores, axis=1) <= self.eta_[i_segment]
 
             elif self.method == "bds1":
-                # Change target pf/pd with min/max of learned pf/pd
-                if np.min(self.pf_) > self.target_pf:
-                    self.target_pf = np.min(self.pf_)
-                    print(f"Warning: changed target_pf to {self.target_pf:.3}")
-                if np.min(self.pm_) > 1 - self.target_pd:
-                    self.target_pd = 1 - np.min(self.pm_)
-                    print(f"Warning: changed target_pd to {self.target_pd:.3}")
+                # Change target pf/pd with min/max of learned pf/pd (locally, for this prediction only)
+                target_pf, target_pd = self.target_pf, self.target_pd
+                if np.min(self.pf_) > target_pf:
+                    target_pf = np.min(self.pf_)
+                    warnings.warn(f"target_pf is not reachable, using {target_pf:.3} for this prediction instead.")
+                if np.min(self.pm_) > 1 - target_pd:
+                    target_pd = 1 - np.min(self.pm_)
+                    warnings.warn(f"target_pd is not reachable, using {target_pd:.3} for this prediction instead.")
 
                 # Stop if eta threshold is reached, and if both pf and pd targets are reached
                 c1 = np.max(scores, axis=1) <= self.eta_[i_segment]
-                c2 = self.pf_[i_segment] >= self.target_pf
-                c3 = self.pm_[i_segment] >= (1 - self.target_pd)
+                c2 = self.pf_[i_segment] >= target_pf
+                c3 = self.pm_[i_segment] >= (1 - target_pd)
                 not_stopped = np.logical_or(np.logical_or(c1, c2), c3)
 
             elif self.method == "bds2":
-                # Change target pf/pd with min/max of learned pf/pd
-                if np.min(self.pf_) > self.target_pf:
-                    self.target_pf = np.min(self.pf_)
-                    print(f"Warning: changed target_pf to {self.target_pf:.3}")
-                if np.min(self.pm_) > 1 - self.target_pd:
-                    self.target_pd = 1 - np.min(self.pm_)
-                    print(f"Warning: changed target_pd to {self.target_pd:.3}")
+                # Change target pf/pd with min/max of learned pf/pd (locally, for this prediction only)
+                target_pf, target_pd = self.target_pf, self.target_pd
+                if np.min(self.pf_) > target_pf:
+                    target_pf = np.min(self.pf_)
+                    warnings.warn(f"target_pf is not reachable, using {target_pf:.3} for this prediction instead.")
+                if np.min(self.pm_) > 1 - target_pd:
+                    target_pd = 1 - np.min(self.pm_)
+                    warnings.warn(f"target_pd is not reachable, using {target_pd:.3} for this prediction instead.")
 
                 # Find intersection of target pf and pm to find "optimal" eta
-                idx_pf = np.where(self.pf_ <= self.target_pf)[0]
-                idx_pm = np.where(self.pm_ <= 1 - self.target_pd)[0]
+                idx_pf = np.where(self.pf_ <= target_pf)[0]
+                idx_pm = np.where(self.pm_ <= 1 - target_pd)[0]
                 idx = np.intersect1d(idx_pf, idx_pm)
-                eta = self.eta_[idx[0]]
+                # Fall back to the most conservative (last) segment if no segment satisfies both targets at once
+                eta = self.eta_[idx[0]] if idx.size > 0 else self.eta_[-1]
 
                 # Stop if "optimal" eta is reached
                 not_stopped = np.max(scores, axis=1) <= eta
@@ -384,6 +571,7 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
 
     classes_: NDArray
     stop_time_: float
+    _running_: dict = None
 
     def __init__(
         self,
@@ -432,6 +620,8 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
         n_samples = X.shape[2]
         n_segments = int(n_samples / int(self.segment_time * self.fs))
 
+        assert n_trials >= self.n_folds, "n_trials must be at least n_folds, otherwise some folds have no test data."
+
         folds = np.arange(self.n_folds).repeat(np.ceil(n_trials / self.n_folds))[:n_trials]
         scores = np.zeros((self.n_folds, n_segments), dtype="float32")
 
@@ -444,15 +634,12 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
             # Fit estimator
             self.estimator.fit(X_trn, y_trn)
 
-            for i_segment in range(n_segments):
-                # Predict labels for this segment
-                idx = (1 + i_segment) * int(self.segment_time * self.fs)
-                yh = self.estimator.predict(X_tst[:, :, :idx])
-
+            segment_samples = int(self.segment_time * self.fs)
+            for i_segment, yh in _iter_segment_predictions(self.estimator, X_tst, segment_samples, n_segments):
                 # Compute criterion
-                if self.criterion == "accuracy":
+                if self.criterion.lower() == "accuracy":
                     scores[i_fold, i_segment] = np.mean(yh == y_tst)
-                elif self.criterion == "itr":
+                elif self.criterion.lower() == "itr":
                     # Note, the number of classes does not affect the optimum
                     scores[i_fold, i_segment] = itr(10, np.mean(yh == y_tst), (1 + i_segment) * self.segment_time)
                 else:
@@ -469,32 +656,50 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
         scores = scores.mean(axis=0)
 
         # Optimize the criterion
-        if self.optimization == "max":
+        if self.optimization.lower() == "max":
             self.stop_time_ = (1 + np.argmax(scores)) * self.segment_time
-        elif self.optimization == "target":
+        elif self.optimization.lower() == "target":
             if self.target is None:
                 raise Exception("For optimization target one should set the target")
-            idx = np.where(scores >= self.target)[0]
-            if len(idx) == 0:
-                self.stop_time_ = X.shape[2] / self.fs
+            if np.any(scores >= self.target):
+                self.stop_time_ = (1 + np.argmax(scores >= self.target)) * self.segment_time
             else:
-                self.stop_time_ = (1 + idx[0]) * self.segment_time
+                self.stop_time_ = X.shape[2] / self.fs
         else:
             raise Exception("Unknown optimization:", self.optimization)
 
         self.classes_ = self.estimator.classes_
+        self._running_ = None
         return self
 
     def predict(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using criterion static stopping.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call (not the full trial so far), see running below.
+        running: bool (default: False)
+            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without
+            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch
+            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the
+            newly observed samples since the previous call, and a running state (kept internally, not a fitted
+            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or
+            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole
+            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,
+            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or
+            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False
+            calls, and is cleared by fit().
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call. Only relevant if
+            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set
+            explicitly to start a new sequence before the previous one naturally ended.
 
         Returns
         -------
@@ -504,15 +709,27 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["stop_time_"])
 
-        ctime = X.shape[2] / self.fs
+        if running:
+            n_prev = 0 if (reset or self._running_ is None) else self._running_["n_samples"]
+            ctime = (n_prev + X.shape[2]) / self.fs
+        else:
+            ctime = X.shape[2] / self.fs
+
         if self.min_time is not None and ctime <= self.min_time:
+            if running:
+                _running_predict(self, X, reset, use_decision_function=False)  # advance state, result unused
             yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif (self.max_time is not None and ctime >= self.max_time) or ctime >= self.stop_time_:
-            yh = self.estimator.predict(X)
+            if running:
+                yh = _running_predict(self, X, reset, use_decision_function=False)
+            else:
+                yh = self.estimator.predict(X)
 
         else:
-            yh = -1 * np.ones(X.shape[0])
+            if running:
+                _running_predict(self, X, reset, use_decision_function=False)  # advance state, result unused
+            yh = np.full(X.shape[0], -1, dtype="int64")
 
         return yh
 
@@ -560,6 +777,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
 
     classes_: NDArray
     distributions_: list[dict]
+    _running_: dict = None
 
     def __init__(
         self,
@@ -610,14 +828,11 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
         if self.trained:
             self.distributions_ = []
             n_segments = int(X.shape[2] / int(self.segment_time * self.fs))
-            for i_segment in range(n_segments):
-                # Estimate scores for this segment
-                idx = (1 + i_segment) * int(self.segment_time * self.fs)
-                scores = self.estimator.decision_function(X[:, :, :idx])
-
+            segment_samples = int(self.segment_time * self.fs)
+            for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
                 # Put target score at index 0
                 for i_trial in range(X.shape[0]):
-                    scores[[0, y[i_trial]], :] = scores[[y[i_trial], 0], :]
+                    scores[i_trial, [0, y[i_trial]]] = scores[i_trial, [y[i_trial], 0]]
 
                 # Fit distribution to non-target scores
                 if self.distribution == "beta":
@@ -628,18 +843,37 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
                     self.distributions_.append(dict(loc=loc, scale=scale))
 
         self._is_fitted = True
+        self._running_ = None
         return self
 
     def predict(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using distribution dynamic stopping.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call (not the full trial so far), see running below.
+        running: bool (default: False)
+            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without
+            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch
+            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the
+            newly observed samples since the previous call, and a running state (kept internally, not a fitted
+            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or
+            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole
+            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,
+            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or
+            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False
+            calls, and is cleared by fit().
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call. Only relevant if
+            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set
+            explicitly to start a new sequence before the previous one naturally ended.
 
         Returns
         -------
@@ -647,21 +881,34 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the
             trial cannot yet be stopped.
         """
-        check_is_fitted(self, ["_is_fitted"])
-        ctime = X.shape[2] / self.fs
+        check_is_fitted(self)
+
+        if running:
+            n_prev = 0 if (reset or self._running_ is None) else self._running_["n_samples"]
+            ctime = (n_prev + X.shape[2]) / self.fs
+        else:
+            ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
+            if running:
+                _running_predict(self, X, reset, use_decision_function=True)  # advance state, result unused
             yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
-            yh = self.estimator.predict(X)
+            if running:
+                yh = _running_predict(self, X, reset, use_decision_function=False)
+            else:
+                yh = self.estimator.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
             i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)
+            if running:
+                scores = _running_predict(self, X, reset, use_decision_function=True)
+            else:
+                scores = self.estimator.decision_function(X)
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -700,6 +947,16 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             yh[not_stopped] = -1
 
         return yh
+
+    def __sklearn_is_fitted__(self) -> bool:
+        """Check fitted status and return a Boolean value.
+
+        Returns
+        -------
+        fitted: bool
+            Whether the classifier is fitted.
+        """
+        return hasattr(self, "_is_fitted") and self._is_fitted
 
 
 class MarginStopping(ClassifierMixin, BaseEstimator):
@@ -745,6 +1002,7 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
 
     classes_: NDArray
     margins_: NDArray
+    _running_: dict = None
 
     def __init__(
         self,
@@ -797,11 +1055,8 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
         n_samples = X.shape[2]
         n_segments = int(n_samples / int(self.segment_time * self.fs))
         self.margins_ = np.zeros(n_segments)
-        for i_segment in range(n_segments):
-            # Compute scores for this segment
-            idx = (1 + i_segment) * int(self.segment_time * self.fs)
-            scores = self.estimator.decision_function(X[:, :, :idx])
-
+        segment_samples = int(self.segment_time * self.fs)
+        for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
             # Compute margins (best - second best)
             scores_sorted = np.sort(scores, axis=1)
             margins = scores_sorted[:, -1] - scores_sorted[:, -2]
@@ -827,18 +1082,37 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
             else:
                 self.margins_[i_segment] = margin_axis[idx[0]]
 
+        self._running_ = None
         return self
 
     def predict(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using margin dynamic stopping.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call (not the full trial so far), see running below.
+        running: bool (default: False)
+            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without
+            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch
+            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the
+            newly observed samples since the previous call, and a running state (kept internally, not a fitted
+            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or
+            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole
+            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,
+            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or
+            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False
+            calls, and is cleared by fit().
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call. Only relevant if
+            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set
+            explicitly to start a new sequence before the previous one naturally ended.
 
         Returns
         -------
@@ -848,20 +1122,32 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["margins_"])
 
-        ctime = X.shape[2] / self.fs
+        if running:
+            n_prev = 0 if (reset or self._running_ is None) else self._running_["n_samples"]
+            ctime = (n_prev + X.shape[2]) / self.fs
+        else:
+            ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
+            if running:
+                _running_predict(self, X, reset, use_decision_function=True)  # advance state, result unused
             yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
-            yh = self.estimator.predict(X)
+            if running:
+                yh = _running_predict(self, X, reset, use_decision_function=False)
+            else:
+                yh = self.estimator.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
             i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)
+            if running:
+                scores = _running_predict(self, X, reset, use_decision_function=True)
+            else:
+                scores = self.estimator.decision_function(X)
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -916,6 +1202,7 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
 
     classes_: NDArray
     values_: NDArray
+    _running_: dict = None
 
     def __init__(
         self,
@@ -969,11 +1256,8 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
         n_samples = X.shape[2]
         n_segments = int(n_samples / int(self.segment_time * self.fs))
         self.values_ = np.zeros(n_segments)
-        for i_segment in range(n_segments):
-            # Compute scores for this segment
-            idx = (1 + i_segment) * int(self.segment_time * self.fs)
-            scores = self.estimator.decision_function(X[:, :, :idx])
-
+        segment_samples = int(self.segment_time * self.fs)
+        for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
             # Compute values
             values = np.max(scores, axis=1)
 
@@ -998,18 +1282,37 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
             else:
                 self.values_[i_segment] = value_axis[idx[0]]
 
+        self._running_ = None
         return self
 
     def predict(
         self,
         X: NDArray,
+        running: bool = False,
+        reset: bool = False,
     ) -> NDArray:
         """The testing procedure to apply the estimator to novel EEG data using value dynamic stopping.
 
         Parameters
         ----------
         X: NDArray
-            The matrix of EEG data of shape (n_trials, n_channels, n_samples).
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the
+            newly observed samples since the previous call (not the full trial so far), see running below.
+        running: bool (default: False)
+            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without
+            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch
+            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the
+            newly observed samples since the previous call, and a running state (kept internally, not a fitted
+            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or
+            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole
+            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,
+            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or
+            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False
+            calls, and is cleared by fit().
+        reset: bool (default: False)
+            Whether to discard any existing running state before processing this call. Only relevant if
+            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set
+            explicitly to start a new sequence before the previous one naturally ended.
 
         Returns
         -------
@@ -1019,20 +1322,32 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["values_"])
 
-        ctime = X.shape[2] / self.fs
+        if running:
+            n_prev = 0 if (reset or self._running_ is None) else self._running_["n_samples"]
+            ctime = (n_prev + X.shape[2]) / self.fs
+        else:
+            ctime = X.shape[2] / self.fs
 
         if self.min_time is not None and ctime <= self.min_time:
+            if running:
+                _running_predict(self, X, reset, use_decision_function=True)  # advance state, result unused
             yh = np.full(X.shape[0], -1, dtype="int64")
 
         elif self.max_time is not None and ctime >= self.max_time:
-            yh = self.estimator.predict(X)
+            if running:
+                yh = _running_predict(self, X, reset, use_decision_function=False)
+            else:
+                yh = self.estimator.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
             i_segment = np.max([0, i_segment])  # lower bound 0
 
             # Compute the scores
-            scores = self.estimator.decision_function(X)
+            if running:
+                scores = _running_predict(self, X, reset, use_decision_function=True)
+            else:
+                scores = self.estimator.decision_function(X)
 
             # Compute values
             values = np.max(scores, axis=1)
