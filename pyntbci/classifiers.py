@@ -154,12 +154,6 @@ class eCCA(ClassifierMixin, BaseEstimator):
         data than in the non-ensemble case; this can make them singular or too ill-conditioned to invert, especially
         with few trials per class or many channels/features. If this occurs, set gamma_x/gamma_t or alpha_x/alpha_t
         to regularize the covariance matrix.
-    cov_estimator_x: BaseEstimator (default: None)
-        A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data. If None, a custom
-        empirical covariance is used.
-    cov_estimator_t: BaseEstimator (default: None)
-        A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG templates. If None, a
-        custom empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
     squeeze_components: bool (default: True)
@@ -168,6 +162,19 @@ class eCCA(ClassifierMixin, BaseEstimator):
         Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
     alpha_t: float (default: None)
         Amount of variance to retain in computing the inverse of the covariance matrix of T. If None, all variance.
+    running: bool (default: False)
+        Whether fit() is incremental: if False, each fit() call replaces the previous fit, using only the trials
+        passed to that call. If True, each fit() call instead adds its trials to the ones seen in all previous
+        fit() calls (i.e., keeps the spatial filter's running covariance from CCA(running=True), and the
+        template's running mean, instead of discarding them), so a model can be trained gradually as more trials
+        become available. Requires lags to be set (a fixed, known-upfront class count and a single, un-split
+        running template -- see lags above), template_metric="mean" (the only template metric with an exact
+        incremental update), and ensemble=False. Unlike rCCA(running=True), this is only an approximation of the
+        equivalent batch fit, not exact: the (running) template is itself used as the CCA fit's target on every
+        call, so earlier calls see an earlier, less complete estimate of it than later calls do; it converges
+        towards the batch result as more trials accumulate, but is not expected to equal it. To start a new
+        running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then
+        set_params(running=True) again).
 
     Attributes
     ----------
@@ -195,6 +202,8 @@ class eCCA(ClassifierMixin, BaseEstimator):
     w_: NDArray
     T_: NDArray
     _running_: dict = None
+    _template_n_: int = 0
+    _template_avg_: NDArray = None
 
     def __init__(
         self,
@@ -208,12 +217,11 @@ class eCCA(ClassifierMixin, BaseEstimator):
         gamma_t: Union[float, list[float], NDArray] = None,
         latency: NDArray = None,
         ensemble: bool = False,
-        cov_estimator_x: BaseEstimator = None,
-        cov_estimator_t: BaseEstimator = None,
         n_components: int = 1,
         squeeze_components: bool = True,
         alpha_x: float = None,
         alpha_t: float = None,
+        running: bool = False,
     ) -> None:
         self.lags = lags
         self.fs = fs
@@ -225,12 +233,11 @@ class eCCA(ClassifierMixin, BaseEstimator):
         self.gamma_t = gamma_t
         self.latency = latency
         self.ensemble = ensemble
-        self.cov_estimator_x = cov_estimator_x
-        self.cov_estimator_t = cov_estimator_t
         self.n_components = n_components
         self.squeeze_components = squeeze_components
         self.alpha_x = alpha_x
         self.alpha_t = alpha_t
+        self.running = running
 
     def _fit_T(
         self,
@@ -401,6 +408,15 @@ class eCCA(ClassifierMixin, BaseEstimator):
         """
         n_trials, n_channels, n_samples = X.shape
 
+        if self.running:
+            assert self.lags is not None, "running=True requires lags to be set."
+            assert self.template_metric.lower() == "mean", "running=True only supports template_metric='mean'."
+            assert not self.ensemble, "running=True is not supported for ensemble=True."
+
+        # Whether this call continues a running fit already in progress (see cca_[0].running below), as opposed to
+        # (re)starting one (or, if running=False, always).
+        continuing = self.running and getattr(self, "cca_", None) and self.cca_[0].running
+
         # Correct for raster latency
         if self.latency is not None:
             X = correct_latency(X, y, -self.latency, self.fs, axis=-1)
@@ -428,15 +444,38 @@ class eCCA(ClassifierMixin, BaseEstimator):
             # Compute a template for latency 0 and shift for all others
             n_classes = len(self.lags)
             Z = correct_latency(X, y, -self.lags, self.fs, axis=-1)
-            T = np.tile(self._fit_T(Z)[np.newaxis, :, :], (n_classes, 1, 1))
+            if self.running:
+                # A single running mean over all (latency-corrected) trials observed so far, regardless of class,
+                # since the circular-shift model assumes all classes are shifted versions of the same underlying
+                # response. Note this template (base_T, used as R below) is itself a moving target across calls,
+                # unlike rCCA's stimulus-derived (and thus fixed) R -- so, unlike rCCA, this is an approximation
+                # of the batch fit, not exact; see the running docstring entry.
+                if continuing:
+                    assert Z.shape[1:] == self._template_avg_.shape, (
+                        f"running=True requires every fit() call to have the same number of channels and samples "
+                        f"per trial (after latency correction/cycle-cutting); got {Z.shape[1:]}, expected "
+                        f"{self._template_avg_.shape}."
+                    )
+                    n_obs = Z.shape[0]
+                    avg_obs = Z.mean(axis=0)
+                    n_new = self._template_n_ + n_obs
+                    self._template_avg_ = self._template_avg_ + (avg_obs - self._template_avg_) * (n_obs / n_new)
+                    self._template_n_ = n_new
+                else:
+                    self._template_n_ = Z.shape[0]
+                    self._template_avg_ = Z.mean(axis=0)
+                base_T = self._template_avg_
+            else:
+                base_T = self._fit_T(Z)
+            T = np.tile(base_T[np.newaxis, :, :], (n_classes, 1, 1))
             T = correct_latency(T, np.arange(n_classes), self.lags, self.fs, axis=-1)
             if self.latency is not None:
                 T = correct_latency(T, np.arange(n_classes), self.latency, self.fs, axis=-1)
 
         # Fit CCA
-        self.cca_ = []
         if self.ensemble:
             self.w_ = np.zeros((n_channels, self.n_components, n_classes))
+            self.cca_ = []
             for i_class in range(n_classes):
                 S = np.reshape(X[y == i_class, :, :].transpose((0, 2, 1)), (-1, n_channels))
                 R = np.tile(T[i_class, :, :].T, ((y == i_class).sum(), 1))
@@ -447,8 +486,6 @@ class eCCA(ClassifierMixin, BaseEstimator):
                         n_components=self.n_components,
                         gamma_x=self.gamma_x,
                         gamma_y=self.gamma_t,
-                        estimator_x=self.cov_estimator_x,
-                        estimator_y=self.cov_estimator_t,
                         alpha_x=self.alpha_x,
                         alpha_y=self.alpha_t,
                     )
@@ -460,17 +497,25 @@ class eCCA(ClassifierMixin, BaseEstimator):
             R = np.reshape(T[y, :, :].transpose((0, 2, 1)), (-1, n_channels))
             if self.cca_channels is not None:
                 R = R[:, self.cca_channels]
-            self.cca_.append(
-                CCA(
+            if continuing:
+                self.cca_[0].set_params(
                     n_components=self.n_components,
                     gamma_x=self.gamma_x,
                     gamma_y=self.gamma_t,
-                    estimator_x=self.cov_estimator_x,
-                    estimator_y=self.cov_estimator_t,
                     alpha_x=self.alpha_x,
                     alpha_y=self.alpha_t,
                 )
-            )
+            else:
+                self.cca_ = [
+                    CCA(
+                        n_components=self.n_components,
+                        gamma_x=self.gamma_x,
+                        gamma_y=self.gamma_t,
+                        alpha_x=self.alpha_x,
+                        alpha_y=self.alpha_t,
+                        running=self.running,
+                    )
+                ]
             self.cca_[0].fit(S, R)
             self.w_ = self.cca_[0].w_x_
 
@@ -732,12 +777,6 @@ class rCCA(ClassifierMixin, BaseEstimator):
     gamma_m: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along M (samples). If None,
         no regularization is applied. The gamma_m ranges from 0 (no regularization) to 1 (full regularization).
-    cov_estimator_x: BaseEstimator (default: None)
-        A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data, the decoding
-        matrix. If None, a custom empirical covariance is used.
-    cov_estimator_m: BaseEstimator (default: None)
-        A BaseEstimator object with a fit method that estimates a covariance matrix of the stimulus encoding matrix. If
-        None, a custom empirical covariance is used.
     n_components: int (default: 1)
         The number of CCA components to use.
     squeeze_components: bool (default: True)
@@ -748,12 +787,18 @@ class rCCA(ClassifierMixin, BaseEstimator):
         Amount of variance to retain in computing the inverse of the covariance matrix of M. If None, all variance.
     tmin: float (default: 0)
         The start of stimulation in seconds. Can be used if there was a delay in the marker.
-
-    Attributes
-    ----------
-    classes_: NDArray
-        The classes that can be predicted, of shape (n_classes), i.e., the number of classes in stimulus,
-        independent of which classes were actually observed in y during fit().
+    running: bool (default: False)
+        Whether fit() is incremental: if False, each fit() call replaces the previous fit, using only the trials
+        passed to that call. If True, each fit() call instead adds its trials to the ones seen in all previous
+        fit() calls (i.e., keeps the spatial/temporal filter's running covariance from CCA(running=True) instead
+        of discarding it), so a model can be trained gradually as more trials become available without redoing
+        the full computation on all trials so far. Since rCCA's templates (Ts_/Tw_) are already always recomputed
+        from the stimulus and the current filter, not the training trials themselves, this is mathematically
+        exact: two calls fit(X1, y1) then fit(X2, y2) give the same filter as one call fit(concat(X1, X2),
+        concat(y1, y2)). Not supported for ensemble=True, since each class's covariance would then be running on
+        its own, and a class absent from an early batch would otherwise silently never get initialized. To start
+        a new running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then
+        set_params(running=True) again).
     cca_: list[TransformerMixin]
         The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise
         len(cca_)=n_classes.
@@ -819,13 +864,12 @@ class rCCA(ClassifierMixin, BaseEstimator):
         amplitudes: NDArray = None,
         gamma_x: Union[float, list[float], NDArray] = None,
         gamma_m: Union[float, list[float], NDArray] = None,
-        cov_estimator_x: BaseEstimator = None,
-        cov_estimator_m: BaseEstimator = None,
         n_components: int = 1,
         squeeze_components: bool = True,
         alpha_x: float = None,
         alpha_m: float = None,
         tmin: float = 0,
+        running: bool = False,
     ) -> None:
         self.stimulus = stimulus
         self.fs = fs
@@ -841,13 +885,12 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self.amplitudes = amplitudes
         self.gamma_x = gamma_x
         self.gamma_m = gamma_m
-        self.cov_estimator_x = cov_estimator_x
-        self.cov_estimator_m = cov_estimator_m
         self.n_components = n_components
         self.squeeze_components = squeeze_components
         self.alpha_x = alpha_x
         self.alpha_m = alpha_m
         self.tmin = tmin
+        self.running = running
 
     def _resolve_decoding_length_stride(self) -> tuple[float, float]:
         """Resolve decoding_length and decoding_stride, defaulting to 1/fs (i.e., no phase-shifting) if None.
@@ -1082,19 +1125,24 @@ class rCCA(ClassifierMixin, BaseEstimator):
             M = np.concatenate((self.Ms_, np.tile(self.Mw_, (1, 1, X.shape[2] // self.Ms_.shape[2]))), axis=2)
         M = M[:, :, : X.shape[2]]
 
-        # Fit w and r
-        self.cca_ = []
+        assert not (self.running and self.ensemble), "running=True is not supported for ensemble=True."
+
+        # Fit w and r. If running=True and a running fit is already in progress (i.e. this is not the first fit()
+        # call since the running sequence was last (re)started), reuse and add to it via CCA's own running=True
+        # mechanism instead of discarding it; otherwise (running=False, or the first call of a new sequence) fit
+        # fresh, exactly as before. Params that CCA reads on every fit() call (not just at construction) are kept
+        # in sync in case they were changed via set_params() between calls.
+        continuing = self.running and getattr(self, "cca_", None) and self.cca_[0].running
         if self.ensemble:
             self.w_ = np.zeros((X.shape[1], self.n_components, n_classes), dtype=X.dtype)
             self.r_ = np.zeros((M.shape[1], self.n_components, n_classes), dtype=X.dtype)
+            self.cca_ = []
             for i_class in range(n_classes):
                 self.cca_.append(
                     CCA(
                         n_components=self.n_components,
                         gamma_x=self.gamma_x,
                         gamma_y=self.gamma_m,
-                        estimator_x=self.cov_estimator_x,
-                        estimator_y=self.cov_estimator_m,
                         alpha_x=self.alpha_x,
                         alpha_y=self.alpha_m,
                     )
@@ -1103,17 +1151,25 @@ class rCCA(ClassifierMixin, BaseEstimator):
                 self.w_[:, :, i_class] = self.cca_[i_class].w_x_
                 self.r_[:, :, i_class] = self.cca_[i_class].w_y_
         else:
-            self.cca_.append(
-                CCA(
+            if continuing:
+                self.cca_[0].set_params(
                     n_components=self.n_components,
                     gamma_x=self.gamma_x,
                     gamma_y=self.gamma_m,
-                    estimator_x=self.cov_estimator_x,
-                    estimator_y=self.cov_estimator_m,
                     alpha_x=self.alpha_x,
                     alpha_y=self.alpha_m,
                 )
-            )
+            else:
+                self.cca_ = [
+                    CCA(
+                        n_components=self.n_components,
+                        gamma_x=self.gamma_x,
+                        gamma_y=self.gamma_m,
+                        alpha_x=self.alpha_x,
+                        alpha_y=self.alpha_m,
+                        running=self.running,
+                    )
+                ]
             self.cca_[0].fit(X, M[y, :, :])
             self.w_ = self.cca_[0].w_x_
             self.r_ = self.cca_[0].w_y_

@@ -36,6 +36,11 @@
   calls (used to train the spatial filter itself) — the two are unrelated to each other by design, since predict-time
   running state (an in-progress trial's scores) and fit-time running state (the model's learned covariance) have
   different lifecycles, but both are built on the same underlying `covariance()` primitive
+- Added `examples/example_6_moabb.py`, the first example to run on real (rather than synthetic) EEG data: the
+  Thielen (2015) c-VEP dataset, loaded via MOABB and cross-validated with plain scikit-learn (`StratifiedKFold` +
+  `cross_val_score`), since `rCCA` is itself a scikit-learn compatible estimator; needs the optional `moabb`/`mne`
+  dependencies and downloads ~450 MB of data on first use, so it is excluded from execution when building the
+  documentation (see `filename_pattern` in `doc/conf.py`)
 - Added test coverage for `Ensemble` in `classifiers` (previously untested), the entire `envelope` module (previously
   had no test file), `eventplot`/`stimplot` in `plotting` (previously only `topoplot` was tested), `find_neighbours`,
   `find_worst_neighbour`, `pinv`, and `trials_to_epochs` in `utilities` (previously untested), and a new
@@ -45,6 +50,22 @@
   `eCCA`, `rCCA`, `Ensemble` in `classifiers`, `AggregateGate`, `DifferenceGate` in `gates`, and all classes in
   `stopping`; previously every one of these tests only checked output shape, so a classifier that always predicted
   a constant class, or a `decision_function` computed backwards, would have still passed the whole suite
+- Added a `running` parameter to `eCCA`/`rCCA` in `classifiers`, letting `fit()` be called repeatedly with new
+  batches of trials that *add to* the previous fit instead of replacing it, by reusing `CCA`'s own pre-existing
+  `running=True` mechanism for the spatial (and, for `rCCA`, spatio-temporal) filter's covariance. For `rCCA` this
+  is mathematically exact: its templates (`Ts_`/`Tw_`) are derived purely from the (fixed) stimulus and the current
+  filter, never from the training trials, so `fit(X1, y1)` then `fit(X2, y2)` gives the identical filter (verified
+  to ~1e-8) as one `fit(concat(X1, X2), concat(y1, y2))` call. For `eCCA` it is necessarily an approximation, since
+  its template is itself an average of the training trials and is used as the CCA fit's target on every call, so
+  earlier calls see a less complete estimate of it than later ones; it converges towards the batch result as trials
+  accumulate (verified: >0.999 cosine similarity to the batch filter after a few batches) but is not expected to
+  equal it exactly, and is scoped to `lags` being set, `template_metric="mean"`, and `ensemble=False` (the only
+  combination with both a fixed, known-upfront class count and a single running template, rather than one needing
+  to grow dynamically as new classes are observed or with no exact incremental form). Both raise a clear error on a
+  channel/sample-count mismatch between calls, and both correctly restart a fresh running sequence (rather than
+  silently resuming a stale one) if `running` is toggled off and back on between `fit()` calls. This targets
+  *fit-time* incremental training, the counterpart to the *predict-time* running scoring added above; the two are
+  unrelated by design but share the same `covariance()` primitive underneath
 
 ### Changed
 - Removed the bundled example/tutorial EEG data (`data/`) from the package; `tutorials/` and `examples/` now generate
@@ -53,6 +74,11 @@
 - Removed the `mne` dependency; `examples/` now use `Vectorizer` in `transformers` instead of `mne.decoding.Vectorizer`
 - Removed the 'seaborn' dependency; now simply relies on matplotlib
 - Removed `eTRCA` from `classifiers` and `TRCA` from `transformers`
+- Removed the `estimator` parameter from `covariance` in `utilities` (and, with it, `estimator_x`/`estimator_y` from
+  `CCA` in `transformers` and `cov_estimator_x`/`cov_estimator_t`/`cov_estimator_m` from `eCCA`/`rCCA` in
+  `classifiers`), along with the `NotImplementedError` it raised whenever a custom estimator was combined with
+  `running=True` past the first call; the empirical covariance formula (the only implemented, tested path, since
+  the custom-estimator path had no running-mode implementation to begin with) is used unconditionally instead
 - Dropped Python 3.8 support (minimum is now 3.9), since the codebase already relied on builtin generic type hints
   (e.g. `tuple[...]`) that are not subscriptable at runtime on 3.8
 - Migrated packaging metadata from the legacy `setup.cfg` to a PEP 621 `[project]` table in `pyproject.toml`

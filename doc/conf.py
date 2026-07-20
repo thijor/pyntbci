@@ -37,7 +37,9 @@ extensions = [
 sphinx_gallery_conf = {
     "examples_dirs": ["../examples", "../tutorials"],  # path to your example scripts
     "gallery_dirs": ["examples", "tutorials"],  # path to where to save gallery generated output
-    "filename_pattern": "(/example_|/tutorial_|)",
+    # Every example/tutorial is executed to generate its gallery output, except example_6_moabb.py: it needs the
+    # optional `moabb`/`mne` dependencies and downloads ~450 MB of EEG data, which is unsuitable for CI doc builds.
+    "filename_pattern": r"^((?!example_6_moabb).)*$",
     "within_subsection_order": "FileNameSortKey",
 }
 

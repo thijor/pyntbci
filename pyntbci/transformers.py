@@ -98,12 +98,6 @@ class CCA(TransformerMixin, BaseEstimator):
     gamma_y: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA for all or each individual parameter along n_features_y. If
         None, no regularization is applied. The gamma_y ranges from 0 (no regularization) to 1 (full regularization).
-    estimator_x: BaseEstimator (default: None)
-        A BaseEstimator object that estimates a covariance matrix for X using a fit method. If None, a custom
-        implementation of the empirical covariance is used.
-    estimator_y: BaseEstimator (default: None)
-        A BaseEstimator object that estimates a covariance matrix for Y using a fit method. If None, a custom
-        implementation of the empirical covariance is used.
     running: bool (default: False)
         If False, the CCA is instantaneous, only fit to the current data. If True, the CCA is incremental and keeps
         track of previous data to update a running average and covariance for the CCA.
@@ -164,8 +158,6 @@ class CCA(TransformerMixin, BaseEstimator):
         n_components: int,
         gamma_x: Union[float, list[float], NDArray] = None,
         gamma_y: Union[float, list[float], NDArray] = None,
-        estimator_x: BaseEstimator = None,
-        estimator_y: BaseEstimator = None,
         running: bool = False,
         alpha_x: float = None,
         alpha_y: float = None,
@@ -173,8 +165,6 @@ class CCA(TransformerMixin, BaseEstimator):
         self.n_components = n_components
         self.gamma_x = gamma_x
         self.gamma_y = gamma_y
-        self.estimator_x = estimator_x
-        self.estimator_y = estimator_y
         self.running = running
         self.alpha_x = alpha_x
         self.alpha_y = alpha_y
@@ -195,27 +185,18 @@ class CCA(TransformerMixin, BaseEstimator):
         """
         assert X.shape[0] == Y.shape[0], f"Unequal samples in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
 
-        # Compute covariances
+        # Compute covariances. Cxx/Cyy are taken as blocks of the joint covariance of concat(X, Y) rather than
+        # computed separately, since they are already sub-computations of it.
         Z = np.concatenate((X, Y), axis=1)
         self.n_xy_, self.avg_xy_, self.cov_xy_ = covariance(
-            Z, self.n_xy_, self.avg_xy_, self.cov_xy_, estimator=None, running=self.running
+            Z, self.n_xy_, self.avg_xy_, self.cov_xy_, running=self.running
         )
-        if self.estimator_x is None:
-            self.n_x_ = self.n_xy_
-            self.avg_x_ = self.avg_xy_[:, : X.shape[1]]
-            self.cov_x_ = self.cov_xy_[: X.shape[1], : X.shape[1]]
-        else:
-            self.n_x_, self.avg_x_, self.cov_x_ = covariance(
-                X, self.n_x_, self.avg_x_, self.cov_x_, estimator=self.estimator_x, running=self.running
-            )
-        if self.estimator_y is None:
-            self.n_y_ = self.n_xy_
-            self.avg_y_ = self.avg_xy_[:, X.shape[1] :]
-            self.cov_y_ = self.cov_xy_[X.shape[1] :, X.shape[1] :]
-        else:
-            self.n_y_, self.avg_y_, self.cov_y_ = covariance(
-                Y, self.n_y_, self.avg_y_, self.cov_y_, estimator=self.estimator_y, running=self.running
-            )
+        self.n_x_ = self.n_xy_
+        self.avg_x_ = self.avg_xy_[:, : X.shape[1]]
+        self.cov_x_ = self.cov_xy_[: X.shape[1], : X.shape[1]]
+        self.n_y_ = self.n_xy_
+        self.avg_y_ = self.avg_xy_[:, X.shape[1] :]
+        self.cov_y_ = self.cov_xy_[X.shape[1] :, X.shape[1] :]
         Cxx = self.cov_x_
         Cyy = self.cov_y_
         Cxy = self.cov_xy_[: X.shape[1], X.shape[1] :]

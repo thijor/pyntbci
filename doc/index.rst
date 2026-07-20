@@ -20,7 +20,7 @@ To install PyntBCI, use:
 Getting started
 ---------------
 
-Various tutorials and example analysis pipelines are provided in the `tutorials/` (under Getting Started) and `examples/` (under Examples) folder, which operate on synthetic EEG data generated on the fly (see `pyntbci.eeg`).
+Various tutorials and example analysis pipelines are provided in the `tutorials/` (under Getting Started) and `examples/` (under Examples) folder. Most operate on synthetic EEG data generated on the fly (see `pyntbci.eeg`); one example instead uses real EEG data obtained through MOABB.
 
 References
 ----------

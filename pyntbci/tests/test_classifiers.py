@@ -205,6 +205,66 @@ class TestECCA(unittest.TestCase):
         scores = ecca.decision_function(X[:, :, :20], running=True)
         self.assertFalse(np.any(np.isnan(scores)))
 
+    def test_ecca_running_fit_converges_to_batch(self):
+        # eCCA(running=True) fit incrementally in several batches is an approximation of the batch fit (the
+        # template is itself a moving target across calls, unlike rCCA's stimulus-derived one -- see fit()'s
+        # running docstring entry), so it should converge closely, not necessarily match exactly.
+        ecca_batch = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS)
+        ecca_batch.fit(X, y)
+
+        ecca_running = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, running=True)
+        for idx in np.array_split(np.arange(N_TRIALS), 8):
+            ecca_running.fit(X[idx], y[idx])
+
+        self.assertEqual(ecca_batch.w_.shape, ecca_running.w_.shape)
+        cosine_similarity = abs(
+            np.dot(ecca_batch.w_.flatten(), ecca_running.w_.flatten())
+            / (np.linalg.norm(ecca_batch.w_) * np.linalg.norm(ecca_running.w_))
+        )
+        self.assertGreater(cosine_similarity, 0.999)
+
+        yh = ecca_running.predict(X)
+        self.assertGreaterEqual(np.mean(yh == y), ACCURACY_THRESHOLD)
+
+    def test_ecca_running_fit_requires_lags(self):
+        ecca = pyntbci.classifiers.eCCA(lags=None, fs=FS, running=True)
+        with self.assertRaises(AssertionError):
+            ecca.fit(X, y)
+
+    def test_ecca_running_fit_requires_mean_template(self):
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, running=True, template_metric="median")
+        with self.assertRaises(AssertionError):
+            ecca.fit(X, y)
+
+    def test_ecca_running_fit_rejects_ensemble(self):
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, running=True, ensemble=True)
+        with self.assertRaises(AssertionError):
+            ecca.fit(X, y)
+
+    def test_ecca_running_fit_rejects_shape_mismatch(self):
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, running=True)
+        idx1, idx2 = N_TRIALS // 2, N_TRIALS
+        ecca.fit(X[:idx1], y[:idx1])
+        with self.assertRaises(AssertionError):
+            ecca.fit(X[idx1:idx2, :, : N_SAMPLES // 2], y[idx1:idx2])
+
+    def test_ecca_running_fit_toggle_restarts_fresh(self):
+        # running=False fully "seals" the model (matching its non-running semantics); toggling running back to
+        # True afterward must start a new running sequence, not silently resume the earlier one.
+        idx1, idx2 = N_TRIALS // 2, N_TRIALS
+        X1, y1, X2, y2 = X[:idx1], y[:idx1], X[idx1:idx2], y[idx1:idx2]
+
+        ecca = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, running=True)
+        ecca.fit(X1, y1)
+        ecca.set_params(running=False)
+        ecca.fit(X2, y2)
+        ecca.set_params(running=True)
+        ecca.fit(X1, y1)
+
+        ecca_fresh = pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, running=True)
+        ecca_fresh.fit(X1, y1)
+        self.assertTrue(np.allclose(ecca.w_, ecca_fresh.w_))
+
 
 class TestRCCA(unittest.TestCase):
     def test_rcca_shape(self):
@@ -552,6 +612,58 @@ class TestRCCA(unittest.TestCase):
         U = np.repeat(pyntbci.stimulus.make_gold_codes(), FS // PR, axis=1)
         rcca.set_stimulus(U)
         self.assertIsNone(rcca._running_)
+
+    def test_rcca_running_fit_matches_batch_exactly(self):
+        # Unlike eCCA, rCCA's templates are derived from the stimulus and the current filter, not the training
+        # trials -- so accumulating cov(X, M[y]) via CCA(running=True) across calls, where M[y] never changes
+        # value, must be numerically exact (not just an approximation), matching a single batch fit on the
+        # concatenated data.
+        idx1, idx2 = N_TRIALS // 3, 2 * N_TRIALS // 3
+        X1, y1 = X[:idx1], y[:idx1]
+        X2, y2 = X[idx1:idx2], y[idx1:idx2]
+        X3, y3 = X[idx2:], y[idx2:]
+
+        rcca_batch = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH)
+        rcca_batch.fit(X, y)
+
+        rcca_running = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True
+        )
+        rcca_running.fit(X1, y1)
+        rcca_running.fit(X2, y2)
+        rcca_running.fit(X3, y3)
+
+        self.assertTrue(np.allclose(rcca_batch.w_, rcca_running.w_, atol=1e-8))
+        self.assertTrue(np.allclose(rcca_batch.r_, rcca_running.r_, atol=1e-8))
+        self.assertTrue(np.allclose(rcca_batch.Ts_, rcca_running.Ts_, atol=1e-8))
+        self.assertTrue(np.allclose(rcca_batch.Tw_, rcca_running.Tw_, atol=1e-8))
+
+        yh = rcca_running.predict(X)
+        self.assertGreaterEqual(np.mean(yh == y), ACCURACY_THRESHOLD)
+
+    def test_rcca_running_fit_rejects_ensemble(self):
+        rcca = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True, ensemble=True
+        )
+        with self.assertRaises(AssertionError):
+            rcca.fit(X, y)
+
+    def test_rcca_running_fit_toggle_restarts_fresh(self):
+        idx1, idx2 = N_TRIALS // 2, N_TRIALS
+        X1, y1, X2, y2 = X[:idx1], y[:idx1], X[idx1:idx2], y[idx1:idx2]
+
+        rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True)
+        rcca.fit(X1, y1)
+        rcca.set_params(running=False)
+        rcca.fit(X2, y2)
+        rcca.set_params(running=True)
+        rcca.fit(X1, y1)
+
+        rcca_fresh = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True
+        )
+        rcca_fresh.fit(X1, y1)
+        self.assertTrue(np.allclose(rcca.w_, rcca_fresh.w_))
 
 
 class TestEnsemble(unittest.TestCase):

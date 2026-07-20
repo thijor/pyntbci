@@ -2,7 +2,6 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-from sklearn.base import BaseEstimator
 from scipy.signal import butter, buttord, cheby1, cheb1ord, filtfilt
 from scipy.spatial.distance import cdist
 
@@ -110,9 +109,7 @@ def correlation(
         return scores
 
     n_a = A.shape[0]
-    n_new, avg_new, cov_new = covariance(
-        np.concatenate((A, B), axis=0).T, n_old, avg_old, cov_old, estimator=None, running=running
-    )
+    n_new, avg_new, cov_new = covariance(np.concatenate((A, B), axis=0).T, n_old, avg_old, cov_old, running=running)
     cov_ab = cov_new[:n_a, n_a:]
     var_a = np.diag(cov_new)[:n_a, np.newaxis]
     var_b = np.diag(cov_new)[np.newaxis, n_a:]
@@ -126,7 +123,6 @@ def covariance(
     n_old: int = 0,
     avg_old: NDArray = None,
     cov_old: NDArray = None,
-    estimator: BaseEstimator = None,
     running: bool = False,
 ) -> tuple[int, NDArray, NDArray]:
     """Compute the covariance matrix.
@@ -141,9 +137,6 @@ def covariance(
         Already observed average of shape (1, n_features).
     cov_old: NDArray (default: None)
         Already observed covariance of shape (n_features, n_features).
-    estimator: BaseEstimator (default: None)
-        An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the
-        empirical covariance is used.
     running: bool (default: False)
         Whether to use a running covariance. If False, the covariance matrix is computed instantaneously using
         only X, such that n_old, avg_old, and cov_old are not used.
@@ -165,21 +158,13 @@ def covariance(
         n_new = n_obs
         avg_new = avg_obs
         data1 = data - avg_obs
-        if estimator is None:
-            cov_obs = data1.T @ data1 / (n_new - 1)
-        else:
-            cov_obs = estimator.fit(data1).covariance_
-        cov_new = cov_obs
+        cov_new = data1.T @ data1 / (n_new - 1)
     else:
         n_new = n_old + n_obs
         data1 = data - avg_old
         avg_new = avg_old + (avg_obs - avg_old) * (n_obs / n_new)
         data2 = data - avg_new
-        if estimator is None:
-            cov_obs = data1.T @ data2 / (n_new - 1)
-        else:
-            # TODO: Compute the cumulative cross-covariance using estimator
-            raise NotImplementedError
+        cov_obs = data1.T @ data2 / (n_new - 1)
         cov_new = cov_obs + cov_old * ((n_new - n_obs - 1) / (n_new - 1))
     return n_new, avg_new, cov_new
 
