@@ -54,7 +54,7 @@ Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-51
+.. GENERATED FROM PYTHON SOURCE LINES 25-50
 
 .. code-block:: Python
 
@@ -79,9 +79,8 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     ENCODING_LENGTH = 0.3
     SEED = 42
 
-    y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
     X, y, V = pyntbci.eeg.generate_c_vep(
-        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
     )
 
 
@@ -91,12 +90,12 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-54
+.. GENERATED FROM PYTHON SOURCE LINES 51-53
 
 Inspect data
 -----------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-88
+.. GENERATED FROM PYTHON SOURCE LINES 53-87
 
 .. code-block:: Python
 
@@ -166,7 +165,7 @@ Inspect data
 
  .. code-block:: none
 
-    X (32, 16, 252) (trials x channels x samples) float64
+    X (32, 16, 252) (trials x channels x samples) float32
     y (32,) (trials) int64
     V (32, 126) (classes, samples) uint8
     fs 120 Hz
@@ -176,7 +175,7 @@ Inspect data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-97
+.. GENERATED FROM PYTHON SOURCE LINES 88-96
 
 ERP CCA
 -----------------
@@ -187,7 +186,7 @@ the sampling frequency `fs`, and the duration of one period of a code as `cycle_
 When calling `eCCA.fit(X, y)` with training data `X` and labels `y`, the template responses are learned as well as the
 spatial filters `eCCA.w_`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-111
+.. GENERATED FROM PYTHON SOURCE LINES 96-110
 
 .. code-block:: Python
 
@@ -218,13 +217,13 @@ spatial filters `eCCA.w_`.
 
  .. code-block:: none
 
-    w: shape: (16, 1) , type: float64
+    w: shape: (16, 1) , type: float32
 
     Text(0.5, 1.0, 'Spatial filter')
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-117
+.. GENERATED FROM PYTHON SOURCE LINES 111-116
 
 Cross-validation
 ----------------
@@ -232,7 +231,7 @@ To perform decoding, one can call `eCCA.fit(X_trn, y_trn)` on training data `X_t
 `eCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is set up to evaluate
 the performance of eCCA.
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-157
+.. GENERATED FROM PYTHON SOURCE LINES 116-156
 
 .. code-block:: Python
 
@@ -295,7 +294,7 @@ the performance of eCCA.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-163
+.. GENERATED FROM PYTHON SOURCE LINES 157-162
 
 Learning curve
 --------------
@@ -303,7 +302,7 @@ In this section, we will apply the decoder to varying number of training trials,
 curve. With this information, one could decide how much training data is required, or compare algorithms on how much
 training data they require to estimate their parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-204
+.. GENERATED FROM PYTHON SOURCE LINES 162-203
 
 .. code-block:: Python
 
@@ -360,7 +359,7 @@ training data they require to estimate their parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-210
+.. GENERATED FROM PYTHON SOURCE LINES 204-209
 
 Decoding curve
 --------------
@@ -368,7 +367,7 @@ In this section, we will apply the decoder to varying testing trial lengths, to 
 With this information, one could decide how much testing data is required, or compare algorithms on how much data they
 need during testing to classify single-trials.
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-261
+.. GENERATED FROM PYTHON SOURCE LINES 209-260
 
 .. code-block:: Python
 
@@ -438,7 +437,7 @@ need during testing to classify single-trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.956 seconds)
+   **Total running time of the script:** (0 minutes 3.024 seconds)
 
 
 .. _sphx_glr_download_examples_example_2_ecca.py:

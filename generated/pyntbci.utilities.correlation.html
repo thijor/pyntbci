@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities.correlation &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>pyntbci.utilities.correlation &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -92,20 +92,32 @@
 <h1>pyntbci.utilities.correlation<a class="headerlink" href="#pyntbci-utilities-correlation" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyntbci.utilities.correlation">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/utilities.html#correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.correlation" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">running</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">NDArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NDArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NDArray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyntbci/utilities.html#correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.correlation" title="Link to this definition"></a></dt>
 <dd><p>Compute the correlation coefficient. Computed between two sets of variables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>A</strong> (<em>NDArray</em>) – The first set of variables of shape (n_A, n_samples).</p></li>
 <li><p><strong>B</strong> (<em>NDArray</em>) – The second set of variables of shape (n_B, n_samples).</p></li>
+<li><p><strong>n_old</strong> (<em>int</em><em> (</em><em>default: 0</em><em>)</em>) – Number of already observed samples. Only used if running=True.</p></li>
+<li><p><strong>avg_old</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Already observed average of concat(A, B) of shape (1, n_A + n_B). Only used if running=True.</p></li>
+<li><p><strong>cov_old</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Already observed covariance of concat(A, B) of shape (n_A + n_B, n_A + n_B). Only used if running=True.</p></li>
+<li><p><strong>running</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether to use a running correlation, adding samples to a previously accumulated covariance rather than
+recomputing from scratch. If True, A and B are taken to be only the newly observed samples (not the full
+history), and n_old/avg_old/cov_old the state accumulated so far (as returned by a previous call); use
+n_old=0 (default) for the first call in a sequence. Internally reuses covariance() (see its running=True
+mode) on concat(A, B), since correlation is simply covariance normalized by the two variances, so it is
+exactly as numerically stable as covariance()’s own running mode.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scores</strong> – The correlation matrix of shape (n_A, n_B).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>scores</strong> (<em>NDArray</em>) – The correlation matrix of shape (n_A, n_B).</p></li>
+<li><p><strong>n_new</strong> (<em>int</em>) – Number of samples. Only returned if running=True.</p></li>
+<li><p><strong>avg_new</strong> (<em>NDArray</em>) – The average of concat(A, B) of shape (1, n_A + n_B). Only returned if running=True.</p></li>
+<li><p><strong>cov_new</strong> (<em>NDArray</em>) – The covariance of concat(A, B) of shape (n_A + n_B, n_A + n_B). Only returned if running=True.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>

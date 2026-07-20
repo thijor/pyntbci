@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities.euclidean &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>pyntbci.utilities.euclidean &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -92,20 +92,33 @@
 <h1>pyntbci.utilities.euclidean<a class="headerlink" href="#pyntbci-utilities-euclidean" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyntbci.utilities.euclidean">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">euclidean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/utilities.html#euclidean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.euclidean" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">euclidean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_aa_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_bb_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_ab_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">running</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">NDArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NDArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NDArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NDArray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyntbci/utilities.html#euclidean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.euclidean" title="Link to this definition"></a></dt>
 <dd><p>Compute the Euclidean distance. Computed between two sets of variables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>A</strong> (<em>NDArray</em>) – The first set of variables of shape (n_A, n_samples).</p></li>
 <li><p><strong>B</strong> (<em>NDArray</em>) – The second set of variables of shape (n_B, n_samples).</p></li>
+<li><p><strong>sum_aa_old</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Already observed sum of A**2 of shape (n_A, 1). Only used if running=True.</p></li>
+<li><p><strong>sum_bb_old</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Already observed sum of B**2 of shape (1, n_B). Only used if running=True.</p></li>
+<li><p><strong>sum_ab_old</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Already observed sum of A &#64; B.T of shape (n_A, n_B). Only used if running=True.</p></li>
+<li><p><strong>running</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether to use a running Euclidean distance, adding samples to previously accumulated sums rather than
+recomputing from scratch. If True, A and B are taken to be only the newly observed samples (not the full
+history), and sum_aa_old/sum_bb_old/sum_ab_old the state accumulated so far (as returned by a previous
+call); omit them (default None) for the first call in a sequence. Unlike correlation()’s running mode,
+this does not go through covariance(), since Euclidean distance is defined on the raw (uncentered) values,
+so there is no mean to track; the three sums below are, by construction, exactly additive across chunks
+(no correction term is needed, unlike a running mean/covariance), so this is not an approximation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scores</strong> – The distance matrix of shape (n_A, n_B).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>scores</strong> (<em>NDArray</em>) – The distance matrix of shape (n_A, n_B).</p></li>
+<li><p><strong>sum_aa_new</strong> (<em>NDArray</em>) – The sum of A**2 of shape (n_A, 1). Only returned if running=True.</p></li>
+<li><p><strong>sum_bb_new</strong> (<em>NDArray</em>) – The sum of B**2 of shape (1, n_B). Only returned if running=True.</p></li>
+<li><p><strong>sum_ab_new</strong> (<em>NDArray</em>) – The sum of A &#64; B.T of shape (n_A, n_B). Only returned if running=True.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>

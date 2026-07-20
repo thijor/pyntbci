@@ -40,7 +40,7 @@ N_CLASSES = V.shape[0]
 CYCLE_SIZE = V.shape[1] / FS
 LAGS = SHIFTS / PR
 
-N_TRIALS = 1 * N_CLASSES
+N_TRIALS = 2 * N_CLASSES
 N_CHANNELS = 16
 N_SAMPLES = int(4 * CYCLE_SIZE * FS)
 N_COMPONENTS = 3
@@ -48,9 +48,8 @@ N_FILTER_BANDS = 4
 ENCODING_LENGTH = 0.3
 SEED = 42
 
-y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
 )
 
 N_FOLDS = 4
@@ -209,9 +208,6 @@ print(f"\tITR: avg={itr_max_itr.mean():.1f} with std={itr_max_itr.std():.2f}")
 # reaches a preset targeted accuracy. During testing, all trials will stop as soon as that time is reached, hence static
 # stopping.
 
-# Target accuracy
-target_p = 0.90 ** (1 / N_SEGMENTS)
-
 # Loop folds
 accuracy_tgt_acc = np.zeros(N_FOLDS)
 duration_tgt_acc = np.zeros(N_FOLDS)
@@ -229,7 +225,7 @@ for i_fold in range(N_FOLDS):
         score_metric="correlation",
     )
     tgt_acc = pyntbci.stopping.CriterionStopping(
-        rcca, N_FOLDS, FS, criterion="accuracy", optimization="target", target=target_p
+        rcca, SEGMENT_TIME, FS, criterion="accuracy", optimization="target", target=0.90
     )
     tgt_acc.fit(X_trn, y_trn)
 
@@ -290,12 +286,9 @@ print(f"\tITR: avg={itr_tgt_acc.mean():.1f} with std={itr_tgt_acc.std():.2f}")
 #        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
 #        doi: https://doi.org/10.1371/journal.pone.0133797
 
-# Target accuracy
-target_p = 0.90 ** (1 / N_SEGMENTS)
-
 # Fit classifier
 rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="correlation")
-margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=target_p, max_time=MAX_TIME)
+margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=0.90, max_time=MAX_TIME)
 margin.fit(X, y)
 
 # Plot dynamic stopping
@@ -321,7 +314,7 @@ for i_fold in range(N_FOLDS):
         encoding_length=0.3,
         score_metric="correlation",
     )
-    margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=target_p)
+    margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=0.9)
     margin.fit(X_trn, y_trn)
 
     # Loop segments
@@ -380,9 +373,6 @@ print(f"\tITR: avg={itr_margin.mean():.1f} with std={itr_margin.std():.2f}")
 #        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
 #        056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
-# Target accuracy
-target_p = 0.90 ** (1 / N_SEGMENTS)
-
 # Loop folds
 accuracy_beta = np.zeros(N_FOLDS)
 duration_beta = np.zeros(N_FOLDS)
@@ -400,7 +390,7 @@ for i_fold in range(N_FOLDS):
         score_metric="correlation",
     )
     beta = pyntbci.stopping.DistributionStopping(
-        rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=target_p, distribution="beta", max_time=MAX_TIME
+        rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=0.9, distribution="beta", max_time=MAX_TIME
     )
     beta.fit(X, y)
 
@@ -551,11 +541,6 @@ print(f"\tITR: avg={itr_bds0.mean():.1f} with std={itr_bds0.std():.2f}")
 # .. [6] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 # response brain-computer interfacing
 
-# Cost ratio and target probabilities
-cr = 1.0
-target_pf = 0.05
-target_pd = 0.80
-
 # Loop folds
 accuracy_bds1 = np.zeros(N_FOLDS)
 duration_bds1 = np.zeros(N_FOLDS)
@@ -571,9 +556,9 @@ for i_fold in range(N_FOLDS):
         segment_time=SEGMENT_TIME,
         fs=FS,
         method="bds1",
-        cr=cr,
-        target_pf=target_pf,
-        target_pd=target_pd,
+        cr=1.0,
+        target_pf=0.05,
+        target_pd=0.80,
         max_time=MAX_TIME,
     )
     bayes.fit(X_trn, y_trn)
@@ -630,11 +615,6 @@ print(f"\tITR: avg={itr_bds1.mean():.1f} with std={itr_bds1.std():.2f}")
 # .. [7] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 # response brain-computer interfacing
 
-# Cost ratio and target probabilities
-cr = 1.0
-target_pf = 0.05
-target_pd = 0.80
-
 # Loop folds
 accuracy_bds2 = np.zeros(N_FOLDS)
 duration_bds2 = np.zeros(N_FOLDS)
@@ -650,9 +630,9 @@ for i_fold in range(N_FOLDS):
         segment_time=SEGMENT_TIME,
         fs=FS,
         method="bds2",
-        cr=cr,
-        target_pf=target_pf,
-        target_pd=target_pd,
+        cr=1.0,
+        target_pf=0.05,
+        target_pd=0.80,
         max_time=MAX_TIME,
     )
     bayes.fit(X_trn, y_trn)

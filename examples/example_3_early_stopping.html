@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Early stopping &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>Early stopping &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -145,7 +145,7 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <span class="n">CYCLE_SIZE</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">FS</span>
 <span class="n">LAGS</span> <span class="o">=</span> <span class="n">SHIFTS</span> <span class="o">/</span> <span class="n">PR</span>
 
-<span class="n">N_TRIALS</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">N_CLASSES</span>
+<span class="n">N_TRIALS</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">N_CLASSES</span>
 <span class="n">N_CHANNELS</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">N_SAMPLES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">CYCLE_SIZE</span> <span class="o">*</span> <span class="n">FS</span><span class="p">)</span>
 <span class="n">N_COMPONENTS</span> <span class="o">=</span> <span class="mi">3</span>
@@ -153,9 +153,8 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <span class="n">ENCODING_LENGTH</span> <span class="o">=</span> <span class="mf">0.3</span>
 <span class="n">SEED</span> <span class="o">=</span> <span class="mi">42</span>
 
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">)</span> <span class="o">%</span> <span class="n">N_CLASSES</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">eeg</span><span class="o">.</span><span class="n">generate_c_vep</span><span class="p">(</span>
-    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
+    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
 <span class="p">)</span>
 
 <span class="n">N_FOLDS</span> <span class="o">=</span> <span class="mi">4</span>
@@ -326,10 +325,7 @@ reached, hence static stopping.</p>
 <p>The “targeted accuracy” method is a static stopping method that learns one stopping time that given some training data
 reaches a preset targeted accuracy. During testing, all trials will stop as soon as that time is reached, hence static
 stopping.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Target accuracy</span>
-<span class="n">target_p</span> <span class="o">=</span> <span class="mf">0.90</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">N_SEGMENTS</span><span class="p">)</span>
-
-<span class="c1"># Loop folds</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop folds</span>
 <span class="n">accuracy_tgt_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="n">duration_tgt_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">):</span>
@@ -346,7 +342,7 @@ stopping.</p>
         <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">tgt_acc</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">CriterionStopping</span><span class="p">(</span>
-        <span class="n">rcca</span><span class="p">,</span> <span class="n">N_FOLDS</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_p</span>
+        <span class="n">rcca</span><span class="p">,</span> <span class="n">SEGMENT_TIME</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">0.90</span>
     <span class="p">)</span>
     <span class="n">tgt_acc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
@@ -395,10 +391,10 @@ stopping.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_tgt_acc</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_tgt_acc</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_3_early_stopping_003.png" srcset="../_images/sphx_glr_example_3_early_stopping_003.png" alt="Targeted accuracy early stopping: avg acc 1.00 | avg dur 4.00 | avg itr 75.0" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Targeted accuracy:
+<img src="../_images/sphx_glr_example_3_early_stopping_003.png" srcset="../_images/sphx_glr_example_3_early_stopping_003.png" alt="Targeted accuracy early stopping: avg acc 1.00 | avg dur 0.40 | avg itr 750.0" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Targeted accuracy:
         Accuracy: avg=1.00 with std=0.00
-        Duration: avg=4.00 with std=0.00
-        ITR: avg=75.0 with std=0.00
+        Duration: avg=0.40 with std=0.00
+        ITR: avg=750.0 with std=0.00
 </pre></div>
 </div>
 </section>
@@ -415,12 +411,9 @@ re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
 doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.0133797">https://doi.org/10.1371/journal.pone.0133797</a></p>
 </aside>
 </aside>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Target accuracy</span>
-<span class="n">target_p</span> <span class="o">=</span> <span class="mf">0.90</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">N_SEGMENTS</span><span class="p">)</span>
-
-<span class="c1"># Fit classifier</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fit classifier</span>
 <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;refe&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
-<span class="n">margin</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">MarginStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="n">target_p</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">MAX_TIME</span><span class="p">)</span>
+<span class="n">margin</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">MarginStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">MAX_TIME</span><span class="p">)</span>
 <span class="n">margin</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
 <span class="c1"># Plot dynamic stopping</span>
@@ -446,7 +439,7 @@ doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
         <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
         <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">margin</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">MarginStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="n">target_p</span><span class="p">)</span>
+    <span class="n">margin</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">MarginStopping</span><span class="p">(</span><span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
     <span class="n">margin</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
     <span class="c1"># Loop segments</span>
@@ -496,12 +489,12 @@ doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 </div>
 <ul class="sphx-glr-horizontal">
 <li><img src="../_images/sphx_glr_example_3_early_stopping_004.png" srcset="../_images/sphx_glr_example_3_early_stopping_004.png" alt="Margin dynamic stopping" class = "sphx-glr-multi-img"/></li>
-<li><img src="../_images/sphx_glr_example_3_early_stopping_005.png" srcset="../_images/sphx_glr_example_3_early_stopping_005.png" alt="Margin dynamic stopping: avg acc 0.97 | avg dur 0.27 | avg itr 1052.9" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_example_3_early_stopping_005.png" srcset="../_images/sphx_glr_example_3_early_stopping_005.png" alt="Margin dynamic stopping: avg acc 0.97 | avg dur 0.25 | avg itr 1113.0" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Margin:
-        Accuracy: avg=0.97 with std=0.05
-        Duration: avg=0.27 with std=0.01
-        ITR: avg=1052.9 with std=116.29
+        Accuracy: avg=0.97 with std=0.03
+        Duration: avg=0.25 with std=0.01
+        ITR: avg=1113.0 with std=113.53
 </pre></div>
 </div>
 </section>
@@ -518,10 +511,7 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 056007. doi: <a class="reference external" href="http://doi.org/10.1088/1741-2552/abecef">http://doi.org/10.1088/1741-2552/abecef</a></p>
 </aside>
 </aside>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Target accuracy</span>
-<span class="n">target_p</span> <span class="o">=</span> <span class="mf">0.90</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">N_SEGMENTS</span><span class="p">)</span>
-
-<span class="c1"># Loop folds</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop folds</span>
 <span class="n">accuracy_beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="n">duration_beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">):</span>
@@ -538,7 +528,7 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
         <span class="n">score_metric</span><span class="o">=</span><span class="s2">&quot;correlation&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">beta</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">DistributionStopping</span><span class="p">(</span>
-        <span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="n">target_p</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">MAX_TIME</span>
+        <span class="n">rcca</span><span class="p">,</span> <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">target_p</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">MAX_TIME</span>
     <span class="p">)</span>
     <span class="n">beta</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
@@ -587,10 +577,10 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_beta</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_beta</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_3_early_stopping_006.png" srcset="../_images/sphx_glr_example_3_early_stopping_006.png" alt="Beta dynamic stopping: avg acc 1.00 | avg dur 0.54 | avg itr 557.3" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Beta:
+<img src="../_images/sphx_glr_example_3_early_stopping_006.png" srcset="../_images/sphx_glr_example_3_early_stopping_006.png" alt="Beta dynamic stopping: avg acc 1.00 | avg dur 0.31 | avg itr 975.9" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Beta:
         Accuracy: avg=1.00 with std=0.00
-        Duration: avg=0.54 with std=0.04
-        ITR: avg=557.3 with std=36.62
+        Duration: avg=0.31 with std=0.01
+        ITR: avg=975.9 with std=34.92
 </pre></div>
 </div>
 </section>
@@ -690,12 +680,12 @@ threshold using these and a cost criterion. This method comes in three flavours:
 </div>
 <ul class="sphx-glr-horizontal">
 <li><img src="../_images/sphx_glr_example_3_early_stopping_007.png" srcset="../_images/sphx_glr_example_3_early_stopping_007.png" alt="Bayesian dynamic stopping" class = "sphx-glr-multi-img"/></li>
-<li><img src="../_images/sphx_glr_example_3_early_stopping_008.png" srcset="../_images/sphx_glr_example_3_early_stopping_008.png" alt="BDS0 dynamic stopping: avg acc 0.94 | avg dur 0.42 | avg itr 650.8" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_example_3_early_stopping_008.png" srcset="../_images/sphx_glr_example_3_early_stopping_008.png" alt="BDS0 dynamic stopping: avg acc 0.95 | avg dur 0.43 | avg itr 637.5" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS0:
-        Accuracy: avg=0.94 with std=0.11
-        Duration: avg=0.42 with std=0.03
-        ITR: avg=650.8 with std=152.25
+        Accuracy: avg=0.95 with std=0.05
+        Duration: avg=0.43 with std=0.03
+        ITR: avg=637.5 with std=72.88
 </pre></div>
 </div>
 </section>
@@ -711,12 +701,7 @@ threshold using these and a cost criterion. This method comes in three flavours:
 </aside>
 </aside>
 <p>response brain-computer interfacing</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cost ratio and target probabilities</span>
-<span class="n">cr</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="n">target_pf</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="n">target_pd</span> <span class="o">=</span> <span class="mf">0.80</span>
-
-<span class="c1"># Loop folds</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop folds</span>
 <span class="n">accuracy_bds1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="n">duration_bds1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">):</span>
@@ -731,9 +716,9 @@ threshold using these and a cost criterion. This method comes in three flavours:
         <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span>
         <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span>
         <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bds1&quot;</span><span class="p">,</span>
-        <span class="n">cr</span><span class="o">=</span><span class="n">cr</span><span class="p">,</span>
-        <span class="n">target_pf</span><span class="o">=</span><span class="n">target_pf</span><span class="p">,</span>
-        <span class="n">target_pd</span><span class="o">=</span><span class="n">target_pd</span><span class="p">,</span>
+        <span class="n">cr</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">target_pf</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">target_pd</span><span class="o">=</span><span class="mf">0.80</span><span class="p">,</span>
         <span class="n">max_time</span><span class="o">=</span><span class="n">MAX_TIME</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">bayes</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
@@ -780,10 +765,10 @@ threshold using these and a cost criterion. This method comes in three flavours:
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_bds1</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_bds1</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_3_early_stopping_009.png" srcset="../_images/sphx_glr_example_3_early_stopping_009.png" alt="BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.62 | avg itr 487.6" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS1:
+<img src="../_images/sphx_glr_example_3_early_stopping_009.png" srcset="../_images/sphx_glr_example_3_early_stopping_009.png" alt="BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.64 | avg itr 468.7" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS1:
         Accuracy: avg=1.00 with std=0.00
-        Duration: avg=0.62 with std=0.02
-        ITR: avg=487.6 with std=12.79
+        Duration: avg=0.64 with std=0.04
+        ITR: avg=468.7 with std=26.56
 </pre></div>
 </div>
 </section>
@@ -799,12 +784,7 @@ threshold using these and a cost criterion. This method comes in three flavours:
 </aside>
 </aside>
 <p>response brain-computer interfacing</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cost ratio and target probabilities</span>
-<span class="n">cr</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="n">target_pf</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="n">target_pd</span> <span class="o">=</span> <span class="mf">0.80</span>
-
-<span class="c1"># Loop folds</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop folds</span>
 <span class="n">accuracy_bds2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="n">duration_bds2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i_fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">):</span>
@@ -819,9 +799,9 @@ threshold using these and a cost criterion. This method comes in three flavours:
         <span class="n">segment_time</span><span class="o">=</span><span class="n">SEGMENT_TIME</span><span class="p">,</span>
         <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span>
         <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bds2&quot;</span><span class="p">,</span>
-        <span class="n">cr</span><span class="o">=</span><span class="n">cr</span><span class="p">,</span>
-        <span class="n">target_pf</span><span class="o">=</span><span class="n">target_pf</span><span class="p">,</span>
-        <span class="n">target_pd</span><span class="o">=</span><span class="n">target_pd</span><span class="p">,</span>
+        <span class="n">cr</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">target_pf</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">target_pd</span><span class="o">=</span><span class="mf">0.80</span><span class="p">,</span>
         <span class="n">max_time</span><span class="o">=</span><span class="n">MAX_TIME</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">bayes</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
@@ -868,10 +848,10 @@ threshold using these and a cost criterion. This method comes in three flavours:
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">ITR: avg=</span><span class="si">{</span><span class="n">itr_bds2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with std=</span><span class="si">{</span><span class="n">itr_bds2</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_3_early_stopping_010.png" srcset="../_images/sphx_glr_example_3_early_stopping_010.png" alt="BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.51 | avg itr 597.6" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS2:
+<img src="../_images/sphx_glr_example_3_early_stopping_010.png" srcset="../_images/sphx_glr_example_3_early_stopping_010.png" alt="BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.51 | avg itr 585.7" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>BDS2:
         Accuracy: avg=1.00 with std=0.00
-        Duration: avg=0.51 with std=0.05
-        ITR: avg=597.6 with std=53.97
+        Duration: avg=0.51 with std=0.03
+        ITR: avg=585.7 with std=34.97
 </pre></div>
 </div>
 </section>
@@ -916,7 +896,7 @@ Additionally, the evaluation is performed on a single participant only.</p>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_3_early_stopping_011.png" srcset="../_images/sphx_glr_example_3_early_stopping_011.png" alt="Comparison of early stopping methods averaged across folds" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 7.197 seconds)</p>
+<img src="../_images/sphx_glr_example_3_early_stopping_011.png" srcset="../_images/sphx_glr_example_3_early_stopping_011.png" alt="Comparison of early stopping methods averaged across folds" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 6.803 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-3-early-stopping-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/8120138f34b8f0c99667374e9a07e981/example_3_early_stopping.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_3_early_stopping.ipynb</span></code></a></p>

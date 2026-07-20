@@ -60,7 +60,7 @@ Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-57
+.. GENERATED FROM PYTHON SOURCE LINES 31-56
 
 .. code-block:: Python
 
@@ -85,9 +85,8 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     ENCODING_LENGTH = 0.3
     SEED = 42
 
-    y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
     X, y, V = pyntbci.eeg.generate_c_vep(
-        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
     )
 
 
@@ -97,7 +96,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-79
+.. GENERATED FROM PYTHON SOURCE LINES 57-78
 
 Epoch decoding
 --------------
@@ -121,7 +120,7 @@ The sliced dataset `X` will be of shape trials by epochs (within one trial) by t
 samples (in an epoch, not trial). Secondly, the sliced dataset contains labels `y` of shape trials by epochs,
 specifically, a target class-label (flash versus no-flash) for each epoch in each trial.
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-99
+.. GENERATED FROM PYTHON SOURCE LINES 78-98
 
 .. code-block:: Python
 
@@ -166,7 +165,7 @@ specifically, a target class-label (flash versus no-flash) for each epoch in eac
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-123
+.. GENERATED FROM PYTHON SOURCE LINES 99-122
 
 Epoch to trial decoding with LDA
 --------------------------------
@@ -192,7 +191,7 @@ Note, the dataset contains single-trials of 31.5 seconds long. For many particip
 used, this leads to 100% accuracy. A new parameter is introduced here, that cuts the single-trials to shorter lengths.
 Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-190
+.. GENERATED FROM PYTHON SOURCE LINES 122-189
 
 .. code-block:: Python
 
@@ -272,7 +271,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_4_bitwise_decoding_002.png
-         :alt: LDA: classification accuracy (epoch): avg=0.82 std=0.01
+         :alt: LDA: classification accuracy (epoch): avg=0.83 std=0.01
          :srcset: /examples/images/sphx_glr_example_4_bitwise_decoding_002.png
          :class: sphx-glr-multi-img
 
@@ -296,7 +295,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-216
+.. GENERATED FROM PYTHON SOURCE LINES 190-215
 
 Epoch to trial decoding with CCA and LDA
 ----------------------------------------
@@ -324,7 +323,7 @@ Note, the dataset contains single-trials of 31.5 seconds long. For many particip
 used, this leads to 100% accuracy. A new parameter is introduced here, that cuts the single-trials to shorter lengths.
 Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-294
+.. GENERATED FROM PYTHON SOURCE LINES 215-293
 
 .. code-block:: Python
 
@@ -442,7 +441,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.698 seconds)
+   **Total running time of the script:** (0 minutes 1.882 seconds)
 
 
 .. _sphx_glr_download_examples_example_4_bitwise_decoding.py:

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.eeg.generate_impulse_response &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>pyntbci.eeg.generate_impulse_response &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -92,7 +92,7 @@
 <h1>pyntbci.eeg.generate_impulse_response<a class="headerlink" href="#pyntbci-eeg-generate-impulse-response" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyntbci.eeg.generate_impulse_response">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.eeg.</span></span><span class="sig-name descname"><span class="pre">generate_impulse_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/eeg.html#generate_impulse_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.eeg.generate_impulse_response" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyntbci.eeg.</span></span><span class="sig-name descname"><span class="pre">generate_impulse_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dtype</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'float32'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/eeg.html#generate_impulse_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.eeg.generate_impulse_response" title="Link to this definition"></a></dt>
 <dd><p>Generate a temporal response function (i.e., a VEP / impulse response kernel) as the sum of one or more
 Ricker wavelets (a biphasic bump, similar to a single-component visual evoked potential).</p>
 <dl class="field-list simple">
@@ -102,6 +102,8 @@ Ricker wavelets (a biphasic bump, similar to a single-component visual evoked po
 <li><p><strong>components</strong> (<em>list</em><em>[</em><em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>] </em><em>(</em><em>default: None</em><em>)</em>) – A list of (amplitude, latency, width) tuples, each in (a.u., seconds, seconds), that are summed to form the
 impulse response. If None, three component are used (-0.5, 0.075, 0.020), (1.0, 0.1, 0.05), and
 (-0.4, 0.125, 0.020), representing a prototypical VEP.</p></li>
+<li><p><strong>dtype</strong> (<em>str</em><em> | </em><em>np.dtype</em><em> (</em><em>default: &quot;float32&quot;</em><em>)</em>) – The dtype of the returned array. Computation is always done in float64 internally; this only controls the
+precision of the final result.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

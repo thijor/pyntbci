@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.stopping &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>pyntbci.stopping &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -85,7 +85,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyntbci.stopping</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">beta</span><span class="p">,</span> <span class="n">norm</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span>
@@ -94,6 +96,157 @@
 
 <span class="kn">import</span> <span class="nn">pyntbci.classifiers</span>
 <span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="n">itr</span>
+
+
+<span class="k">def</span> <span class="nf">_supports_running</span><span class="p">(</span><span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether estimator supports running (incremental) decision_function()/predict(), i.e. is an eCCA or rCCA with</span>
+<span class="sd">    ensemble=False (see their decision_function() docstrings). Used to decide, in the segment-by-segment loops</span>
+<span class="sd">    below, whether to feed the estimator only the newly observed segment each time (cheap) or, for any other</span>
+<span class="sd">    estimator (a user-supplied classifier, or ensemble=True), fall back to passing the whole growing prefix and</span>
+<span class="sd">    letting it recompute from scratch each time (safe, works for any ClassifierMixin, but O(n_segments^2)).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator: ClassifierMixin</span>
+<span class="sd">        The estimator to check.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    supported: bool</span>
+<span class="sd">        Whether estimator supports running decision_function()/predict().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="p">(</span><span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">eCCA</span><span class="p">,</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span>
+        <span class="n">estimator</span><span class="p">,</span> <span class="s2">&quot;ensemble&quot;</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_iter_segment_scores</span><span class="p">(</span>
+    <span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">,</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">segment_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_segments</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield (i_segment, scores) for each growing segment of X (i.e., scores as returned by decision_function() on</span>
+<span class="sd">    X[:, :, :(1 + i_segment) * segment_samples], for i_segment in range(n_segments)), using running=True (feeding</span>
+<span class="sd">    only the newly observed segment, not the whole growing prefix, each time) when estimator supports it (see</span>
+<span class="sd">    _supports_running()), and falling back to a from-scratch recompute on the full prefix otherwise.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator: ClassifierMixin</span>
+<span class="sd">        The (fitted) estimator to compute segment scores with.</span>
+<span class="sd">    X: NDArray</span>
+<span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">    segment_samples: int</span>
+<span class="sd">        The size of a segment in samples.</span>
+<span class="sd">    n_segments: int</span>
+<span class="sd">        The number of segments to yield scores for.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    i_segment: int</span>
+<span class="sd">        The segment index.</span>
+<span class="sd">    scores: NDArray</span>
+<span class="sd">        The scores as returned by estimator.decision_function() for the growing prefix up to and including this</span>
+<span class="sd">        segment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">use_running</span> <span class="o">=</span> <span class="n">_supports_running</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="n">segment_samples</span>
+        <span class="k">if</span> <span class="n">use_running</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">prev</span><span class="p">:</span><span class="n">idx</span><span class="p">],</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="p">(</span><span class="n">i_segment</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="k">yield</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">scores</span>
+
+
+<span class="k">def</span> <span class="nf">_iter_segment_predictions</span><span class="p">(</span>
+    <span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">,</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">segment_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_segments</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Like _iter_segment_scores(), but yielding (i_segment, yh) from estimator.predict() instead of scores from</span>
+<span class="sd">    decision_function().</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator: ClassifierMixin</span>
+<span class="sd">        The (fitted) estimator to compute segment predictions with.</span>
+<span class="sd">    X: NDArray</span>
+<span class="sd">        The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">    segment_samples: int</span>
+<span class="sd">        The size of a segment in samples.</span>
+<span class="sd">    n_segments: int</span>
+<span class="sd">        The number of segments to yield predictions for.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    i_segment: int</span>
+<span class="sd">        The segment index.</span>
+<span class="sd">    yh: NDArray</span>
+<span class="sd">        The predicted labels as returned by estimator.predict() for the growing prefix up to and including this</span>
+<span class="sd">        segment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">use_running</span> <span class="o">=</span> <span class="n">_supports_running</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="n">segment_samples</span>
+        <span class="k">if</span> <span class="n">use_running</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">prev</span><span class="p">:</span><span class="n">idx</span><span class="p">],</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="p">(</span><span class="n">i_segment</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="k">yield</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">yh</span>
+
+
+<span class="k">def</span> <span class="nf">_running_predict</span><span class="p">(</span>
+    <span class="n">stopping</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">,</span>
+    <span class="n">X_chunk</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">use_decision_function</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get cumulative decision_function() (or predict()) results for a growing trial, given only the newest chunk</span>
+<span class="sd">    of data each call, for use by a *Stopping class&#39;s own predict()&#39;s running=True mode. Works for any wrapped</span>
+<span class="sd">    estimator, not just eCCA/rCCA: if the estimator supports running scoring itself (see _supports_running()), the</span>
+<span class="sd">    chunk is forwarded directly and the estimator does the incremental work; otherwise, the raw chunks are</span>
+<span class="sd">    buffered here (in stopping, not in the estimator) and the estimator recomputes from scratch on the full</span>
+<span class="sd">    buffered prefix each call, exactly as if running=False had been used throughout, i.e. still correct, only not</span>
+<span class="sd">    faster. Either way, the caller only ever needs to supply the new chunk, and the running state (which estimator</span>
+<span class="sd">    predict()/decision_function() calls need, in the fallback case, or how many samples have been observed, in</span>
+<span class="sd">    both cases, to resolve the current segment index) lives in stopping._running_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stopping: ClassifierMixin</span>
+<span class="sd">        The *Stopping instance whose running state (stopping._running_) to use and update.</span>
+<span class="sd">    X_chunk: NDArray</span>
+<span class="sd">        The newly observed chunk of EEG data of shape (n_trials, n_channels, n_new_samples).</span>
+<span class="sd">    reset: bool</span>
+<span class="sd">        Whether to discard any existing running state before processing this call.</span>
+<span class="sd">    use_decision_function: bool</span>
+<span class="sd">        Whether to call the estimator&#39;s decision_function() (True) or predict() (False).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result: NDArray</span>
+<span class="sd">        The cumulative decision_function() scores or predict() labels, as if computed from scratch on the full</span>
+<span class="sd">        trial observed so far (not just the new chunk).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">reset</span> <span class="ow">or</span> <span class="n">stopping</span><span class="o">.</span><span class="n">_running_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stopping</span><span class="o">.</span><span class="n">_running_</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;n_samples&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;raw_buffer&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">stopping</span><span class="o">.</span><span class="n">_running_</span>
+    <span class="n">method_name</span> <span class="o">=</span> <span class="s2">&quot;decision_function&quot;</span> <span class="k">if</span> <span class="n">use_decision_function</span> <span class="k">else</span> <span class="s2">&quot;predict&quot;</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stopping</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_supports_running</span><span class="p">(</span><span class="n">stopping</span><span class="o">.</span><span class="n">estimator</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">X_chunk</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_chunk</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">],</span> <span class="n">X_chunk</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">])</span>
+    <span class="n">r</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">X_chunk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">result</span>
 
 
 <div class="viewcode-block" id="BayesStopping">
@@ -168,6 +321,7 @@
     <span class="n">eta_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">pf_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">pm_</span><span class="p">:</span> <span class="n">NDArray</span>
+    <span class="n">_running_</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -222,6 +376,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit_score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -326,9 +481,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">b1_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">s0_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">s1_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">segment_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">_iter_segment_scores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">segment_samples</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">):</span>
             <span class="n">n_classes</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -356,13 +510,31 @@
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The testing procedure to apply the estimator to novel EEG data using Bayesian dynamic stopping.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: NDArray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the</span>
+<span class="sd">            newly observed samples since the previous call (not the full trial so far), see running below.</span>
+<span class="sd">        running: bool (default: False)</span>
+<span class="sd">            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without</span>
+<span class="sd">            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch</span>
+<span class="sd">            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the</span>
+<span class="sd">            newly observed samples since the previous call, and a running state (kept internally, not a fitted</span>
+<span class="sd">            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or</span>
+<span class="sd">            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole</span>
+<span class="sd">            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,</span>
+<span class="sd">            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or</span>
+<span class="sd">            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False</span>
+<span class="sd">            calls, and is cleared by fit().</span>
+<span class="sd">        reset: bool (default: False)</span>
+<span class="sd">            Whether to discard any existing running state before processing this call. Only relevant if</span>
+<span class="sd">            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set</span>
+<span class="sd">            explicitly to start a new sequence before the previous one naturally ended.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -375,20 +547,32 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b0_&quot;</span><span class="p">,</span> <span class="s2">&quot;b1_&quot;</span><span class="p">,</span> <span class="s2">&quot;s0_&quot;</span><span class="p">,</span> <span class="s2">&quot;s1_&quot;</span><span class="p">,</span> <span class="s2">&quot;pf_&quot;</span><span class="p">,</span> <span class="s2">&quot;pm_&quot;</span><span class="p">])</span>
 
-        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+            <span class="n">n_prev</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="p">(</span><span class="n">reset</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_prev</span> <span class="o">+</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># advance state, result unused</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
             <span class="c1"># Check if stopped</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bds0&quot;</span><span class="p">:</span>
@@ -396,34 +580,37 @@
                 <span class="n">not_stopped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span>
 
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bds1&quot;</span><span class="p">:</span>
-                <span class="c1"># Change target pf/pd with min/max of learned pf/pd</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: changed target_pf to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: changed target_pd to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Change target pf/pd with min/max of learned pf/pd (locally, for this prediction only)</span>
+                <span class="n">target_pf</span><span class="p">,</span> <span class="n">target_pd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">target_pf</span><span class="p">:</span>
+                    <span class="n">target_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target_pf is not reachable, using </span><span class="si">{</span><span class="n">target_pf</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> for this prediction instead.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">target_pd</span><span class="p">:</span>
+                    <span class="n">target_pd</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target_pd is not reachable, using </span><span class="si">{</span><span class="n">target_pd</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> for this prediction instead.&quot;</span><span class="p">)</span>
 
                 <span class="c1"># Stop if eta threshold is reached, and if both pf and pd targets are reached</span>
                 <span class="n">c1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span>
-                <span class="n">c2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span>
-                <span class="n">c3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span><span class="p">)</span>
+                <span class="n">c2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">target_pf</span>
+                <span class="n">c3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">target_pd</span><span class="p">)</span>
                 <span class="n">not_stopped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">),</span> <span class="n">c3</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bds2&quot;</span><span class="p">:</span>
-                <span class="c1"># Change target pf/pd with min/max of learned pf/pd</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: changed target_pf to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: changed target_pd to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Change target pf/pd with min/max of learned pf/pd (locally, for this prediction only)</span>
+                <span class="n">target_pf</span><span class="p">,</span> <span class="n">target_pd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">target_pf</span><span class="p">:</span>
+                    <span class="n">target_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target_pf is not reachable, using </span><span class="si">{</span><span class="n">target_pf</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> for this prediction instead.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">target_pd</span><span class="p">:</span>
+                    <span class="n">target_pd</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target_pd is not reachable, using </span><span class="si">{</span><span class="n">target_pd</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2"> for this prediction instead.&quot;</span><span class="p">)</span>
 
                 <span class="c1"># Find intersection of target pf and pm to find &quot;optimal&quot; eta</span>
-                <span class="n">idx_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pf</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">idx_pm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_pd</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">idx_pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_</span> <span class="o">&lt;=</span> <span class="n">target_pf</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">idx_pm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pm_</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">target_pd</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">idx_pf</span><span class="p">,</span> <span class="n">idx_pm</span><span class="p">)</span>
-                <span class="n">eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="c1"># Fall back to the most conservative (last) segment if no segment satisfies both targets at once</span>
+                <span class="n">eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
                 <span class="c1"># Stop if &quot;optimal&quot; eta is reached</span>
                 <span class="n">not_stopped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">eta</span>
@@ -482,6 +669,7 @@
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">stop_time_</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">_running_</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -532,6 +720,8 @@
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
 
+        <span class="k">assert</span> <span class="n">n_trials</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span> <span class="s2">&quot;n_trials must be at least n_folds, otherwise some folds have no test data.&quot;</span>
+
         <span class="n">folds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">))[:</span><span class="n">n_trials</span><span class="p">]</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
 
@@ -544,15 +734,12 @@
             <span class="c1"># Fit estimator</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">,</span> <span class="n">y_trn</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
-                <span class="c1"># Predict labels for this segment</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_tst</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
-
+            <span class="n">segment_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">yh</span> <span class="ow">in</span> <span class="n">_iter_segment_predictions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X_tst</span><span class="p">,</span> <span class="n">segment_samples</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">):</span>
                 <span class="c1"># Compute criterion</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">==</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span>
                     <span class="n">scores</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">==</span> <span class="s2">&quot;itr&quot;</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;itr&quot;</span><span class="p">:</span>
                     <span class="c1"># Note, the number of classes does not affect the optimum</span>
                     <span class="n">scores</span><span class="p">[</span><span class="n">i_fold</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">itr</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -569,20 +756,20 @@
         <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># Optimize the criterion</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span> <span class="o">==</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;For optimization target one should set the target&quot;</span><span class="p">)</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">scores</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">scores</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown optimization:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">classes_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -591,13 +778,31 @@
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The testing procedure to apply the estimator to novel EEG data using criterion static stopping.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: NDArray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the</span>
+<span class="sd">            newly observed samples since the previous call (not the full trial so far), see running below.</span>
+<span class="sd">        running: bool (default: False)</span>
+<span class="sd">            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without</span>
+<span class="sd">            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch</span>
+<span class="sd">            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the</span>
+<span class="sd">            newly observed samples since the previous call, and a running state (kept internally, not a fitted</span>
+<span class="sd">            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or</span>
+<span class="sd">            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole</span>
+<span class="sd">            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,</span>
+<span class="sd">            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or</span>
+<span class="sd">            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False</span>
+<span class="sd">            calls, and is cleared by fit().</span>
+<span class="sd">        reset: bool (default: False)</span>
+<span class="sd">            Whether to discard any existing running state before processing this call. Only relevant if</span>
+<span class="sd">            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set</span>
+<span class="sd">            explicitly to start a new sequence before the previous one naturally ended.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -607,15 +812,27 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;stop_time_&quot;</span><span class="p">])</span>
 
-        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+            <span class="n">n_prev</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="p">(</span><span class="n">reset</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_prev</span> <span class="o">+</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># advance state, result unused</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time_</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># advance state, result unused</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
@@ -667,6 +884,7 @@
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">distributions_</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
+    <span class="n">_running_</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -719,14 +937,11 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">distributions_</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
-                <span class="c1"># Estimate scores for this segment</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
-
+            <span class="n">segment_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">_iter_segment_scores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">segment_samples</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">):</span>
                 <span class="c1"># Put target score at index 0</span>
                 <span class="k">for</span> <span class="n">i_trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                    <span class="n">scores</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]],</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="n">i_trial</span><span class="p">],</span> <span class="mi">0</span><span class="p">],</span> <span class="p">:]</span>
+                    <span class="n">scores</span><span class="p">[</span><span class="n">i_trial</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">i_trial</span><span class="p">,</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="n">i_trial</span><span class="p">],</span> <span class="mi">0</span><span class="p">]]</span>
 
                 <span class="c1"># Fit distribution to non-target scores</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span>
@@ -737,6 +952,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">distributions_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -745,13 +961,31 @@
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The testing procedure to apply the estimator to novel EEG data using distribution dynamic stopping.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: NDArray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the</span>
+<span class="sd">            newly observed samples since the previous call (not the full trial so far), see running below.</span>
+<span class="sd">        running: bool (default: False)</span>
+<span class="sd">            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without</span>
+<span class="sd">            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch</span>
+<span class="sd">            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the</span>
+<span class="sd">            newly observed samples since the previous call, and a running state (kept internally, not a fitted</span>
+<span class="sd">            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or</span>
+<span class="sd">            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole</span>
+<span class="sd">            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,</span>
+<span class="sd">            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or</span>
+<span class="sd">            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False</span>
+<span class="sd">            calls, and is cleared by fit().</span>
+<span class="sd">        reset: bool (default: False)</span>
+<span class="sd">            Whether to discard any existing running state before processing this call. Only relevant if</span>
+<span class="sd">            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set</span>
+<span class="sd">            explicitly to start a new sequence before the previous one naturally ended.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -759,21 +993,34 @@
 <span class="sd">            The vector of predicted labels of the trials in X of shape (n_trials). Note, the value equals -1 if the</span>
 <span class="sd">            trial cannot yet be stopped.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;_is_fitted&quot;</span><span class="p">])</span>
-        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+            <span class="n">n_prev</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="p">(</span><span class="n">reset</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_prev</span> <span class="o">+</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># advance state, result unused</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
             <span class="c1"># Sort the scores (ascending)</span>
             <span class="n">scores_sorted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -812,7 +1059,17 @@
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
         <span class="k">return</span> <span class="n">yh</span></div>
-</div>
+
+
+    <span class="k">def</span> <span class="nf">__sklearn_is_fitted__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check fitted status and return a Boolean value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fitted: bool</span>
+<span class="sd">            Whether the classifier is fitted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_fitted&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span></div>
 
 
 
@@ -861,6 +1118,7 @@
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">margins_</span><span class="p">:</span> <span class="n">NDArray</span>
+    <span class="n">_running_</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -915,11 +1173,8 @@
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">margins_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
-            <span class="c1"># Compute scores for this segment</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
-
+        <span class="n">segment_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">_iter_segment_scores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">segment_samples</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">):</span>
             <span class="c1"># Compute margins (best - second best)</span>
             <span class="n">scores_sorted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">margins</span> <span class="o">=</span> <span class="n">scores_sorted</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">scores_sorted</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
@@ -945,6 +1200,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">margins_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">margin_axis</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -953,13 +1209,31 @@
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The testing procedure to apply the estimator to novel EEG data using margin dynamic stopping.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: NDArray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the</span>
+<span class="sd">            newly observed samples since the previous call (not the full trial so far), see running below.</span>
+<span class="sd">        running: bool (default: False)</span>
+<span class="sd">            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without</span>
+<span class="sd">            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch</span>
+<span class="sd">            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the</span>
+<span class="sd">            newly observed samples since the previous call, and a running state (kept internally, not a fitted</span>
+<span class="sd">            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or</span>
+<span class="sd">            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole</span>
+<span class="sd">            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,</span>
+<span class="sd">            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or</span>
+<span class="sd">            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False</span>
+<span class="sd">            calls, and is cleared by fit().</span>
+<span class="sd">        reset: bool (default: False)</span>
+<span class="sd">            Whether to discard any existing running state before processing this call. Only relevant if</span>
+<span class="sd">            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set</span>
+<span class="sd">            explicitly to start a new sequence before the previous one naturally ended.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -969,20 +1243,32 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;margins_&quot;</span><span class="p">])</span>
 
-        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+            <span class="n">n_prev</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="p">(</span><span class="n">reset</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_prev</span> <span class="o">+</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># advance state, result unused</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
             <span class="c1"># Sort the scores (ascending)</span>
             <span class="n">scores_sorted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1041,6 +1327,7 @@
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">values_</span><span class="p">:</span> <span class="n">NDArray</span>
+    <span class="n">_running_</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1096,11 +1383,8 @@
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">values_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_segments</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
-            <span class="c1"># Compute scores for this segment</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
-
+        <span class="n">segment_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">_iter_segment_scores</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">segment_samples</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">):</span>
             <span class="c1"># Compute values</span>
             <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
@@ -1125,6 +1409,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">values_</span><span class="p">[</span><span class="n">i_segment</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_axis</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -1133,13 +1418,31 @@
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The testing procedure to apply the estimator to novel EEG data using value dynamic stopping.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: NDArray</span>
-<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples).</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples). If running=True, this is only the</span>
+<span class="sd">            newly observed samples since the previous call (not the full trial so far), see running below.</span>
+<span class="sd">        running: bool (default: False)</span>
+<span class="sd">            Whether to use running (incremental) scoring. If False (default), predict() behaves exactly as without</span>
+<span class="sd">            this parameter: X is the complete trial data seen so far, and everything is recomputed from scratch</span>
+<span class="sd">            (safe to call in any order, e.g. repeatedly with the same or a shorter X). If True, X is only the</span>
+<span class="sd">            newly observed samples since the previous call, and a running state (kept internally, not a fitted</span>
+<span class="sd">            attribute) is reused and updated; if the wrapped estimator supports running scoring itself (an eCCA or</span>
+<span class="sd">            rCCA with ensemble=False), each call only does O(n_new_samples) work instead of reprocessing the whole</span>
+<span class="sd">            trial, otherwise the raw data is buffered here and recomputed from scratch each call (still correct,</span>
+<span class="sd">            just not faster). Use reset=True on the first call of a new running sequence (e.g. for a new trial or</span>
+<span class="sd">            a new batch of trials); the running state is otherwise unaffected by (and does not affect) running=False</span>
+<span class="sd">            calls, and is cleared by fit().</span>
+<span class="sd">        reset: bool (default: False)</span>
+<span class="sd">            Whether to discard any existing running state before processing this call. Only relevant if</span>
+<span class="sd">            running=True; a never-yet-used instance already starts fresh without it, so it only needs to be set</span>
+<span class="sd">            explicitly to start a new sequence before the previous one naturally ended.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1149,20 +1452,32 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;values_&quot;</span><span class="p">])</span>
 
-        <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+            <span class="n">n_prev</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="p">(</span><span class="n">reset</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_prev</span> <span class="o">+</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ctime</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># advance state, result unused</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ctime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">])</span>  <span class="c1"># lower bound 0</span>
 
             <span class="c1"># Compute the scores</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
             <span class="c1"># Compute values</span>
             <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>

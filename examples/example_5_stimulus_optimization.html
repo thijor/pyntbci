@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stimulus optimization &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>Stimulus optimization &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -146,9 +146,8 @@ DOI: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 <span class="n">ENCODING_LENGTH</span> <span class="o">=</span> <span class="mf">0.3</span>
 <span class="n">SEED</span> <span class="o">=</span> <span class="mi">42</span>
 
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">)</span> <span class="o">%</span> <span class="n">N_CLASSES</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">eeg</span><span class="o">.</span><span class="n">generate_c_vep</span><span class="p">(</span>
-    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
+    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -278,7 +277,7 @@ grid, such that codes that still correlate much are not placed at neighbouring c
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(154.22222222222223, 0.5, &#39;norm. count&#39;)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.437 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 3.172 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-5-stimulus-optimization-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/468d427b59e093a03ee509cccaa7a404/example_5_stimulus_optimization.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_5_stimulus_optimization.ipynb</span></code></a></p>

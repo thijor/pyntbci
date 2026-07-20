@@ -55,7 +55,7 @@ Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-52
+.. GENERATED FROM PYTHON SOURCE LINES 26-51
 
 .. code-block:: Python
 
@@ -80,9 +80,8 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     ENCODING_LENGTH = 0.3
     SEED = 42
 
-    y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
     X, y, V = pyntbci.eeg.generate_c_vep(
-        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
     )
 
 
@@ -92,11 +91,11 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-54
+.. GENERATED FROM PYTHON SOURCE LINES 52-53
 
 Extract templates with rCCA
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-59
+.. GENERATED FROM PYTHON SOURCE LINES 53-58
 
 .. code-block:: Python
 
@@ -112,7 +111,7 @@ Extract templates with rCCA
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-66
+.. GENERATED FROM PYTHON SOURCE LINES 59-65
 
 Optimize stimulus subset
 -----------------
@@ -121,7 +120,7 @@ we have a 4 x 8 matrix speller setup, for a total of 32 classes. Thus, we can se
 from the 63 available codes. This we will do by minimizing the maximum pair-wise correlation between templates within
 the subset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-113
+.. GENERATED FROM PYTHON SOURCE LINES 65-112
 
 .. code-block:: Python
 
@@ -202,14 +201,14 @@ the subset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-118
+.. GENERATED FROM PYTHON SOURCE LINES 113-117
 
 Optimize stimulus layout
 -----------------
 Now we have the optimal subset of 32 codes. Still, we could optimize how these are allocated to the 4 x 8 speller
 grid, such that codes that still correlate much are not placed at neighbouring cells in the grid.
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-164
+.. GENERATED FROM PYTHON SOURCE LINES 117-163
 
 .. code-block:: Python
 
@@ -292,7 +291,7 @@ grid, such that codes that still correlate much are not placed at neighbouring c
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.437 seconds)
+   **Total running time of the script:** (0 minutes 3.172 seconds)
 
 
 .. _sphx_glr_download_examples_example_5_stimulus_optimization.py:

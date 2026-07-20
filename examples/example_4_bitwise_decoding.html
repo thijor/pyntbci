@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bitwise decoding &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>Bitwise decoding &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -154,9 +154,8 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <span class="n">ENCODING_LENGTH</span> <span class="o">=</span> <span class="mf">0.3</span>
 <span class="n">SEED</span> <span class="o">=</span> <span class="mi">42</span>
 
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">)</span> <span class="o">%</span> <span class="n">N_CLASSES</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">eeg</span><span class="o">.</span><span class="n">generate_c_vep</span><span class="p">(</span>
-    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
+    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -293,7 +292,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.</p>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><img src="../_images/sphx_glr_example_4_bitwise_decoding_002.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_002.png" alt="LDA: classification accuracy (epoch): avg=0.82 std=0.01" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_example_4_bitwise_decoding_002.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_002.png" alt="LDA: classification accuracy (epoch): avg=0.83 std=0.01" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_4_bitwise_decoding_003.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_003.png" alt="LDA: classification accuracy (trial): avg=1.00 std=0.00" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>LDA:
@@ -415,7 +414,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.</p>
 Text(0.5, 1.0, &#39;CCA+LDA: classification accuracy (trial): avg=1.00 std=0.00&#39;)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.698 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.882 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-4-bitwise-decoding-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/ee690d29163033cdce16256703635276/example_4_bitwise_decoding.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_4_bitwise_decoding.ipynb</span></code></a></p>

@@ -181,7 +181,7 @@ Inspect data
 
  .. code-block:: none
 
-    X (32, 16, 252) (trials x channels x samples) float64
+    X (32, 16, 252) (trials x channels x samples) float32
     y (32,) (trials) int64
     V (32, 126) (classes, samples) uint8
     fs 120 Hz
@@ -451,7 +451,7 @@ the performance of rCCA.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.591 seconds)
+   **Total running time of the script:** (0 minutes 1.926 seconds)
 
 
 .. _sphx_glr_download_tutorials_tutorial_1_getting_started.py:

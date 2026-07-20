@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Reference &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>API Reference &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=496f73d5"></script>
+      <script src="_static/documentation_options.js?v=c4cb232b"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/sg-tags.js?v=d80f6fa4"></script>
@@ -183,7 +183,7 @@
 <span id="eeg"></span><h1>EEG<a class="headerlink" href="#module-pyntbci.eeg" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_impulse_response.html#pyntbci.eeg.generate_impulse_response" title="pyntbci.eeg.generate_impulse_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_impulse_response</span></code></a>(fs[, components])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_impulse_response.html#pyntbci.eeg.generate_impulse_response" title="pyntbci.eeg.generate_impulse_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_impulse_response</span></code></a>(fs[, components, ...])</p></td>
 <td><p>Generate a temporal response function (i.e., a VEP / impulse response kernel) as the sum of one or more Ricker wavelets (a biphasic bump, similar to a single-component visual evoked potential).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.eeg.generate_c_vep_source.html#pyntbci.eeg.generate_c_vep_source" title="pyntbci.eeg.generate_c_vep_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_c_vep_source</span></code></a>(stimulus, y, n_samples, fs)</p></td>
@@ -352,7 +352,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency" title="pyntbci.utilities.correct_latency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_latency</span></code></a>(X, y, latency, fs[, axis])</p></td>
 <td><p>Correct for a latency in data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correlation.html#pyntbci.utilities.correlation" title="pyntbci.utilities.correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation</span></code></a>(A, B)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correlation.html#pyntbci.utilities.correlation" title="pyntbci.utilities.correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation</span></code></a>(A, B[, n_old, avg_old, cov_old, ...])</p></td>
 <td><p>Compute the correlation coefficient.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.covariance.html#pyntbci.utilities.covariance" title="pyntbci.utilities.covariance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">covariance</span></code></a>(data[, n_old, avg_old, cov_old, ...])</p></td>
@@ -364,7 +364,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.encoding_matrix.html#pyntbci.utilities.encoding_matrix" title="pyntbci.utilities.encoding_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encoding_matrix</span></code></a>(stimulus, length[, stride, ...])</p></td>
 <td><p>Make a Toeplitz-like encoding matrix.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean" title="pyntbci.utilities.euclidean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euclidean</span></code></a>(A, B)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.euclidean.html#pyntbci.utilities.euclidean" title="pyntbci.utilities.euclidean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euclidean</span></code></a>(A, B[, sum_aa_old, sum_bb_old, ...])</p></td>
 <td><p>Compute the Euclidean distance.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.event_matrix.html#pyntbci.utilities.event_matrix" title="pyntbci.utilities.event_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event_matrix</span></code></a>(stimulus, event[, onset_event])</p></td>
@@ -380,7 +380,7 @@
 <td><p>Find the neighbouring pair with maximum score.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.pinv.html#pyntbci.utilities.pinv" title="pyntbci.utilities.pinv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pinv</span></code></a>(A[, alpha])</p></td>
-<td><p>Compute the pseudo-inverse of a matrix.</p></td>
+<td><p>Compute the (Moore-Penrose) pseudo-inverse of a matrix.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
 <td><p>Compute the information-transfer rate (ITR).</p></td>

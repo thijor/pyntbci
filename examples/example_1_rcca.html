@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rCCA &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>rCCA &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -17,7 +17,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -149,9 +149,8 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <span class="n">ENCODING_LENGTH</span> <span class="o">=</span> <span class="mf">0.3</span>
 <span class="n">SEED</span> <span class="o">=</span> <span class="mi">42</span>
 
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">)</span> <span class="o">%</span> <span class="n">N_CLASSES</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">eeg</span><span class="o">.</span><span class="n">generate_c_vep</span><span class="p">(</span>
-    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
+    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -197,7 +196,7 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <li><img src="../_images/sphx_glr_example_1_rcca_002.png" srcset="../_images/sphx_glr_example_1_rcca_002.png" alt="Single-trial labels" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_1_rcca_003.png" srcset="../_images/sphx_glr_example_1_rcca_003.png" alt="Stimulus time-series" class = "sphx-glr-multi-img"/></li>
 </ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X (32, 16, 252) (trials x channels x samples) float64
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X (32, 16, 252) (trials x channels x samples) float32
 y (32,) (trials) int64
 V (32, 126) (classes, samples) uint8
 fs 120 Hz
@@ -392,8 +391,11 @@ training data they require to estimate their parameters.</p>
 
     <span class="c1"># Loop train trials</span>
     <span class="k">for</span> <span class="n">i_trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_train_trials</span><span class="p">):</span>
-        <span class="c1"># Train classifier</span>
-        <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Train classifier. Note, gamma_m regularizes the (216-feature) encoding-matrix covariance, which is needed</span>
+        <span class="c1"># here because the low end of this learning curve fits on very few trials (down to a single one).</span>
+        <span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span>
+            <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gamma_m</span><span class="o">=</span><span class="mf">0.1</span>
+        <span class="p">)</span>
         <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_trn</span><span class="p">[:</span> <span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y_trn</span><span class="p">[:</span> <span class="n">train_trials</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]])</span>
 
         <span class="c1"># Apply classifier</span>
@@ -416,19 +418,7 @@ training data they require to estimate their parameters.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_1_rcca_009.png" srcset="../_images/sphx_glr_example_1_rcca_009.png" alt="Learning curve" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.1711921373129642e-19.
-  iCyy = np.real(sqrtm(inv(Cyy)))
-/home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.5072190869220997e-19.
-  iCyy = np.real(sqrtm(inv(Cyy)))
-/home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.3396714502471204e-19.
-  iCyy = np.real(sqrtm(inv(Cyy)))
-/home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.76851037148156e-18.
-  iCyy = np.real(sqrtm(inv(Cyy)))
-/home/runner/.local/lib/python3.12/site-packages/pyntbci/transformers.py:174: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.894321858886181e-18.
-  iCyy = np.real(sqrtm(inv(Cyy)))
-</pre></div>
-</div>
-</section>
+<img src="../_images/sphx_glr_example_1_rcca_009.png" srcset="../_images/sphx_glr_example_1_rcca_009.png" alt="Learning curve" class = "sphx-glr-single-img"/></section>
 <section id="decoding-curve">
 <h2>Decoding curve<a class="headerlink" href="#decoding-curve" title="Link to this heading"></a></h2>
 <p>In this section, we will apply the decoder to varying testing trial lengths, to estimate a so-called decoding curve.
@@ -486,7 +476,7 @@ need during testing to classify single-trials.</p>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_1_rcca_010.png" srcset="../_images/sphx_glr_example_1_rcca_010.png" alt="Decoding curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 18.816 seconds)</p>
+<img src="../_images/sphx_glr_example_1_rcca_010.png" srcset="../_images/sphx_glr_example_1_rcca_010.png" alt="Decoding curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 19.222 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-1-rcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/9ef3725a40f654dafd08ce8fa218b937/example_1_rcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_1_rcca.ipynb</span></code></a></p>

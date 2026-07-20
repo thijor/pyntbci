@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.transformers &mdash; PyntBCI 1.8.4 documentation</title>
+  <title>pyntbci.transformers &mdash; PyntBCI 1.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=496f73d5"></script>
+      <script src="../../_static/documentation_options.js?v=c4cb232b"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -89,11 +89,86 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">sqrtm</span><span class="p">,</span> <span class="n">svd</span><span class="p">,</span> <span class="n">inv</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">inv</span><span class="p">,</span> <span class="n">eigh</span><span class="p">,</span> <span class="n">LinAlgError</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">check_is_fitted</span>
 
 <span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="n">covariance</span><span class="p">,</span> <span class="n">pinv</span>
+
+
+<span class="k">def</span> <span class="nf">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an error message for a singular or too ill-conditioned covariance matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name: str</span>
+<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) the covariance matrix was derived from.</span>
+<span class="sd">    shape: tuple</span>
+<span class="sd">        The shape of the covariance matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    message: str</span>
+<span class="sd">        The error message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">other</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span> <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span> <span class="k">else</span> <span class="s2">&quot;x&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> covariance matrix of shape </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> is singular or too ill-conditioned to invert. This usually &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;means there is too little data relative to the number of features, e.g. when fitting a separate CCA per &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;class on a small per-class subset of the data (ensemble=True in eCCA/rCCA). Consider setting &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;gamma_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">/alpha_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> (or gamma_</span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2">/alpha_</span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2"> if the other side is the &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;problem) to regularize the covariance matrix, or providing more training data.&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_sym_sqrt</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;X&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the square root of a symmetric positive semi-definite matrix via its eigendecomposition. Equivalent</span>
+<span class="sd">    to scipy.linalg.sqrtm(M) for such matrices, but exploits symmetry to be faster, more numerically stable, and</span>
+<span class="sd">    guaranteed real (avoiding the small imaginary numerical noise that the general-purpose scipy.linalg.sqrtm can</span>
+<span class="sd">    introduce). Also checks, using the already-computed eigenvalues, that M is not so ill-conditioned that inverting</span>
+<span class="sd">    it has produced a numerically corrupted (i.e., no longer positive semi-definite) result.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    M: NDArray</span>
+<span class="sd">        A symmetric positive semi-definite matrix of shape (n, n).</span>
+<span class="sd">    name: str (default: &quot;X&quot;)</span>
+<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) that M was derived from, used only to phrase the error message if M turns</span>
+<span class="sd">        out not to be (numerically) positive semi-definite.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sqrtM: NDArray</span>
+<span class="sd">        The square root of M of shape (n, n), such that sqrtM @ sqrtM == M.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-8</span> <span class="o">*</span> <span class="n">w</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">LinAlgError</span><span class="p">(</span><span class="n">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">V</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
+
+
+<span class="k">def</span> <span class="nf">_safe_inv</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Invert a covariance matrix, raising a clear, actionable error instead of a bare &quot;singular matrix&quot; if it</span>
+<span class="sd">    cannot be inverted.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    C: NDArray</span>
+<span class="sd">        A covariance matrix of shape (n, n) to invert.</span>
+<span class="sd">    name: str</span>
+<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) that C was derived from, used only to phrase the error message if C turns</span>
+<span class="sd">        out to be singular.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iC: NDArray</span>
+<span class="sd">        The inverse of C of shape (n, n).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">inv</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LinAlgError</span><span class="p">(</span><span class="n">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
 
 
 <div class="viewcode-block" id="CCA">
@@ -234,35 +309,37 @@
         <span class="n">Cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_y_</span>
         <span class="n">Cxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_xy_</span><span class="p">[:</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>
 
-        <span class="c1"># Regularization</span>
+        <span class="c1"># Regularization. Shrink towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the</span>
+        <span class="c1"># result stays symmetric for a per-feature gamma (for scalar gamma this is identical to (1 - gamma) * Cxx,</span>
+        <span class="c1"># since both terms are then equal).</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">nu_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cxx</span><span class="p">)</span> <span class="o">/</span> <span class="n">Cxx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
                 <span class="n">gamma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">Cxx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">gamma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">gamma_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span>
-            <span class="n">Cxx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_x</span><span class="p">)</span> <span class="o">*</span> <span class="n">Cxx</span> <span class="o">+</span> <span class="n">nu_x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">gamma_x</span><span class="p">)</span>
+                <span class="n">gamma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">Cxx</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_x</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">Cxx</span> <span class="o">+</span> <span class="n">Cxx</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_x</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">+</span> <span class="n">nu_x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span>
+                <span class="n">gamma_x</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">nu_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cyy</span><span class="p">)</span> <span class="o">/</span> <span class="n">Cyy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
                 <span class="n">gamma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">Cyy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">gamma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">gamma_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span>
-            <span class="n">Cyy</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_y</span><span class="p">)</span> <span class="o">*</span> <span class="n">Cyy</span> <span class="o">+</span> <span class="n">nu_y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">gamma_y</span><span class="p">)</span>
+                <span class="n">gamma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="n">Cyy</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_y</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">Cyy</span> <span class="o">+</span> <span class="n">Cyy</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_y</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">+</span> <span class="n">nu_y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span>
+                <span class="n">gamma_y</span>
+            <span class="p">)</span>
 
         <span class="c1"># Inverse square root</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">sqrtm</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">)))</span>
+            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">_safe_inv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">sqrtm</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">)))</span>
+            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">sqrtm</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">)))</span>
+            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">_safe_inv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">sqrtm</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span><span class="p">)))</span>
+            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
 
         <span class="c1"># SVD</span>
         <span class="n">U</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rho_</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">Cxy</span> <span class="o">@</span> <span class="n">iCyy</span><span class="p">)</span>
@@ -415,19 +492,13 @@
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Projected data matrix of shape (n_trials, n_components, n_samples).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Batched matmul: (n_components, n_features) @ (n_trials, n_features, n_samples) broadcasts the weight</span>
+        <span class="c1"># matrix across trials, avoiding the transpose+reshape (and the copy it forces) needed to route through</span>
+        <span class="c1"># _transform_X2D.</span>
         <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_features_x</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_trials</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features_x</span><span class="p">))</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_x_</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_x_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">Y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_features_y</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
-            <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_trials</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features_y</span><span class="p">))</span>
-
-        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_X2D</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">Y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_y_</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_y_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span>
 

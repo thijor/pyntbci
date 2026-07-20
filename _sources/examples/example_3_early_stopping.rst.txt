@@ -59,7 +59,7 @@ Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-63
+.. GENERATED FROM PYTHON SOURCE LINES 30-62
 
 .. code-block:: Python
 
@@ -76,7 +76,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     CYCLE_SIZE = V.shape[1] / FS
     LAGS = SHIFTS / PR
 
-    N_TRIALS = 1 * N_CLASSES
+    N_TRIALS = 2 * N_CLASSES
     N_CHANNELS = 16
     N_SAMPLES = int(4 * CYCLE_SIZE * FS)
     N_COMPONENTS = 3
@@ -84,9 +84,8 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     ENCODING_LENGTH = 0.3
     SEED = 42
 
-    y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
     X, y, V = pyntbci.eeg.generate_c_vep(
-        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
     )
 
     N_FOLDS = 4
@@ -103,7 +102,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-69
+.. GENERATED FROM PYTHON SOURCE LINES 63-68
 
 Maximum accuracy static stopping
 --------------------------------
@@ -111,7 +110,7 @@ The "maximum accuracy" method is a static stopping method that learns one stoppi
 reaches the maximum classification accuracy. During testing, all trials will stop as soon as that time is reached,
 hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-133
+.. GENERATED FROM PYTHON SOURCE LINES 68-132
 
 .. code-block:: Python
 
@@ -200,7 +199,7 @@ hence static stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-139
+.. GENERATED FROM PYTHON SOURCE LINES 133-138
 
 Maximum ITR static stopping
 ---------------------------
@@ -208,7 +207,7 @@ The "maximum ITR" method is a static stopping method that learns one stopping ti
 reaches the maximum information-transfer rate (ITR). During testing, all trials will stop as soon as that time is
 reached, hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-205
+.. GENERATED FROM PYTHON SOURCE LINES 138-204
 
 .. code-block:: Python
 
@@ -299,7 +298,7 @@ reached, hence static stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 206-211
+.. GENERATED FROM PYTHON SOURCE LINES 205-210
 
 Targeted accuracy static stopping
 ---------------------------------
@@ -307,13 +306,10 @@ The "targeted accuracy" method is a static stopping method that learns one stopp
 reaches a preset targeted accuracy. During testing, all trials will stop as soon as that time is reached, hence static
 stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-281
+.. GENERATED FROM PYTHON SOURCE LINES 210-277
 
 .. code-block:: Python
 
-
-    # Target accuracy
-    target_p = 0.90 ** (1 / N_SEGMENTS)
 
     # Loop folds
     accuracy_tgt_acc = np.zeros(N_FOLDS)
@@ -332,7 +328,7 @@ stopping.
             score_metric="correlation",
         )
         tgt_acc = pyntbci.stopping.CriterionStopping(
-            rcca, N_FOLDS, FS, criterion="accuracy", optimization="target", target=target_p
+            rcca, SEGMENT_TIME, FS, criterion="accuracy", optimization="target", target=0.90
         )
         tgt_acc.fit(X_trn, y_trn)
 
@@ -385,7 +381,7 @@ stopping.
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_003.png
-   :alt: Targeted accuracy early stopping: avg acc 1.00 | avg dur 4.00 | avg itr 75.0
+   :alt: Targeted accuracy early stopping: avg acc 1.00 | avg dur 0.40 | avg itr 750.0
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_003.png
    :class: sphx-glr-single-img
 
@@ -396,13 +392,13 @@ stopping.
 
     Targeted accuracy:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=4.00 with std=0.00
-            ITR: avg=75.0 with std=0.00
+            Duration: avg=0.40 with std=0.00
+            ITR: avg=750.0 with std=0.00
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 282-292
+.. GENERATED FROM PYTHON SOURCE LINES 278-288
 
 Margin dynamic stopping
 -----------------------
@@ -415,17 +411,14 @@ References:
        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
        doi: https://doi.org/10.1371/journal.pone.0133797
 
-.. GENERATED FROM PYTHON SOURCE LINES 292-371
+.. GENERATED FROM PYTHON SOURCE LINES 288-364
 
 .. code-block:: Python
 
 
-    # Target accuracy
-    target_p = 0.90 ** (1 / N_SEGMENTS)
-
     # Fit classifier
     rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="correlation")
-    margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=target_p, max_time=MAX_TIME)
+    margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=0.90, max_time=MAX_TIME)
     margin.fit(X, y)
 
     # Plot dynamic stopping
@@ -451,7 +444,7 @@ References:
             encoding_length=0.3,
             score_metric="correlation",
         )
-        margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=target_p)
+        margin = pyntbci.stopping.MarginStopping(rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=0.9)
         margin.fit(X_trn, y_trn)
 
         # Loop segments
@@ -514,7 +507,7 @@ References:
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_005.png
-         :alt: Margin dynamic stopping: avg acc 0.97 | avg dur 0.27 | avg itr 1052.9
+         :alt: Margin dynamic stopping: avg acc 0.97 | avg dur 0.25 | avg itr 1113.0
          :srcset: /examples/images/sphx_glr_example_3_early_stopping_005.png
          :class: sphx-glr-multi-img
 
@@ -524,14 +517,14 @@ References:
  .. code-block:: none
 
     Margin:
-            Accuracy: avg=0.97 with std=0.05
-            Duration: avg=0.27 with std=0.01
-            ITR: avg=1052.9 with std=116.29
+            Accuracy: avg=0.97 with std=0.03
+            Duration: avg=0.25 with std=0.01
+            ITR: avg=1113.0 with std=113.53
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 372-382
+.. GENERATED FROM PYTHON SOURCE LINES 365-375
 
 Beta dynamic stopping
 ---------------------
@@ -544,13 +537,10 @@ References:
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 382-451
+.. GENERATED FROM PYTHON SOURCE LINES 375-441
 
 .. code-block:: Python
 
-
-    # Target accuracy
-    target_p = 0.90 ** (1 / N_SEGMENTS)
 
     # Loop folds
     accuracy_beta = np.zeros(N_FOLDS)
@@ -569,7 +559,7 @@ References:
             score_metric="correlation",
         )
         beta = pyntbci.stopping.DistributionStopping(
-            rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=target_p, distribution="beta", max_time=MAX_TIME
+            rcca, segment_time=SEGMENT_TIME, fs=FS, target_p=0.9, distribution="beta", max_time=MAX_TIME
         )
         beta.fit(X, y)
 
@@ -621,7 +611,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_006.png
-   :alt: Beta dynamic stopping: avg acc 1.00 | avg dur 0.54 | avg itr 557.3
+   :alt: Beta dynamic stopping: avg acc 1.00 | avg dur 0.31 | avg itr 975.9
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_006.png
    :class: sphx-glr-single-img
 
@@ -632,13 +622,13 @@ References:
 
     Beta:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.54 with std=0.04
-            ITR: avg=557.3 with std=36.62
+            Duration: avg=0.31 with std=0.01
+            ITR: avg=975.9 with std=34.92
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 452-461
+.. GENERATED FROM PYTHON SOURCE LINES 442-451
 
 Bayesian dynamic stopping (BDS0)
 --------------------------------
@@ -650,7 +640,7 @@ References:
 .. [5] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 461-543
+.. GENERATED FROM PYTHON SOURCE LINES 451-533
 
 .. code-block:: Python
 
@@ -752,7 +742,7 @@ response brain-computer interfacing
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_008.png
-         :alt: BDS0 dynamic stopping: avg acc 0.94 | avg dur 0.42 | avg itr 650.8
+         :alt: BDS0 dynamic stopping: avg acc 0.95 | avg dur 0.43 | avg itr 637.5
          :srcset: /examples/images/sphx_glr_example_3_early_stopping_008.png
          :class: sphx-glr-multi-img
 
@@ -762,14 +752,14 @@ response brain-computer interfacing
  .. code-block:: none
 
     BDS0:
-            Accuracy: avg=0.94 with std=0.11
-            Duration: avg=0.42 with std=0.03
-            ITR: avg=650.8 with std=152.25
+            Accuracy: avg=0.95 with std=0.05
+            Duration: avg=0.43 with std=0.03
+            ITR: avg=637.5 with std=72.88
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 544-553
+.. GENERATED FROM PYTHON SOURCE LINES 534-543
 
 Bayesian dynamic stopping (BDS1)
 --------------------------------
@@ -781,15 +771,10 @@ References:
 .. [6] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 553-622
+.. GENERATED FROM PYTHON SOURCE LINES 543-607
 
 .. code-block:: Python
 
-
-    # Cost ratio and target probabilities
-    cr = 1.0
-    target_pf = 0.05
-    target_pd = 0.80
 
     # Loop folds
     accuracy_bds1 = np.zeros(N_FOLDS)
@@ -806,9 +791,9 @@ response brain-computer interfacing
             segment_time=SEGMENT_TIME,
             fs=FS,
             method="bds1",
-            cr=cr,
-            target_pf=target_pf,
-            target_pd=target_pd,
+            cr=1.0,
+            target_pf=0.05,
+            target_pd=0.80,
             max_time=MAX_TIME,
         )
         bayes.fit(X_trn, y_trn)
@@ -858,7 +843,7 @@ response brain-computer interfacing
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_009.png
-   :alt: BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.62 | avg itr 487.6
+   :alt: BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.64 | avg itr 468.7
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_009.png
    :class: sphx-glr-single-img
 
@@ -869,13 +854,13 @@ response brain-computer interfacing
 
     BDS1:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.62 with std=0.02
-            ITR: avg=487.6 with std=12.79
+            Duration: avg=0.64 with std=0.04
+            ITR: avg=468.7 with std=26.56
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 623-632
+.. GENERATED FROM PYTHON SOURCE LINES 608-617
 
 Bayesian dynamic stopping (BDS2)
 --------------------------------
@@ -887,15 +872,10 @@ References:
 .. [7] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
 response brain-computer interfacing
 
-.. GENERATED FROM PYTHON SOURCE LINES 632-701
+.. GENERATED FROM PYTHON SOURCE LINES 617-681
 
 .. code-block:: Python
 
-
-    # Cost ratio and target probabilities
-    cr = 1.0
-    target_pf = 0.05
-    target_pd = 0.80
 
     # Loop folds
     accuracy_bds2 = np.zeros(N_FOLDS)
@@ -912,9 +892,9 @@ response brain-computer interfacing
             segment_time=SEGMENT_TIME,
             fs=FS,
             method="bds2",
-            cr=cr,
-            target_pf=target_pf,
-            target_pd=target_pd,
+            cr=1.0,
+            target_pf=0.05,
+            target_pd=0.80,
             max_time=MAX_TIME,
         )
         bayes.fit(X_trn, y_trn)
@@ -964,7 +944,7 @@ response brain-computer interfacing
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_010.png
-   :alt: BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.51 | avg itr 597.6
+   :alt: BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.51 | avg itr 585.7
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_010.png
    :class: sphx-glr-single-img
 
@@ -975,20 +955,20 @@ response brain-computer interfacing
 
     BDS2:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.51 with std=0.05
-            ITR: avg=597.6 with std=53.97
+            Duration: avg=0.51 with std=0.03
+            ITR: avg=585.7 with std=34.97
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 702-706
+.. GENERATED FROM PYTHON SOURCE LINES 682-686
 
 Overall comparison
 ------------------
 Comparison of the presented stopping methods. Note, each of these use default parameters that might need fine-tuning.
 Additionally, the evaluation is performed on a single participant only.
 
-.. GENERATED FROM PYTHON SOURCE LINES 706-742
+.. GENERATED FROM PYTHON SOURCE LINES 686-722
 
 .. code-block:: Python
 
@@ -1043,7 +1023,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 7.197 seconds)
+   **Total running time of the script:** (0 minutes 6.803 seconds)
 
 
 .. _sphx_glr_download_examples_example_3_early_stopping.py:
