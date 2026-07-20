@@ -89,7 +89,6 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">buttord</span><span class="p">,</span> <span class="n">cheby1</span><span class="p">,</span> <span class="n">cheb1ord</span><span class="p">,</span> <span class="n">filtfilt</span>
 <span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">cdist</span>
 
@@ -202,9 +201,7 @@
         <span class="k">return</span> <span class="n">scores</span>
 
     <span class="n">n_a</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">n_new</span><span class="p">,</span> <span class="n">avg_new</span><span class="p">,</span> <span class="n">cov_new</span> <span class="o">=</span> <span class="n">covariance</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">n_old</span><span class="p">,</span> <span class="n">avg_old</span><span class="p">,</span> <span class="n">cov_old</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="n">running</span>
-    <span class="p">)</span>
+    <span class="n">n_new</span><span class="p">,</span> <span class="n">avg_new</span><span class="p">,</span> <span class="n">cov_new</span> <span class="o">=</span> <span class="n">covariance</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">n_old</span><span class="p">,</span> <span class="n">avg_old</span><span class="p">,</span> <span class="n">cov_old</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="n">running</span><span class="p">)</span>
     <span class="n">cov_ab</span> <span class="o">=</span> <span class="n">cov_new</span><span class="p">[:</span><span class="n">n_a</span><span class="p">,</span> <span class="n">n_a</span><span class="p">:]</span>
     <span class="n">var_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov_new</span><span class="p">)[:</span><span class="n">n_a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
     <span class="n">var_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov_new</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">n_a</span><span class="p">:]</span>
@@ -221,7 +218,6 @@
     <span class="n">n_old</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">avg_old</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cov_old</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">estimator</span><span class="p">:</span> <span class="n">BaseEstimator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the covariance matrix.</span>
@@ -236,9 +232,6 @@
 <span class="sd">        Already observed average of shape (1, n_features).</span>
 <span class="sd">    cov_old: NDArray (default: None)</span>
 <span class="sd">        Already observed covariance of shape (n_features, n_features).</span>
-<span class="sd">    estimator: BaseEstimator (default: None)</span>
-<span class="sd">        An object that estimates a covariance matrix using a fit method. If None, a custom implementation of the</span>
-<span class="sd">        empirical covariance is used.</span>
 <span class="sd">    running: bool (default: False)</span>
 <span class="sd">        Whether to use a running covariance. If False, the covariance matrix is computed instantaneously using</span>
 <span class="sd">        only X, such that n_old, avg_old, and cov_old are not used.</span>
@@ -260,21 +253,13 @@
         <span class="n">n_new</span> <span class="o">=</span> <span class="n">n_obs</span>
         <span class="n">avg_new</span> <span class="o">=</span> <span class="n">avg_obs</span>
         <span class="n">data1</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">avg_obs</span>
-        <span class="k">if</span> <span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">data1</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">data1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data1</span><span class="p">)</span><span class="o">.</span><span class="n">covariance_</span>
-        <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span>
+        <span class="n">cov_new</span> <span class="o">=</span> <span class="n">data1</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">data1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">n_new</span> <span class="o">=</span> <span class="n">n_old</span> <span class="o">+</span> <span class="n">n_obs</span>
         <span class="n">data1</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">avg_old</span>
         <span class="n">avg_new</span> <span class="o">=</span> <span class="n">avg_old</span> <span class="o">+</span> <span class="p">(</span><span class="n">avg_obs</span> <span class="o">-</span> <span class="n">avg_old</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_obs</span> <span class="o">/</span> <span class="n">n_new</span><span class="p">)</span>
         <span class="n">data2</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">avg_new</span>
-        <span class="k">if</span> <span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">data1</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">data2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># TODO: Compute the cumulative cross-covariance using estimator</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="n">cov_obs</span> <span class="o">=</span> <span class="n">data1</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">data2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span> <span class="o">+</span> <span class="n">cov_old</span> <span class="o">*</span> <span class="p">((</span><span class="n">n_new</span> <span class="o">-</span> <span class="n">n_obs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">n_new</span><span class="p">,</span> <span class="n">avg_new</span><span class="p">,</span> <span class="n">cov_new</span></div>
 

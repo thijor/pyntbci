@@ -101,6 +101,23 @@ These examples demonstrate how to use PyntBCI.
     </div>
 
 
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Note, this example requires moabb and mne to be installed (`pip install moabb`), which are not dependencies of PyntBCI itself. It also downloads several hundred MB of EEG data from https://data.ru.nl/ on first use, cached by MOABB in /mne_data/. For these reasons, this script is excluded from execution when building the documentation (see filename_pattern in doc/conf.py); its code and output below were generated separately.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_example_6_moabb_thumb.png
+    :alt:
+
+  :doc:`/examples/example_6_moabb`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">MOABB</div>
+    </div>
+
+
 .. thumbnail-parent-div-close
 
 .. raw:: html
@@ -116,6 +133,7 @@ These examples demonstrate how to use PyntBCI.
    /examples/example_3_early_stopping
    /examples/example_4_bitwise_decoding
    /examples/example_5_stimulus_optimization
+   /examples/example_6_moabb
 
 
 .. only:: html

@@ -92,7 +92,7 @@
 <h1>pyntbci.classifiers.rCCA<a class="headerlink" href="#pyntbci-classifiers-rcca" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyntbci.classifiers.rCCA">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyntbci.classifiers.</span></span><span class="sig-name descname"><span class="pre">rCCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'duration'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoding_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoding_stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'correlation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_estimator_m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseEstimator</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyntbci.classifiers.</span></span><span class="sig-name descname"><span class="pre">rCCA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stimulus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'duration'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoding_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoding_stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding_stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'correlation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitudes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NDArray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">running</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA" title="Link to this definition"></a></dt>
 <dd><p>Reconvolution CCA classifier. It performs a spatial and temporal decomposition (reconvolution <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>) within a
 CCA <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> to perform spatial filtering as well as template prediction <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p>
 <dl class="field-list simple">
@@ -125,127 +125,42 @@ this occurs, set gamma_x/gamma_m or alpha_x/alpha_m to regularize the covariance
 None, no regularization is applied. The gamma_x ranges from 0 (no regularization) to 1 (full regularization).</p></li>
 <li><p><strong>gamma_m</strong> (<em>float</em><em> | </em><em>list</em><em>[</em><em>float</em><em>] </em><em>| </em><em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – Regularization on the covariance matrix for CCA for all or each individual parameter along M (samples). If None,
 no regularization is applied. The gamma_m ranges from 0 (no regularization) to 1 (full regularization).</p></li>
-<li><p><strong>cov_estimator_x</strong> (<em>BaseEstimator</em><em> (</em><em>default: None</em><em>)</em>) – A BaseEstimator object with a fit method that estimates a covariance matrix of the EEG data, the decoding
-matrix. If None, a custom empirical covariance is used.</p></li>
-<li><p><strong>cov_estimator_m</strong> (<em>BaseEstimator</em><em> (</em><em>default: None</em><em>)</em>) – A BaseEstimator object with a fit method that estimates a covariance matrix of the stimulus encoding matrix. If
-None, a custom empirical covariance is used.</p></li>
 <li><p><strong>n_components</strong> (<em>int</em><em> (</em><em>default: 1</em><em>)</em>) – The number of CCA components to use.</p></li>
 <li><p><strong>squeeze_components</strong> (<em>bool</em><em> (</em><em>default: True</em><em>)</em>) – Remove the component dimension when n_components=1.</p></li>
 <li><p><strong>alpha_x</strong> (<em>float</em><em> (</em><em>default: None</em><em>)</em>) – Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.</p></li>
 <li><p><strong>alpha_m</strong> (<em>float</em><em> (</em><em>default: None</em><em>)</em>) – Amount of variance to retain in computing the inverse of the covariance matrix of M. If None, all variance.</p></li>
 <li><p><strong>tmin</strong> (<em>float</em><em> (</em><em>default: 0</em><em>)</em>) – The start of stimulation in seconds. Can be used if there was a delay in the marker.</p></li>
+<li><p><strong>running</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – Whether fit() is incremental: if False, each fit() call replaces the previous fit, using only the trials
+passed to that call. If True, each fit() call instead adds its trials to the ones seen in all previous
+fit() calls (i.e., keeps the spatial/temporal filter’s running covariance from CCA(running=True) instead
+of discarding it), so a model can be trained gradually as more trials become available without redoing
+the full computation on all trials so far. Since rCCA’s templates (<a href="#id7"><span class="problematic" id="id8">Ts_</span></a>/<a href="#id9"><span class="problematic" id="id10">Tw_</span></a>) are already always recomputed
+from the stimulus and the current filter, not the training trials themselves, this is mathematically
+exact: two calls fit(X1, y1) then fit(X2, y2) give the same filter as one call fit(concat(X1, X2),
+concat(y1, y2)). Not supported for ensemble=True, since each class’s covariance would then be running on
+its own, and a class absent from an early batch would otherwise silently never get initialized. To start
+a new running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then
+set_params(running=True) again).</p></li>
+<li><p><strong>cca</strong> (<em>list</em><em>[</em><em>TransformerMixin</em><em>]</em>) – The CCA used to fit the spatial and temporal filters. If ensemble=False, len(<a href="#id11"><span class="problematic" id="id12">cca_</span></a>)=1, otherwise
+len(<a href="#id13"><span class="problematic" id="id14">cca_</span></a>)=n_classes.</p></li>
+<li><p><strong>events</strong> (<em>list</em>) – The list of events used to map the stimulus to, as set by set_encoding_matrix().</p></li>
+<li><p><strong>w</strong> (<em>NDArray</em>) – The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
+shape is (n_channels, n_components, n_classes).</p></li>
+<li><p><strong>r</strong> (<em>NDArray</em>) – The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components). If
+ensemble=True, then the shape is (n_events * n_event_samples, n_components, n_classes).</p></li>
+<li><p><strong>Ms</strong> (<em>NDArray</em>) – The encoding matrix representing the events of shape (n_classes, n_features, n_samples) for stimulus cycle 1
+(i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).</p></li>
+<li><p><strong>Mw</strong> (<em>NDArray</em>) – The encoding matrix representing the events of shape (n_classes, n_features, n_samples) for stimulus cycles 2
+and further (i.e., it does not include the onset of stimulation but does include the tails of previous
+cycles).</p></li>
+<li><p><strong>Ts</strong> (<em>NDArray</em>) – The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
+stimulus cycle 1 (i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).</p></li>
+<li><p><strong>Tw</strong> (<em>NDArray</em>) – The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
+stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of
+previous cycles).</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.classes_">
-<span class="sig-name descname"><span class="pre">classes_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.classes_" title="Link to this definition"></a></dt>
-<dd><p>The classes that can be predicted, of shape (n_classes), i.e., the number of classes in stimulus,
-independent of which classes were actually observed in y during fit().</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.cca_">
-<span class="sig-name descname"><span class="pre">cca_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.cca_" title="Link to this definition"></a></dt>
-<dd><p>The CCA used to fit the spatial and temporal filters. If ensemble=False, len(<a href="#id7"><span class="problematic" id="id8">cca_</span></a>)=1, otherwise
-len(<a href="#id9"><span class="problematic" id="id10">cca_</span></a>)=n_classes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list[TransformerMixin]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.events_">
-<span class="sig-name descname"><span class="pre">events_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.events_" title="Link to this definition"></a></dt>
-<dd><p>The list of events used to map the stimulus to, as set by set_encoding_matrix().</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.w_">
-<span class="sig-name descname"><span class="pre">w_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.w_" title="Link to this definition"></a></dt>
-<dd><p>The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
-shape is (n_channels, n_components, n_classes).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.r_">
-<span class="sig-name descname"><span class="pre">r_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.r_" title="Link to this definition"></a></dt>
-<dd><p>The weight vector representing a temporal filter of shape (n_events * n_event_samples, n_components). If
-ensemble=True, then the shape is (n_events * n_event_samples, n_components, n_classes).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.Ms_">
-<span class="sig-name descname"><span class="pre">Ms_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.Ms_" title="Link to this definition"></a></dt>
-<dd><p>The encoding matrix representing the events of shape (n_classes, n_features, n_samples) for stimulus cycle 1
-(i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.Mw_">
-<span class="sig-name descname"><span class="pre">Mw_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.Mw_" title="Link to this definition"></a></dt>
-<dd><p>The encoding matrix representing the events of shape (n_classes, n_features, n_samples) for stimulus cycles 2
-and further (i.e., it does not include the onset of stimulation but does include the tails of previous
-cycles).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.Ts_">
-<span class="sig-name descname"><span class="pre">Ts_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.Ts_" title="Link to this definition"></a></dt>
-<dd><p>The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
-stimulus cycle 1 (i.e., it includes the onset of stimulation and does not contain the tails of previous cycles).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.Tw_">
-<span class="sig-name descname"><span class="pre">Tw_</span></span><a class="headerlink" href="#pyntbci.classifiers.rCCA.Tw_" title="Link to this definition"></a></dt>
-<dd><p>The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
-stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of
-previous cycles).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
-</dd>
-</dl>
-</dd></dl>
-
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id4" role="doc-footnote">

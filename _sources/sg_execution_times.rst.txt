@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:37.841** total execution time for 8 files **from all galleries**:
+**00:34.687** total execution time for 9 files **from all galleries**:
 
 .. container::
 
@@ -33,26 +33,29 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_examples_example_1_rcca.py` (``../examples/example_1_rcca.py``)
-     - 00:19.222
+     - 00:18.103
      - 0.0
    * - :ref:`sphx_glr_examples_example_3_early_stopping.py` (``../examples/example_3_early_stopping.py``)
-     - 00:06.803
+     - 00:06.226
      - 0.0
    * - :ref:`sphx_glr_examples_example_5_stimulus_optimization.py` (``../examples/example_5_stimulus_optimization.py``)
-     - 00:03.172
+     - 00:03.182
      - 0.0
    * - :ref:`sphx_glr_examples_example_2_ecca.py` (``../examples/example_2_ecca.py``)
-     - 00:03.024
-     - 0.0
-   * - :ref:`sphx_glr_tutorials_tutorial_1_getting_started.py` (``../tutorials/tutorial_1_getting_started.py``)
-     - 00:01.926
+     - 00:02.226
      - 0.0
    * - :ref:`sphx_glr_examples_example_4_bitwise_decoding.py` (``../examples/example_4_bitwise_decoding.py``)
-     - 00:01.882
+     - 00:01.782
+     - 0.0
+   * - :ref:`sphx_glr_tutorials_tutorial_1_getting_started.py` (``../tutorials/tutorial_1_getting_started.py``)
+     - 00:01.366
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_2_noise_codes.py` (``../tutorials/tutorial_2_noise_codes.py``)
-     - 00:00.919
+     - 00:00.911
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_3_reconvolution_events.py` (``../tutorials/tutorial_3_reconvolution_events.py``)
-     - 00:00.893
+     - 00:00.890
+     - 0.0
+   * - :ref:`sphx_glr_examples_example_6_moabb.py` (``../examples/example_6_moabb.py``)
+     - 00:00.000
      - 0.0
