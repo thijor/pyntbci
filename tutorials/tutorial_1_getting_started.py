@@ -2,26 +2,21 @@
 Getting started
 ===============
 
-This getting started tutorial shows an example of how to use the PyntBCI library for analysing code-modulated responses.
-This tutorial makes use of a small dataset of EEG data, recorded from one participant during a single session. This data
-is already minimally preprocessed following a spectral filter with a band-pass at 2-30 Hz and a downsample from 2 kHz to
-240 Hz. The stimuli that were shown are a circularly shifted modulated Gold code (shift register length 6, shift between
-stimuli 2 bits), presented at 60 Hz. The participant focused on each of the 32 stimuli once in a 4x8 matrix speller,
-where each presentation lasted 4.2 seconds (2 code cycles) after a 0.8 second cue.
-
-In this notebook, the reconvolution CCA (rCCA) method for decoding EEG is demonstrated, see [1]_ and [2]_.
+This getting started tutorial shows an example of how to use the PyntBCI library for analysing code-modulated responses
+[1]_. This tutorial makes use of a small synthetic EEG dataset of EEG data. In this notebook, the reconvolution CCA
+(rCCA) method for decoding EEG is demonstrated, see [1]_ and [2]_.
 
 References
 ----------
-.. [1] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
-.. [2] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-       re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
-       DOI: https://doi.org/10.1371/journal.pone.0133797
-.. [3] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
+.. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
        Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
        of Neural Engineering, 18(6), 061002. DOI: https://doi.org/10.1088/1741-2552/ac38cf
+.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
+       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
+.. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+       re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+       DOI: https://doi.org/10.1371/journal.pone.0133797
 """
 
 import matplotlib.pyplot as plt

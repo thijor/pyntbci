@@ -1,8 +1,9 @@
 """
 rCCA
 ====
-This script shows how to use rCCA from PyntBCI for decoding c-VEP trials. The rCCA method uses a template matching
-classifier where templates are estimated using reconvolution and canonical correlation analysis (CCA).
+This script shows how to use reconvolution canonical correlation analysis (rCCA, see [1]_ and [2]_) from PyntBCI for
+decoding c-VEP trials. The rCCA method uses a template matching classifier where templates are estimated using
+reconvolution and spatial and temporal filters using canonical correlation analysis (CCA).
 
 References
 ----------
