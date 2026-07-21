@@ -61,7 +61,7 @@ hand using the dataset's own `stim_trial` (trial onset and class label) and `sti
 event channels. A single subject is used here to keep the example minimal and fast; loop over
 `Thielen2015().subject_list` to evaluate all subjects.
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-73
+.. GENERATED FROM PYTHON SOURCE LINES 38-75
 
 .. code-block:: Python
 
@@ -90,7 +90,9 @@ event channels. A single subject is used here to keep the example minimal and fa
         raw_eeg = raw.copy().pick("eeg")
         raw_eeg.filter(l_freq=6.0, h_freq=21.0, verbose=False)
         events = np.stack([onsets, np.zeros_like(onsets), labels], axis=1)
-        epochs = mne.Epochs(raw_eeg, events, tmin=-0.5, tmax=TRIAL_DURATION+0.5, baseline=None, preload=True, verbose=False)
+        epochs = mne.Epochs(
+            raw_eeg, events, tmin=-0.5, tmax=TRIAL_DURATION + 0.5, baseline=None, preload=True, verbose=False
+        )
         epochs.resample(FS, verbose=False)
 
         X_list.append(epochs.get_data(tmin=0, tmax=TRIAL_DURATION)[:, :, : N_BITS + 1].astype("float32"))
@@ -101,12 +103,12 @@ event channels. A single subject is used here to keep the example minimal and fa
     V = np.stack([codes[label] for label in range(len(codes))], axis=0).astype("float64")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-76
+.. GENERATED FROM PYTHON SOURCE LINES 76-78
 
 Inspect data
 ------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-83
+.. GENERATED FROM PYTHON SOURCE LINES 78-85
 
 .. code-block:: Python
 
@@ -118,7 +120,7 @@ Inspect data
     print("fr", PR, "Hz")  # presentation rate
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-89
+.. GENERATED FROM PYTHON SOURCE LINES 86-91
 
 Cross-validation
 ----------------
@@ -126,7 +128,7 @@ Because `stimulus` is known upfront (it does not depend on the training split), 
 into scikit-learn's model selection routines without a wrapper. A `StratifiedKFold` is used here to match the
 dataset's 3 repetitions per class.
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-95
+.. GENERATED FROM PYTHON SOURCE LINES 91-97
 
 .. code-block:: Python
 
