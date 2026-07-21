@@ -60,7 +60,9 @@ for run_name, raw in sessions.items():
     raw_eeg = raw.copy().pick("eeg")
     raw_eeg.filter(l_freq=6.0, h_freq=21.0, verbose=False)
     events = np.stack([onsets, np.zeros_like(onsets), labels], axis=1)
-    epochs = mne.Epochs(raw_eeg, events, tmin=-0.5, tmax=TRIAL_DURATION+0.5, baseline=None, preload=True, verbose=False)
+    epochs = mne.Epochs(
+        raw_eeg, events, tmin=-0.5, tmax=TRIAL_DURATION + 0.5, baseline=None, preload=True, verbose=False
+    )
     epochs.resample(FS, verbose=False)
 
     X_list.append(epochs.get_data(tmin=0, tmax=TRIAL_DURATION)[:, :, : N_BITS + 1].astype("float32"))
