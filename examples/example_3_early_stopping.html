@@ -108,29 +108,12 @@ when to stop the processing or decoding of a trial based on the reliability of t
 two kinds: static stopping and dynamic stopping. In static stopping, an optimal fixes stopping time is learned, while
 in dynamic stopping the optimal stopping time depends on reaching a certain criterion, which may naturally lead to a
 variable stopping time.</p>
-<p>The data used in this script come from Thielen et al. (2021), see references <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
-<section id="references">
-<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-computer interface. DOI: <a class="reference external" href="https://doi.org/10.34973/9txv-z787">https://doi.org/10.34973/9txv-z787</a></p>
-</aside>
-<aside class="footnote brackets" id="id4" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
-<p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
-code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-056007. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/abecef">https://doi.org/10.1088/1741-2552/abecef</a></p>
-</aside>
-</aside>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">pyntbci</span>
 </pre></div>
 </div>
-</section>
 <section id="simulate-data">
 <h2>Simulate data<a class="headerlink" href="#simulate-data" title="Link to this heading"></a></h2>
 <p>The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.</p>
@@ -402,11 +385,11 @@ stopping.</p>
 <section id="margin-dynamic-stopping">
 <h2>Margin dynamic stopping<a class="headerlink" href="#margin-dynamic-stopping" title="Link to this heading"></a></h2>
 <p>The margin method learns threshold margins (i.e., the difference between the best and second-best score) to stop.
-These margins are defined as such that a targeted accuracy is reached.</p>
+These margins are defined as such that a targeted accuracy is reached. See <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> for more information.</p>
 <p>References:</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id5" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:
 re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
 doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.0133797">https://doi.org/10.1371/journal.pone.0133797</a></p>
@@ -502,11 +485,11 @@ doi: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 <section id="beta-dynamic-stopping">
 <h2>Beta dynamic stopping<a class="headerlink" href="#beta-dynamic-stopping" title="Link to this heading"></a></h2>
 <p>The beta method fits a beta distribution to the non-maximum scores (i.e., if correlation, then correlation+1)/2), and
-tests the probability of the maximum correlation to belong to that beta distribution.</p>
+tests the probability of the maximum correlation to belong to that beta distribution. See <a class="footnote-reference brackets" href="#id4" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> for more information.</p>
 <p>References:</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id6" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">2</a><span class="fn-bracket">]</span></span>
 <p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
 code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
 056007. doi: <a class="reference external" href="http://doi.org/10.1088/1741-2552/abecef">http://doi.org/10.1088/1741-2552/abecef</a></p>
@@ -588,15 +571,16 @@ code-modulated visual evoked potentials for brain–computer interface. Journal 
 <section id="bayesian-dynamic-stopping-bds0">
 <h2>Bayesian dynamic stopping (BDS0)<a class="headerlink" href="#bayesian-dynamic-stopping-bds0" title="Link to this heading"></a></h2>
 <p>The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.</p>
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See <a class="footnote-reference brackets" href="#id6" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> for
+more information.</p>
 <p>References:</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id7" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
-<p>Ahmadi, S., Desain, P. &amp; Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked</p>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">3</a><span class="fn-bracket">]</span></span>
+<p>Ahmadi, S., Desain, P., &amp; Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.</p>
 </aside>
 </aside>
-<p>response brain-computer interfacing</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cost ratio and target probabilities</span>
 <span class="n">cr</span> <span class="o">=</span> <span class="mf">1.0</span>
 
@@ -693,15 +677,15 @@ threshold using these and a cost criterion. This method comes in three flavours:
 <section id="bayesian-dynamic-stopping-bds1">
 <h2>Bayesian dynamic stopping (BDS1)<a class="headerlink" href="#bayesian-dynamic-stopping-bds1" title="Link to this heading"></a></h2>
 <p>The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.</p>
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See <a class="footnote-reference brackets" href="#id8" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
 <p>References:</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id8" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
-<p>Ahmadi, S., Desain, P. &amp; Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked</p>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">4</a><span class="fn-bracket">]</span></span>
+<p>Ahmadi, S., Desain, P., &amp; Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.</p>
 </aside>
 </aside>
-<p>response brain-computer interfacing</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop folds</span>
 <span class="n">accuracy_bds1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="n">duration_bds1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
@@ -776,15 +760,15 @@ threshold using these and a cost criterion. This method comes in three flavours:
 <section id="bayesian-dynamic-stopping-bds2">
 <h2>Bayesian dynamic stopping (BDS2)<a class="headerlink" href="#bayesian-dynamic-stopping-bds2" title="Link to this heading"></a></h2>
 <p>The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.</p>
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See <a class="footnote-reference brackets" href="#id10" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p>
 <p>References:</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id9" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></span>
-<p>Ahmadi, S., Desain, P. &amp; Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked</p>
+<aside class="footnote brackets" id="id10" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">5</a><span class="fn-bracket">]</span></span>
+<p>Ahmadi, S., Desain, P., &amp; Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.</p>
 </aside>
 </aside>
-<p>response brain-computer interfacing</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop folds</span>
 <span class="n">accuracy_bds2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
 <span class="n">duration_bds2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_FOLDS</span><span class="p">)</span>
@@ -897,7 +881,7 @@ Additionally, the evaluation is performed on a single participant only.</p>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_3_early_stopping_011.png" srcset="../_images/sphx_glr_example_3_early_stopping_011.png" alt="Comparison of early stopping methods averaged across folds" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 7.748 seconds)</p>
+<img src="../_images/sphx_glr_example_3_early_stopping_011.png" srcset="../_images/sphx_glr_example_3_early_stopping_011.png" alt="Comparison of early stopping methods averaged across folds" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 5.786 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-3-early-stopping-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/8120138f34b8f0c99667374e9a07e981/example_3_early_stopping.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_3_early_stopping.ipynb</span></code></a></p>

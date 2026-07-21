@@ -26,17 +26,7 @@ two kinds: static stopping and dynamic stopping. In static stopping, an optimal 
 in dynamic stopping the optimal stopping time depends on reaching a certain criterion, which may naturally lead to a
 variable stopping time.
 
-The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.
-
-References
-----------
-.. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-       computer interface. DOI: https://doi.org/10.34973/9txv-z787
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
-
-.. GENERATED FROM PYTHON SOURCE LINES 20-26
+.. GENERATED FROM PYTHON SOURCE LINES 10-16
 
 .. code-block:: Python
 
@@ -53,13 +43,13 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-30
+.. GENERATED FROM PYTHON SOURCE LINES 17-20
 
 Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-62
+.. GENERATED FROM PYTHON SOURCE LINES 20-52
 
 .. code-block:: Python
 
@@ -102,7 +92,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-68
+.. GENERATED FROM PYTHON SOURCE LINES 53-58
 
 Maximum accuracy static stopping
 --------------------------------
@@ -110,7 +100,7 @@ The "maximum accuracy" method is a static stopping method that learns one stoppi
 reaches the maximum classification accuracy. During testing, all trials will stop as soon as that time is reached,
 hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-132
+.. GENERATED FROM PYTHON SOURCE LINES 58-122
 
 .. code-block:: Python
 
@@ -199,7 +189,7 @@ hence static stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-138
+.. GENERATED FROM PYTHON SOURCE LINES 123-128
 
 Maximum ITR static stopping
 ---------------------------
@@ -207,7 +197,7 @@ The "maximum ITR" method is a static stopping method that learns one stopping ti
 reaches the maximum information-transfer rate (ITR). During testing, all trials will stop as soon as that time is
 reached, hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-204
+.. GENERATED FROM PYTHON SOURCE LINES 128-194
 
 .. code-block:: Python
 
@@ -298,7 +288,7 @@ reached, hence static stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-210
+.. GENERATED FROM PYTHON SOURCE LINES 195-200
 
 Targeted accuracy static stopping
 ---------------------------------
@@ -306,7 +296,7 @@ The "targeted accuracy" method is a static stopping method that learns one stopp
 reaches a preset targeted accuracy. During testing, all trials will stop as soon as that time is reached, hence static
 stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-277
+.. GENERATED FROM PYTHON SOURCE LINES 200-267
 
 .. code-block:: Python
 
@@ -398,20 +388,20 @@ stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 278-288
+.. GENERATED FROM PYTHON SOURCE LINES 268-278
 
 Margin dynamic stopping
 -----------------------
 The margin method learns threshold margins (i.e., the difference between the best and second-best score) to stop.
-These margins are defined as such that a targeted accuracy is reached.
+These margins are defined as such that a targeted accuracy is reached. See [1]_ for more information.
 
 References:
 
-.. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+.. [1] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
        doi: https://doi.org/10.1371/journal.pone.0133797
 
-.. GENERATED FROM PYTHON SOURCE LINES 288-364
+.. GENERATED FROM PYTHON SOURCE LINES 278-354
 
 .. code-block:: Python
 
@@ -524,20 +514,20 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 365-375
+.. GENERATED FROM PYTHON SOURCE LINES 355-365
 
 Beta dynamic stopping
 ---------------------
 The beta method fits a beta distribution to the non-maximum scores (i.e., if correlation, then correlation+1)/2), and
-tests the probability of the maximum correlation to belong to that beta distribution.
+tests the probability of the maximum correlation to belong to that beta distribution. See [2]_ for more information.
 
 References:
 
-.. [4] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 375-441
+.. GENERATED FROM PYTHON SOURCE LINES 365-431
 
 .. code-block:: Python
 
@@ -628,19 +618,20 @@ References:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 442-451
+.. GENERATED FROM PYTHON SOURCE LINES 432-442
 
 Bayesian dynamic stopping (BDS0)
 --------------------------------
 The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [3]_ for
+more information.
 
 References:
 
-.. [5] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
-response brain-computer interfacing
+.. [3] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
 
-.. GENERATED FROM PYTHON SOURCE LINES 451-533
+.. GENERATED FROM PYTHON SOURCE LINES 442-524
 
 .. code-block:: Python
 
@@ -759,19 +750,19 @@ response brain-computer interfacing
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 534-543
+.. GENERATED FROM PYTHON SOURCE LINES 525-534
 
 Bayesian dynamic stopping (BDS1)
 --------------------------------
 The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [4]_.
 
 References:
 
-.. [6] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
-response brain-computer interfacing
+.. [4] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
 
-.. GENERATED FROM PYTHON SOURCE LINES 543-607
+.. GENERATED FROM PYTHON SOURCE LINES 534-598
 
 .. code-block:: Python
 
@@ -860,19 +851,19 @@ response brain-computer interfacing
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 608-617
+.. GENERATED FROM PYTHON SOURCE LINES 599-608
 
 Bayesian dynamic stopping (BDS2)
 --------------------------------
 The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2.
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [5]_.
 
 References:
 
-.. [7] Ahmadi, S., Desain, P. & Thielen, J. (submitted) A Bayesian dynamic stopping method for evoked
-response brain-computer interfacing
+.. [5] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
 
-.. GENERATED FROM PYTHON SOURCE LINES 617-681
+.. GENERATED FROM PYTHON SOURCE LINES 608-672
 
 .. code-block:: Python
 
@@ -961,14 +952,14 @@ response brain-computer interfacing
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 682-686
+.. GENERATED FROM PYTHON SOURCE LINES 673-677
 
 Overall comparison
 ------------------
 Comparison of the presented stopping methods. Note, each of these use default parameters that might need fine-tuning.
 Additionally, the evaluation is performed on a single participant only.
 
-.. GENERATED FROM PYTHON SOURCE LINES 686-722
+.. GENERATED FROM PYTHON SOURCE LINES 677-713
 
 .. code-block:: Python
 
@@ -1023,7 +1014,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 7.748 seconds)
+   **Total running time of the script:** (0 minutes 5.786 seconds)
 
 
 .. _sphx_glr_download_examples_example_3_early_stopping.py:

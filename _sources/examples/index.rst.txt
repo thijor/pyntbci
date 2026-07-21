@@ -35,7 +35,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain        computer interface. DOI: https://doi.org/10.34973/9txv-z787 .. [2] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. DOI: https://doi.org/10.1088/1741-2552/abecef">
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., &amp; Hornero, R. (2021).        Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal        of Neural Engineering, 18(6), 061002. DOI: https://doi.org/10.1088/1741-2552/ac38cf">
 
 .. only:: html
 
@@ -52,7 +52,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+    <div class="sphx-glr-thumbcontainer" tooltip="Early stopping">
 
 .. only:: html
 
@@ -69,7 +69,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.">
+    <div class="sphx-glr-thumbcontainer" tooltip="Bitwise decoding">
 
 .. only:: html
 
@@ -86,7 +86,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="The data used in this script are simulated.">
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen, J., Van Den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:        re(con)volution in brain-computer interfacing. PloS one, 10(7), e0133797.        DOI: https://doi.org/10.1371/journal.pone.0133797">
 
 .. only:: html
 

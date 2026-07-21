@@ -103,18 +103,19 @@ to download the full example code.</p>
 </div>
 <section class="sphx-glr-example-title" id="rcca">
 <span id="sphx-glr-examples-example-1-rcca-py"></span><h1>rCCA<a class="headerlink" href="#rcca" title="Link to this heading"></a></h1>
-<p>This script shows how to use rCCA from PyntBCI for decoding c-VEP trials. The rCCA method uses a template matching
-classifier where templates are estimated using reconvolution and canonical correlation analysis (CCA).</p>
+<p>This script shows how to use reconvolution canonical correlation analysis (rCCA, see <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>) from PyntBCI for
+decoding c-VEP trials. The rCCA method uses a template matching classifier where templates are estimated using
+reconvolution and spatial and temporal filters using canonical correlation analysis (CCA).</p>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id1" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
 computer interface. DOI: <a class="reference external" href="https://doi.org/10.34973/9txv-z787">https://doi.org/10.34973/9txv-z787</a></p>
 </aside>
-<aside class="footnote brackets" id="id2" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
 <p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
 code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
 056007. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/abecef">https://doi.org/10.1088/1741-2552/abecef</a></p>
@@ -477,7 +478,7 @@ need during testing to classify single-trials.</p>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_1_rcca_010.png" srcset="../_images/sphx_glr_example_1_rcca_010.png" alt="Decoding curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 20.942 seconds)</p>
+<img src="../_images/sphx_glr_example_1_rcca_010.png" srcset="../_images/sphx_glr_example_1_rcca_010.png" alt="Decoding curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 18.890 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-1-rcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/9ef3725a40f654dafd08ce8fa218b937/example_1_rcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_1_rcca.ipynb</span></code></a></p>

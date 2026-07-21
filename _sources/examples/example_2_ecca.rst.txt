@@ -20,18 +20,17 @@
 
 eCCA
 ====
-This script shows how to use eCCA from PyntBCI for decoding c-VEP trials. The eCCA method uses a template matching
-classifier where templates are estimated using averaging across cycles and canonical correlation analysis (CCA).
+This script shows how to use the reference pipeline for c-VEP decoding (see [1]_), which learns templates by averaging
+repeated trials and spatial filters by using canonical correlation analysis (CCA). This method is implemented as eCCA in
+PyntBCI.
 
 References
 ----------
-.. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-       computer interface. DOI: https://doi.org/10.34973/9txv-z787
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
+.. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
+       Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
+       of Neural Engineering, 18(6), 061002. DOI: https://doi.org/10.1088/1741-2552/ac38cf
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-21
+.. GENERATED FROM PYTHON SOURCE LINES 14-20
 
 .. code-block:: Python
 
@@ -48,13 +47,13 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 22-25
+.. GENERATED FROM PYTHON SOURCE LINES 21-24
 
 Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-50
+.. GENERATED FROM PYTHON SOURCE LINES 24-49
 
 .. code-block:: Python
 
@@ -90,12 +89,12 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-53
+.. GENERATED FROM PYTHON SOURCE LINES 50-52
 
 Inspect data
 -----------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-87
+.. GENERATED FROM PYTHON SOURCE LINES 52-86
 
 .. code-block:: Python
 
@@ -175,7 +174,7 @@ Inspect data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-96
+.. GENERATED FROM PYTHON SOURCE LINES 87-95
 
 ERP CCA
 -----------------
@@ -186,7 +185,7 @@ the sampling frequency `fs`, and the duration of one period of a code as `cycle_
 When calling `eCCA.fit(X, y)` with training data `X` and labels `y`, the template responses are learned as well as the
 spatial filters `eCCA.w_`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-110
+.. GENERATED FROM PYTHON SOURCE LINES 95-109
 
 .. code-block:: Python
 
@@ -223,7 +222,7 @@ spatial filters `eCCA.w_`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-116
+.. GENERATED FROM PYTHON SOURCE LINES 110-115
 
 Cross-validation
 ----------------
@@ -231,7 +230,7 @@ To perform decoding, one can call `eCCA.fit(X_trn, y_trn)` on training data `X_t
 `eCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is set up to evaluate
 the performance of eCCA.
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-156
+.. GENERATED FROM PYTHON SOURCE LINES 115-155
 
 .. code-block:: Python
 
@@ -294,7 +293,7 @@ the performance of eCCA.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-162
+.. GENERATED FROM PYTHON SOURCE LINES 156-161
 
 Learning curve
 --------------
@@ -302,7 +301,7 @@ In this section, we will apply the decoder to varying number of training trials,
 curve. With this information, one could decide how much training data is required, or compare algorithms on how much
 training data they require to estimate their parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-203
+.. GENERATED FROM PYTHON SOURCE LINES 161-202
 
 .. code-block:: Python
 
@@ -359,7 +358,7 @@ training data they require to estimate their parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-209
+.. GENERATED FROM PYTHON SOURCE LINES 203-208
 
 Decoding curve
 --------------
@@ -367,7 +366,7 @@ In this section, we will apply the decoder to varying testing trial lengths, to 
 With this information, one could decide how much testing data is required, or compare algorithms on how much data they
 need during testing to classify single-trials.
 
-.. GENERATED FROM PYTHON SOURCE LINES 209-260
+.. GENERATED FROM PYTHON SOURCE LINES 208-259
 
 .. code-block:: Python
 
@@ -437,7 +436,7 @@ need during testing to classify single-trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.970 seconds)
+   **Total running time of the script:** (0 minutes 1.724 seconds)
 
 
 .. _sphx_glr_download_examples_example_2_ecca.py:

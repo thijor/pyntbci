@@ -21,10 +21,8 @@
 Stimulus optimization
 =====================
 This script shows how to optimize the stimulus presentation by means of selecting the optimal subset of stimuli from a
-set of candidate stimuli and how to select an optimal layout to allocate them to a stimulus grid. The methods to
-optimize such subset and layout were developed and evaluated in [1]_.
-
-The data used in this script are simulated.
+set of candidate stimuli and how to select an optimal layout to allocate them to a stimulus grid. For more information
+on the optimization of such subset and layout, see [1]_.
 
 References
 ----------
@@ -32,7 +30,7 @@ References
        re(con)volution in brain-computer interfacing. PloS one, 10(7), e0133797.
        DOI: https://doi.org/10.1371/journal.pone.0133797
 
-.. GENERATED FROM PYTHON SOURCE LINES 16-22
+.. GENERATED FROM PYTHON SOURCE LINES 14-20
 
 .. code-block:: Python
 
@@ -49,13 +47,13 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 23-26
+.. GENERATED FROM PYTHON SOURCE LINES 21-24
 
 Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-51
+.. GENERATED FROM PYTHON SOURCE LINES 24-49
 
 .. code-block:: Python
 
@@ -91,11 +89,11 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-53
+.. GENERATED FROM PYTHON SOURCE LINES 50-51
 
 Extract templates with rCCA
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-58
+.. GENERATED FROM PYTHON SOURCE LINES 51-56
 
 .. code-block:: Python
 
@@ -111,7 +109,7 @@ Extract templates with rCCA
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-65
+.. GENERATED FROM PYTHON SOURCE LINES 57-63
 
 Optimize stimulus subset
 -----------------
@@ -120,7 +118,7 @@ we have a 4 x 8 matrix speller setup, for a total of 32 classes. Thus, we can se
 from the 63 available codes. This we will do by minimizing the maximum pair-wise correlation between templates within
 the subset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 65-112
+.. GENERATED FROM PYTHON SOURCE LINES 63-110
 
 .. code-block:: Python
 
@@ -201,14 +199,14 @@ the subset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-117
+.. GENERATED FROM PYTHON SOURCE LINES 111-115
 
 Optimize stimulus layout
 -----------------
 Now we have the optimal subset of 32 codes. Still, we could optimize how these are allocated to the 4 x 8 speller
 grid, such that codes that still correlate much are not placed at neighbouring cells in the grid.
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-163
+.. GENERATED FROM PYTHON SOURCE LINES 115-161
 
 .. code-block:: Python
 
@@ -291,7 +289,7 @@ grid, such that codes that still correlate much are not placed at neighbouring c
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.602 seconds)
+   **Total running time of the script:** (0 minutes 3.526 seconds)
 
 
 .. _sphx_glr_download_examples_example_5_stimulus_optimization.py:

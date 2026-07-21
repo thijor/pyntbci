@@ -21,7 +21,7 @@
 MOABB
 =====
 This script shows how to use rCCA from PyntBCI for decoding c-VEP trials from real (not synthetic) EEG data, obtained
-from the Thielen et al. (2015) c-VEP dataset via MOABB (Mother of All BCI Benchmarks). Cross-validation is performed
+from the Thielen et al. (2015) c-VEP dataset [1]_ via MOABB (Mother of All BCI Benchmarks) [2]_. Cross-validation is performed
 with a few lines of standard scikit-learn code, since `rCCA` is itself a scikit-learn compatible estimator.
 
 Note, this example requires `moabb` and `mne` to be installed (`pip install moabb`), which are not dependencies of

@@ -5,16 +5,6 @@ This script shows how to use CCA and LDA on epochs within a trial, using PyntBCI
 defined as the windows of data within a trial, synchronized to the onset of individual flashes. For each of these epochs
 the classifier determines whether a flash was presented or not. Integrating that information over time, allows the
 decoding of trials.
-
-The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.
-
-References
-----------
-.. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-       computer interface. DOI: https://doi.org/10.34973/9txv-z787
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
 """
 
 import matplotlib.pyplot as plt

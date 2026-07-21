@@ -1,16 +1,15 @@
 """
 eCCA
 ====
-This script shows how to use eCCA from PyntBCI for decoding c-VEP trials. The eCCA method uses a template matching
-classifier where templates are estimated using averaging across cycles and canonical correlation analysis (CCA).
+This script shows how to use the reference pipeline for c-VEP decoding (see [1]_), which learns templates by averaging
+repeated trials and spatial filters by using canonical correlation analysis (CCA). This method is implemented as eCCA in
+PyntBCI.
 
 References
 ----------
-.. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-       computer interface. DOI: https://doi.org/10.34973/9txv-z787
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
+.. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
+       Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
+       of Neural Engineering, 18(6), 061002. DOI: https://doi.org/10.1088/1741-2552/ac38cf
 """
 
 import matplotlib.pyplot as plt

@@ -103,21 +103,17 @@ to download the full example code.</p>
 </div>
 <section class="sphx-glr-example-title" id="ecca">
 <span id="sphx-glr-examples-example-2-ecca-py"></span><h1>eCCA<a class="headerlink" href="#ecca" title="Link to this heading"></a></h1>
-<p>This script shows how to use eCCA from PyntBCI for decoding c-VEP trials. The eCCA method uses a template matching
-classifier where templates are estimated using averaging across cycles and canonical correlation analysis (CCA).</p>
+<p>This script shows how to use the reference pipeline for c-VEP decoding (see <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>), which learns templates by averaging
+repeated trials and spatial filters by using canonical correlation analysis (CCA). This method is implemented as eCCA in
+PyntBCI.</p>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id1" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<p>Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-computer interface. DOI: <a class="reference external" href="https://doi.org/10.34973/9txv-z787">https://doi.org/10.34973/9txv-z787</a></p>
-</aside>
 <aside class="footnote brackets" id="id2" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
-<p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
-code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-056007. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/abecef">https://doi.org/10.1088/1741-2552/abecef</a></p>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., &amp; Hornero, R. (2021).
+Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
+of Neural Engineering, 18(6), 061002. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/ac38cf">https://doi.org/10.1088/1741-2552/ac38cf</a></p>
 </aside>
 </aside>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -388,7 +384,7 @@ need during testing to classify single-trials.</p>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_2_ecca_007.png" srcset="../_images/sphx_glr_example_2_ecca_007.png" alt="Decoding curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.970 seconds)</p>
+<img src="../_images/sphx_glr_example_2_ecca_007.png" srcset="../_images/sphx_glr_example_2_ecca_007.png" alt="Decoding curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.724 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-2-ecca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/7ac37b869342e040a0a7f75217a6fc11/example_2_ecca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_2_ecca.ipynb</span></code></a></p>

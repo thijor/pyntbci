@@ -9,8 +9,8 @@ evoke the code-modulated visual evoked potential (c-VEP) as measured by EEG. For
 References
 ----------
 .. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
-Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): a literature review. Journal of
-Neural Engineering, 18(6), 061002. DOI: 10.1088/1741-2552/ac38cf
+       Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
+       of Neural Engineering, 18(6), 061002. DOI: https://doi.org/10.1088/1741-2552/ac38cf
 """
 
 import matplotlib.pyplot as plt

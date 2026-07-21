@@ -100,33 +100,30 @@ to download the full example code.</p>
 </div>
 <section class="sphx-glr-example-title" id="getting-started">
 <span id="sphx-glr-tutorials-tutorial-1-getting-started-py"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
-<p>This getting started tutorial shows an example of how to use the PyntBCI library for analysing code-modulated responses.
-This tutorial makes use of a small dataset of EEG data, recorded from one participant during a single session. This data
-is already minimally preprocessed following a spectral filter with a band-pass at 2-30 Hz and a downsample from 2 kHz to
-240 Hz. The stimuli that were shown are a circularly shifted modulated Gold code (shift register length 6, shift between
-stimuli 2 bits), presented at 60 Hz. The participant focused on each of the 32 stimuli once in a 4x8 matrix speller,
-where each presentation lasted 4.2 seconds (2 code cycles) after a 0.8 second cue.</p>
-<p>In this notebook, the reconvolution CCA (rCCA) method for decoding EEG is demonstrated, see <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p>This getting started tutorial shows an example of how to use the PyntBCI library for analysing code-modulated responses
+<a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. This tutorial makes use of a small synthetic EEG dataset of EEG data. In this notebook, the reconvolution CCA
+(rCCA) method for decoding EEG is demonstrated, see <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#id5" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
+<p>Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., &amp; Hornero, R. (2021).
+Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
+of Neural Engineering, 18(6), 061002. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/ac38cf">https://doi.org/10.1088/1741-2552/ac38cf</a></p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">2</a><span class="fn-bracket">]</span></span>
 <p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
 code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
 056007. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/abecef">https://doi.org/10.1088/1741-2552/abecef</a></p>
 </aside>
-<aside class="footnote brackets" id="id4" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
 <p>Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:
 re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
 DOI: <a class="reference external" href="https://doi.org/10.1371/journal.pone.0133797">https://doi.org/10.1371/journal.pone.0133797</a></p>
-</aside>
-<aside class="footnote brackets" id="id5" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
-<p>Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., &amp; Hornero, R. (2021).
-Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
-of Neural Engineering, 18(6), 061002. DOI: <a class="reference external" href="https://doi.org/10.1088/1741-2552/ac38cf">https://doi.org/10.1088/1741-2552/ac38cf</a></p>
 </aside>
 </aside>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -382,7 +379,7 @@ the performance of rCCA.</p>
 ITR: avg=142.9 with std=0.00
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.118 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.468 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-tutorial-1-getting-started-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/395b5753c97c3f327a53109e7d9928a1/tutorial_1_getting_started.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tutorial_1_getting_started.ipynb</span></code></a></p>

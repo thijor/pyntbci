@@ -25,17 +25,7 @@ defined as the windows of data within a trial, synchronized to the onset of indi
 the classifier determines whether a flash was presented or not. Integrating that information over time, allows the
 decoding of trials.
 
-The data used in this script come from Thielen et al. (2021), see references [1]_ and [2]_.
-
-References
-----------
-.. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-       computer interface. DOI: https://doi.org/10.34973/9txv-z787
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
-
-.. GENERATED FROM PYTHON SOURCE LINES 19-27
+.. GENERATED FROM PYTHON SOURCE LINES 9-17
 
 .. code-block:: Python
 
@@ -54,13 +44,13 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-31
+.. GENERATED FROM PYTHON SOURCE LINES 18-21
 
 Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-56
+.. GENERATED FROM PYTHON SOURCE LINES 21-46
 
 .. code-block:: Python
 
@@ -96,7 +86,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-78
+.. GENERATED FROM PYTHON SOURCE LINES 47-68
 
 Epoch decoding
 --------------
@@ -120,7 +110,7 @@ The sliced dataset `X` will be of shape trials by epochs (within one trial) by t
 samples (in an epoch, not trial). Secondly, the sliced dataset contains labels `y` of shape trials by epochs,
 specifically, a target class-label (flash versus no-flash) for each epoch in each trial.
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-98
+.. GENERATED FROM PYTHON SOURCE LINES 68-88
 
 .. code-block:: Python
 
@@ -165,7 +155,7 @@ specifically, a target class-label (flash versus no-flash) for each epoch in eac
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-122
+.. GENERATED FROM PYTHON SOURCE LINES 89-112
 
 Epoch to trial decoding with LDA
 --------------------------------
@@ -191,7 +181,7 @@ Note, the dataset contains single-trials of 31.5 seconds long. For many particip
 used, this leads to 100% accuracy. A new parameter is introduced here, that cuts the single-trials to shorter lengths.
 Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-189
+.. GENERATED FROM PYTHON SOURCE LINES 112-179
 
 .. code-block:: Python
 
@@ -295,7 +285,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-215
+.. GENERATED FROM PYTHON SOURCE LINES 180-205
 
 Epoch to trial decoding with CCA and LDA
 ----------------------------------------
@@ -323,7 +313,7 @@ Note, the dataset contains single-trials of 31.5 seconds long. For many particip
 used, this leads to 100% accuracy. A new parameter is introduced here, that cuts the single-trials to shorter lengths.
 Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-293
+.. GENERATED FROM PYTHON SOURCE LINES 205-283
 
 .. code-block:: Python
 
@@ -441,7 +431,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.098 seconds)
+   **Total running time of the script:** (0 minutes 1.908 seconds)
 
 
 .. _sphx_glr_download_examples_example_4_bitwise_decoding.py:

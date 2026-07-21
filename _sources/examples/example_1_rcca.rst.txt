@@ -20,8 +20,9 @@
 
 rCCA
 ====
-This script shows how to use rCCA from PyntBCI for decoding c-VEP trials. The rCCA method uses a template matching
-classifier where templates are estimated using reconvolution and canonical correlation analysis (CCA).
+This script shows how to use reconvolution canonical correlation analysis (rCCA, see [1]_ and [2]_) from PyntBCI for
+decoding c-VEP trials. The rCCA method uses a template matching classifier where templates are estimated using
+reconvolution and spatial and temporal filters using canonical correlation analysis (CCA).
 
 References
 ----------
@@ -31,7 +32,7 @@ References
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
        056007. DOI: https://doi.org/10.1088/1741-2552/abecef
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-21
+.. GENERATED FROM PYTHON SOURCE LINES 16-22
 
 .. code-block:: Python
 
@@ -48,13 +49,13 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 22-25
+.. GENERATED FROM PYTHON SOURCE LINES 23-26
 
 Simulate data
 -----------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-50
+.. GENERATED FROM PYTHON SOURCE LINES 26-51
 
 .. code-block:: Python
 
@@ -90,12 +91,12 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-53
+.. GENERATED FROM PYTHON SOURCE LINES 52-54
 
 Inspect data
 -----------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-87
+.. GENERATED FROM PYTHON SOURCE LINES 54-88
 
 .. code-block:: Python
 
@@ -175,7 +176,7 @@ Inspect data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-100
+.. GENERATED FROM PYTHON SOURCE LINES 89-101
 
 The event matrix
 ----------------
@@ -190,7 +191,7 @@ Please, note that more event definitions exist, which can be explored with the `
 instance, `event="contrast"` is a useful event definition as well, which looks at rising and falling edges,
 generalising over the length of a flash.
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-124
+.. GENERATED FROM PYTHON SOURCE LINES 101-125
 
 .. code-block:: Python
 
@@ -249,7 +250,7 @@ generalising over the length of a flash.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-135
+.. GENERATED FROM PYTHON SOURCE LINES 126-136
 
 The structure matrix
 --------------------
@@ -262,7 +263,7 @@ classes, l response samples, and m samples.
 An important parameter here is the `encoding_length` argument. An easy abstraction is to assume the same length for
 the responses to each of the events. However, one could also set different lengths for each of the events.
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-153
+.. GENERATED FROM PYTHON SOURCE LINES 136-154
 
 .. code-block:: Python
 
@@ -302,7 +303,7 @@ the responses to each of the events. However, one could also set different lengt
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-166
+.. GENERATED FROM PYTHON SOURCE LINES 155-167
 
 Reconvolution CCA
 -----------------
@@ -317,7 +318,7 @@ spatial filters `rCCA.w_` and temporal filter `rCCA.r_`.
 Please note that the transient responses are concatenated in this temporal filter `rCCA.r_`. One can use
 `rCCA.events_` to disentangle these and find which response is associated to which event.
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-189
+.. GENERATED FROM PYTHON SOURCE LINES 167-190
 
 .. code-block:: Python
 
@@ -363,7 +364,7 @@ Please note that the transient responses are concatenated in this temporal filte
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-195
+.. GENERATED FROM PYTHON SOURCE LINES 191-196
 
 Cross-validation
 ----------------
@@ -371,7 +372,7 @@ To perform decoding, one can call `rCCA.fit(X_trn, y_trn)` on training data `X_t
 `rCCA.predict(X_tst)` on testing data `X_tst`. In this section, a chronological cross-validation is set up to evaluate
 the performance of rCCA.
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-235
+.. GENERATED FROM PYTHON SOURCE LINES 196-236
 
 .. code-block:: Python
 
@@ -434,7 +435,7 @@ the performance of rCCA.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 236-241
+.. GENERATED FROM PYTHON SOURCE LINES 237-242
 
 Learning curve
 --------------
@@ -442,7 +443,7 @@ In this section, we will apply the decoder to varying number of training trials,
 curve. With this information, one could decide how much training data is required, or compare algorithms on how much
 training data they require to estimate their parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 241-285
+.. GENERATED FROM PYTHON SOURCE LINES 242-286
 
 .. code-block:: Python
 
@@ -502,7 +503,7 @@ training data they require to estimate their parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 286-291
+.. GENERATED FROM PYTHON SOURCE LINES 287-292
 
 Decoding curve
 --------------
@@ -510,7 +511,7 @@ In this section, we will apply the decoder to varying testing trial lengths, to 
 With this information, one could decide how much testing data is required, or compare algorithms on how much data they
 need during testing to classify single-trials.
 
-.. GENERATED FROM PYTHON SOURCE LINES 291-342
+.. GENERATED FROM PYTHON SOURCE LINES 292-343
 
 .. code-block:: Python
 
@@ -580,7 +581,7 @@ need during testing to classify single-trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 20.942 seconds)
+   **Total running time of the script:** (0 minutes 18.890 seconds)
 
 
 .. _sphx_glr_download_examples_example_1_rcca.py:
