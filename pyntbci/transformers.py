@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.linalg import svd, inv, eigh, LinAlgError
+from scipy.linalg import svd, eigh, LinAlgError
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -61,27 +61,34 @@ def _sym_sqrt(M: NDArray, name: str = "X") -> NDArray:
     return (V * np.sqrt(w)) @ V.T
 
 
-def _safe_inv(C: NDArray, name: str) -> NDArray:
-    """Invert a covariance matrix, raising a clear, actionable error instead of a bare "singular matrix" if it
-    cannot be inverted.
+def _inv_sqrt(C: NDArray, name: str = "X") -> NDArray:
+    """Compute the inverse square root of a symmetric positive-definite matrix via a single eigendecomposition,
+    raising a clear, actionable error if C is singular or too ill-conditioned to invert stably.
+
+    Computing C^(-1/2) directly from the eigendecomposition of C avoids a separate matrix inversion (one
+    eigendecomposition of C, instead of an inversion of C followed by an eigendecomposition of the inverse) and,
+    crucially, lets the conditioning of C itself be checked: an ordinary near-singular C (as opposed to one so
+    corrupted that inv() already fails or the result is no longer positive semi-definite) has a tiny-but-positive
+    smallest eigenvalue, which is only visible on C, not on its inverse. The reciprocal condition number is
+    compared against the standard rank tolerance (n * eps), matching numpy/scipy's own rank/pseudo-inverse cutoffs.
 
     Parameters
     ----------
     C: NDArray
-        A covariance matrix of shape (n, n) to invert.
-    name: str
+        A symmetric positive-definite matrix of shape (n, n).
+    name: str (default: "X")
         The name of the side ("X" or "Y") that C was derived from, used only to phrase the error message if C turns
-        out to be singular.
+        out to be singular or too ill-conditioned.
 
     Returns
     -------
-    iC: NDArray
-        The inverse of C of shape (n, n).
+    iCsqrt: NDArray
+        The inverse square root of C of shape (n, n), such that iCsqrt @ iCsqrt == inv(C).
     """
-    try:
-        return inv(C)
-    except LinAlgError as e:
-        raise LinAlgError(_ill_conditioned_message(name, C.shape)) from e
+    w, V = eigh(C)
+    if w[-1] <= 0 or w[0] <= C.shape[0] * np.finfo(w.dtype).eps * w[-1]:
+        raise LinAlgError(_ill_conditioned_message(name, C.shape))
+    return (V / np.sqrt(w)) @ V.T
 
 
 class CCA(TransformerMixin, BaseEstimator):
@@ -225,16 +232,17 @@ class CCA(TransformerMixin, BaseEstimator):
 
         # Inverse square root
         if self.alpha_x is None:
-            iCxx = _sym_sqrt(_safe_inv(Cxx, "X"), name="X")
+            iCxx = _inv_sqrt(Cxx, name="X")
         else:
             iCxx = _sym_sqrt(pinv(Cxx, self.alpha_x), name="X")
         if self.alpha_y is None:
-            iCyy = _sym_sqrt(_safe_inv(Cyy, "Y"), name="Y")
+            iCyy = _inv_sqrt(Cyy, name="Y")
         else:
             iCyy = _sym_sqrt(pinv(Cyy, self.alpha_y), name="Y")
 
-        # SVD
-        U, self.rho_, V = svd(iCxx @ Cxy @ iCyy)
+        # SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that
+        # can be nonzero, instead of the full square U and V of which only the first n_components are ever used.
+        U, self.rho_, V = svd(iCxx @ Cxy @ iCyy, full_matrices=False)
 
         # Compute projection vectors
         Wx = iCxx @ U

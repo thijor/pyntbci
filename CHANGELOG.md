@@ -1,5 +1,25 @@
 # Changelog
 
+## Version 1.9.1
+
+### Added
+
+### Changed 
+
+### Fixed
+- Fixed the singular/ill-conditioned covariance guard in `CCA` of `transformers` only ever firing on an already-
+  numerically-corrupted result, never on an ordinary near-singular covariance (its smallest, tiny-but-positive
+  eigenvalue is invisible once the matrix has been inverted), despite the error message advertising "too
+  ill-conditioned". The `alpha=None` inverse square root now comes from a single symmetric eigendecomposition of the
+  covariance itself (`_inv_sqrt`) rather than an explicit inversion followed by a second eigendecomposition of the
+  inverse (`_sym_sqrt(_safe_inv(...))`); this both lets the covariance's own conditioning be checked against the
+  standard `n * eps` rank tolerance (so a genuinely near-singular matrix, e.g. from `ensemble=True` with too little
+  data per class, now raises the clear, actionable error as documented) and is marginally faster (one
+  decomposition instead of two). The `alpha`-truncated path (`pinv`) is unchanged
+- Improved performance of the SVD in `CCA` of `transformers` by computing only the leading
+  `min(n_features_x, n_features_y)` singular vectors (`full_matrices=False`) instead of the full square `U` and `V`,
+  of which only the first `n_components` are ever used
+
 ## Version 1.9.0 (20-07-2026)
 
 ### Added
@@ -157,6 +177,13 @@
   called with a zero-sample chunk on the very first call of a sequence (before any real data had been observed);
   now asserts at least 1 sample is available before the first score can be computed. A zero-sample chunk *after*
   real data has already been observed remains a well-defined no-op, as intended
+- Fixed the `alpha` (variance-retention) truncation in `pinv` of `utilities` keeping one component too few: it broke
+  as soon as the retained set had *already dropped below* `alpha` and kept that too-small set, so e.g. `alpha=0.9`
+  retained only 75% and `alpha=0.99` only 90% of the variance. It now retains the fewest leading components whose
+  cumulative share reaches `alpha` (i.e. at least `alpha` of the variance, matching scikit-learn's fractional PCA
+  `n_components` convention). This affects `CCA` in `transformers` (`alpha_x`/`alpha_y`), and `eCCA`/`rCCA` in
+  `classifiers` (`alpha_x`/`alpha_t`, `alpha_x`/`alpha_m`) whenever an `alpha` is set; the default (`alpha=None`,
+  which uses a plain inverse) is unaffected. Also removed a redundant `d.sum()` recomputed on every loop iteration
 
 ## Version 1.8.3 (21-05-2025)
 

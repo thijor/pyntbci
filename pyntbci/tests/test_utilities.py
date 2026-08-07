@@ -453,6 +453,23 @@ class TestPinv(unittest.TestCase):
         self.assertEqual(iA_trunc.shape, A.shape)
         self.assertFalse(np.allclose(iA_full, iA_trunc))
 
+    def test_pinv_alpha_retains_requested_variance(self):
+        # Eigenvalues 10, 5, 3, 2 (sum 20): cumulative variance fractions 0.50, 0.75, 0.90, 1.00. alpha must retain
+        # the fewest leading components whose cumulative fraction reaches alpha (i.e., >= alpha of the variance), and
+        # discard the rest, so the returned inverse has exactly that rank. Alphas are chosen strictly inside the
+        # intervals (not on the 0.50/0.75/0.90 boundaries) so the expected count is unambiguous under rounding.
+        Q, _ = np.linalg.qr(np.random.default_rng(0).standard_normal((4, 4)))
+        A = (Q * np.array([10.0, 5.0, 3.0, 2.0])) @ Q.T
+        A = 0.5 * (A + A.T)  # symmetric, full rank (shape (4, 4))
+
+        for alpha, expected in [(0.30, 1), (0.60, 2), (0.80, 3), (0.95, 4)]:
+            iA = pyntbci.utilities.pinv(A, alpha=alpha)
+            rank = np.linalg.matrix_rank(iA, tol=1e-9)
+            self.assertEqual(rank, expected, msg=f"alpha={alpha} should retain {expected} components, got {rank}")
+
+        # Retaining all variance must match the untruncated pseudo-inverse
+        self.assertTrue(np.allclose(pyntbci.utilities.pinv(A, alpha=1.0), pyntbci.utilities.pinv(A)))
+
     def test_pinv_rejects_nan_inf(self):
         A = np.eye(3)
         A_nan = A.copy()

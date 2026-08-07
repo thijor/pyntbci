@@ -763,11 +763,12 @@ def pinv(A: NDArray, alpha: float = None) -> NDArray:
     if alpha is None:
         d = 1 / d
     else:
-        for i in range(d.size):
-            if (d[: d.size - i] / d.sum()).sum() < alpha:
-                d = 1 / d
-                d[d.size - i :] = 0
-                break
+        # Retain the fewest leading singular values whose cumulative share of the total reaches alpha (i.e., that
+        # together explain at least a fraction alpha of the variance), and discard (zero out) the rest. searchsorted
+        # returns the first index at which the cumulative share reaches alpha, so +1 converts it to a count.
+        n_retain = int(np.searchsorted(np.cumsum(d) / d.sum(), alpha) + 1)
+        d = 1 / d
+        d[n_retain:] = 0
     iA = np.dot(Vh.T * d, U.T)
     return iA
 

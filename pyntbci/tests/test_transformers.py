@@ -151,6 +151,33 @@ class TestCCA(unittest.TestCase):
         self.assertEqual(cca0.w_x_.shape, cca1.w_x_.shape)
         self.assertEqual(cca0.w_y_.shape, cca1.w_y_.shape)
 
+    def test_singular_raises_informative_error(self):
+        from scipy.linalg import LinAlgError
+
+        rng = np.random.default_rng(0)
+        X = rng.standard_normal((N_SAMPLES, N_CHANNELS))
+        X[:, -1] = X[:, 0]  # duplicate a channel: Cxx is exactly singular
+        Y = rng.standard_normal((N_SAMPLES, N_CHANNELS - 1))
+
+        # Without regularization, the singular covariance is detected and a clear, actionable error is raised
+        cca = pyntbci.transformers.CCA(n_components=1)
+        with self.assertRaises(LinAlgError) as ctx:
+            cca.fit(X, Y)
+        self.assertIn("singular or too ill-conditioned", str(ctx.exception))
+
+        # Regularizing (gamma) or truncating (alpha) the covariance makes the same data fit without error
+        pyntbci.transformers.CCA(n_components=1, gamma_x=0.1).fit(X, Y)
+        pyntbci.transformers.CCA(n_components=1, alpha_x=0.99).fit(X, Y)
+
+    def test_alpha_path_matches_regularization_shape(self):
+        rng = np.random.default_rng(1)
+        X = rng.standard_normal((N_SAMPLES, N_CHANNELS))
+        Y = rng.standard_normal((N_SAMPLES, N_CHANNELS - 1))
+        cca = pyntbci.transformers.CCA(n_components=2, alpha_x=0.9, alpha_y=0.9)
+        cca.fit(X, Y)
+        self.assertEqual(cca.w_x_.shape, (N_CHANNELS, 2))
+        self.assertEqual(cca.w_y_.shape, (N_CHANNELS - 1, 2))
+
 
 class TestVectorizer(unittest.TestCase):
     def test_shape(self):
