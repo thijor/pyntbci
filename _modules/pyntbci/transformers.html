@@ -89,7 +89,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">inv</span><span class="p">,</span> <span class="n">eigh</span><span class="p">,</span> <span class="n">LinAlgError</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">eigh</span><span class="p">,</span> <span class="n">LinAlgError</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">check_is_fitted</span>
 
@@ -148,27 +148,34 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">V</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
 
 
-<span class="k">def</span> <span class="nf">_safe_inv</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Invert a covariance matrix, raising a clear, actionable error instead of a bare &quot;singular matrix&quot; if it</span>
-<span class="sd">    cannot be inverted.</span>
+<span class="k">def</span> <span class="nf">_inv_sqrt</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;X&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the inverse square root of a symmetric positive-definite matrix via a single eigendecomposition,</span>
+<span class="sd">    raising a clear, actionable error if C is singular or too ill-conditioned to invert stably.</span>
+
+<span class="sd">    Computing C^(-1/2) directly from the eigendecomposition of C avoids a separate matrix inversion (one</span>
+<span class="sd">    eigendecomposition of C, instead of an inversion of C followed by an eigendecomposition of the inverse) and,</span>
+<span class="sd">    crucially, lets the conditioning of C itself be checked: an ordinary near-singular C (as opposed to one so</span>
+<span class="sd">    corrupted that inv() already fails or the result is no longer positive semi-definite) has a tiny-but-positive</span>
+<span class="sd">    smallest eigenvalue, which is only visible on C, not on its inverse. The reciprocal condition number is</span>
+<span class="sd">    compared against the standard rank tolerance (n * eps), matching numpy/scipy&#39;s own rank/pseudo-inverse cutoffs.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    C: NDArray</span>
-<span class="sd">        A covariance matrix of shape (n, n) to invert.</span>
-<span class="sd">    name: str</span>
+<span class="sd">        A symmetric positive-definite matrix of shape (n, n).</span>
+<span class="sd">    name: str (default: &quot;X&quot;)</span>
 <span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) that C was derived from, used only to phrase the error message if C turns</span>
-<span class="sd">        out to be singular.</span>
+<span class="sd">        out to be singular or too ill-conditioned.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    iC: NDArray</span>
-<span class="sd">        The inverse of C of shape (n, n).</span>
+<span class="sd">    iCsqrt: NDArray</span>
+<span class="sd">        The inverse square root of C of shape (n, n), such that iCsqrt @ iCsqrt == inv(C).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">inv</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">LinAlgError</span><span class="p">(</span><span class="n">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">w</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="n">LinAlgError</span><span class="p">(</span><span class="n">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">V</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
 
 
 <div class="viewcode-block" id="CCA">
@@ -314,16 +321,17 @@
 
         <span class="c1"># Inverse square root</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">_safe_inv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
+            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">_safe_inv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
+            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
 
-        <span class="c1"># SVD</span>
-        <span class="n">U</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rho_</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">Cxy</span> <span class="o">@</span> <span class="n">iCyy</span><span class="p">)</span>
+        <span class="c1"># SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that</span>
+        <span class="c1"># can be nonzero, instead of the full square U and V of which only the first n_components are ever used.</span>
+        <span class="n">U</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rho_</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">Cxy</span> <span class="o">@</span> <span class="n">iCyy</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="c1"># Compute projection vectors</span>
         <span class="n">Wx</span> <span class="o">=</span> <span class="n">iCxx</span> <span class="o">@</span> <span class="n">U</span>
