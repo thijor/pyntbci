@@ -58,6 +58,13 @@
   `fit()` already sets a public `*_` attribute; `Vectorizer` now sets `n_features_in_`)
 
 ### Fixed
+- Fixed the lint CI breaking whenever a new Ruff is released: the `lint` job installs Ruff unpinned, and Ruff's
+  implicit default rule set changed (0.16 enabled many new rules by default), so `ruff check .` started failing on
+  unchanged code. Pinned the rule set explicitly in `pyproject.toml` (`[tool.ruff.lint] select = ["E4","E7","E9",
+  "F"]`, Ruff's historical default) so linting is stable across Ruff versions
+- Fixed the API reference missing the newly added public API: `UnsupervisedRCCA` in `classifiers`, and
+  `RunningCovariance` and `inner` in `utilities`, were not listed in their `doc/*.rst` autosummary pages (which are
+  manual lists), so they were absent from the generated documentation
 - Fixed `predict()`/`decision_function()` in `UnsupervisedRCCA` of `classifiers` resetting the online session on
   every call, which silently reduced the cumulative variants to the instantaneous one whenever trials were decoded
   one at a time (as in a real-time session, `[predict(X[[i]]) for i in range(n_trials)]`) instead of in a single

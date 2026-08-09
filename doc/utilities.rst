@@ -7,6 +7,12 @@ Utilities
 
 .. autosummary::
     :toctree: generated/
+    :template: class.rst
+
+    RunningCovariance
+
+.. autosummary::
+    :toctree: generated/
     :template: function.rst
 
     correct_latency
@@ -20,6 +26,7 @@ Utilities
     filterbank
     find_neighbours
     find_worst_neighbour
+    inner
     pinv
     itr
     trials_to_epochs

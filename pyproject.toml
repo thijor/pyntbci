@@ -53,6 +53,12 @@ include = ["pyntbci*"]
 line-length = 120
 target-version = "py39"
 
+[tool.ruff.lint]
+# Pin the rule set to Ruff's historical default (pyflakes + a subset of pycodestyle) so that `ruff check` is stable
+# across Ruff releases: the implicit default changes between versions (e.g. 0.16 enabled many new rules by default),
+# which otherwise breaks CI (which installs the latest Ruff) even though no code changed.
+select = ["E4", "E7", "E9", "F"]
+
 [tool.ruff.lint.per-file-ignores]
 "pyntbci/__init__.py" = ["F401"]  # intentional re-exports forming the package's public API
 "pyntbci/tests/__init__.py" = ["F403", "F405"]  # intentional star imports to aggregate tests

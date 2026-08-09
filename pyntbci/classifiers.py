@@ -863,7 +863,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
     decoding_stride: float (default: None)
         The stride of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1
         sample, such that no stride is used.
-    encoding_length: float | list[float] (default: None)
+    encoding_length: float | list[float] (default: 0.3)
         The length of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs,
         equivalent to 1 sample, such that no phase-shifting is performed.
     encoding_stride: float | list[float] (default: None)
