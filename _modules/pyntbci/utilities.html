@@ -265,6 +265,8 @@
 
 
 
+<div class="viewcode-block" id="RunningCovariance">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.RunningCovariance.html#pyntbci.utilities.RunningCovariance">[docs]</a>
 <span class="k">class</span> <span class="nc">RunningCovariance</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A running (weighted) covariance accumulator over a joint feature vector, kept in uncentered-moment form.</span>
 
@@ -310,6 +312,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_features</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span>
 
+<div class="viewcode-block" id="RunningCovariance.update">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.RunningCovariance.html#pyntbci.utilities.RunningCovariance.update">[docs]</a>
     <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -354,8 +358,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">n_obs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">sum_obs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">moment_obs</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
+
+<div class="viewcode-block" id="RunningCovariance.peek">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.RunningCovariance.html#pyntbci.utilities.RunningCovariance.peek">[docs]</a>
     <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -375,8 +382,11 @@
 <span class="sd">        combined: RunningCovariance</span>
 <span class="sd">            A new accumulator equal to this one plus the given chunk.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="RunningCovariance.copy">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.RunningCovariance.html#pyntbci.utilities.RunningCovariance.copy">[docs]</a>
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RunningCovariance&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a deep copy of the accumulator.</span>
 
@@ -389,7 +399,8 @@
         <span class="n">other</span><span class="o">.</span><span class="n">n_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span>
         <span class="n">other</span><span class="o">.</span><span class="n">sum_</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">other</span><span class="o">.</span><span class="n">moment_</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="n">other</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
@@ -402,7 +413,8 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The (weighted, centered) covariance of the accumulated data of shape (n_features, n_features).&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Cannot compute a covariance from an empty accumulator.&quot;</span>
         <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="decoding_matrix">
@@ -627,6 +639,8 @@
 
 
 
+<div class="viewcode-block" id="inner">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.inner.html#pyntbci.utilities.inner">[docs]</a>
 <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span>
     <span class="n">A</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">B</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -665,7 +679,8 @@
     <span class="n">sum_obs</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">running</span> <span class="ow">or</span> <span class="n">sum_old</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">sum_obs</span>
-    <span class="k">return</span> <span class="n">sum_old</span> <span class="o">+</span> <span class="n">sum_obs</span>
+    <span class="k">return</span> <span class="n">sum_old</span> <span class="o">+</span> <span class="n">sum_obs</span></div>
+
 
 
 <div class="viewcode-block" id="event_matrix">

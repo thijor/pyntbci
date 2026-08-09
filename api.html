@@ -54,6 +54,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.classifiers">Classifiers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html">pyntbci.classifiers.rCCA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.UnsupervisedRCCA.html">pyntbci.classifiers.UnsupervisedRCCA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html">pyntbci.classifiers.eCCA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html">pyntbci.classifiers.Ensemble</a></li>
 </ul>
@@ -119,6 +120,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-pyntbci.utilities">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.RunningCovariance.html">pyntbci.utilities.RunningCovariance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html">pyntbci.utilities.correct_latency</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.correlation.html">pyntbci.utilities.correlation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.covariance.html">pyntbci.utilities.covariance</a></li>
@@ -129,6 +131,7 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.filterbank.html">pyntbci.utilities.filterbank</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.find_neighbours.html">pyntbci.utilities.find_neighbours</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.find_worst_neighbour.html">pyntbci.utilities.find_worst_neighbour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.inner.html">pyntbci.utilities.inner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.pinv.html">pyntbci.utilities.pinv</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.itr.html">pyntbci.utilities.itr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html">pyntbci.utilities.trials_to_epochs</a></li>
@@ -170,10 +173,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA" title="pyntbci.classifiers.rCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rCCA</span></code></a>(stimulus, fs[, event, onset_event, ...])</p></td>
 <td><p>Reconvolution CCA classifier.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA" title="pyntbci.classifiers.UnsupervisedRCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UnsupervisedRCCA</span></code></a>(stimulus, fs[, event, ...])</p></td>
+<td><p>Unsupervised adaptive reconvolution CCA classifier for calibration-free c-VEP decoding <a href="#id2"><span class="problematic" id="id1">[6]_</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.eCCA.html#pyntbci.classifiers.eCCA" title="pyntbci.classifiers.eCCA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eCCA</span></code></a>(lags, fs[, cycle_size, ...])</p></td>
 <td><p>ERP CCA classifier.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble" title="pyntbci.classifiers.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(estimator, gate)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble" title="pyntbci.classifiers.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(estimator, gate)</p></td>
 <td><p>Ensemble classifier.</p></td>
 </tr>
 </tbody>
@@ -349,6 +355,13 @@
 <span id="utilities"></span><h1>Utilities<a class="headerlink" href="#module-pyntbci.utilities" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.RunningCovariance.html#pyntbci.utilities.RunningCovariance" title="pyntbci.utilities.RunningCovariance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RunningCovariance</span></code></a>([n_features])</p></td>
+<td><p>A running (weighted) covariance accumulator over a joint feature vector, kept in uncentered-moment form.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="autosummary longtable docutils align-default">
+<tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.correct_latency.html#pyntbci.utilities.correct_latency" title="pyntbci.utilities.correct_latency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_latency</span></code></a>(X, y, latency, fs[, axis])</p></td>
 <td><p>Correct for a latency in data.</p></td>
 </tr>
@@ -379,13 +392,16 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.find_worst_neighbour.html#pyntbci.utilities.find_worst_neighbour" title="pyntbci.utilities.find_worst_neighbour"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_worst_neighbour</span></code></a>(score, neighbours, layout)</p></td>
 <td><p>Find the neighbouring pair with maximum score.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.pinv.html#pyntbci.utilities.pinv" title="pyntbci.utilities.pinv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pinv</span></code></a>(A[, alpha])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.inner.html#pyntbci.utilities.inner" title="pyntbci.utilities.inner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inner</span></code></a>(A, B[, sum_old, running])</p></td>
+<td><p>Compute the inner product.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.pinv.html#pyntbci.utilities.pinv" title="pyntbci.utilities.pinv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pinv</span></code></a>(A[, alpha])</p></td>
 <td><p>Compute the (Moore-Penrose) pseudo-inverse of a matrix.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.itr.html#pyntbci.utilities.itr" title="pyntbci.utilities.itr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">itr</span></code></a>(n, p, t)</p></td>
 <td><p>Compute the information-transfer rate (ITR).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pyntbci.utilities.trials_to_epochs.html#pyntbci.utilities.trials_to_epochs" title="pyntbci.utilities.trials_to_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trials_to_epochs</span></code></a>(X, y, codes, epoch_size, ...)</p></td>
 <td><p>Slice trials to epochs.</p></td>
 </tr>
 </tbody>

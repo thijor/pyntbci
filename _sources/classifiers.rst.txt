@@ -10,5 +10,6 @@ Classifiers
     :template: class.rst
 
     rCCA
+    UnsupervisedRCCA
     eCCA
     Ensemble

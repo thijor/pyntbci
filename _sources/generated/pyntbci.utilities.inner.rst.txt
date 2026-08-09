@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.inner
+=======================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: inner
+
+.. include:: pyntbci.utilities.inner.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -234,7 +234,7 @@ long enough to decode well on their own.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (16 minutes 18.280 seconds)
+   **Total running time of the script:** (15 minutes 51.748 seconds)
 
 
 .. _sphx_glr_download_examples_example_7_unsupervised_rcca.py:

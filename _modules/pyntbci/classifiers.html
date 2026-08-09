@@ -979,7 +979,7 @@
 <span class="sd">    decoding_stride: float (default: None)</span>
 <span class="sd">        The stride of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1</span>
 <span class="sd">        sample, such that no stride is used.</span>
-<span class="sd">    encoding_length: float | list[float] (default: None)</span>
+<span class="sd">    encoding_length: float | list[float] (default: 0.3)</span>
 <span class="sd">        The length of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs,</span>
 <span class="sd">        equivalent to 1 sample, such that no phase-shifting is performed.</span>
 <span class="sd">    encoding_stride: float | list[float] (default: None)</span>
@@ -1567,6 +1567,8 @@
 
 
 
+<div class="viewcode-block" id="UnsupervisedRCCA">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA">[docs]</a>
 <span class="k">class</span> <span class="nc">UnsupervisedRCCA</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Unsupervised adaptive reconvolution CCA classifier for calibration-free c-VEP decoding [6]_.</span>
 
@@ -1884,6 +1886,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xt</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">new</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">sign</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
 
+<div class="viewcode-block" id="UnsupervisedRCCA.partial_fit_predict">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA.partial_fit_predict">[docs]</a>
     <span class="k">def</span> <span class="nf">partial_fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a single trial online, updating the model (if cumulative) with its pseudo-label.</span>
 
@@ -1933,8 +1937,11 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Xd</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_relabel</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">label</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">rho</span>
+        <span class="k">return</span> <span class="n">label</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">rho</span></div>
 
+
+<div class="viewcode-block" id="UnsupervisedRCCA.fit">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA.fit">[docs]</a>
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassifierMixin</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the classifier (calibration-free: no training data or labels are used).</span>
 
@@ -1951,7 +1958,8 @@
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
 
     <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stream all trials in order, returning predictions and scores. Continues the current online session</span>
@@ -1966,6 +1974,8 @@
             <span class="n">yh</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">_</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partial_fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">yh</span><span class="p">,</span> <span class="n">scores</span>
 
+<div class="viewcode-block" id="UnsupervisedRCCA.predict">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA.predict">[docs]</a>
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a sequence of trials online, in the given (chronological) order.</span>
 
@@ -1989,8 +1999,11 @@
 <span class="sd">        y: NDArray</span>
 <span class="sd">            The predicted labels of shape (n_trials,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
+
+<div class="viewcode-block" id="UnsupervisedRCCA.decision_function">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA.decision_function">[docs]</a>
     <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a sequence of trials online and return the per-trial per-class correlation scores.</span>
 
@@ -2008,7 +2021,9 @@
 <span class="sd">        scores: NDArray</span>
 <span class="sd">            The per-trial per-class correlation scores of shape (n_trials, n_classes).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+</div>
+
 </pre></div>
 
            </div>
