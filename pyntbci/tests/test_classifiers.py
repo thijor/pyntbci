@@ -127,6 +127,12 @@ class TestECCA(unittest.TestCase):
         yh = ecca.predict(X)
         self.assertGreaterEqual(np.mean(yh == y), ACCURACY_THRESHOLD)
 
+    def test_ecca_invalid_metrics_raise_at_fit(self):
+        with self.assertRaises(ValueError):
+            pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, score_metric="bogus").fit(X, y)
+        with self.assertRaises(ValueError):
+            pyntbci.classifiers.eCCA(lags=LAGS, fs=FS, template_metric="bogus").fit(X, y)
+
     def test_ecca_running_matches_batch(self):
         # running=True, fed only new chunks each call, must produce the exact same cumulative scores as running=False
         # on the full prefix so far -- for every score_metric, since each has a different running implementation.
@@ -517,6 +523,54 @@ class TestRCCA(unittest.TestCase):
         yh = rcca.predict(X)
         self.assertGreaterEqual(np.mean(yh == y), ACCURACY_THRESHOLD)
 
+    def test_rcca_invalid_score_metric_raises_at_fit(self):
+        with self.assertRaises(ValueError):
+            pyntbci.classifiers.rCCA(
+                stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, score_metric="bogus"
+            ).fit(X, y)
+
+    def _flash_vep_prior(self, enc_len):
+        r = pyntbci.eeg.generate_impulse_response(FS, dtype="float64")
+        out = np.zeros(enc_len)
+        out[: min(enc_len, r.size)] = r[:enc_len]
+        return out
+
+    def test_rcca_response_prior_regularizes_response_and_keeps_accuracy(self):
+        enc_len = int(ENCODING_LENGTH * FS)
+        prior = self._flash_vep_prior(enc_len)
+        # a strong prior pulls the (single, "id"-event) temporal filter toward the prior shape
+        strong = pyntbci.classifiers.rCCA(
+            stimulus=V,
+            fs=FS,
+            event="id",
+            encoding_length=ENCODING_LENGTH,
+            gamma_m=0.01,
+            response_prior=prior,
+            response_prior_gamma=100.0,
+        )
+        strong.fit(X, y)
+        self.assertGreater(abs(np.corrcoef(strong.r_[:, 0], prior)[0, 1]), 0.99)
+        # a moderate prior does not hurt classification
+        moderate = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="id", encoding_length=ENCODING_LENGTH, gamma_m=0.01, response_prior=prior
+        )
+        moderate.fit(X, y)
+        self.assertGreaterEqual(np.mean(moderate.predict(X) == y), ACCURACY_THRESHOLD)
+
+    def test_rcca_response_prior_forms_equivalent(self):
+        prior = self._flash_vep_prior(int(ENCODING_LENGTH * FS))
+        kw = dict(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, gamma_m=0.05)  # 2 events
+        yh_per_event = pyntbci.classifiers.rCCA(**kw, response_prior=prior).fit(X, y).predict(X)
+        yh_full = pyntbci.classifiers.rCCA(**kw, response_prior=np.tile(prior, 2)).fit(X, y).predict(X)
+        self.assertTrue(np.array_equal(yh_per_event, yh_full))
+
+    def test_rcca_response_prior_invalid_length_raises(self):
+        bad = self._flash_vep_prior(int(ENCODING_LENGTH * FS))[:-3]
+        with self.assertRaises(ValueError):
+            pyntbci.classifiers.rCCA(
+                stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, response_prior=bad
+            ).fit(X, y)
+
     def test_rcca_running_matches_batch(self):
         # running=True, fed only new chunks each call, must produce the exact same cumulative scores as running=False
         # on the full prefix so far -- for every score_metric, and both with and without decoding_matrix enabled
@@ -702,6 +756,250 @@ class TestEnsemble(unittest.TestCase):
 
         yh = ensemble.predict(Xb)
         self.assertEqual(yh.shape, (N_TRIALS,))
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Reference (oracle) implementation of unsupervised adaptive rCCA, kept deliberately naive (recompute from all history
+# every trial, in the spirit of the original gbcic2026 scripts) to validate UnsupervisedRCCA's efficient running form.
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+def _u_cov(A, c=None):
+    if c is None:
+        c = np.ones(A.shape[0])
+    n = c.sum()
+    mu = np.sum(A * c[:, None], axis=0, keepdims=True) / n
+    Ac = A - mu
+    return (Ac.T * c[None, :]) @ Ac / n
+
+
+def _u_corr(a, b):  # both shape (n_samples,)
+    a = a - a.mean()
+    b = b - b.mean()
+    return (a @ b) / np.sqrt((a @ a) * (b @ b))
+
+
+def _u_fit(Xstack, Mstack, c=None):
+    from scipy.linalg import inv, sqrtm, svd
+
+    C = _u_cov(np.concatenate((Xstack, Mstack), axis=1), c)
+    nx = Xstack.shape[1]
+    iCxx = np.real(sqrtm(inv(C[:nx, :nx])))
+    iCmm = np.real(sqrtm(inv(C[nx:, nx:])))
+    U, _, Vt = svd(iCxx @ C[:nx, nx:] @ iCmm)
+    return iCxx @ U[:, 0], iCmm @ Vt.T[:, 0]
+
+
+def _u_instantaneous(Xj, Mr):  # Xj (T, C), Mr (n_classes, T, L)
+    rho = np.zeros(Mr.shape[0])
+    for i in range(Mr.shape[0]):
+        w, r = _u_fit(Xj, Mr[i])
+        rho[i] = _u_corr(Xj @ w, Mr[i] @ r)
+    return rho
+
+
+def _u_margin(rho):
+    s = np.sort(rho)
+    return (s[-1] - s[-2]) / s[:-1].std()
+
+
+def _u_cumulative(Xr, Mr, y_hist, c=None):  # Xr (j+1, T, C) with current last, y_hist labels of the first j
+    T, C = Xr.shape[1], Xr.shape[2]
+    L = Mr.shape[2]
+    cc = None if c is None else np.repeat(c, T)
+    rho = np.zeros(Mr.shape[0])
+    filters = []
+    for i in range(Mr.shape[0]):
+        Xstack = np.concatenate((Xr[:-1].reshape(-1, C), Xr[-1]), axis=0)
+        Mstack = np.concatenate((Mr[y_hist].reshape(-1, L), Mr[i]), axis=0)
+        w, r = _u_fit(Xstack, Mstack, cc)
+        filters.append((w, r))
+        rho[i] = _u_corr(Xr[-1] @ w, Mr[i] @ r)
+    return rho, filters
+
+
+def _u_structure_matrix(V_, fs, n_samples, onset):
+    Vt = np.tile(V_, (1, int(np.ceil(n_samples / V_.shape[1]))))[:, :n_samples]
+    E = pyntbci.utilities.event_matrix(Vt, "refe", onset)[0]
+    return pyntbci.utilities.encoding_matrix(E, int(0.3 * fs)).transpose(0, 2, 1)  # (classes, samples, r)
+
+
+class TestUnsupervisedRCCA(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # A small, well-conditioned dataset: few classes/trials, and onset_event=False so the response covariance is
+        # full rank and both the reference and UnsupervisedRCCA run unregularized (for an exact comparison).
+        cls.FS = 120
+        v = pyntbci.stimulus.make_m_sequence()
+        stim = np.repeat(pyntbci.stimulus.shift(v, 2), 2, axis=1)[:6]  # 6 classes
+        cls.n_classes = stim.shape[0]
+        n_samples = 3 * stim.shape[1]  # 3 cycles
+        cls.X, cls.y, cls.V = pyntbci.eeg.generate_c_vep(
+            3 * cls.n_classes, 8, n_samples, cls.FS, n_classes=cls.n_classes, stimulus=stim, random_state=3
+        )
+        cls.Xr = cls.X.transpose(0, 2, 1)  # (trials, samples, channels)
+        cls.Mr = _u_structure_matrix(cls.V, cls.FS, n_samples, onset=False)  # (classes, samples, r)
+        cls.n_trials = cls.X.shape[0]
+
+    def _make(self, **kwargs):
+        return pyntbci.classifiers.UnsupervisedRCCA(
+            stimulus=self.V, fs=self.FS, event="refe", onset_event=False, encoding_length=0.3, **kwargs
+        )
+
+    def test_instantaneous_matches_reference(self):
+        yh = self._make(cumulative=False).predict(self.X)
+        ref = np.array([int(np.argmax(_u_instantaneous(self.Xr[j], self.Mr))) for j in range(self.n_trials)])
+        self.assertTrue(np.array_equal(yh, ref))
+
+    def test_cumulative_matches_reference(self):
+        yh = self._make(cumulative=True).predict(self.X)
+        ref = np.zeros(self.n_trials, dtype=int)
+        ref[0] = int(np.argmax(_u_instantaneous(self.Xr[0], self.Mr)))
+        for j in range(1, self.n_trials):
+            ref[j] = int(np.argmax(_u_cumulative(self.Xr[: 1 + j], self.Mr, ref[:j])[0]))
+        self.assertTrue(np.array_equal(yh, ref))
+
+    def test_confidence_matches_reference(self):
+        yh = self._make(cumulative=True, confidence=True).predict(self.X)
+        ref = np.zeros(self.n_trials, dtype=int)
+        c = np.zeros(self.n_trials)
+        ref[0] = int(np.argmax(_u_instantaneous(self.Xr[0], self.Mr)))
+        c[0] = _u_margin(_u_instantaneous(self.Xr[0], self.Mr))
+        for j in range(1, self.n_trials):
+            c[j] = _u_margin(_u_instantaneous(self.Xr[j], self.Mr))
+            ref[j] = int(np.argmax(_u_cumulative(self.Xr[: 1 + j], self.Mr, ref[:j], c[: 1 + j])[0]))
+        self.assertTrue(np.array_equal(yh, ref))
+
+    def test_posthoc_matches_reference(self):
+        yh = self._make(cumulative=True, confidence=True, posthoc=True).predict(self.X)
+        ref = np.zeros(self.n_trials, dtype=int)
+        c = np.zeros(self.n_trials)
+        ref[0] = int(np.argmax(_u_instantaneous(self.Xr[0], self.Mr)))
+        c[0] = _u_margin(_u_instantaneous(self.Xr[0], self.Mr))
+        for j in range(1, self.n_trials):
+            c[j] = _u_margin(_u_instantaneous(self.Xr[j], self.Mr))
+            rho, filters = _u_cumulative(self.Xr[: 1 + j], self.Mr, ref[:j], c[: 1 + j])
+            ref[j] = int(np.argmax(rho))
+            w, r = filters[ref[j]]
+            for k in range(j):  # post hoc relabel of past trials with the winning model
+                ref[k] = int(np.argmax([_u_corr(self.Xr[k] @ w, self.Mr[i] @ r) for i in range(self.n_classes)]))
+        self.assertTrue(np.array_equal(yh, ref))
+
+    def test_cumulative_beats_instantaneous(self):
+        acc_i = np.mean(self._make(cumulative=False).predict(self.X) == self.y)
+        acc_c = np.mean(self._make(cumulative=True).predict(self.X) == self.y)
+        self.assertGreaterEqual(acc_c, acc_i)
+
+    def test_predict_and_decision_function_shapes(self):
+        clf = self._make(cumulative=True)
+        yh = clf.predict(self.X, reset=True)
+        self.assertEqual(yh.shape, (self.n_trials,))
+        scores = clf.decision_function(self.X, reset=True)
+        self.assertEqual(scores.shape, (self.n_trials, self.n_classes))
+        self.assertTrue(np.array_equal(yh, np.argmax(scores, axis=1)))
+
+    def test_predict_one_by_one_equals_batch(self):
+        # In an online session, decoding trials one at a time must accumulate exactly as a single batch call does
+        # (the internal session persists across predict() calls), so real-time (one-by-one) use is not silently
+        # reduced to the instantaneous variant.
+        batch = self._make(cumulative=True).predict(self.X)
+        clf = self._make(cumulative=True)
+        one_by_one = np.array([clf.predict(self.X[[i]])[0] for i in range(self.n_trials)])
+        self.assertTrue(np.array_equal(one_by_one, batch))
+
+        # reset=True instead makes each predict() a self-contained fresh replay, i.e. per-trial it is instantaneous
+        instantaneous = self._make(cumulative=False).predict(self.X)
+        clf_reset = self._make(cumulative=True)
+        per_trial_reset = np.array([clf_reset.predict(self.X[[i]], reset=True)[0] for i in range(self.n_trials)])
+        self.assertTrue(np.array_equal(per_trial_reset, instantaneous))
+
+    def test_posthoc_retains_history_others_do_not(self):
+        clf_ph = self._make(cumulative=True, posthoc=True)
+        clf_ph.predict(self.X)
+        self.assertEqual(len(clf_ph.X_hist_), self.n_trials)
+
+        clf_c = self._make(cumulative=True)
+        clf_c.predict(self.X)
+        self.assertEqual(len(clf_c.X_hist_), 0)
+
+    def test_partial_fit_predict_streams_without_fit(self):
+        clf = self._make(cumulative=True)
+        labels = [clf.partial_fit_predict(self.X[j])[0] for j in range(self.n_trials)]
+        # A fresh replay (reset=True) must reproduce the same online sequence
+        self.assertTrue(np.array_equal(np.array(labels), clf.predict(self.X, reset=True)))
+
+    def test_onset_event_needs_regularization(self):
+        from scipy.linalg import LinAlgError
+
+        clf = pyntbci.classifiers.UnsupervisedRCCA(
+            stimulus=self.V, fs=self.FS, event="refe", onset_event=True, encoding_length=0.3, cumulative=False
+        )
+        with self.assertRaises(LinAlgError):
+            clf.predict(self.X)
+        # regularizing the response covariance resolves the rank-deficient onset response
+        reg = pyntbci.classifiers.UnsupervisedRCCA(
+            stimulus=self.V,
+            fs=self.FS,
+            event="refe",
+            onset_event=True,
+            encoding_length=0.3,
+            cumulative=False,
+            gamma_m=0.05,
+        )
+        self.assertEqual(reg.predict(self.X).shape, (self.n_trials,))
+
+    def _flash_vep_prior(self, enc_len):
+        r = pyntbci.eeg.generate_impulse_response(self.FS, dtype="float64")
+        out = np.zeros(enc_len)
+        out[: min(enc_len, r.size)] = r[:enc_len]
+        return out
+
+    def test_response_prior_breaks_shift_degeneracy(self):
+        # With circularly-shifted codes (a shifted m-sequence) and a long response, an unconstrained response can
+        # slide to fit any candidate, so decoding is poor; a prior on the response shape anchors its phase and fixes
+        # this.
+        enc = 0.3
+        prior = self._flash_vep_prior(int(enc * self.FS))
+        kw = dict(
+            stimulus=self.V,
+            fs=self.FS,
+            event="id",
+            onset_event=False,
+            encoding_length=enc,
+            gamma_m=0.01,
+            cumulative=False,
+        )
+        acc_no = np.mean(pyntbci.classifiers.UnsupervisedRCCA(**kw).predict(self.X) == self.y)
+        acc_prior = np.mean(pyntbci.classifiers.UnsupervisedRCCA(**kw, response_prior=prior).predict(self.X) == self.y)
+        self.assertGreater(acc_prior, acc_no)
+        self.assertGreaterEqual(acc_prior, 0.9)
+
+    def test_response_prior_forms_equivalent(self):
+        # A per-event response (applied to all events) and the full concatenation of per-event responses must give
+        # the same result. "refe" (onset_event=False) has two events, so the full form is the per-event one tiled.
+        enc = 0.3
+        prior = self._flash_vep_prior(int(enc * self.FS))
+        kw = dict(
+            stimulus=self.V,
+            fs=self.FS,
+            event="refe",
+            onset_event=False,
+            encoding_length=enc,
+            gamma_m=0.05,
+            cumulative=False,
+        )
+        yh_per_event = pyntbci.classifiers.UnsupervisedRCCA(**kw, response_prior=prior).predict(self.X)
+        yh_full = pyntbci.classifiers.UnsupervisedRCCA(**kw, response_prior=np.tile(prior, 2)).predict(self.X)
+        self.assertTrue(np.array_equal(yh_per_event, yh_full))
+
+    def test_response_prior_invalid_length_raises(self):
+        enc = 0.3
+        bad = self._flash_vep_prior(int(enc * self.FS))[:-3]  # neither per-event nor full length
+        clf = pyntbci.classifiers.UnsupervisedRCCA(
+            stimulus=self.V, fs=self.FS, event="refe", onset_event=False, encoding_length=enc, response_prior=bad
+        )
+        with self.assertRaises(ValueError):
+            clf.predict(self.X)
 
 
 if __name__ == "__main__":

@@ -91,6 +91,91 @@ def _inv_sqrt(C: NDArray, name: str = "X") -> NDArray:
     return (V / np.sqrt(w)) @ V.T
 
 
+def _shrink(C: NDArray, gamma: Union[float, list, NDArray]) -> NDArray:
+    """Shrink a covariance matrix towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the
+    result stays symmetric for a per-feature gamma (for scalar gamma this is identical to (1 - gamma) * C + gamma *
+    nu * I, since both terms are then equal). Returns C unchanged if gamma is None.
+
+    Parameters
+    ----------
+    C: NDArray
+        A covariance matrix of shape (n, n).
+    gamma: float | list[float] | NDArray
+        Regularization for all (scalar) or each individual (per-feature array) feature, ranging from 0 (no
+        regularization) to 1 (full regularization). If None, C is returned unchanged.
+
+    Returns
+    -------
+    C: NDArray
+        The (regularized) covariance matrix of shape (n, n).
+    """
+    if gamma is None:
+        return C
+    nu = np.trace(C) / C.shape[1]
+    if isinstance(gamma, (int, float)):
+        gamma = np.full(C.shape[1], gamma)
+    else:
+        gamma = np.asarray(gamma).flatten()
+    return 0.5 * ((1 - gamma)[:, np.newaxis] * C + C * (1 - gamma)[np.newaxis, :]) + nu * np.diag(gamma)
+
+
+def _solve_cca(
+    Cxx: NDArray,
+    Cxy: NDArray,
+    Cyy: NDArray,
+    n_components: int,
+    gamma_x: Union[float, list, NDArray] = None,
+    gamma_y: Union[float, list, NDArray] = None,
+    alpha_x: float = None,
+    alpha_y: float = None,
+) -> tuple[NDArray, NDArray, NDArray]:
+    """Solve the CCA from the (auto- and cross-) covariance blocks: regularize, whiten, and take the SVD of the
+    whitened cross-covariance. This is the core linear algebra of CCA, factored out so it can be reused directly on
+    externally-accumulated covariance matrices (e.g. the running per-hypothesis covariances of unsupervised
+    adaptive rCCA) without going through CCA's own running-state bookkeeping.
+
+    Parameters
+    ----------
+    Cxx: NDArray
+        The auto-covariance of X of shape (n_features_x, n_features_x).
+    Cxy: NDArray
+        The cross-covariance of X and Y of shape (n_features_x, n_features_y).
+    Cyy: NDArray
+        The auto-covariance of Y of shape (n_features_y, n_features_y).
+    n_components: int
+        The number of CCA components to return.
+    gamma_x: float | list[float] | NDArray (default: None)
+        Regularization on Cxx, see _shrink().
+    gamma_y: float | list[float] | NDArray (default: None)
+        Regularization on Cyy, see _shrink().
+    alpha_x: float (default: None)
+        Amount of variance to retain when inverting Cxx. If None, all variance (a plain inverse).
+    alpha_y: float (default: None)
+        Amount of variance to retain when inverting Cyy. If None, all variance (a plain inverse).
+
+    Returns
+    -------
+    w_x: NDArray
+        The weight vector to project X of shape (n_features_x, n_components).
+    w_y: NDArray
+        The weight vector to project Y of shape (n_features_y, n_components).
+    rho: NDArray
+        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).
+    """
+    Cxx = _shrink(Cxx, gamma_x)
+    Cyy = _shrink(Cyy, gamma_y)
+
+    # Inverse square root
+    iCxx = _inv_sqrt(Cxx, name="X") if alpha_x is None else _sym_sqrt(pinv(Cxx, alpha_x), name="X")
+    iCyy = _inv_sqrt(Cyy, name="Y") if alpha_y is None else _sym_sqrt(pinv(Cyy, alpha_y), name="Y")
+
+    # SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that can be
+    # nonzero, instead of the full square U and V of which only the first n_components are ever used.
+    U, rho, V = svd(iCxx @ Cxy @ iCyy, full_matrices=False)
+
+    return (iCxx @ U)[:, :n_components], (iCyy @ V.T)[:, :n_components], rho
+
+
 class CCA(TransformerMixin, BaseEstimator):
     """Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.
     Here, CCA is implemented as the SVD of (cross)covariance matrices [1]_.
@@ -190,7 +275,8 @@ class CCA(TransformerMixin, BaseEstimator):
         Y: NDArray
             Data matrix of shape (n_samples, n_features_y).
         """
-        assert X.shape[0] == Y.shape[0], f"Unequal samples in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
+        if X.shape[0] != Y.shape[0]:
+            raise ValueError(f"Unequal samples in X ({X.shape[0]}) and Y ({Y.shape[0]}).")
 
         # Compute covariances. Cxx/Cyy are taken as blocks of the joint covariance of concat(X, Y) rather than
         # computed separately, since they are already sub-computations of it.
@@ -204,53 +290,12 @@ class CCA(TransformerMixin, BaseEstimator):
         self.n_y_ = self.n_xy_
         self.avg_y_ = self.avg_xy_[:, X.shape[1] :]
         self.cov_y_ = self.cov_xy_[X.shape[1] :, X.shape[1] :]
-        Cxx = self.cov_x_
-        Cyy = self.cov_y_
         Cxy = self.cov_xy_[: X.shape[1], X.shape[1] :]
 
-        # Regularization. Shrink towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the
-        # result stays symmetric for a per-feature gamma (for scalar gamma this is identical to (1 - gamma) * Cxx,
-        # since both terms are then equal).
-        if self.gamma_x is not None:
-            nu_x = np.trace(Cxx) / Cxx.shape[1]
-            if isinstance(self.gamma_x, (int, float)):
-                gamma_x = np.full(Cxx.shape[1], self.gamma_x)
-            else:
-                gamma_x = np.asarray(self.gamma_x).flatten()
-            Cxx = 0.5 * ((1 - gamma_x)[:, np.newaxis] * Cxx + Cxx * (1 - gamma_x)[np.newaxis, :]) + nu_x * np.diag(
-                gamma_x
-            )
-        if self.gamma_y is not None:
-            nu_y = np.trace(Cyy) / Cyy.shape[1]
-            if isinstance(self.gamma_y, (int, float)):
-                gamma_y = np.full(Cyy.shape[1], self.gamma_y)
-            else:
-                gamma_y = np.asarray(self.gamma_y).flatten()
-            Cyy = 0.5 * ((1 - gamma_y)[:, np.newaxis] * Cyy + Cyy * (1 - gamma_y)[np.newaxis, :]) + nu_y * np.diag(
-                gamma_y
-            )
-
-        # Inverse square root
-        if self.alpha_x is None:
-            iCxx = _inv_sqrt(Cxx, name="X")
-        else:
-            iCxx = _sym_sqrt(pinv(Cxx, self.alpha_x), name="X")
-        if self.alpha_y is None:
-            iCyy = _inv_sqrt(Cyy, name="Y")
-        else:
-            iCyy = _sym_sqrt(pinv(Cyy, self.alpha_y), name="Y")
-
-        # SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that
-        # can be nonzero, instead of the full square U and V of which only the first n_components are ever used.
-        U, self.rho_, V = svd(iCxx @ Cxy @ iCyy, full_matrices=False)
-
-        # Compute projection vectors
-        Wx = iCxx @ U
-        Wy = iCyy @ V.T
-
-        # Select components
-        self.w_x_ = Wx[:, : self.n_components]
-        self.w_y_ = Wy[:, : self.n_components]
+        # Regularize, whiten, and take the SVD of the whitened cross-covariance (the core CCA linear algebra)
+        self.w_x_, self.w_y_, self.rho_ = _solve_cca(
+            self.cov_x_, Cxy, self.cov_y_, self.n_components, self.gamma_x, self.gamma_y, self.alpha_x, self.alpha_y
+        )
 
     def _fit_X3D_Y3D(
         self,
@@ -266,8 +311,10 @@ class CCA(TransformerMixin, BaseEstimator):
         Y: NDArray
             Data matrix of shape (n_trials, n_features_y, n_samples).
         """
-        assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
-        assert X.shape[2] == Y.shape[2], f"Unequal samples in X ({X.shape[2]}) and Y ({Y.shape[2]})!"
+        if X.shape[0] != Y.shape[0]:
+            raise ValueError(f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]}).")
+        if X.shape[2] != Y.shape[2]:
+            raise ValueError(f"Unequal samples in X ({X.shape[2]}) and Y ({Y.shape[2]}).")
 
         n_trials, n_features_x, n_samples = X.shape
         n_features_y = Y.shape[1]
@@ -293,7 +340,8 @@ class CCA(TransformerMixin, BaseEstimator):
         Y: NDArray
             Label vector of shape (n_trials,).
         """
-        assert X.shape[0] == Y.shape[0], f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]})!"
+        if X.shape[0] != Y.shape[0]:
+            raise ValueError(f"Unequal trials in X ({X.shape[0]}) and Y ({Y.shape[0]}).")
 
         n_trials, n_channels, n_samples = X.shape
         labels = np.unique(Y)
@@ -335,9 +383,8 @@ class CCA(TransformerMixin, BaseEstimator):
         elif X.ndim == 2 and Y.ndim == 2:
             self._fit_X2D_Y2D(X, Y)
         else:
-            raise Exception(f"Dimensions of X ({X.shape}) and/or Y ({Y.shape}) are not valid.")
+            raise ValueError(f"Dimensions of X ({X.shape}) and/or Y ({Y.shape}) are not valid.")
 
-        self._is_fitted = True
         return self
 
     def _transform_X2D(
@@ -432,19 +479,9 @@ class CCA(TransformerMixin, BaseEstimator):
         elif (X is None or X.ndim == 2) and (Y is None or Y.ndim == 2):
             X, Y = self._transform_X2D(X, Y)
         else:
-            raise Exception("X and Y must be both 3D or 2D, or None.")
+            raise ValueError("X and Y must be both 3D or 2D, or None.")
 
         return X, Y
-
-    def __sklearn_is_fitted__(self) -> bool:
-        """Check fitted status and return a Boolean value.
-
-        Returns
-        -------
-        fitted: bool
-            Whether the transformer is fitted.
-        """
-        return hasattr(self, "_is_fitted") and self._is_fitted
 
 
 class Vectorizer(TransformerMixin, BaseEstimator):
@@ -483,7 +520,7 @@ class Vectorizer(TransformerMixin, BaseEstimator):
         self: TransformerMixin
             Returns the instance itself.
         """
-        self._is_fitted = True
+        self.n_features_in_ = X.shape[1]
         return self
 
     def transform(
@@ -509,13 +546,3 @@ class Vectorizer(TransformerMixin, BaseEstimator):
         if self.channel_prime:
             X = X.transpose((0, 2, 1))
         return X.reshape((X.shape[0], -1))
-
-    def __sklearn_is_fitted__(self) -> bool:
-        """Check fitted status and return a Boolean value.
-
-        Returns
-        -------
-        fitted: bool
-            Whether the transformer is fitted.
-        """
-        return hasattr(self, "_is_fitted") and self._is_fitted

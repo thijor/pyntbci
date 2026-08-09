@@ -3,10 +3,79 @@
 ## Version 1.9.1
 
 ### Added
+- Added `UnsupervisedRCCA` to `classifiers`: a calibration-free (unsupervised) adaptive rCCA for c-VEP decoding.
+  Each trial is decoded by fitting a separate rCCA per candidate stimulus (as a hypothesis) and selecting the one
+  whose model best fits the trial (instantaneous mode). Three cumulative extensions, selected with the `cumulative`,
+  `confidence`, and `posthoc` flags, learn from previously decoded trials using their predictions as pseudo-labels:
+  `cumulative` pools all past trials (kept as a single shared running covariance across hypotheses, so each trial
+  only adds its own contribution instead of refitting on the whole history — mathematically identical to the
+  from-scratch refit, verified bit-for-bit against a naive reference on synthetic data), `confidence` weights each
+  trial by its normalized correlation margin, and `posthoc` re-decodes and relabels past trials with the updated
+  model (applied to the running covariance as an exact remove-then-re-add; the only mode that retains the past
+  trials' EEG). These reproduce the four variants of Thielen (2026). It reuses `rCCA`'s structure-matrix machinery
+  and the shared `_solve_cca` core, and exposes an online `partial_fit_predict` alongside a streaming
+  `predict`/`decision_function`
+- Added `RunningCovariance` to `utilities`: a running (optionally weighted) covariance accumulator kept in
+  uncentered-moment form, so it supports peeking at "current state plus a candidate chunk" without committing,
+  committing a chunk, and exactly removing a previously added chunk — the access patterns `UnsupervisedRCCA` needs
+  to fit one CCA per hypothesis off a shared history, commit the winner, and relabel a past trial. Unlike
+  `covariance`'s Welford running mode (which can only add), it is purely additive and subtractive
+- Added `examples/example_7_unsupervised_rcca.py`, showing the four unsupervised adaptive rCCA variants on synthetic
+  c-VEP data with a decoding curve and a confidence analysis
+- Added a `response_prior` (and its strength `response_prior_gamma`) to `rCCA` and `UnsupervisedRCCA` in
+  `classifiers`, a prior on the expected transient response (e.g. a flash-VEP with peaks near 75/100/125 ms) toward
+  which the learned response is softly regularized (a prior-mean ridge that interpolates from the data-driven
+  response to the prior). For `UnsupervisedRCCA` this makes decoding work with circularly-shifted codes (e.g.
+  shifted m-sequences): without it, an unconstrained response can circularly slide to make every candidate stimulus
+  fit equally well (the more so the longer `encoding_length`), so the classes are indistinguishable; the prior
+  anchors the response's absolute phase while still letting the data shape it, so a slightly-wrong prior
+  self-corrects (verified: 0.67 → 1.00 on shifted m-sequence codes with the correct-shape prior, and still ~0.86
+  with a 15 ms-mismatched prior). For (supervised) `rCCA`, where the labels already estimate the response at the
+  correct phase, it instead acts as a regularizer toward a physiologically plausible shape (useful for limited or
+  noisy data); it does not change the public API when left at the default `None`. The prior is given either as one
+  response applied to all events or as the full concatenation of the per-event responses, matching the layout of
+  `encoding_length`, and the underlying prior-mean ridge is shared between the two classifiers
 
 ### Changed 
+- Meta-estimators now clone their wrapped estimator/gate into a fitted attribute instead of fitting the passed-in
+  hyperparameter in place, following the scikit-learn convention (`self.estimator_ = clone(self.estimator)`): all
+  five classes in `stopping`, `DifferenceGate` in `gates` (`estimator_`), and `Ensemble` in `classifiers` (`gate_`,
+  and `models_` now via `clone` rather than `deepcopy`). Previously `fit()` mutated the very estimator/gate passed to
+  `__init__`, so the same instance could not be safely reused across wrappers and `clone()`-after-`fit()` leaked
+  state. As part of this, `CriterionStopping` now refits its final estimator on all data after the cross-validation
+  that selects `stop_time_` (the cross-validation uses per-fold clones), rather than leaving it fit on only the last
+  fold
+- Refactored the core CCA linear algebra (regularize, whiten, SVD of the whitened cross-covariance) out of `CCA`'s
+  `_fit_X2D_Y2D` in `transformers` into a module-level `_solve_cca`, so it can be reused on externally-accumulated
+  covariance matrices (the running per-hypothesis covariances of `UnsupervisedRCCA`) without going through `CCA`'s
+  running-state bookkeeping; `CCA`'s behavior and public API are unchanged
+- Unified the score-metric dispatch (correlation, euclidean-as-similarity, inner) of `eCCA`/`rCCA` in `classifiers`
+  into one shared `_score` helper (and a `SCORE_METRICS` constant), replacing four near-identical if/elif blocks that
+  re-evaluated `score_metric.lower()` inside the per-class/per-component loops; also switched the inner-product branch
+  from `np.inner` to the library's own `inner` in `utilities`
+- Removed the redundant, duplicated `__sklearn_is_fitted__` method (and the private `_is_fitted` bookkeeping) from
+  every estimator, relying instead on scikit-learn's default trailing-underscore fitted-attribute detection (each
+  `fit()` already sets a public `*_` attribute; `Vectorizer` now sets `n_features_in_`)
 
 ### Fixed
+- Fixed `predict()`/`decision_function()` in `UnsupervisedRCCA` of `classifiers` resetting the online session on
+  every call, which silently reduced the cumulative variants to the instantaneous one whenever trials were decoded
+  one at a time (as in a real-time session, `[predict(X[[i]]) for i in range(n_trials)]`) instead of in a single
+  `predict(X)` call. The online session now persists across calls (the reset lives in `fit()`), so decoding trials
+  one by one accumulates exactly as a single batch call does (verified identical); a new `reset` parameter on
+  `predict()`/`decision_function()` starts a fresh self-contained replay when wanted (`reset=True` per trial
+  reproduces the instantaneous behaviour)
+- Fixed unknown string hyperparameters (`score_metric`/`template_metric` in `eCCA`/`rCCA`, `aggregate` in
+  `AggregateGate`, `method` in `BayesStopping`, `criterion`/`optimization` in `CriterionStopping`, `distribution` in
+  `DistributionStopping`) being validated late and inconsistently (deep inside a `decision_function`/`predict` loop,
+  and only on the branch actually reached) instead of upfront in `fit()`; they now raise a clear `ValueError` listing
+  the valid options as soon as `fit()` is called. Relatedly, replaced every `raise Exception(...)` across the library
+  with a specific `ValueError` (some previously passed a stray tuple as the message), and converted user-facing input
+  validation from `assert` (silently stripped under `python -O`) to `ValueError` in `CCA`/`Ensemble`/`CriterionStopping`
+- Fixed the broad `except Exception` around the per-trial distribution fit in `DistributionStopping` of `stopping`
+  (`trained=False`) narrowed to the errors scipy's `beta.fit`/`norm.fit` actually raise on degenerate/too-few scores
+  (`ValueError`/`RuntimeError`/`FloatingPointError`), so a genuine programming error is no longer silently swallowed
+  as "p=0"
 - Fixed the singular/ill-conditioned covariance guard in `CCA` of `transformers` only ever firing on an already-
   numerically-corrupted result, never on an ordinary near-singular covariance (its smallest, tiny-but-positive
   eigenvalue is invisible once the matrix has been inverted), despite the error message advertising "too

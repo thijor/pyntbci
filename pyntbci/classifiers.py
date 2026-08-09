@@ -1,15 +1,15 @@
-from copy import deepcopy
 from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
-from sklearn.base import BaseEstimator, ClassifierMixin, TransformerMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, TransformerMixin, clone
 from sklearn.svm import OneClassSVM
 from sklearn.utils.validation import check_is_fitted
 from sklearn.exceptions import NotFittedError
 
-from pyntbci.transformers import CCA
+from pyntbci.transformers import CCA, _solve_cca
 from pyntbci.utilities import (
+    RunningCovariance,
     correct_latency,
     correlation,
     decoding_matrix,
@@ -18,6 +18,45 @@ from pyntbci.utilities import (
     event_matrix,
     inner,
 )
+
+
+SCORE_METRICS = ("correlation", "euclidean", "inner")
+TEMPLATE_METRICS = ("mean", "median", "ocsvm")
+
+
+def _score(
+    score_metric: str,
+    X: NDArray,
+    T: NDArray,
+) -> NDArray:
+    """Compute similarity scores between (spatially filtered) single-trials and templates.
+
+    Euclidean distance is converted to a similarity (1 / (1 + distance)) so that, like correlation and the inner
+    product, a higher score means more similar. Shared by the batch (non-running) path of eCCA and rCCA, for both
+    the ensemble and non-ensemble cases.
+
+    Parameters
+    ----------
+    score_metric: str
+        The score metric: one of SCORE_METRICS (correlation, euclidean, inner).
+    X: NDArray
+        The (spatially filtered) single-trials of shape (n_trials, n_samples).
+    T: NDArray
+        The templates of shape (n_classes, n_samples), or a single template of shape (n_samples,).
+
+    Returns
+    -------
+    scores: NDArray
+        The similarity scores of shape (n_trials, n_classes), or (n_trials, 1) if a single template was given.
+    """
+    metric = score_metric.lower()
+    if metric == "correlation":
+        return correlation(X, T)
+    if metric == "euclidean":  # convert distance to a similarity so higher is more similar, as for the others
+        return 1 / (1 + euclidean(X, T))
+    if metric == "inner":
+        return inner(X, T)
+    raise ValueError(f"Unknown score metric: {score_metric}. Options are {SCORE_METRICS}.")
 
 
 def _running_score(
@@ -114,7 +153,95 @@ def _running_score(
         return scores, {"n": n_obs, "sum_x": sum_x, "sum_t": sum_t, "sum_xt": sum_xt}
 
     else:
-        raise Exception(f"Unknown score metric: {score_metric}")
+        raise ValueError(f"Unknown score metric: {score_metric}. Options are {SCORE_METRICS}.")
+
+
+def _resolve_response_prior(response_prior: NDArray, n_features: int, n_events: int) -> NDArray:
+    """Resolve a response_prior to the full temporal-feature length (matching the temporal filter r), or None.
+
+    response_prior may be given either as one response (of length n_features // n_events), applied to every event,
+    or as the full concatenation of the per-event responses (of length n_features), matching the layout of the
+    temporal filter (see encoding_length). Shared by rCCA and UnsupervisedRCCA in classifiers.
+
+    Parameters
+    ----------
+    response_prior: NDArray
+        The prior on the expected transient response, sampled at fs. If None, None is returned.
+    n_features: int
+        The number of temporal features (the length of the temporal filter r).
+    n_events: int
+        The number of events the response is modeled for.
+
+    Returns
+    -------
+    prior: NDArray
+        The prior of shape (n_features,), or None if response_prior is None.
+    """
+    if response_prior is None:
+        return None
+    prior = np.asarray(response_prior, dtype="float64").ravel()
+    if prior.size == n_features:
+        return prior
+    if n_features % n_events == 0 and prior.size == n_features // n_events:
+        return np.tile(prior, n_events)  # one response for all events
+    raise ValueError(
+        f"response_prior has length {prior.size}, but must be either the per-event response length "
+        f"({n_features // n_events}, applied to all {n_events} events) or the full concatenated length "
+        f"({n_features})."
+    )
+
+
+def _apply_response_prior(
+    prior: NDArray,
+    gamma: float,
+    w: NDArray,
+    r: NDArray,
+    Cxm: NDArray,
+    Cmm: NDArray,
+) -> tuple[NDArray, NDArray]:
+    """Regularize a temporal response toward a prior, component-wise, via a prior-mean ridge.
+
+    Given the spatial filter w (kept fixed), the temporal response is re-estimated as
+    r = (Cmm + lambda I)^-1 (Cmx w + lambda * prior), which monotonically interpolates from the unregularized data
+    response (lambda = 0) to the prior (lambda -> infinity). This anchors the response's absolute phase (breaking the
+    shift degeneracy of circularly-shifted codes, where an unconstrained response can slide to make any candidate
+    fit), while still letting the data shape it (so a slightly-wrong prior self-corrects). The (jointly sign-
+    ambiguous) filters w and r are first sign-flipped so the data response points the same way as the prior, else the
+    blend is destructive; the prior is scaled to the data response's magnitude so gamma is dimensionless. Shared by
+    rCCA and UnsupervisedRCCA in classifiers.
+
+    Parameters
+    ----------
+    prior: NDArray
+        The prior response of shape (n_features,), as resolved by _resolve_response_prior().
+    gamma: float
+        The strength of the regularization (0 ignores the prior; larger pulls harder toward it).
+    w: NDArray
+        The spatial filter of shape (n_channels, n_components).
+    r: NDArray
+        The unregularized temporal response of shape (n_features, n_components).
+    Cxm: NDArray
+        The cross-covariance of the (decoded) EEG and the structure matrix of shape (n_channels, n_features).
+    Cmm: NDArray
+        The auto-covariance of the structure matrix of shape (n_features, n_features).
+
+    Returns
+    -------
+    w: NDArray
+        The (possibly sign-flipped) spatial filter of shape (n_channels, n_components).
+    r: NDArray
+        The prior-regularized temporal response of shape (n_features, n_components).
+    """
+    lam = gamma * np.trace(Cmm) / Cmm.shape[0]
+    A = Cmm + lam * np.eye(Cmm.shape[0])
+    w_new = np.array(w, dtype="float64")
+    r_new = np.zeros_like(r, dtype="float64")
+    for c in range(r.shape[1]):
+        if r[:, c] @ prior < 0:  # align the joint sign ambiguity so the data response agrees with the prior
+            w_new[:, c] = -w[:, c]
+        target = prior / np.linalg.norm(prior) * np.linalg.norm(r[:, c])
+        r_new[:, c] = np.linalg.solve(A, Cxm.T @ w_new[:, c] + lam * target)
+    return w_new, r_new
 
 
 class eCCA(ClassifierMixin, BaseEstimator):
@@ -267,7 +394,7 @@ class eCCA(ClassifierMixin, BaseEstimator):
                 ocsvm.fit(X[:, i_channel, :])
                 T[i_channel, :] = ocsvm.coef_
         else:
-            raise Exception(f"Unknown template metric: {self.template_metric}")
+            raise ValueError(f"Unknown template metric: {self.template_metric}. Options are {TEMPLATE_METRICS}.")
         return T
 
     def decision_function(
@@ -317,32 +444,14 @@ class eCCA(ClassifierMixin, BaseEstimator):
                 for i_class in range(T.shape[0]):
                     Xi = self.cca_[i_class].transform(X=X)[0]
                     for i_component in range(self.n_components):
-                        if self.score_metric.lower() == "correlation":
-                            scores[:, i_class, i_component] = correlation(
-                                Xi[:, i_component, :], T[i_class, i_component, :]
-                            )[:, 0]
-                        elif self.score_metric.lower() == "euclidean":
-                            scores[:, i_class, i_component] = (
-                                1 / (1 + euclidean(Xi[:, i_component, :], T[i_class, i_component, :]))[:, 0]
-                            )
-                        elif self.score_metric.lower() == "inner":
-                            scores[:, i_class, i_component] = np.inner(
-                                Xi[:, i_component, :], T[i_class, i_component, :]
-                            )
-                        else:
-                            raise Exception(f"Unknown score metric: {self.score_metric}")
+                        scores[:, i_class, i_component] = _score(
+                            self.score_metric, Xi[:, i_component, :], T[i_class, i_component, :]
+                        )[:, 0]
 
             else:
                 X = self.cca_[0].transform(X=X)[0]
                 for i_component in range(self.n_components):
-                    if self.score_metric.lower() == "correlation":
-                        scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
-                    elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
-                        scores[:, :, i_component] = 1 / (1 + euclidean(X[:, i_component, :], T[:, i_component, :]))
-                    elif self.score_metric.lower() == "inner":
-                        scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
-                    else:
-                        raise Exception(f"Unknown score metric: {self.score_metric}")
+                    scores[:, :, i_component] = _score(self.score_metric, X[:, i_component, :], T[:, i_component, :])
 
             if self.n_components == 1 and self.squeeze_components:
                 scores = scores[:, :, 0]
@@ -406,6 +515,11 @@ class eCCA(ClassifierMixin, BaseEstimator):
         self: ClassifierMixin
             Returns the instance itself.
         """
+        if self.score_metric.lower() not in SCORE_METRICS:
+            raise ValueError(f"Unknown score metric: {self.score_metric}. Options are {SCORE_METRICS}.")
+        if self.template_metric.lower() not in TEMPLATE_METRICS:
+            raise ValueError(f"Unknown template metric: {self.template_metric}. Options are {TEMPLATE_METRICS}.")
+
         n_trials, n_channels, n_samples = X.shape
 
         if self.running:
@@ -529,7 +643,6 @@ class eCCA(ClassifierMixin, BaseEstimator):
 
         self.classes_ = np.arange(n_classes)
         self._running_ = None
-        self._is_fitted = True
         return self
 
     def _get_T_raw(
@@ -603,16 +716,6 @@ class eCCA(ClassifierMixin, BaseEstimator):
         check_is_fitted(self)
         return np.argmax(self.decision_function(X, running=running, reset=reset), axis=1)
 
-    def __sklearn_is_fitted__(self) -> bool:
-        """Check fitted status and return a Boolean value.
-
-        Returns
-        -------
-        fitted: bool
-            Whether the classifier is fitted.
-        """
-        return hasattr(self, "_is_fitted") and self._is_fitted
-
 
 class Ensemble(ClassifierMixin, BaseEstimator):
     """Ensemble classifier. It wraps an ensemble classifier around another classifier object. The classifiers are
@@ -631,11 +734,14 @@ class Ensemble(ClassifierMixin, BaseEstimator):
     classes_: NDArray
         The classes that can be predicted, taken from the gate's classes_ after fitting.
     models_: list[ClassifierMixin]
-        A list containing all models learned for each of the databanks.
+        A list containing all models learned for each of the databanks (clones of estimator).
+    gate_: ClassifierMixin
+        The fitted clone of gate. The passed-in estimator and gate are never mutated.
     """
 
     classes_: NDArray
     models_: list[ClassifierMixin]
+    gate_: ClassifierMixin
 
     def __init__(
         self,
@@ -644,6 +750,24 @@ class Ensemble(ClassifierMixin, BaseEstimator):
     ) -> None:
         self.estimator = estimator
         self.gate = gate
+
+    def _stack_scores(
+        self,
+        X: NDArray,
+    ) -> NDArray:
+        """Stack each databank model's decision_function scores along a new last axis.
+
+        Parameters
+        ----------
+        X: NDArray
+            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).
+
+        Returns
+        -------
+        scores: NDArray
+            The stacked scores of shape (n_trials, n_classes, n_items).
+        """
+        return np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
 
     def decision_function(
         self,
@@ -662,8 +786,7 @@ class Ensemble(ClassifierMixin, BaseEstimator):
             The matrix of scores of shape (n_trials, n_classes).
         """
         check_is_fitted(self)
-        scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
-        return self.gate.decision_function(scores)
+        return self.gate_.decision_function(self._stack_scores(X))
 
     def fit(
         self,
@@ -685,17 +808,17 @@ class Ensemble(ClassifierMixin, BaseEstimator):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        assert X.ndim == 4
+        if X.ndim != 4:
+            raise ValueError(f"X must be 4D (n_trials, n_channels, n_samples, n_items); got {X.ndim}D.")
 
-        # Fit separate models for each databank
-        self.models_ = [deepcopy(self.estimator).fit(X[:, :, :, i], y) for i in range(X.shape[3])]
+        # Fit a separate (cloned) model for each databank, so the passed-in estimator is never mutated
+        self.models_ = [clone(self.estimator).fit(X[:, :, :, i], y) for i in range(X.shape[3])]
 
-        # Fit gating
-        scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
-        self.gate.fit(scores, y)
+        # Fit gating on a clone, so the passed-in gate is never mutated
+        self.gate_ = clone(self.gate)
+        self.gate_.fit(self._stack_scores(X), y)
 
-        self.classes_ = self.gate.classes_
-        self._is_fitted = True
+        self.classes_ = self.gate_.classes_
         return self
 
     def predict(
@@ -716,18 +839,7 @@ class Ensemble(ClassifierMixin, BaseEstimator):
             to find the associated stimulus!
         """
         check_is_fitted(self)
-        scores = np.stack([self.models_[i].decision_function(X[:, :, :, i]) for i in range(X.shape[3])], axis=2)
-        return self.gate.predict(scores)
-
-    def __sklearn_is_fitted__(self) -> bool:
-        """Check fitted status and return a Boolean value.
-
-        Returns
-        -------
-        fitted: bool
-            Whether the classifier is fitted.
-        """
-        return hasattr(self, "_is_fitted") and self._is_fitted
+        return self.gate_.predict(self._stack_scores(X))
 
 
 class rCCA(ClassifierMixin, BaseEstimator):
@@ -799,6 +911,18 @@ class rCCA(ClassifierMixin, BaseEstimator):
         its own, and a class absent from an early batch would otherwise silently never get initialized. To start
         a new running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then
         set_params(running=True) again).
+    response_prior: NDArray (default: None)
+        A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak
+        near 100 ms, and a negative peak near 125 ms), sampled at fs, toward which the learned temporal filter r_ is
+        softly regularized (see response_prior_gamma). Given either as one response of length n_event_samples
+        (applied to every event) or as the full concatenation of the per-event responses of length n_features
+        (matching r_; see encoding_length). Unlike in the unsupervised case, the (labeled) fit already estimates the
+        response at the correct phase, so this acts as a regularizer toward a physiologically plausible shape, which
+        can stabilize the response when little/noisy data is available. If None (default), no prior is used.
+    response_prior_gamma: float (default: 1.0)
+        The strength of the soft regularization toward response_prior, from 0 (ignore the prior, purely data-driven)
+        upwards (larger pulls the response more strongly toward the prior; in the limit the response equals the
+        prior). Only used if response_prior is not None.
     cca_: list[TransformerMixin]
         The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise
         len(cca_)=n_classes.
@@ -870,6 +994,8 @@ class rCCA(ClassifierMixin, BaseEstimator):
         alpha_m: float = None,
         tmin: float = 0,
         running: bool = False,
+        response_prior: NDArray = None,
+        response_prior_gamma: float = 1.0,
     ) -> None:
         self.stimulus = stimulus
         self.fs = fs
@@ -891,6 +1017,8 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self.alpha_m = alpha_m
         self.tmin = tmin
         self.running = running
+        self.response_prior = response_prior
+        self.response_prior_gamma = response_prior_gamma
 
     def _resolve_decoding_length_stride(self) -> tuple[float, float]:
         """Resolve decoding_length and decoding_stride, defaulting to 1/fs (i.e., no phase-shifting) if None.
@@ -982,32 +1110,14 @@ class rCCA(ClassifierMixin, BaseEstimator):
                 for i_class in range(T.shape[0]):
                     Xi = self.cca_[i_class].transform(X=X)[0]
                     for i_component in range(self.n_components):
-                        if self.score_metric.lower() == "correlation":
-                            scores[:, i_class, i_component] = correlation(
-                                Xi[:, i_component, :], T[i_class, i_component, :]
-                            )[:, 0]
-                        elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
-                            scores[:, i_class, i_component] = (
-                                1 / (1 + euclidean(Xi[:, i_component, :], T[i_class, i_component, :]))[:, 0]
-                            )
-                        elif self.score_metric.lower() == "inner":
-                            scores[:, i_class, i_component] = np.inner(
-                                Xi[:, i_component, :], T[i_class, i_component, :]
-                            )
-                        else:
-                            raise Exception(f"Unknown score metric: {self.score_metric}")
+                        scores[:, i_class, i_component] = _score(
+                            self.score_metric, Xi[:, i_component, :], T[i_class, i_component, :]
+                        )[:, 0]
 
             else:
                 X = self.cca_[0].transform(X=X)[0]
                 for i_component in range(self.n_components):
-                    if self.score_metric.lower() == "correlation":
-                        scores[:, :, i_component] = correlation(X[:, i_component, :], T[:, i_component, :])
-                    elif self.score_metric.lower() == "euclidean":  # includes conversion to similarity
-                        scores[:, :, i_component] = 1 / (1 + euclidean(X[:, i_component, :], T[:, i_component, :]))
-                    elif self.score_metric.lower() == "inner":
-                        scores[:, :, i_component] = np.inner(X[:, i_component, :], T[:, i_component, :])
-                    else:
-                        raise Exception(f"Unknown score metric: {self.score_metric}")
+                    scores[:, :, i_component] = _score(self.score_metric, X[:, i_component, :], T[:, i_component, :])
 
             if self.n_components == 1 and self.squeeze_components:
                 scores = scores[:, :, 0]
@@ -1108,10 +1218,13 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self: ClassifierMixin
             Returns the instance itself.
         """
+        if self.score_metric.lower() not in SCORE_METRICS:
+            raise ValueError(f"Unknown score metric: {self.score_metric}. Options are {SCORE_METRICS}.")
 
         # Set encoding matrix
         self.set_encoding_matrix()
         n_classes = self.Ms_.shape[0]
+        prior = _resolve_response_prior(self.response_prior, self.Ms_.shape[1], len(self.events_))
 
         # Set decoding matrix
         decoding_length, decoding_stride = self._resolve_decoding_length_stride()
@@ -1148,6 +1261,8 @@ class rCCA(ClassifierMixin, BaseEstimator):
                     )
                 )
                 self.cca_[i_class].fit(X[y == i_class, :, :], M[y[y == i_class], :, :])
+                if prior is not None:
+                    self._apply_response_prior_to_cca(self.cca_[i_class], prior)
                 self.w_[:, :, i_class] = self.cca_[i_class].w_x_
                 self.r_[:, :, i_class] = self.cca_[i_class].w_y_
         else:
@@ -1171,13 +1286,22 @@ class rCCA(ClassifierMixin, BaseEstimator):
                     )
                 ]
             self.cca_[0].fit(X, M[y, :, :])
+            if prior is not None:
+                self._apply_response_prior_to_cca(self.cca_[0], prior)
             self.w_ = self.cca_[0].w_x_
             self.r_ = self.cca_[0].w_y_
 
         self.classes_ = np.arange(n_classes)
-        self._is_fitted = True
         self.set_templates()
         return self
+
+    def _apply_response_prior_to_cca(self, cca: TransformerMixin, prior: NDArray) -> None:
+        """Overwrite a fitted CCA's spatial and temporal filters with the prior-regularized temporal response (a
+        prior-mean ridge, see _apply_response_prior), so the templates built from them are anchored to the prior."""
+        n_channels = cca.w_x_.shape[0]
+        cca.w_x_, cca.w_y_ = _apply_response_prior(
+            prior, self.response_prior_gamma, cca.w_x_, cca.w_y_, cca.cov_xy_[:n_channels, n_channels:], cca.cov_y_
+        )
 
     def predict(
         self,
@@ -1301,12 +1425,446 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self.set_encoding_matrix()
         self.set_templates()
 
-    def __sklearn_is_fitted__(self) -> bool:
-        """Check fitted status and return a Boolean value.
+
+class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
+    """Unsupervised adaptive reconvolution CCA classifier for calibration-free c-VEP decoding [6]_.
+
+    Instead of a supervised calibration, each trial is decoded by fitting a separate rCCA per candidate stimulus (as
+    a hypothesis) and selecting the stimulus whose model best fits the trial, i.e. yields the highest correlation
+    between the spatially filtered EEG and the temporally filtered stimulus structure matrix. This is the
+    instantaneous mode (`cumulative=False`), which treats every trial independently.
+
+    Three cumulative extensions build a model from previously decoded trials, using their predicted labels as
+    pseudo-labels (there are no ground-truth labels in a calibration-free setting):
+
+    - `cumulative=True`: every hypothesis is fit on all previously decoded trials (at their pseudo-labels) plus the
+      current trial (hypothesized as each candidate). This is mathematically identical to refitting from scratch on
+      the full history every trial, but is done efficiently by keeping a single running covariance of the
+      pseudo-labeled history (see `RunningCovariance` in `utilities`) shared across all hypotheses, so each trial
+      only adds its own (bounded) contribution rather than reprocessing the whole history. The first trial, with no
+      history, reduces to the instantaneous mode.
+    - `confidence=True` (implies `cumulative`): each trial is weighted by a confidence, so that high-confidence
+      trials drive the model updates and low-confidence trials are suppressed. The confidence is the normalized
+      correlation margin `(rho_winner - rho_runner_up) / std(rho_except_winner)`, estimated from an instantaneous
+      pass (as in [6]_), and used as a per-trial weight in the running covariance.
+    - `posthoc=True` (implies `cumulative`): after each trial, all previously decoded trials are re-decoded with the
+      just-updated (presumably better) model and their pseudo-labels are corrected, which then affects subsequent
+      updates. This is the only mode that must retain the past trials' EEG (in `X_hist_`), since re-decoding needs
+      the raw data; a changed label is applied to the running covariance as an exact remove-then-re-add, avoiding a
+      full refit. The other modes keep no raw data (only the running covariance and the list of pseudo-labels).
+
+    These flags reproduce the four variants of [6]_: instantaneous (all False), cumulative (`cumulative`),
+    confidence-weighted cumulative (`cumulative`, `confidence`), and confidence-weighted cumulative with post hoc
+    re-analysis (`cumulative`, `confidence`, `posthoc`).
+
+    Note, decoding is inherently online and stateful: `predict()` streams trials in their given (chronological)
+    order, decoding each with the model learned from the ones before it, and the internal session persists across
+    calls. Decoding trials one at a time therefore accumulates exactly as decoding them in one call does (as needed
+    for real-time use where trials arrive one by one): `[predict(X[[i]]) for i in range(n_trials)]` gives the same
+    result as `predict(X)`. Because state persists, `predict()`/`decision_function()` are not pure functions; call
+    `fit()` (or pass `reset=True`) to start a fresh session, e.g. before an independent replay. The single-trial
+    `partial_fit_predict()` is the same online step exposed directly. The structure-matrix machinery of `rCCA`
+    (event and encoding matrices, latency correction, optional spatio-spectral decoding matrix) is reused, and the
+    core CCA is solved with the same `_solve_cca` as `CCA` in `transformers`. With short trials or a wide encoding
+    matrix, the per-hypothesis covariances can be ill-conditioned; set `gamma_x`/`gamma_m` (or `alpha_x`/`alpha_m`)
+    to regularize, as for supervised `rCCA`.
+
+    Parameters
+    ----------
+    stimulus: NDArray
+        The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,
+        one stimulus-repetition) is sufficient.
+    fs: int
+        The sampling frequency of the EEG data in Hz.
+    event: str (default: "duration")
+        The event definition to map stimulus to events.
+    onset_event: bool (default: True)
+        Whether to add an event for the onset of stimulation. Added as last event.
+    decoding_length: float (default: None)
+        The length of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1
+        sample, such that no phase-shifting is performed and thus no (spatio-)spectral filter is learned.
+    decoding_stride: float (default: None)
+        The stride of the spectral filter for each data channel in seconds. If None, it is set to 1/fs.
+    encoding_length: float | list[float] (default: 0.3)
+        The length of the transient response(s) for each of the events in seconds.
+    encoding_stride: float | list[float] (default: None)
+        The stride of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs.
+    latency: NDArray (default: None)
+        The raster latencies of each of the classes of shape (n_classes,) that the templates need to be corrected for.
+    tmin: float (default: 0)
+        The start of stimulation in seconds. Can be used if there was a delay in the marker.
+    n_components: int (default: 1)
+        The number of CCA components to use. Decoding and confidence use the first component only, matching [6]_.
+    gamma_x: float | list[float] | NDArray (default: None)
+        Regularization on the covariance matrix for CCA along X (channels), see `rCCA`.
+    gamma_m: float | list[float] | NDArray (default: None)
+        Regularization on the covariance matrix for CCA along M (samples), see `rCCA`.
+    alpha_x: float (default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.
+    alpha_m: float (default: None)
+        Amount of variance to retain in computing the inverse of the covariance matrix of M. If None, all variance.
+    cumulative: bool (default: True)
+        Whether to learn cumulatively from previously decoded trials (using their pseudo-labels). If False, each
+        trial is decoded instantaneously and independently.
+    confidence: bool (default: False)
+        Whether to weight each trial by its confidence during cumulative updates. Implies cumulative.
+    posthoc: bool (default: False)
+        Whether to re-decode and relabel all previous trials after each update. Implies cumulative, and retains the
+        past trials' EEG in X_hist_.
+    response_prior: NDArray (default: None)
+        A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak
+        near 100 ms, and a negative peak near 125 ms), sampled at fs. Either one response of length n_event_samples
+        (applied to every event) or the full concatenation of the per-event responses of length n_features (matching
+        the temporal filter r_; see encoding_length). If given, the learned response is softly regularized toward it
+        (see response_prior_gamma), which anchors the response's absolute phase. This is what makes decoding work for
+        circularly-shifted codes (e.g. shifted m-sequences): without it, an unconstrained response can circularly
+        slide to make every candidate stimulus fit equally well (the more so the longer encoding_length), so the
+        classes become indistinguishable. If None (default), no prior is used.
+    response_prior_gamma: float (default: 1.0)
+        The strength of the soft regularization toward response_prior, ranging from 0 (ignore the prior, purely
+        data-driven) upwards (larger pulls the response more strongly toward the prior; in the limit the response
+        equals the prior). Only used if response_prior is not None.
+
+    Attributes
+    ----------
+    classes_: NDArray
+        The class labels of shape (n_classes,).
+    events_: list
+        The list of events used to map the stimulus to, as set by the internal rCCA.
+    labels_: list
+        The pseudo-labels (predicted labels) of the decoded trials, in order.
+    confidences_: list
+        The confidence of each decoded trial, in order.
+    w_: NDArray
+        The spatial filter of the most recently winning model of shape (n_channels, n_components).
+    r_: NDArray
+        The temporal filter of the most recently winning model of shape (n_features, n_components).
+    cov_: RunningCovariance
+        The running covariance of the pseudo-labeled history (only populated if cumulative).
+    X_hist_: list
+        The (decoded) EEG of the decoded trials, retained only if posthoc, for re-decoding.
+
+    References
+    ----------
+    .. [6] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive
+           learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.
+    """
+
+    classes_: NDArray
+    events_: list
+    labels_: list
+    confidences_: list
+    w_: NDArray
+    r_: NDArray
+    cov_: RunningCovariance
+    X_hist_: list
+
+    def __init__(
+        self,
+        stimulus: NDArray,
+        fs: int,
+        event: str = "duration",
+        onset_event: bool = True,
+        decoding_length: float = None,
+        decoding_stride: float = None,
+        encoding_length: Union[float, list[float]] = 0.3,
+        encoding_stride: Union[float, list[float]] = None,
+        latency: NDArray = None,
+        tmin: float = 0,
+        n_components: int = 1,
+        gamma_x: Union[float, list[float], NDArray] = None,
+        gamma_m: Union[float, list[float], NDArray] = None,
+        alpha_x: float = None,
+        alpha_m: float = None,
+        cumulative: bool = True,
+        confidence: bool = False,
+        posthoc: bool = False,
+        response_prior: NDArray = None,
+        response_prior_gamma: float = 1.0,
+    ) -> None:
+        self.stimulus = stimulus
+        self.fs = fs
+        self.event = event
+        self.onset_event = onset_event
+        self.decoding_length = decoding_length
+        self.decoding_stride = decoding_stride
+        self.encoding_length = encoding_length
+        self.encoding_stride = encoding_stride
+        self.latency = latency
+        self.tmin = tmin
+        self.n_components = n_components
+        self.gamma_x = gamma_x
+        self.gamma_m = gamma_m
+        self.alpha_x = alpha_x
+        self.alpha_m = alpha_m
+        self.cumulative = cumulative
+        self.confidence = confidence
+        self.posthoc = posthoc
+        self.response_prior = response_prior
+        self.response_prior_gamma = response_prior_gamma
+
+    def _setup(self) -> None:
+        """Build the internal rCCA (for the structure matrices) and reset the running state."""
+        self._rcca = rCCA(
+            stimulus=self.stimulus,
+            fs=self.fs,
+            event=self.event,
+            onset_event=self.onset_event,
+            decoding_length=self.decoding_length,
+            decoding_stride=self.decoding_stride,
+            encoding_length=self.encoding_length,
+            encoding_stride=self.encoding_stride,
+            latency=self.latency,
+            tmin=self.tmin,
+            n_components=self.n_components,
+            gamma_x=self.gamma_x,
+            gamma_m=self.gamma_m,
+            alpha_x=self.alpha_x,
+            alpha_m=self.alpha_m,
+        )
+        self._rcca.set_encoding_matrix()
+        self.events_ = self._rcca.events_
+        self.classes_ = np.arange(self._rcca.Ms_.shape[0])
+        self._response_prior_ = _resolve_response_prior(
+            self.response_prior, self._rcca.Ms_.shape[1], len(self._rcca.events_)
+        )
+        self.cov_ = RunningCovariance()
+        self.labels_ = []
+        self.confidences_ = []
+        self.X_hist_ = []
+        self.w_ = None
+        self.r_ = None
+
+    def _ensure_setup(self) -> None:
+        """Set up on first use (so partial_fit_predict can be called without an explicit fit)."""
+        if not hasattr(self, "cov_"):
+            self._setup()
+
+    def _structure_matrix(self, n_samples: int) -> NDArray:
+        """Get the structure matrices for all classes, tiled to the requested length (as in rCCA.fit)."""
+        Ms, Mw = self._rcca.Ms_, self._rcca.Mw_
+        if n_samples < Ms.shape[2]:
+            M = Ms[:, :, :n_samples]
+        else:
+            M = np.concatenate((Ms, np.tile(Mw, (1, 1, n_samples // Ms.shape[2]))), axis=2)[:, :, :n_samples]
+        return M.astype("float64")
+
+    def _decode(self, X: NDArray) -> NDArray:
+        """Apply the spatio-spectral decoding matrix to a single trial (n_channels, n_samples) if used."""
+        decoding_length, decoding_stride = self._rcca._resolve_decoding_length_stride()
+        length = int(decoding_length * self.fs)
+        if length > 1:
+            return decoding_matrix(X[np.newaxis], length, int(decoding_stride * self.fs))[0]
+        return X
+
+    def _score(self, w: NDArray, r: NDArray, Xd: NDArray, Mi: NDArray) -> float:
+        """The correlation between the spatially filtered EEG and the temporally filtered structure matrix."""
+        xf = w[:, 0] @ Xd  # (n_samples,)
+        tf = r[:, 0] @ Mi  # (n_samples,)
+        return correlation(xf[np.newaxis, :], tf[np.newaxis, :])[0, 0]
+
+    @staticmethod
+    def _margin(rho: NDArray) -> float:
+        """The confidence: normalized margin between the winning and runner-up correlations (see [6]_)."""
+        order = np.sort(rho)
+        denom = order[:-1].std()
+        return float((order[-1] - order[-2]) / denom) if denom > 0 else 0.0
+
+    def _fit_and_score(
+        self,
+        base: RunningCovariance,
+        Xd: NDArray,
+        M: NDArray,
+        weight: float,
+    ) -> tuple[NDArray, NDArray, NDArray]:
+        """Fit one CCA per candidate class off a shared base covariance and score the current trial.
+
+        Parameters
+        ----------
+        base: RunningCovariance
+            The covariance of the history the candidates share (empty for instantaneous, the committed history for
+            cumulative). Not mutated; each candidate peeks at base plus its own (Xd, M[i]) contribution.
+        Xd: NDArray
+            The (decoded) current trial of shape (n_channels, n_samples).
+        M: NDArray
+            The structure matrices of all classes of shape (n_classes, n_features, n_samples).
+        weight: float
+            The weight of the current trial's contribution (None or 1 for unweighted).
 
         Returns
         -------
-        fitted: bool
-            Whether the classifier is fitted.
+        rho: NDArray
+            The per-class correlation scores of shape (n_classes,).
+        w_all: NDArray
+            The per-class spatial filters of shape (n_classes, n_channels, n_components).
+        r_all: NDArray
+            The per-class temporal filters of shape (n_classes, n_features, n_components).
         """
-        return hasattr(self, "_is_fitted") and self._is_fitted
+        n_channels, n_features = Xd.shape[0], M.shape[1]
+        Xt = Xd.T
+        rho = np.zeros(self.classes_.size)
+        w_all = np.zeros((self.classes_.size, n_channels, self.n_components))
+        r_all = np.zeros((self.classes_.size, n_features, self.n_components))
+        for i in range(self.classes_.size):
+            cov = base.peek(np.concatenate((Xt, M[i].T), axis=1), weights=weight).covariance
+            Cxm = cov[:n_channels, n_channels:]
+            Cmm = cov[n_channels:, n_channels:]
+            w_all[i], r_all[i], _ = _solve_cca(
+                cov[:n_channels, :n_channels],
+                Cxm,
+                Cmm,
+                self.n_components,
+                self.gamma_x,
+                self.gamma_m,
+                self.alpha_x,
+                self.alpha_m,
+            )
+            if self._response_prior_ is not None:  # anchor the response phase toward the expected VEP shape
+                w_all[i], r_all[i] = _apply_response_prior(
+                    self._response_prior_, self.response_prior_gamma, w_all[i], r_all[i], Cxm, Cmm
+                )
+            rho[i] = self._score(w_all[i], r_all[i], Xd, M[i])
+        return rho, w_all, r_all
+
+    def _relabel(self, M: NDArray) -> None:
+        """Post hoc re-analysis: re-decode all previous trials with the current model and correct their labels."""
+        j = len(self.X_hist_) - 1  # index of the just-decoded (current) trial; only relabel the ones before it
+        if j <= 0:
+            return
+        Tproj = np.einsum("l,nlt->nt", self.r_[:, 0], M)  # (n_classes, n_samples), the filtered templates
+        for k in range(j):
+            xf = self.w_[:, 0] @ self.X_hist_[k]  # (n_samples,)
+            new = int(np.argmax(correlation(xf[np.newaxis, :], Tproj)))
+            old = self.labels_[k]
+            if new != old:
+                weight = self.confidences_[k] if self.confidence else 1.0
+                Xt = self.X_hist_[k].T
+                self.cov_.update(np.concatenate((Xt, M[old].T), axis=1), weights=weight, sign=-1)
+                self.cov_.update(np.concatenate((Xt, M[new].T), axis=1), weights=weight, sign=1)
+                self.labels_[k] = new
+
+    def partial_fit_predict(self, X: NDArray) -> tuple[int, float, NDArray]:
+        """Decode a single trial online, updating the model (if cumulative) with its pseudo-label.
+
+        Parameters
+        ----------
+        X: NDArray
+            The EEG data of a single trial of shape (n_channels, n_samples) or (1, n_channels, n_samples).
+
+        Returns
+        -------
+        label: int
+            The predicted (pseudo-) label of the trial.
+        confidence: float
+            The confidence of the prediction.
+        scores: NDArray
+            The per-class correlation scores of shape (n_classes,).
+        """
+        self._ensure_setup()
+        if X.ndim == 3:
+            assert X.shape[0] == 1, "partial_fit_predict decodes a single trial at a time."
+            X = X[0]
+        Xd = self._decode(X)
+        M = self._structure_matrix(Xd.shape[1])
+
+        # An instantaneous pass is needed either as the prediction itself (not cumulative) or to derive the
+        # confidence weight before the cumulative update (confidence)
+        confidence = None
+        if not self.cumulative or self.confidence:
+            rho, w_all, r_all = self._fit_and_score(RunningCovariance(), Xd, M, None)
+            confidence = self._margin(rho)
+
+        if self.cumulative:
+            weight = confidence if self.confidence else 1.0
+            rho, w_all, r_all = self._fit_and_score(self.cov_, Xd, M, weight)
+            if confidence is None:  # vanilla cumulative: report a confidence from the cumulative scores
+                confidence = self._margin(rho)
+
+        label = int(np.argmax(rho))
+        self.w_, self.r_ = w_all[label], r_all[label]
+        self.labels_.append(label)
+        self.confidences_.append(confidence)
+
+        if self.cumulative:
+            weight = confidence if self.confidence else 1.0
+            self.cov_.update(np.concatenate((Xd.T, M[label].T), axis=1), weights=weight)
+            if self.posthoc:
+                self.X_hist_.append(Xd)
+                self._relabel(M)
+
+        return label, confidence, rho
+
+    def fit(self, X: NDArray = None, y: NDArray = None) -> ClassifierMixin:
+        """Set up the classifier (calibration-free: no training data or labels are used).
+
+        Parameters
+        ----------
+        X: NDArray (default: None)
+            Not used, present for scikit-learn API consistency.
+        y: NDArray (default: None)
+            Not used, present for scikit-learn API consistency.
+
+        Returns
+        -------
+        self: ClassifierMixin
+            Returns the instance itself.
+        """
+        self._setup()
+        return self
+
+    def _run(self, X: NDArray, reset: bool) -> tuple[NDArray, NDArray]:
+        """Stream all trials in order, returning predictions and scores. Continues the current online session
+        (accumulating onto whatever has already been decoded), or starts a fresh one if reset=True."""
+        if reset:
+            self._setup()
+        else:
+            self._ensure_setup()
+        yh = np.zeros(X.shape[0], dtype="int64")
+        scores = np.zeros((X.shape[0], self.classes_.size))
+        for j in range(X.shape[0]):
+            yh[j], _, scores[j, :] = self.partial_fit_predict(X[j])
+        return yh, scores
+
+    def predict(self, X: NDArray, reset: bool = False) -> NDArray:
+        """Decode a sequence of trials online, in the given (chronological) order.
+
+        Each trial is decoded with the model learned from all trials decoded so far, and then folds into that model
+        (using its own prediction as a pseudo-label) if cumulative. This is a stateful, online operation: the
+        internal session persists across calls, so decoding trials one at a time is equivalent to decoding them in a
+        single call, i.e. ``[predict(X[[i]]) for i in range(n_trials)]`` gives the same result as ``predict(X)``, as
+        needed for real-time use where trials arrive one by one. Because it persists state, predict() is not a pure
+        function: call fit() (or pass reset=True) to start a fresh session, e.g. before an independent replay.
+
+        Parameters
+        ----------
+        X: NDArray
+            The EEG data of shape (n_trials, n_channels, n_samples), in chronological order.
+        reset: bool (default: False)
+            Whether to discard the current online session and start fresh before decoding X. Use reset=True (or a
+            fresh instance, or fit()) for a self-contained replay; leave False to continue an ongoing session.
+
+        Returns
+        -------
+        y: NDArray
+            The predicted labels of shape (n_trials,).
+        """
+        return self._run(X, reset)[0]
+
+    def decision_function(self, X: NDArray, reset: bool = False) -> NDArray:
+        """Decode a sequence of trials online and return the per-trial per-class correlation scores.
+
+        Stateful and online, see predict() (of which this is the score-returning counterpart).
+
+        Parameters
+        ----------
+        X: NDArray
+            The EEG data of shape (n_trials, n_channels, n_samples), in chronological order.
+        reset: bool (default: False)
+            Whether to discard the current online session and start fresh before decoding X, see predict().
+
+        Returns
+        -------
+        scores: NDArray
+            The per-trial per-class correlation scores of shape (n_trials, n_classes).
+        """
+        return self._run(X, reset)[1]

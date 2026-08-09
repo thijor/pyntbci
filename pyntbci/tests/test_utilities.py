@@ -111,6 +111,79 @@ class TestCovariance(unittest.TestCase):
         self.assertTrue(np.allclose(cov, np.cov(X.T), atol=1e-6))
 
 
+def _weighted_cov(A, c=None):
+    # A reference (biased, weight-normalized) weighted covariance to check RunningCovariance against
+    if c is None:
+        c = np.ones(A.shape[0])
+    n = c.sum()
+    mu = np.sum(A * c[:, None], axis=0, keepdims=True) / n
+    Ac = A - mu
+    return (Ac.T * c[None, :]) @ Ac / n
+
+
+class TestRunningCovariance(unittest.TestCase):
+    def test_unweighted_matches_biased_covariance_and_is_additive(self):
+        rng = np.random.default_rng(0)
+        A = rng.standard_normal((40, 5))
+        B = rng.standard_normal((25, 5))
+        acc = pyntbci.utilities.RunningCovariance()
+        acc.update(A)
+        acc.update(B)
+        allAB = np.concatenate((A, B), axis=0)
+        self.assertEqual(acc.n_, allAB.shape[0])
+        self.assertTrue(np.allclose(acc.mean, allAB.mean(axis=0)))
+        self.assertTrue(np.allclose(acc.covariance, np.cov(allAB, rowvar=False, bias=True)))
+
+    def test_weighted_matches_reference(self):
+        rng = np.random.default_rng(1)
+        A = rng.standard_normal((40, 4))
+        B = rng.standard_normal((30, 4))
+        cA = rng.uniform(0.1, 2.0, size=A.shape[0])
+        cB = rng.uniform(0.1, 2.0, size=B.shape[0])
+        acc = pyntbci.utilities.RunningCovariance()
+        acc.update(A, weights=cA)
+        acc.update(B, weights=cB)
+        ref = _weighted_cov(np.concatenate((A, B), axis=0), np.concatenate((cA, cB)))
+        self.assertTrue(np.allclose(acc.covariance, ref))
+
+    def test_scalar_weight_equals_constant_vector(self):
+        rng = np.random.default_rng(2)
+        A = rng.standard_normal((30, 3))
+        s1 = pyntbci.utilities.RunningCovariance().update(A, weights=1.7)
+        s2 = pyntbci.utilities.RunningCovariance().update(A, weights=np.full(A.shape[0], 1.7))
+        self.assertTrue(np.allclose(s1.covariance, s2.covariance))
+
+    def test_peek_does_not_mutate_and_equals_commit(self):
+        rng = np.random.default_rng(3)
+        A = rng.standard_normal((40, 4))
+        B = rng.standard_normal((20, 4))
+        base = pyntbci.utilities.RunningCovariance().update(A)
+        before = base.covariance.copy()
+        peeked = base.peek(B)
+        committed = base.copy().update(B)
+        self.assertTrue(np.allclose(base.covariance, before))  # peek left base intact
+        self.assertTrue(np.allclose(peeked.covariance, committed.covariance))
+
+    def test_subtract_reverses_add(self):
+        rng = np.random.default_rng(4)
+        A = rng.standard_normal((40, 4))
+        B = rng.standard_normal((20, 4))
+        cA = rng.uniform(0.1, 2.0, size=A.shape[0])
+        cB = rng.uniform(0.1, 2.0, size=B.shape[0])
+        acc = pyntbci.utilities.RunningCovariance()
+        acc.update(A, weights=cA)
+        acc.update(B, weights=cB)
+        acc.update(B, weights=cB, sign=-1)  # remove B again
+        only_a = pyntbci.utilities.RunningCovariance().update(A, weights=cA)
+        self.assertAlmostEqual(acc.n_, only_a.n_)
+        self.assertTrue(np.allclose(acc.covariance, only_a.covariance))
+
+    def test_empty_accumulator_raises_on_readout(self):
+        acc = pyntbci.utilities.RunningCovariance()
+        with self.assertRaises(AssertionError):
+            _ = acc.covariance
+
+
 class TestDecodingMatrix(unittest.TestCase):
     def test_decoding_matrix_shape(self):
         X = np.random.rand(N_TRIALS, N_CHANNELS, N_SAMPLES)

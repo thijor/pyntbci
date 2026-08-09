@@ -30,6 +30,10 @@ def make_rcca():
 ESTIMATORS = {
     "eCCA": (make_ecca(), ("fs", FS + 1)),
     "rCCA": (make_rcca(), ("fs", FS + 1)),
+    "UnsupervisedRCCA": (
+        pyntbci.classifiers.UnsupervisedRCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH),
+        ("fs", FS + 1),
+    ),
     "Ensemble": (
         pyntbci.classifiers.Ensemble(estimator=make_ecca(), gate=pyntbci.gates.AggregateGate("mean")),
         None,
@@ -98,6 +102,64 @@ class TestSklearnCompliance(unittest.TestCase):
                 estimator.set_params(**{attr: new_value})
                 self.assertEqual(getattr(estimator, attr), new_value)
                 self.assertEqual(estimator.get_params(deep=False)[attr], new_value)
+
+
+class TestFitDoesNotMutateWrappedEstimator(unittest.TestCase):
+    # Meta-estimators must clone their wrapped estimator/gate into a fitted attribute (estimator_/gate_/models_),
+    # never fit the passed-in hyperparameter in place (the scikit-learn meta-estimator contract).
+    @classmethod
+    def setUpClass(cls):
+        cls.X, cls.y, cls.V = pyntbci.eeg.generate_c_vep(
+            2 * V.shape[0], 8, 2 * V.shape[1], FS, n_classes=V.shape[0], stimulus=V, random_state=0
+        )
+
+    def _assert_not_fitted(self, estimator):
+        from sklearn.exceptions import NotFittedError
+        from sklearn.utils.validation import check_is_fitted
+
+        with self.assertRaises(NotFittedError):
+            check_is_fitted(estimator)
+
+    def test_stopping_classes_do_not_mutate_estimator(self):
+        for name, make in [
+            ("MarginStopping", pyntbci.stopping.MarginStopping),
+            ("ValueStopping", pyntbci.stopping.ValueStopping),
+            ("CriterionStopping", pyntbci.stopping.CriterionStopping),
+            ("DistributionStopping", pyntbci.stopping.DistributionStopping),
+        ]:
+            with self.subTest(stopping=name):
+                inner = make_rcca()
+                wrapper = make(estimator=inner, segment_time=0.5, fs=FS)
+                wrapper.fit(self.X, self.y)
+                self._assert_not_fitted(inner)  # the passed-in estimator is untouched
+                self.assertTrue(hasattr(wrapper, "estimator_"))
+
+    def test_bayes_stopping_does_not_mutate_estimator(self):
+        inner = make_rcca()
+        wrapper = pyntbci.stopping.BayesStopping(estimator=inner, segment_time=0.5, fs=FS, approach="score")
+        wrapper.fit(self.X, self.y)
+        self._assert_not_fitted(inner)
+        self.assertTrue(hasattr(wrapper, "estimator_"))
+
+    def test_difference_gate_does_not_mutate_estimator(self):
+        inner = LinearDiscriminantAnalysis()
+        gate = pyntbci.gates.DifferenceGate(inner)
+        scores = np.random.default_rng(0).standard_normal((30, 5, 3))
+        labels = np.arange(30) % 5
+        gate.fit(scores, labels)
+        self.assertFalse(hasattr(inner, "coef_"))  # the passed-in LDA is untouched
+        self.assertTrue(hasattr(gate, "estimator_"))
+
+    def test_ensemble_does_not_mutate_estimator_or_gate(self):
+        inner = make_ecca()
+        gate = pyntbci.gates.AggregateGate("mean")
+        ensemble = pyntbci.classifiers.Ensemble(estimator=inner, gate=gate)
+        Xb = np.stack([self.X, self.X], axis=3)
+        ensemble.fit(Xb, self.y)
+        self._assert_not_fitted(inner)
+        self._assert_not_fitted(gate)
+        self.assertTrue(hasattr(ensemble, "gate_"))
+        self.assertEqual(len(ensemble.models_), 2)
 
 
 if __name__ == "__main__":

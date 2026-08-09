@@ -169,6 +169,146 @@ def covariance(
     return n_new, avg_new, cov_new
 
 
+class RunningCovariance:
+    """A running (weighted) covariance accumulator over a joint feature vector, kept in uncentered-moment form.
+
+    Unlike covariance()'s Welford-style running mode, this stores the raw (weighted) zeroth, first, and second
+    moments of the observed data, which are purely additive *and* subtractive across chunks. This makes three
+    operations exact and cheap, none of which the Welford form supports: peeking at "current state plus a candidate
+    chunk" without committing it (update() with commit left to the caller, or peek()), committing a chosen chunk,
+    and later *removing* a previously added chunk (update() with sign=-1). It also supports per-sample weights.
+    These are exactly the access patterns needed to fit one CCA per candidate class off a shared history, to commit
+    only the winner, and to relabel (remove-then-re-add) a past trial, as in unsupervised adaptive rCCA.
+
+    The covariance is centered (the running mean is subtracted) only when read out via covariance, so no mean needs
+    to be tracked incrementally with a correction term. Moments are accumulated in float64 for numerical precision;
+    this is safe for (near) zero-mean inputs such as band-pass filtered EEG, where the uncentered second moment and
+    the outer product of the mean are of a similar, moderate magnitude (little catastrophic cancellation).
+
+    Note, the overall normalization of the covariance (dividing by the total weight) is irrelevant when the result
+    is used for CCA: the whitening Cxx^(-1/2) Cxy Cyy^(-1/2) is invariant to a common positive scale on all three
+    blocks, so the learned filters are identical regardless of the (weighted) sample count.
+
+    Parameters
+    ----------
+    n_features: int (default: None)
+        The number of features of the joint feature vector. If None, it is inferred from the first update().
+
+    Attributes
+    ----------
+    n_: float
+        The total weight (i.e., the (weighted) number of samples) accumulated so far.
+    sum_: NDArray
+        The (weighted) sum of the data of shape (n_features,).
+    moment_: NDArray
+        The (weighted) sum of the outer products of the data of shape (n_features, n_features).
+    """
+
+    def __init__(self, n_features: int = None) -> None:
+        self.n_features = n_features
+        self.n_ = 0.0
+        if n_features is None:
+            self.sum_ = None
+            self.moment_ = None
+        else:
+            self.sum_ = np.zeros(n_features)
+            self.moment_ = np.zeros((n_features, n_features))
+
+    def update(
+        self,
+        data: NDArray,
+        weights: Union[float, NDArray] = None,
+        sign: int = 1,
+    ) -> "RunningCovariance":
+        """Add (sign=1) or remove (sign=-1) a chunk of samples to/from the accumulated moments, in place.
+
+        Parameters
+        ----------
+        data: NDArray
+            Data matrix of shape (n_samples, n_features).
+        weights: float | NDArray (default: None)
+            Per-sample weights of shape (n_samples,), or a single scalar weight applied to all samples. If None, all
+            samples get unit weight.
+        sign: int (default: 1)
+            Use 1 to add the chunk to the accumulator, or -1 to remove a previously added chunk.
+
+        Returns
+        -------
+        self: RunningCovariance
+            Returns the instance itself.
+        """
+        if not np.issubdtype(data.dtype, np.floating):
+            data = data.astype("float")
+        if self.sum_ is None:
+            self.n_features = data.shape[1]
+            self.sum_ = np.zeros(data.shape[1])
+            self.moment_ = np.zeros((data.shape[1], data.shape[1]))
+        if weights is None:
+            n_obs = data.shape[0]
+            sum_obs = data.sum(axis=0)
+            moment_obs = data.T @ data
+        else:
+            weights = np.atleast_1d(np.asarray(weights, dtype="float"))
+            if weights.size == 1:
+                weights = np.full(data.shape[0], weights.item())
+            weighted = data * weights[:, np.newaxis]
+            n_obs = weights.sum()
+            sum_obs = weighted.sum(axis=0)
+            moment_obs = data.T @ weighted
+        self.n_ += sign * n_obs
+        self.sum_ += sign * sum_obs
+        self.moment_ += sign * moment_obs
+        return self
+
+    def peek(
+        self,
+        data: NDArray,
+        weights: Union[float, NDArray] = None,
+    ) -> "RunningCovariance":
+        """Return a copy of the accumulator with a chunk added, without mutating this instance.
+
+        Parameters
+        ----------
+        data: NDArray
+            Data matrix of shape (n_samples, n_features).
+        weights: float | NDArray (default: None)
+            Per-sample weights, see update().
+
+        Returns
+        -------
+        combined: RunningCovariance
+            A new accumulator equal to this one plus the given chunk.
+        """
+        return self.copy().update(data, weights)
+
+    def copy(self) -> "RunningCovariance":
+        """Return a deep copy of the accumulator.
+
+        Returns
+        -------
+        other: RunningCovariance
+            A new accumulator with the same accumulated moments.
+        """
+        other = RunningCovariance(self.n_features)
+        other.n_ = self.n_
+        other.sum_ = None if self.sum_ is None else self.sum_.copy()
+        other.moment_ = None if self.moment_ is None else self.moment_.copy()
+        return other
+
+    @property
+    def mean(self) -> NDArray:
+        """The (weighted) mean of the accumulated data of shape (n_features,)."""
+        assert self.n_ > 0, "Cannot compute a mean from an empty accumulator."
+        return self.sum_ / self.n_
+
+    @property
+    def covariance(self) -> NDArray:
+        """The (weighted, centered) covariance of the accumulated data of shape (n_features, n_features)."""
+        assert self.n_ > 0, "Cannot compute a covariance from an empty accumulator."
+        mean = self.sum_ / self.n_
+        return self.moment_ / self.n_ - np.outer(mean, mean)
+
+
 def decoding_matrix(
     data: NDArray,
     length: int,
@@ -545,7 +685,7 @@ def event_matrix(
         labels = ("posdiff", "negdiff")
 
     else:
-        raise Exception(f"Unknown event: {event}.")
+        raise ValueError(f"Unknown event: {event}. Options are {EVENTS}.")
 
     # Add onset response as separate event
     if onset_event:
@@ -651,7 +791,7 @@ def filterbank(
             b, a = cheby1(N=N, rp=0.5, Wn=Wn, btype="bandpass", fs=fs)
 
         else:
-            raise Exception("Unknown ftype:", ftype)
+            raise ValueError(f"Unknown ftype: {ftype}.")
 
         # Filter the data
         Xf[:, :, :, i_band] = filtfilt(b, a, X, axis=2)

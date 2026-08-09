@@ -3,12 +3,18 @@ import warnings
 import numpy as np
 from numpy.typing import NDArray
 from scipy.stats import beta, norm
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.linear_model import LinearRegression
 from sklearn.utils.validation import check_is_fitted
 
 import pyntbci.classifiers
 from pyntbci.utilities import itr
+
+
+BDS_METHODS = ("bds0", "bds1", "bds2")
+CRITERIA = ("accuracy", "itr")
+OPTIMIZATIONS = ("max", "target")
+DISTRIBUTIONS = ("beta", "norm")
 
 
 def _supports_running(estimator: ClassifierMixin) -> bool:
@@ -152,8 +158,8 @@ def _running_predict(
         stopping._running_ = {"n_samples": 0, "raw_buffer": None}
     r = stopping._running_
     method_name = "decision_function" if use_decision_function else "predict"
-    method = getattr(stopping.estimator, method_name)
-    if _supports_running(stopping.estimator):
+    method = getattr(stopping.estimator_, method_name)
+    if _supports_running(stopping.estimator_):
         result = method(X_chunk, running=True, reset=reset)
     else:
         r["raw_buffer"] = X_chunk if r["raw_buffer"] is None else np.concatenate((r["raw_buffer"], X_chunk), axis=2)
@@ -277,8 +283,12 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        self.estimator.fit(X, y)
-        self.classes_ = self.estimator.classes_
+        if self.method not in BDS_METHODS:
+            raise ValueError(f"Unknown method: {self.method}. Options are {BDS_METHODS}.")
+
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y)
+        self.classes_ = self.estimator_.classes_
 
         if self.approach == "template_inner":
             self._fit_template_inner(X, y)
@@ -305,17 +315,17 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         """
         assert isinstance(self.estimator, pyntbci.classifiers.rCCA), "Approach template_inner works only for rCCA."
         n_samples = X.shape[2]
-        n_classes = self.estimator.Ts_.shape[0]
+        n_classes = self.estimator_.Ts_.shape[0]
 
         # Spatially filter data and flatten
-        X = self.estimator.cca_[0].transform(X=X)[0].reshape((-1, 1))
+        X = self.estimator_.cca_[0].transform(X=X)[0].reshape((-1, 1))
 
         # Get templates
-        if n_samples < self.estimator.Ts_.shape[2]:
-            T = self.estimator.Ts_
+        if n_samples < self.estimator_.Ts_.shape[2]:
+            T = self.estimator_.Ts_
         else:
             T = np.concatenate(
-                (self.estimator.Ts_, np.tile(self.estimator.Tw_, (1, 1, n_samples // self.estimator.Tw_.shape[2]))),
+                (self.estimator_.Ts_, np.tile(self.estimator_.Tw_, (1, 1, n_samples // self.estimator_.Tw_.shape[2]))),
                 axis=2,
             )
         T = T[:, :, :n_samples]
@@ -390,7 +400,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         self.s0_ = np.zeros(n_segments)
         self.s1_ = np.zeros(n_segments)
         segment_samples = int(self.segment_time * self.fs)
-        for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
+        for i_segment, scores in _iter_segment_scores(self.estimator_, X, segment_samples, n_segments):
             n_classes = scores.shape[1]
             mask = np.full(scores.shape, False)
             mask[np.arange(y.size), y] = True
@@ -468,7 +478,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator.predict(X)
+                yh = self.estimator_.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -478,7 +488,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator.decision_function(X)
+                scores = self.estimator_.decision_function(X)
 
             # Check if stopped
             if self.method == "bds0":
@@ -522,7 +532,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
                 not_stopped = np.max(scores, axis=1) <= eta
 
             else:
-                raise Exception("Unknown method:", self.method)
+                raise ValueError(f"Unknown method: {self.method}. Options are {BDS_METHODS}.")
 
             # Classify and set not-stopped-trials to -1
             yh = np.argmax(scores, axis=1)
@@ -616,11 +626,19 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
         self: ClassifierMixin
             Returns the instance itself.
         """
+        if self.criterion.lower() not in CRITERIA:
+            raise ValueError(f"Unknown criterion: {self.criterion}. Options are {CRITERIA}.")
+        if self.optimization.lower() not in OPTIMIZATIONS:
+            raise ValueError(f"Unknown optimization: {self.optimization}. Options are {OPTIMIZATIONS}.")
+
         n_trials = X.shape[0]
         n_samples = X.shape[2]
         n_segments = int(n_samples / int(self.segment_time * self.fs))
 
-        assert n_trials >= self.n_folds, "n_trials must be at least n_folds, otherwise some folds have no test data."
+        if n_trials < self.n_folds:
+            raise ValueError(
+                f"n_trials ({n_trials}) must be at least n_folds ({self.n_folds}), else some folds have no test data."
+            )
 
         folds = np.arange(self.n_folds).repeat(np.ceil(n_trials / self.n_folds))[:n_trials]
         scores = np.zeros((self.n_folds, n_segments), dtype="float32")
@@ -631,11 +649,12 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
             y_trn = y[folds != i_fold]
             y_tst = y[folds == i_fold]
 
-            # Fit estimator
-            self.estimator.fit(X_trn, y_trn)
+            # Fit a fresh estimator on this fold (a clone, so the passed-in estimator is never mutated)
+            estimator = clone(self.estimator)
+            estimator.fit(X_trn, y_trn)
 
             segment_samples = int(self.segment_time * self.fs)
-            for i_segment, yh in _iter_segment_predictions(self.estimator, X_tst, segment_samples, n_segments):
+            for i_segment, yh in _iter_segment_predictions(estimator, X_tst, segment_samples, n_segments):
                 # Compute criterion
                 if self.criterion.lower() == "accuracy":
                     scores[i_fold, i_segment] = np.mean(yh == y_tst)
@@ -643,7 +662,7 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
                     # Note, the number of classes does not affect the optimum
                     scores[i_fold, i_segment] = itr(10, np.mean(yh == y_tst), (1 + i_segment) * self.segment_time)
                 else:
-                    raise Exception("Unknown criterion:", self.criterion)
+                    raise ValueError(f"Unknown criterion: {self.criterion}. Options are {CRITERIA}.")
 
         # Smoothen
         if self.smooth_width is not None:
@@ -660,15 +679,18 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
             self.stop_time_ = (1 + np.argmax(scores)) * self.segment_time
         elif self.optimization.lower() == "target":
             if self.target is None:
-                raise Exception("For optimization target one should set the target")
+                raise ValueError("For optimization='target', the target parameter must be set.")
             if np.any(scores >= self.target):
                 self.stop_time_ = (1 + np.argmax(scores >= self.target)) * self.segment_time
             else:
                 self.stop_time_ = X.shape[2] / self.fs
         else:
-            raise Exception("Unknown optimization:", self.optimization)
+            raise ValueError(f"Unknown optimization: {self.optimization}. Options are {OPTIMIZATIONS}.")
 
-        self.classes_ = self.estimator.classes_
+        # Refit the final estimator on all data (the cross-validation above only served to pick stop_time_)
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y)
+        self.classes_ = self.estimator_.classes_
         self._running_ = None
         return self
 
@@ -724,7 +746,7 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator.predict(X)
+                yh = self.estimator_.predict(X)
 
         else:
             if running:
@@ -818,18 +840,20 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        assert self.distribution in ["beta", "norm"], "Distribution must be beta or norm."
+        if self.distribution not in DISTRIBUTIONS:
+            raise ValueError(f"Unknown distribution: {self.distribution}. Options are {DISTRIBUTIONS}.")
 
         # Fit estimator
-        self.estimator.fit(X, y)
-        self.classes_ = self.estimator.classes_
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y)
+        self.classes_ = self.estimator_.classes_
 
         # Fit beta distributions
         if self.trained:
             self.distributions_ = []
             n_segments = int(X.shape[2] / int(self.segment_time * self.fs))
             segment_samples = int(self.segment_time * self.fs)
-            for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
+            for i_segment, scores in _iter_segment_scores(self.estimator_, X, segment_samples, n_segments):
                 # Put target score at index 0
                 for i_trial in range(X.shape[0]):
                     scores[i_trial, [0, y[i_trial]]] = scores[i_trial, [y[i_trial], 0]]
@@ -842,7 +866,6 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
                     loc, scale = norm.fit(scores[:, 1:].flatten())
                     self.distributions_.append(dict(loc=loc, scale=scale))
 
-        self._is_fitted = True
         self._running_ = None
         return self
 
@@ -898,7 +921,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator.predict(X)
+                yh = self.estimator_.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -908,7 +931,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator.decision_function(X)
+                scores = self.estimator_.decision_function(X)
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -923,13 +946,14 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
                     elif self.distribution == "norm":
                         loc, scale = [self.distributions_[i_segment][key] for key in ["loc", "scale"]]
                 else:
-                    # Fit distribution to current non-max scores
+                    # Fit distribution to current non-max scores. A fit failure (e.g. too few or degenerate non-max
+                    # scores to estimate the distribution) is treated as "not enough evidence to stop": p=0.
                     try:
                         if self.distribution == "beta":
                             a, b, loc, scale = beta.fit(scores_sorted[i_trial, :-1], floc=-1, fscale=2)
                         elif self.distribution == "norm":
                             loc, scale = norm.fit(scores_sorted[i_trial, :-1])
-                    except Exception:
+                    except (ValueError, RuntimeError, FloatingPointError):
                         p[i_trial] = 0.0
                         continue
 
@@ -947,16 +971,6 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             yh[not_stopped] = -1
 
         return yh
-
-    def __sklearn_is_fitted__(self) -> bool:
-        """Check fitted status and return a Boolean value.
-
-        Returns
-        -------
-        fitted: bool
-            Whether the classifier is fitted.
-        """
-        return hasattr(self, "_is_fitted") and self._is_fitted
 
 
 class MarginStopping(ClassifierMixin, BaseEstimator):
@@ -1045,8 +1059,9 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
         self: ClassifierMixin
             Returns the instance itself.
         """
-        self.estimator.fit(X, y)
-        self.classes_ = self.estimator.classes_
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y)
+        self.classes_ = self.estimator_.classes_
 
         # Set margin axis (possible margins to stop at)
         margin_axis = np.arange(self.margin_min, self.margin_max, self.margin_step)
@@ -1056,7 +1071,7 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
         n_segments = int(n_samples / int(self.segment_time * self.fs))
         self.margins_ = np.zeros(n_segments)
         segment_samples = int(self.segment_time * self.fs)
-        for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
+        for i_segment, scores in _iter_segment_scores(self.estimator_, X, segment_samples, n_segments):
             # Compute margins (best - second best)
             scores_sorted = np.sort(scores, axis=1)
             margins = scores_sorted[:, -1] - scores_sorted[:, -2]
@@ -1137,7 +1152,7 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator.predict(X)
+                yh = self.estimator_.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -1147,7 +1162,7 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator.decision_function(X)
+                scores = self.estimator_.decision_function(X)
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -1249,15 +1264,16 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
         value_axis = np.arange(self.value_min, self.value_max, self.value_step)
 
         # Fit estimator
-        self.estimator.fit(X, y)
-        self.classes_ = self.estimator.classes_
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y)
+        self.classes_ = self.estimator_.classes_
 
         # Calculate a value per segment
         n_samples = X.shape[2]
         n_segments = int(n_samples / int(self.segment_time * self.fs))
         self.values_ = np.zeros(n_segments)
         segment_samples = int(self.segment_time * self.fs)
-        for i_segment, scores in _iter_segment_scores(self.estimator, X, segment_samples, n_segments):
+        for i_segment, scores in _iter_segment_scores(self.estimator_, X, segment_samples, n_segments):
             # Compute values
             values = np.max(scores, axis=1)
 
@@ -1337,7 +1353,7 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator.predict(X)
+                yh = self.estimator_.predict(X)
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -1347,7 +1363,7 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator.decision_function(X)
+                scores = self.estimator_.decision_function(X)
 
             # Compute values
             values = np.max(scores, axis=1)

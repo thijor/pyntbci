@@ -75,7 +75,7 @@ def aud_to_freq(
     if scale == "erb":
         freq = (1 / 0.00437) * np.sign(aud) * (np.exp(np.abs(aud) / 9.2645) - 1)
     else:
-        raise Exception("Unknown auditory scale:", scale)
+        raise ValueError(f"Unknown auditory scale: {scale}.")
     return freq
 
 
@@ -251,5 +251,5 @@ def freq_to_aud(
     if scale == "erb":
         aud = 9.2645 * np.sign(freq) * np.log(1 + np.abs(freq) * 0.00437)
     else:
-        raise Exception("Unknown auditory scale:", scale)
+        raise ValueError(f"Unknown auditory scale: {scale}.")
     return aud
