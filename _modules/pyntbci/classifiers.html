@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.classifiers &mdash; PyntBCI 1.9.0 documentation</title>
+  <title>pyntbci.classifiers &mdash; PyntBCI 1.9.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c4cb232b"></script>
+      <script src="../../_static/documentation_options.js?v=60b3a732"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -85,18 +85,18 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyntbci.classifiers</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">clone</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">OneClassSVM</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">check_is_fitted</span>
 <span class="kn">from</span> <span class="nn">sklearn.exceptions</span> <span class="kn">import</span> <span class="n">NotFittedError</span>
 
-<span class="kn">from</span> <span class="nn">pyntbci.transformers</span> <span class="kn">import</span> <span class="n">CCA</span>
+<span class="kn">from</span> <span class="nn">pyntbci.transformers</span> <span class="kn">import</span> <span class="n">CCA</span><span class="p">,</span> <span class="n">_solve_cca</span>
 <span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">RunningCovariance</span><span class="p">,</span>
     <span class="n">correct_latency</span><span class="p">,</span>
     <span class="n">correlation</span><span class="p">,</span>
     <span class="n">decoding_matrix</span><span class="p">,</span>
@@ -105,6 +105,45 @@
     <span class="n">event_matrix</span><span class="p">,</span>
     <span class="n">inner</span><span class="p">,</span>
 <span class="p">)</span>
+
+
+<span class="n">SCORE_METRICS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;correlation&quot;</span><span class="p">,</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">,</span> <span class="s2">&quot;inner&quot;</span><span class="p">)</span>
+<span class="n">TEMPLATE_METRICS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="s2">&quot;ocsvm&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_score</span><span class="p">(</span>
+    <span class="n">score_metric</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute similarity scores between (spatially filtered) single-trials and templates.</span>
+
+<span class="sd">    Euclidean distance is converted to a similarity (1 / (1 + distance)) so that, like correlation and the inner</span>
+<span class="sd">    product, a higher score means more similar. Shared by the batch (non-running) path of eCCA and rCCA, for both</span>
+<span class="sd">    the ensemble and non-ensemble cases.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    score_metric: str</span>
+<span class="sd">        The score metric: one of SCORE_METRICS (correlation, euclidean, inner).</span>
+<span class="sd">    X: NDArray</span>
+<span class="sd">        The (spatially filtered) single-trials of shape (n_trials, n_samples).</span>
+<span class="sd">    T: NDArray</span>
+<span class="sd">        The templates of shape (n_classes, n_samples), or a single template of shape (n_samples,).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scores: NDArray</span>
+<span class="sd">        The similarity scores of shape (n_trials, n_classes), or (n_trials, 1) if a single template was given.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metric</span> <span class="o">=</span> <span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># convert distance to a similarity so higher is more similar, as for the others</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">. Options are </span><span class="si">{</span><span class="n">SCORE_METRICS</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_running_score</span><span class="p">(</span>
@@ -201,7 +240,95 @@
         <span class="k">return</span> <span class="n">scores</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="n">n_obs</span><span class="p">,</span> <span class="s2">&quot;sum_x&quot;</span><span class="p">:</span> <span class="n">sum_x</span><span class="p">,</span> <span class="s2">&quot;sum_t&quot;</span><span class="p">:</span> <span class="n">sum_t</span><span class="p">,</span> <span class="s2">&quot;sum_xt&quot;</span><span class="p">:</span> <span class="n">sum_xt</span><span class="p">}</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">. Options are </span><span class="si">{</span><span class="n">SCORE_METRICS</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_resolve_response_prior</span><span class="p">(</span><span class="n">response_prior</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">n_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_events</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a response_prior to the full temporal-feature length (matching the temporal filter r), or None.</span>
+
+<span class="sd">    response_prior may be given either as one response (of length n_features // n_events), applied to every event,</span>
+<span class="sd">    or as the full concatenation of the per-event responses (of length n_features), matching the layout of the</span>
+<span class="sd">    temporal filter (see encoding_length). Shared by rCCA and UnsupervisedRCCA in classifiers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    response_prior: NDArray</span>
+<span class="sd">        The prior on the expected transient response, sampled at fs. If None, None is returned.</span>
+<span class="sd">    n_features: int</span>
+<span class="sd">        The number of temporal features (the length of the temporal filter r).</span>
+<span class="sd">    n_events: int</span>
+<span class="sd">        The number of events the response is modeled for.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    prior: NDArray</span>
+<span class="sd">        The prior of shape (n_features,), or None if response_prior is None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">response_prior</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">response_prior</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">prior</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n_features</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prior</span>
+    <span class="k">if</span> <span class="n">n_features</span> <span class="o">%</span> <span class="n">n_events</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">prior</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n_features</span> <span class="o">//</span> <span class="n">n_events</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">n_events</span><span class="p">)</span>  <span class="c1"># one response for all events</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;response_prior has length </span><span class="si">{</span><span class="n">prior</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">, but must be either the per-event response length &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">n_features</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">n_events</span><span class="si">}</span><span class="s2">, applied to all </span><span class="si">{</span><span class="n">n_events</span><span class="si">}</span><span class="s2"> events) or the full concatenated length &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">n_features</span><span class="si">}</span><span class="s2">).&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_apply_response_prior</span><span class="p">(</span>
+    <span class="n">prior</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">w</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">r</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">Cxm</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">Cmm</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Regularize a temporal response toward a prior, component-wise, via a prior-mean ridge.</span>
+
+<span class="sd">    Given the spatial filter w (kept fixed), the temporal response is re-estimated as</span>
+<span class="sd">    r = (Cmm + lambda I)^-1 (Cmx w + lambda * prior), which monotonically interpolates from the unregularized data</span>
+<span class="sd">    response (lambda = 0) to the prior (lambda -&gt; infinity). This anchors the response&#39;s absolute phase (breaking the</span>
+<span class="sd">    shift degeneracy of circularly-shifted codes, where an unconstrained response can slide to make any candidate</span>
+<span class="sd">    fit), while still letting the data shape it (so a slightly-wrong prior self-corrects). The (jointly sign-</span>
+<span class="sd">    ambiguous) filters w and r are first sign-flipped so the data response points the same way as the prior, else the</span>
+<span class="sd">    blend is destructive; the prior is scaled to the data response&#39;s magnitude so gamma is dimensionless. Shared by</span>
+<span class="sd">    rCCA and UnsupervisedRCCA in classifiers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    prior: NDArray</span>
+<span class="sd">        The prior response of shape (n_features,), as resolved by _resolve_response_prior().</span>
+<span class="sd">    gamma: float</span>
+<span class="sd">        The strength of the regularization (0 ignores the prior; larger pulls harder toward it).</span>
+<span class="sd">    w: NDArray</span>
+<span class="sd">        The spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">    r: NDArray</span>
+<span class="sd">        The unregularized temporal response of shape (n_features, n_components).</span>
+<span class="sd">    Cxm: NDArray</span>
+<span class="sd">        The cross-covariance of the (decoded) EEG and the structure matrix of shape (n_channels, n_features).</span>
+<span class="sd">    Cmm: NDArray</span>
+<span class="sd">        The auto-covariance of the structure matrix of shape (n_features, n_features).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    w: NDArray</span>
+<span class="sd">        The (possibly sign-flipped) spatial filter of shape (n_channels, n_components).</span>
+<span class="sd">    r: NDArray</span>
+<span class="sd">        The prior-regularized temporal response of shape (n_features, n_components).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lam</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cmm</span><span class="p">)</span> <span class="o">/</span> <span class="n">Cmm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">Cmm</span> <span class="o">+</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">Cmm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">w_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="n">r_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">@</span> <span class="n">prior</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># align the joint sign ambiguity so the data response agrees with the prior</span>
+            <span class="n">w_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">w</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">prior</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">prior</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r</span><span class="p">[:,</span> <span class="n">c</span><span class="p">])</span>
+        <span class="n">r_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Cxm</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">w_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">+</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">w_new</span><span class="p">,</span> <span class="n">r_new</span>
 
 
 <div class="viewcode-block" id="eCCA">
@@ -356,7 +483,7 @@
                 <span class="n">ocsvm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_channel</span><span class="p">,</span> <span class="p">:])</span>
                 <span class="n">T</span><span class="p">[</span><span class="n">i_channel</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ocsvm</span><span class="o">.</span><span class="n">coef_</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown template metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">template_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown template metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">template_metric</span><span class="si">}</span><span class="s2">. Options are </span><span class="si">{</span><span class="n">TEMPLATE_METRICS</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">T</span>
 
 <div class="viewcode-block" id="eCCA.decision_function">
@@ -408,32 +535,14 @@
                 <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                     <span class="n">Xi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                            <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span>
-                                <span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]</span>
-                            <span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
-                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
-                            <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                                <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>
-                            <span class="p">)</span>
-                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                            <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span>
-                                <span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]</span>
-                            <span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">_score</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="p">,</span> <span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]</span>
+                        <span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
-                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))</span>
-                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">squeeze_components</span><span class="p">:</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -500,6 +609,11 @@
 <span class="sd">        self: ClassifierMixin</span>
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SCORE_METRICS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">. Options are </span><span class="si">{</span><span class="n">SCORE_METRICS</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TEMPLATE_METRICS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown template metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">template_metric</span><span class="si">}</span><span class="s2">. Options are </span><span class="si">{</span><span class="n">TEMPLATE_METRICS</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
         <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
@@ -623,7 +737,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_running_</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -702,17 +815,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="n">running</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
-
-
-    <span class="k">def</span> <span class="nf">__sklearn_is_fitted__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check fitted status and return a Boolean value.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        fitted: bool</span>
-<span class="sd">            Whether the classifier is fitted.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_fitted&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span></div>
+</div>
 
 
 
@@ -735,11 +838,14 @@
 <span class="sd">    classes_: NDArray</span>
 <span class="sd">        The classes that can be predicted, taken from the gate&#39;s classes_ after fitting.</span>
 <span class="sd">    models_: list[ClassifierMixin]</span>
-<span class="sd">        A list containing all models learned for each of the databanks.</span>
+<span class="sd">        A list containing all models learned for each of the databanks (clones of estimator).</span>
+<span class="sd">    gate_: ClassifierMixin</span>
+<span class="sd">        The fitted clone of gate. The passed-in estimator and gate are never mutated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">models_</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ClassifierMixin</span><span class="p">]</span>
+    <span class="n">gate_</span><span class="p">:</span> <span class="n">ClassifierMixin</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -748,6 +854,24 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gate</span> <span class="o">=</span> <span class="n">gate</span>
+
+    <span class="k">def</span> <span class="nf">_stack_scores</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stack each databank model&#39;s decision_function scores along a new last axis.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray</span>
+<span class="sd">            The matrix of EEG data of shape (n_trials, n_channels, n_samples, n_items).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        scores: NDArray</span>
+<span class="sd">            The stacked scores of shape (n_trials, n_classes, n_items).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Ensemble.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.Ensemble.html#pyntbci.classifiers.Ensemble.decision_function">[docs]</a>
@@ -768,8 +892,7 @@
 <span class="sd">            The matrix of scores of shape (n_trials, n_classes).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack_scores</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Ensemble.fit">
@@ -794,17 +917,17 @@
 <span class="sd">        self: ClassifierMixin</span>
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X must be 4D (n_trials, n_channels, n_samples, n_items); got </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">D.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Fit separate models for each databank</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">models_</span> <span class="o">=</span> <span class="p">[</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])]</span>
+        <span class="c1"># Fit a separate (cloned) model for each databank, so the passed-in estimator is never mutated</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models_</span> <span class="o">=</span> <span class="p">[</span><span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])]</span>
 
-        <span class="c1"># Fit gating</span>
-        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># Fit gating on a clone, so the passed-in gate is never mutated</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate_</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate_</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack_scores</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">classes_</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate_</span><span class="o">.</span><span class="n">classes_</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -828,19 +951,8 @@
 <span class="sd">            to find the associated stimulus!</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">models_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span></div>
-
-
-    <span class="k">def</span> <span class="nf">__sklearn_is_fitted__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check fitted status and return a Boolean value.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        fitted: bool</span>
-<span class="sd">            Whether the classifier is fitted.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_fitted&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack_scores</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
+</div>
 
 
 
@@ -915,6 +1027,18 @@
 <span class="sd">        its own, and a class absent from an early batch would otherwise silently never get initialized. To start</span>
 <span class="sd">        a new running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then</span>
 <span class="sd">        set_params(running=True) again).</span>
+<span class="sd">    response_prior: NDArray (default: None)</span>
+<span class="sd">        A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak</span>
+<span class="sd">        near 100 ms, and a negative peak near 125 ms), sampled at fs, toward which the learned temporal filter r_ is</span>
+<span class="sd">        softly regularized (see response_prior_gamma). Given either as one response of length n_event_samples</span>
+<span class="sd">        (applied to every event) or as the full concatenation of the per-event responses of length n_features</span>
+<span class="sd">        (matching r_; see encoding_length). Unlike in the unsupervised case, the (labeled) fit already estimates the</span>
+<span class="sd">        response at the correct phase, so this acts as a regularizer toward a physiologically plausible shape, which</span>
+<span class="sd">        can stabilize the response when little/noisy data is available. If None (default), no prior is used.</span>
+<span class="sd">    response_prior_gamma: float (default: 1.0)</span>
+<span class="sd">        The strength of the soft regularization toward response_prior, from 0 (ignore the prior, purely data-driven)</span>
+<span class="sd">        upwards (larger pulls the response more strongly toward the prior; in the limit the response equals the</span>
+<span class="sd">        prior). Only used if response_prior is not None.</span>
 <span class="sd">    cca_: list[TransformerMixin]</span>
 <span class="sd">        The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise</span>
 <span class="sd">        len(cca_)=n_classes.</span>
@@ -986,6 +1110,8 @@
         <span class="n">alpha_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">response_prior</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">response_prior_gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
@@ -1007,6 +1133,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span> <span class="o">=</span> <span class="n">alpha_m</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tmin</span> <span class="o">=</span> <span class="n">tmin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="n">running</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span> <span class="o">=</span> <span class="n">response_prior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span> <span class="o">=</span> <span class="n">response_prior_gamma</span>
 
     <span class="k">def</span> <span class="nf">_resolve_decoding_length_stride</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve decoding_length and decoding_stride, defaulting to 1/fs (i.e., no phase-shifting) if None.</span>
@@ -1100,32 +1228,14 @@
                 <span class="k">for</span> <span class="n">i_class</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                     <span class="n">Xi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                            <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span>
-                                <span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]</span>
-                            <span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
-                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
-                            <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                                <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))[:,</span> <span class="mi">0</span><span class="p">]</span>
-                            <span class="p">)</span>
-                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                            <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span>
-                                <span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]</span>
-                            <span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">scores</span><span class="p">[:,</span> <span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">_score</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="p">,</span> <span class="n">Xi</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[</span><span class="n">i_class</span><span class="p">,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]</span>
+                        <span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">i_component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;correlation&quot;</span><span class="p">:</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
-                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>  <span class="c1"># includes conversion to similarity</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">euclidean</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:]))</span>
-                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;inner&quot;</span><span class="p">:</span>
-                        <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:],</span> <span class="n">T</span><span class="p">[:,</span> <span class="n">i_component</span><span class="p">,</span> <span class="p">:])</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">squeeze_components</span><span class="p">:</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -1229,10 +1339,13 @@
 <span class="sd">        self: ClassifierMixin</span>
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SCORE_METRICS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown score metric: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">score_metric</span><span class="si">}</span><span class="s2">. Options are </span><span class="si">{</span><span class="n">SCORE_METRICS</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
         <span class="c1"># Set encoding matrix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding_matrix</span><span class="p">()</span>
         <span class="n">n_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">prior</span> <span class="o">=</span> <span class="n">_resolve_response_prior</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events_</span><span class="p">))</span>
 
         <span class="c1"># Set decoding matrix</span>
         <span class="n">decoding_length</span><span class="p">,</span> <span class="n">decoding_stride</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_decoding_length_stride</span><span class="p">()</span>
@@ -1269,6 +1382,8 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">M</span><span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:])</span>
+                <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_apply_response_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">],</span> <span class="n">prior</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">w_x_</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">r_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">w_y_</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1292,14 +1407,23 @@
                     <span class="p">)</span>
                 <span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
+            <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_apply_response_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">prior</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">w_x_</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">w_y_</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_templates</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
+
+    <span class="k">def</span> <span class="nf">_apply_response_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cca</span><span class="p">:</span> <span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">prior</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite a fitted CCA&#39;s spatial and temporal filters with the prior-regularized temporal response (a</span>
+<span class="sd">        prior-mean ridge, see _apply_response_prior), so the templates built from them are anchored to the prior.&quot;&quot;&quot;</span>
+        <span class="n">n_channels</span> <span class="o">=</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_y_</span> <span class="o">=</span> <span class="n">_apply_response_prior</span><span class="p">(</span>
+            <span class="n">prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_y_</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">cov_xy_</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">:],</span> <span class="n">cca</span><span class="o">.</span><span class="n">cov_y_</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="rCCA.predict">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.predict">[docs]</a>
@@ -1439,18 +1563,452 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span> <span class="o">=</span> <span class="n">amplitudes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding_matrix</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_templates</span><span class="p">()</span></div>
+</div>
 
 
-    <span class="k">def</span> <span class="nf">__sklearn_is_fitted__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check fitted status and return a Boolean value.</span>
+
+<span class="k">class</span> <span class="nc">UnsupervisedRCCA</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unsupervised adaptive reconvolution CCA classifier for calibration-free c-VEP decoding [6]_.</span>
+
+<span class="sd">    Instead of a supervised calibration, each trial is decoded by fitting a separate rCCA per candidate stimulus (as</span>
+<span class="sd">    a hypothesis) and selecting the stimulus whose model best fits the trial, i.e. yields the highest correlation</span>
+<span class="sd">    between the spatially filtered EEG and the temporally filtered stimulus structure matrix. This is the</span>
+<span class="sd">    instantaneous mode (`cumulative=False`), which treats every trial independently.</span>
+
+<span class="sd">    Three cumulative extensions build a model from previously decoded trials, using their predicted labels as</span>
+<span class="sd">    pseudo-labels (there are no ground-truth labels in a calibration-free setting):</span>
+
+<span class="sd">    - `cumulative=True`: every hypothesis is fit on all previously decoded trials (at their pseudo-labels) plus the</span>
+<span class="sd">      current trial (hypothesized as each candidate). This is mathematically identical to refitting from scratch on</span>
+<span class="sd">      the full history every trial, but is done efficiently by keeping a single running covariance of the</span>
+<span class="sd">      pseudo-labeled history (see `RunningCovariance` in `utilities`) shared across all hypotheses, so each trial</span>
+<span class="sd">      only adds its own (bounded) contribution rather than reprocessing the whole history. The first trial, with no</span>
+<span class="sd">      history, reduces to the instantaneous mode.</span>
+<span class="sd">    - `confidence=True` (implies `cumulative`): each trial is weighted by a confidence, so that high-confidence</span>
+<span class="sd">      trials drive the model updates and low-confidence trials are suppressed. The confidence is the normalized</span>
+<span class="sd">      correlation margin `(rho_winner - rho_runner_up) / std(rho_except_winner)`, estimated from an instantaneous</span>
+<span class="sd">      pass (as in [6]_), and used as a per-trial weight in the running covariance.</span>
+<span class="sd">    - `posthoc=True` (implies `cumulative`): after each trial, all previously decoded trials are re-decoded with the</span>
+<span class="sd">      just-updated (presumably better) model and their pseudo-labels are corrected, which then affects subsequent</span>
+<span class="sd">      updates. This is the only mode that must retain the past trials&#39; EEG (in `X_hist_`), since re-decoding needs</span>
+<span class="sd">      the raw data; a changed label is applied to the running covariance as an exact remove-then-re-add, avoiding a</span>
+<span class="sd">      full refit. The other modes keep no raw data (only the running covariance and the list of pseudo-labels).</span>
+
+<span class="sd">    These flags reproduce the four variants of [6]_: instantaneous (all False), cumulative (`cumulative`),</span>
+<span class="sd">    confidence-weighted cumulative (`cumulative`, `confidence`), and confidence-weighted cumulative with post hoc</span>
+<span class="sd">    re-analysis (`cumulative`, `confidence`, `posthoc`).</span>
+
+<span class="sd">    Note, decoding is inherently online and stateful: `predict()` streams trials in their given (chronological)</span>
+<span class="sd">    order, decoding each with the model learned from the ones before it, and the internal session persists across</span>
+<span class="sd">    calls. Decoding trials one at a time therefore accumulates exactly as decoding them in one call does (as needed</span>
+<span class="sd">    for real-time use where trials arrive one by one): `[predict(X[[i]]) for i in range(n_trials)]` gives the same</span>
+<span class="sd">    result as `predict(X)`. Because state persists, `predict()`/`decision_function()` are not pure functions; call</span>
+<span class="sd">    `fit()` (or pass `reset=True`) to start a fresh session, e.g. before an independent replay. The single-trial</span>
+<span class="sd">    `partial_fit_predict()` is the same online step exposed directly. The structure-matrix machinery of `rCCA`</span>
+<span class="sd">    (event and encoding matrices, latency correction, optional spatio-spectral decoding matrix) is reused, and the</span>
+<span class="sd">    core CCA is solved with the same `_solve_cca` as `CCA` in `transformers`. With short trials or a wide encoding</span>
+<span class="sd">    matrix, the per-hypothesis covariances can be ill-conditioned; set `gamma_x`/`gamma_m` (or `alpha_x`/`alpha_m`)</span>
+<span class="sd">    to regularize, as for supervised `rCCA`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stimulus: NDArray</span>
+<span class="sd">        The stimulus used for stimulation of shape (n_classes, n_samples). Should be sampled at fs. One cycle (i.e.,</span>
+<span class="sd">        one stimulus-repetition) is sufficient.</span>
+<span class="sd">    fs: int</span>
+<span class="sd">        The sampling frequency of the EEG data in Hz.</span>
+<span class="sd">    event: str (default: &quot;duration&quot;)</span>
+<span class="sd">        The event definition to map stimulus to events.</span>
+<span class="sd">    onset_event: bool (default: True)</span>
+<span class="sd">        Whether to add an event for the onset of stimulation. Added as last event.</span>
+<span class="sd">    decoding_length: float (default: None)</span>
+<span class="sd">        The length of the spectral filter for each data channel in seconds. If None, it is set to 1/fs, equivalent to 1</span>
+<span class="sd">        sample, such that no phase-shifting is performed and thus no (spatio-)spectral filter is learned.</span>
+<span class="sd">    decoding_stride: float (default: None)</span>
+<span class="sd">        The stride of the spectral filter for each data channel in seconds. If None, it is set to 1/fs.</span>
+<span class="sd">    encoding_length: float | list[float] (default: 0.3)</span>
+<span class="sd">        The length of the transient response(s) for each of the events in seconds.</span>
+<span class="sd">    encoding_stride: float | list[float] (default: None)</span>
+<span class="sd">        The stride of the transient response(s) for each of the events in seconds. If None, it is set to 1/fs.</span>
+<span class="sd">    latency: NDArray (default: None)</span>
+<span class="sd">        The raster latencies of each of the classes of shape (n_classes,) that the templates need to be corrected for.</span>
+<span class="sd">    tmin: float (default: 0)</span>
+<span class="sd">        The start of stimulation in seconds. Can be used if there was a delay in the marker.</span>
+<span class="sd">    n_components: int (default: 1)</span>
+<span class="sd">        The number of CCA components to use. Decoding and confidence use the first component only, matching [6]_.</span>
+<span class="sd">    gamma_x: float | list[float] | NDArray (default: None)</span>
+<span class="sd">        Regularization on the covariance matrix for CCA along X (channels), see `rCCA`.</span>
+<span class="sd">    gamma_m: float | list[float] | NDArray (default: None)</span>
+<span class="sd">        Regularization on the covariance matrix for CCA along M (samples), see `rCCA`.</span>
+<span class="sd">    alpha_x: float (default: None)</span>
+<span class="sd">        Amount of variance to retain in computing the inverse of the covariance matrix of X. If None, all variance.</span>
+<span class="sd">    alpha_m: float (default: None)</span>
+<span class="sd">        Amount of variance to retain in computing the inverse of the covariance matrix of M. If None, all variance.</span>
+<span class="sd">    cumulative: bool (default: True)</span>
+<span class="sd">        Whether to learn cumulatively from previously decoded trials (using their pseudo-labels). If False, each</span>
+<span class="sd">        trial is decoded instantaneously and independently.</span>
+<span class="sd">    confidence: bool (default: False)</span>
+<span class="sd">        Whether to weight each trial by its confidence during cumulative updates. Implies cumulative.</span>
+<span class="sd">    posthoc: bool (default: False)</span>
+<span class="sd">        Whether to re-decode and relabel all previous trials after each update. Implies cumulative, and retains the</span>
+<span class="sd">        past trials&#39; EEG in X_hist_.</span>
+<span class="sd">    response_prior: NDArray (default: None)</span>
+<span class="sd">        A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak</span>
+<span class="sd">        near 100 ms, and a negative peak near 125 ms), sampled at fs. Either one response of length n_event_samples</span>
+<span class="sd">        (applied to every event) or the full concatenation of the per-event responses of length n_features (matching</span>
+<span class="sd">        the temporal filter r_; see encoding_length). If given, the learned response is softly regularized toward it</span>
+<span class="sd">        (see response_prior_gamma), which anchors the response&#39;s absolute phase. This is what makes decoding work for</span>
+<span class="sd">        circularly-shifted codes (e.g. shifted m-sequences): without it, an unconstrained response can circularly</span>
+<span class="sd">        slide to make every candidate stimulus fit equally well (the more so the longer encoding_length), so the</span>
+<span class="sd">        classes become indistinguishable. If None (default), no prior is used.</span>
+<span class="sd">    response_prior_gamma: float (default: 1.0)</span>
+<span class="sd">        The strength of the soft regularization toward response_prior, ranging from 0 (ignore the prior, purely</span>
+<span class="sd">        data-driven) upwards (larger pulls the response more strongly toward the prior; in the limit the response</span>
+<span class="sd">        equals the prior). Only used if response_prior is not None.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    classes_: NDArray</span>
+<span class="sd">        The class labels of shape (n_classes,).</span>
+<span class="sd">    events_: list</span>
+<span class="sd">        The list of events used to map the stimulus to, as set by the internal rCCA.</span>
+<span class="sd">    labels_: list</span>
+<span class="sd">        The pseudo-labels (predicted labels) of the decoded trials, in order.</span>
+<span class="sd">    confidences_: list</span>
+<span class="sd">        The confidence of each decoded trial, in order.</span>
+<span class="sd">    w_: NDArray</span>
+<span class="sd">        The spatial filter of the most recently winning model of shape (n_channels, n_components).</span>
+<span class="sd">    r_: NDArray</span>
+<span class="sd">        The temporal filter of the most recently winning model of shape (n_features, n_components).</span>
+<span class="sd">    cov_: RunningCovariance</span>
+<span class="sd">        The running covariance of the pseudo-labeled history (only populated if cumulative).</span>
+<span class="sd">    X_hist_: list</span>
+<span class="sd">        The (decoded) EEG of the decoded trials, retained only if posthoc, for re-decoding.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [6] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive</span>
+<span class="sd">           learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
+    <span class="n">events_</span><span class="p">:</span> <span class="nb">list</span>
+    <span class="n">labels_</span><span class="p">:</span> <span class="nb">list</span>
+    <span class="n">confidences_</span><span class="p">:</span> <span class="nb">list</span>
+    <span class="n">w_</span><span class="p">:</span> <span class="n">NDArray</span>
+    <span class="n">r_</span><span class="p">:</span> <span class="n">NDArray</span>
+    <span class="n">cov_</span><span class="p">:</span> <span class="n">RunningCovariance</span>
+    <span class="n">X_hist_</span><span class="p">:</span> <span class="nb">list</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">stimulus</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">event</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;duration&quot;</span><span class="p">,</span>
+        <span class="n">onset_event</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">decoding_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">decoding_stride</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">encoding_length</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+        <span class="n">encoding_stride</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">latency</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">gamma_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gamma_m</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cumulative</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">confidence</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">posthoc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">response_prior</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">response_prior_gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span> <span class="o">=</span> <span class="n">onset_event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span> <span class="o">=</span> <span class="n">decoding_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span> <span class="o">=</span> <span class="n">decoding_stride</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="o">=</span> <span class="n">encoding_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="o">=</span> <span class="n">encoding_stride</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latency</span> <span class="o">=</span> <span class="n">latency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmin</span> <span class="o">=</span> <span class="n">tmin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">=</span> <span class="n">n_components</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span> <span class="o">=</span> <span class="n">gamma_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma_m</span> <span class="o">=</span> <span class="n">gamma_m</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span> <span class="o">=</span> <span class="n">alpha_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span> <span class="o">=</span> <span class="n">alpha_m</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cumulative</span> <span class="o">=</span> <span class="n">cumulative</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span> <span class="o">=</span> <span class="n">confidence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">posthoc</span> <span class="o">=</span> <span class="n">posthoc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span> <span class="o">=</span> <span class="n">response_prior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span> <span class="o">=</span> <span class="n">response_prior_gamma</span>
+
+    <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the internal rCCA (for the structure matrices) and reset the running state.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span> <span class="o">=</span> <span class="n">rCCA</span><span class="p">(</span>
+            <span class="n">stimulus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
+            <span class="n">onset_event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">onset_event</span><span class="p">,</span>
+            <span class="n">decoding_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_length</span><span class="p">,</span>
+            <span class="n">decoding_stride</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decoding_stride</span><span class="p">,</span>
+            <span class="n">encoding_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span><span class="p">,</span>
+            <span class="n">encoding_stride</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span><span class="p">,</span>
+            <span class="n">latency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">latency</span><span class="p">,</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span>
+            <span class="n">gamma_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span>
+            <span class="n">gamma_m</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_m</span><span class="p">,</span>
+            <span class="n">alpha_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">,</span>
+            <span class="n">alpha_m</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">set_encoding_matrix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">events_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span> <span class="o">=</span> <span class="n">_resolve_response_prior</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">events_</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span> <span class="o">=</span> <span class="n">RunningCovariance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confidences_</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_ensure_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up on first use (so partial_fit_predict can be called without an explicit fit).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;cov_&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_structure_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the structure matrices for all classes, tiled to the requested length (as in rCCA.fit).&quot;&quot;&quot;</span>
+        <span class="n">Ms</span><span class="p">,</span> <span class="n">Mw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">Ms_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">Mw_</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&lt;</span> <span class="n">Ms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="n">Ms</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Ms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">Mw</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">//</span> <span class="n">Ms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">M</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the spatio-spectral decoding matrix to a single trial (n_channels, n_samples) if used.&quot;&quot;&quot;</span>
+        <span class="n">decoding_length</span><span class="p">,</span> <span class="n">decoding_stride</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">_resolve_decoding_length_stride</span><span class="p">()</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">decoding_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">length</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">decoding_stride</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span> <span class="nf">_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">Xd</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">Mi</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The correlation between the spatially filtered EEG and the temporally filtered structure matrix.&quot;&quot;&quot;</span>
+        <span class="n">xf</span> <span class="o">=</span> <span class="n">w</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">@</span> <span class="n">Xd</span>  <span class="c1"># (n_samples,)</span>
+        <span class="n">tf</span> <span class="o">=</span> <span class="n">r</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">@</span> <span class="n">Mi</span>  <span class="c1"># (n_samples,)</span>
+        <span class="k">return</span> <span class="n">correlation</span><span class="p">(</span><span class="n">xf</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">tf</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_margin</span><span class="p">(</span><span class="n">rho</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The confidence: normalized margin between the winning and runner-up correlations (see [6]_).&quot;&quot;&quot;</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">order</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">((</span><span class="n">order</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">order</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">denom</span><span class="p">)</span> <span class="k">if</span> <span class="n">denom</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span> <span class="nf">_fit_and_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base</span><span class="p">:</span> <span class="n">RunningCovariance</span><span class="p">,</span>
+        <span class="n">Xd</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">M</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit one CCA per candidate class off a shared base covariance and score the current trial.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        base: RunningCovariance</span>
+<span class="sd">            The covariance of the history the candidates share (empty for instantaneous, the committed history for</span>
+<span class="sd">            cumulative). Not mutated; each candidate peeks at base plus its own (Xd, M[i]) contribution.</span>
+<span class="sd">        Xd: NDArray</span>
+<span class="sd">            The (decoded) current trial of shape (n_channels, n_samples).</span>
+<span class="sd">        M: NDArray</span>
+<span class="sd">            The structure matrices of all classes of shape (n_classes, n_features, n_samples).</span>
+<span class="sd">        weight: float</span>
+<span class="sd">            The weight of the current trial&#39;s contribution (None or 1 for unweighted).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        fitted: bool</span>
-<span class="sd">            Whether the classifier is fitted.</span>
+<span class="sd">        rho: NDArray</span>
+<span class="sd">            The per-class correlation scores of shape (n_classes,).</span>
+<span class="sd">        w_all: NDArray</span>
+<span class="sd">            The per-class spatial filters of shape (n_classes, n_channels, n_components).</span>
+<span class="sd">        r_all: NDArray</span>
+<span class="sd">            The per-class temporal filters of shape (n_classes, n_features, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_fitted&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span></div>
+        <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">Xd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">Xt</span> <span class="o">=</span> <span class="n">Xd</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">w_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
+        <span class="n">r_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">n_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="n">cov</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">peek</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xt</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">covariance</span>
+            <span class="n">Cxm</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">:]</span>
+            <span class="n">Cmm</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[</span><span class="n">n_channels</span><span class="p">:,</span> <span class="n">n_channels</span><span class="p">:]</span>
+            <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_solve_cca</span><span class="p">(</span>
+                <span class="n">cov</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="p">:</span><span class="n">n_channels</span><span class="p">],</span>
+                <span class="n">Cxm</span><span class="p">,</span>
+                <span class="n">Cmm</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gamma_m</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># anchor the response phase toward the expected VEP shape</span>
+                <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_apply_response_prior</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span><span class="p">,</span> <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">Cxm</span><span class="p">,</span> <span class="n">Cmm</span>
+                <span class="p">)</span>
+            <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_score</span><span class="p">(</span><span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">Xd</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">rho</span><span class="p">,</span> <span class="n">w_all</span><span class="p">,</span> <span class="n">r_all</span>
 
+    <span class="k">def</span> <span class="nf">_relabel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Post hoc re-analysis: re-decode all previous trials with the current model and correct their labels.&quot;&quot;&quot;</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># index of the just-decoded (current) trial; only relabel the ones before it</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">Tproj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;l,nlt-&gt;nt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">M</span><span class="p">)</span>  <span class="c1"># (n_classes, n_samples), the filtered templates</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>  <span class="c1"># (n_samples,)</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">correlation</span><span class="p">(</span><span class="n">xf</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">Tproj</span><span class="p">)))</span>
+            <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">new</span> <span class="o">!=</span> <span class="n">old</span><span class="p">:</span>
+                <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidences_</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span> <span class="k">else</span> <span class="mf">1.0</span>
+                <span class="n">Xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xt</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">old</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">sign</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xt</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">new</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">sign</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+
+    <span class="k">def</span> <span class="nf">partial_fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a single trial online, updating the model (if cumulative) with its pseudo-label.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray</span>
+<span class="sd">            The EEG data of a single trial of shape (n_channels, n_samples) or (1, n_channels, n_samples).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        label: int</span>
+<span class="sd">            The predicted (pseudo-) label of the trial.</span>
+<span class="sd">        confidence: float</span>
+<span class="sd">            The confidence of the prediction.</span>
+<span class="sd">        scores: NDArray</span>
+<span class="sd">            The per-class correlation scores of shape (n_classes,).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_setup</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;partial_fit_predict decodes a single trial at a time.&quot;</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">Xd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_matrix</span><span class="p">(</span><span class="n">Xd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># An instantaneous pass is needed either as the prediction itself (not cumulative) or to derive the</span>
+        <span class="c1"># confidence weight before the cumulative update (confidence)</span>
+        <span class="n">confidence</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cumulative</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span><span class="p">:</span>
+            <span class="n">rho</span><span class="p">,</span> <span class="n">w_all</span><span class="p">,</span> <span class="n">r_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_and_score</span><span class="p">(</span><span class="n">RunningCovariance</span><span class="p">(),</span> <span class="n">Xd</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">confidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_margin</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cumulative</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">confidence</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span> <span class="k">else</span> <span class="mf">1.0</span>
+            <span class="n">rho</span><span class="p">,</span> <span class="n">w_all</span><span class="p">,</span> <span class="n">r_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_and_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_</span><span class="p">,</span> <span class="n">Xd</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">confidence</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># vanilla cumulative: report a confidence from the cumulative scores</span>
+                <span class="n">confidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_margin</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+
+        <span class="n">label</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">rho</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="n">w_all</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confidences_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">confidence</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cumulative</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">confidence</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span> <span class="k">else</span> <span class="mf">1.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xd</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posthoc</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Xd</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_relabel</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">label</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">rho</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassifierMixin</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the classifier (calibration-free: no training data or labels are used).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray (default: None)</span>
+<span class="sd">            Not used, present for scikit-learn API consistency.</span>
+<span class="sd">        y: NDArray (default: None)</span>
+<span class="sd">            Not used, present for scikit-learn API consistency.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self: ClassifierMixin</span>
+<span class="sd">            Returns the instance itself.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stream all trials in order, returning predictions and scores. Continues the current online session</span>
+<span class="sd">        (accumulating onto whatever has already been decoded), or starts a fresh one if reset=True.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_setup</span><span class="p">()</span>
+        <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">yh</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">_</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partial_fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">yh</span><span class="p">,</span> <span class="n">scores</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a sequence of trials online, in the given (chronological) order.</span>
+
+<span class="sd">        Each trial is decoded with the model learned from all trials decoded so far, and then folds into that model</span>
+<span class="sd">        (using its own prediction as a pseudo-label) if cumulative. This is a stateful, online operation: the</span>
+<span class="sd">        internal session persists across calls, so decoding trials one at a time is equivalent to decoding them in a</span>
+<span class="sd">        single call, i.e. ``[predict(X[[i]]) for i in range(n_trials)]`` gives the same result as ``predict(X)``, as</span>
+<span class="sd">        needed for real-time use where trials arrive one by one. Because it persists state, predict() is not a pure</span>
+<span class="sd">        function: call fit() (or pass reset=True) to start a fresh session, e.g. before an independent replay.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray</span>
+<span class="sd">            The EEG data of shape (n_trials, n_channels, n_samples), in chronological order.</span>
+<span class="sd">        reset: bool (default: False)</span>
+<span class="sd">            Whether to discard the current online session and start fresh before decoding X. Use reset=True (or a</span>
+<span class="sd">            fresh instance, or fit()) for a self-contained replay; leave False to continue an ongoing session.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y: NDArray</span>
+<span class="sd">            The predicted labels of shape (n_trials,).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a sequence of trials online and return the per-trial per-class correlation scores.</span>
+
+<span class="sd">        Stateful and online, see predict() (of which this is the score-returning counterpart).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray</span>
+<span class="sd">            The EEG data of shape (n_trials, n_channels, n_samples), in chronological order.</span>
+<span class="sd">        reset: bool (default: False)</span>
+<span class="sd">            Whether to discard the current online session and start fresh before decoding X, see predict().</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        scores: NDArray</span>
+<span class="sd">            The per-trial per-class correlation scores of shape (n_trials, n_classes).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 
            </div>

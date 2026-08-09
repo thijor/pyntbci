@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.transformers &mdash; PyntBCI 1.9.0 documentation</title>
+  <title>pyntbci.transformers &mdash; PyntBCI 1.9.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c4cb232b"></script>
+      <script src="../../_static/documentation_options.js?v=60b3a732"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -178,6 +178,91 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">V</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
 
 
+<span class="k">def</span> <span class="nf">_shrink</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shrink a covariance matrix towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the</span>
+<span class="sd">    result stays symmetric for a per-feature gamma (for scalar gamma this is identical to (1 - gamma) * C + gamma *</span>
+<span class="sd">    nu * I, since both terms are then equal). Returns C unchanged if gamma is None.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    C: NDArray</span>
+<span class="sd">        A covariance matrix of shape (n, n).</span>
+<span class="sd">    gamma: float | list[float] | NDArray</span>
+<span class="sd">        Regularization for all (scalar) or each individual (per-feature array) feature, ranging from 0 (no</span>
+<span class="sd">        regularization) to 1 (full regularization). If None, C is returned unchanged.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    C: NDArray</span>
+<span class="sd">        The (regularized) covariance matrix of shape (n, n).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">C</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">C</span><span class="p">)</span> <span class="o">/</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">gamma</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">+</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_solve_cca</span><span class="p">(</span>
+    <span class="n">Cxx</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">Cxy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">Cyy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">gamma_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">gamma_y</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">alpha_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">alpha_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the CCA from the (auto- and cross-) covariance blocks: regularize, whiten, and take the SVD of the</span>
+<span class="sd">    whitened cross-covariance. This is the core linear algebra of CCA, factored out so it can be reused directly on</span>
+<span class="sd">    externally-accumulated covariance matrices (e.g. the running per-hypothesis covariances of unsupervised</span>
+<span class="sd">    adaptive rCCA) without going through CCA&#39;s own running-state bookkeeping.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Cxx: NDArray</span>
+<span class="sd">        The auto-covariance of X of shape (n_features_x, n_features_x).</span>
+<span class="sd">    Cxy: NDArray</span>
+<span class="sd">        The cross-covariance of X and Y of shape (n_features_x, n_features_y).</span>
+<span class="sd">    Cyy: NDArray</span>
+<span class="sd">        The auto-covariance of Y of shape (n_features_y, n_features_y).</span>
+<span class="sd">    n_components: int</span>
+<span class="sd">        The number of CCA components to return.</span>
+<span class="sd">    gamma_x: float | list[float] | NDArray (default: None)</span>
+<span class="sd">        Regularization on Cxx, see _shrink().</span>
+<span class="sd">    gamma_y: float | list[float] | NDArray (default: None)</span>
+<span class="sd">        Regularization on Cyy, see _shrink().</span>
+<span class="sd">    alpha_x: float (default: None)</span>
+<span class="sd">        Amount of variance to retain when inverting Cxx. If None, all variance (a plain inverse).</span>
+<span class="sd">    alpha_y: float (default: None)</span>
+<span class="sd">        Amount of variance to retain when inverting Cyy. If None, all variance (a plain inverse).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    w_x: NDArray</span>
+<span class="sd">        The weight vector to project X of shape (n_features_x, n_components).</span>
+<span class="sd">    w_y: NDArray</span>
+<span class="sd">        The weight vector to project Y of shape (n_features_y, n_components).</span>
+<span class="sd">    rho: NDArray</span>
+<span class="sd">        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Cxx</span> <span class="o">=</span> <span class="n">_shrink</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">gamma_x</span><span class="p">)</span>
+    <span class="n">Cyy</span> <span class="o">=</span> <span class="n">_shrink</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">gamma_y</span><span class="p">)</span>
+
+    <span class="c1"># Inverse square root</span>
+    <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">alpha_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">alpha_x</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
+    <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">alpha_y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">alpha_y</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
+
+    <span class="c1"># SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that can be</span>
+    <span class="c1"># nonzero, instead of the full square U and V of which only the first n_components are ever used.</span>
+    <span class="n">U</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">Cxy</span> <span class="o">@</span> <span class="n">iCyy</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">U</span><span class="p">)[:,</span> <span class="p">:</span><span class="n">n_components</span><span class="p">],</span> <span class="p">(</span><span class="n">iCyy</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">)[:,</span> <span class="p">:</span><span class="n">n_components</span><span class="p">],</span> <span class="n">rho</span>
+
+
 <div class="viewcode-block" id="CCA">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA">[docs]</a>
 <span class="k">class</span> <span class="nc">CCA</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
@@ -279,7 +364,8 @@
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Data matrix of shape (n_samples, n_features_y).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)!&quot;</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
 
         <span class="c1"># Compute covariances. Cxx/Cyy are taken as blocks of the joint covariance of concat(X, Y) rather than</span>
         <span class="c1"># computed separately, since they are already sub-computations of it.</span>
@@ -293,53 +379,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">n_y_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_xy_</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">avg_y_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_xy_</span><span class="p">[:,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cov_y_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_xy_</span><span class="p">[</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>
-        <span class="n">Cxx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_x_</span>
-        <span class="n">Cyy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_y_</span>
         <span class="n">Cxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_xy_</span><span class="p">[:</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>
 
-        <span class="c1"># Regularization. Shrink towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the</span>
-        <span class="c1"># result stays symmetric for a per-feature gamma (for scalar gamma this is identical to (1 - gamma) * Cxx,</span>
-        <span class="c1"># since both terms are then equal).</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">nu_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cxx</span><span class="p">)</span> <span class="o">/</span> <span class="n">Cxx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-                <span class="n">gamma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">Cxx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">gamma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-            <span class="n">Cxx</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_x</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">Cxx</span> <span class="o">+</span> <span class="n">Cxx</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_x</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">+</span> <span class="n">nu_x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span>
-                <span class="n">gamma_x</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">nu_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cyy</span><span class="p">)</span> <span class="o">/</span> <span class="n">Cyy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-                <span class="n">gamma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">Cyy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">gamma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-            <span class="n">Cyy</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_y</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">Cyy</span> <span class="o">+</span> <span class="n">Cyy</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma_y</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">+</span> <span class="n">nu_y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span>
-                <span class="n">gamma_y</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Inverse square root</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
-
-        <span class="c1"># SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that</span>
-        <span class="c1"># can be nonzero, instead of the full square U and V of which only the first n_components are ever used.</span>
-        <span class="n">U</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rho_</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">Cxy</span> <span class="o">@</span> <span class="n">iCyy</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-        <span class="c1"># Compute projection vectors</span>
-        <span class="n">Wx</span> <span class="o">=</span> <span class="n">iCxx</span> <span class="o">@</span> <span class="n">U</span>
-        <span class="n">Wy</span> <span class="o">=</span> <span class="n">iCyy</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
-
-        <span class="c1"># Select components</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">w_x_</span> <span class="o">=</span> <span class="n">Wx</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">w_y_</span> <span class="o">=</span> <span class="n">Wy</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">]</span>
+        <span class="c1"># Regularize, whiten, and take the SVD of the whitened cross-covariance (the core CCA linear algebra)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_x_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_y_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rho_</span> <span class="o">=</span> <span class="n">_solve_cca</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_x_</span><span class="p">,</span> <span class="n">Cxy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_y_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_fit_X3D_Y3D</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -355,8 +400,10 @@
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Data matrix of shape (n_trials, n_features_y, n_samples).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)!&quot;</span>
-        <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">)!&quot;</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
 
         <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_features_x</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">n_features_y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -382,7 +429,8 @@
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Label vector of shape (n_trials,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)!&quot;</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
 
         <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
@@ -426,9 +474,8 @@
         <span class="k">elif</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">Y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit_X2D_Y2D</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dimensions of X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) and/or Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) are not valid.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dimensions of X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) and/or Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) are not valid.&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -526,20 +573,10 @@
         <span class="k">elif</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">Y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
             <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_X2D</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;X and Y must be both 3D or 2D, or None.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;X and Y must be both 3D or 2D, or None.&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span></div>
-
-
-    <span class="k">def</span> <span class="nf">__sklearn_is_fitted__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check fitted status and return a Boolean value.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        fitted: bool</span>
-<span class="sd">            Whether the transformer is fitted.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_fitted&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span></div>
+</div>
 
 
 
@@ -583,7 +620,7 @@
 <span class="sd">        self: TransformerMixin</span>
 <span class="sd">            Returns the instance itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_features_in_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -612,17 +649,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_prime</span><span class="p">:</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
-
-
-    <span class="k">def</span> <span class="nf">__sklearn_is_fitted__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check fitted status and return a Boolean value.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        fitted: bool</span>
-<span class="sd">            Whether the transformer is fitted.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_fitted&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span></div>
+</div>
 
 </pre></div>
 

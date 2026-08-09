@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities &mdash; PyntBCI 1.9.0 documentation</title>
+  <title>pyntbci.utilities &mdash; PyntBCI 1.9.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
@@ -16,7 +16,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c4cb232b"></script>
+      <script src="../../_static/documentation_options.js?v=60b3a732"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
@@ -263,6 +263,146 @@
         <span class="n">cov_new</span> <span class="o">=</span> <span class="n">cov_obs</span> <span class="o">+</span> <span class="n">cov_old</span> <span class="o">*</span> <span class="p">((</span><span class="n">n_new</span> <span class="o">-</span> <span class="n">n_obs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_new</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">n_new</span><span class="p">,</span> <span class="n">avg_new</span><span class="p">,</span> <span class="n">cov_new</span></div>
 
+
+
+<span class="k">class</span> <span class="nc">RunningCovariance</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A running (weighted) covariance accumulator over a joint feature vector, kept in uncentered-moment form.</span>
+
+<span class="sd">    Unlike covariance()&#39;s Welford-style running mode, this stores the raw (weighted) zeroth, first, and second</span>
+<span class="sd">    moments of the observed data, which are purely additive *and* subtractive across chunks. This makes three</span>
+<span class="sd">    operations exact and cheap, none of which the Welford form supports: peeking at &quot;current state plus a candidate</span>
+<span class="sd">    chunk&quot; without committing it (update() with commit left to the caller, or peek()), committing a chosen chunk,</span>
+<span class="sd">    and later *removing* a previously added chunk (update() with sign=-1). It also supports per-sample weights.</span>
+<span class="sd">    These are exactly the access patterns needed to fit one CCA per candidate class off a shared history, to commit</span>
+<span class="sd">    only the winner, and to relabel (remove-then-re-add) a past trial, as in unsupervised adaptive rCCA.</span>
+
+<span class="sd">    The covariance is centered (the running mean is subtracted) only when read out via covariance, so no mean needs</span>
+<span class="sd">    to be tracked incrementally with a correction term. Moments are accumulated in float64 for numerical precision;</span>
+<span class="sd">    this is safe for (near) zero-mean inputs such as band-pass filtered EEG, where the uncentered second moment and</span>
+<span class="sd">    the outer product of the mean are of a similar, moderate magnitude (little catastrophic cancellation).</span>
+
+<span class="sd">    Note, the overall normalization of the covariance (dividing by the total weight) is irrelevant when the result</span>
+<span class="sd">    is used for CCA: the whitening Cxx^(-1/2) Cxy Cyy^(-1/2) is invariant to a common positive scale on all three</span>
+<span class="sd">    blocks, so the learned filters are identical regardless of the (weighted) sample count.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_features: int (default: None)</span>
+<span class="sd">        The number of features of the joint feature vector. If None, it is inferred from the first update().</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_: float</span>
+<span class="sd">        The total weight (i.e., the (weighted) number of samples) accumulated so far.</span>
+<span class="sd">    sum_: NDArray</span>
+<span class="sd">        The (weighted) sum of the data of shape (n_features,).</span>
+<span class="sd">    moment_: NDArray</span>
+<span class="sd">        The (weighted) sum of the outer products of the data of shape (n_features, n_features).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_features</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_features</span> <span class="o">=</span> <span class="n">n_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">n_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_features</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sign</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RunningCovariance&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add (sign=1) or remove (sign=-1) a chunk of samples to/from the accumulated moments, in place.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: NDArray</span>
+<span class="sd">            Data matrix of shape (n_samples, n_features).</span>
+<span class="sd">        weights: float | NDArray (default: None)</span>
+<span class="sd">            Per-sample weights of shape (n_samples,), or a single scalar weight applied to all samples. If None, all</span>
+<span class="sd">            samples get unit weight.</span>
+<span class="sd">        sign: int (default: 1)</span>
+<span class="sd">            Use 1 to add the chunk to the accumulator, or -1 to remove a previously added chunk.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self: RunningCovariance</span>
+<span class="sd">            Returns the instance itself.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_features</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_obs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sum_obs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">moment_obs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">weights</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">weights</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="n">weighted</span> <span class="o">=</span> <span class="n">data</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="n">n_obs</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">sum_obs</span> <span class="o">=</span> <span class="n">weighted</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">moment_obs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">weighted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">n_obs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">sum_obs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">moment_obs</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RunningCovariance&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a copy of the accumulator with a chunk added, without mutating this instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: NDArray</span>
+<span class="sd">            Data matrix of shape (n_samples, n_features).</span>
+<span class="sd">        weights: float | NDArray (default: None)</span>
+<span class="sd">            Per-sample weights, see update().</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        combined: RunningCovariance</span>
+<span class="sd">            A new accumulator equal to this one plus the given chunk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RunningCovariance&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a deep copy of the accumulator.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        other: RunningCovariance</span>
+<span class="sd">            A new accumulator with the same accumulated moments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">RunningCovariance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features</span><span class="p">)</span>
+        <span class="n">other</span><span class="o">.</span><span class="n">n_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span>
+        <span class="n">other</span><span class="o">.</span><span class="n">sum_</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">other</span><span class="o">.</span><span class="n">moment_</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">other</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The (weighted) mean of the accumulated data of shape (n_features,).&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Cannot compute a mean from an empty accumulator.&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The (weighted, centered) covariance of the accumulated data of shape (n_features, n_features).&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Cannot compute a covariance from an empty accumulator.&quot;</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="decoding_matrix">
@@ -652,7 +792,7 @@
         <span class="n">labels</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;posdiff&quot;</span><span class="p">,</span> <span class="s2">&quot;negdiff&quot;</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown event: </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown event: </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">. Options are </span><span class="si">{</span><span class="n">EVENTS</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
     <span class="c1"># Add onset response as separate event</span>
     <span class="k">if</span> <span class="n">onset_event</span><span class="p">:</span>
@@ -761,7 +901,7 @@
             <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">cheby1</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">rp</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown ftype:&quot;</span><span class="p">,</span> <span class="n">ftype</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown ftype: </span><span class="si">{</span><span class="n">ftype</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
         <span class="c1"># Filter the data</span>
         <span class="n">Xf</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">i_band</span><span class="p">]</span> <span class="o">=</span> <span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>

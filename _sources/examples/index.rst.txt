@@ -118,6 +118,23 @@ These examples demonstrate how to use PyntBCI.
     </div>
 
 
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive        learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026. .. [2] Thielen, J., &amp; Tangermann, M. (2025, October). Exploring new territory II: Calibration-free decoding for ERP BCI.        In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE. .. [3] Thielen, J., Sosulski, J., &amp; Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP        BCI. 9th Graz Brain-Computer Interface Conference 2024. .. [4] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_example_7_unsupervised_rcca_thumb.png
+    :alt:
+
+  :doc:`/examples/example_7_unsupervised_rcca`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Unsupervised rCCA</div>
+    </div>
+
+
 .. thumbnail-parent-div-close
 
 .. raw:: html
@@ -134,6 +151,7 @@ These examples demonstrate how to use PyntBCI.
    /examples/example_4_bitwise_decoding
    /examples/example_5_stimulus_optimization
    /examples/example_6_moabb
+   /examples/example_7_unsupervised_rcca
 
 
 .. only:: html
