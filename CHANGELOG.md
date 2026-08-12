@@ -3,6 +3,13 @@
 ## Version 1.9.1
 
 ### Added
+- Added an `update` parameter (default: True) to `predict`/`decision_function`/`partial_fit_predict` of
+  `UnsupervisedRCCA` in `classifiers`. With `update=False` a trial is decoded against the current online model but
+  no state is committed (the running covariance, pseudo-labels, confidences, and history are left untouched), i.e. a
+  pure, repeatable, side-effect-free query. This makes dynamic stopping usable with `UnsupervisedRCCA`: a
+  stopping loop can probe growing segments of the same trial many times (`update=False`) without each probe folding
+  the (partial, repeated) trial into the model, and then commit the decided trial exactly once (`update=True`).
+  Defaults preserve the existing streaming behavior
 - Added `UnsupervisedRCCA` to `classifiers`: a calibration-free (unsupervised) adaptive rCCA for c-VEP decoding.
   Each trial is decoded by fitting a separate rCCA per candidate stimulus (as a hypothesis) and selecting the one
   whose model best fits the trial (instantaneous mode). Three cumulative extensions, selected with the `cumulative`,

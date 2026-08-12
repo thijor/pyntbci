@@ -1056,6 +1056,31 @@ class TestUnsupervisedRCCA(unittest.TestCase):
         )
         self.assertGreaterEqual(np.mean(clf.predict(self.X) == self.y), 0.9)
 
+    def test_update_false_is_a_read_only_probe(self):
+        # A dynamic-stopping loop probes growing segments of a trial repeatedly; update=False must leave the online
+        # model untouched (so those probes do not pollute it) while still returning the decode.
+        clf = self._make(cumulative=True)
+        clf.predict(self.X[:5])  # seed the online model with a few trials
+        n_committed = len(clf.labels_)
+        cov_before = clf.cov_.covariance.copy()
+
+        cy = self.V.shape[1]
+        for n in (cy // 2, cy, 2 * cy):
+            clf.predict(self.X[[5], :, :n], update=False)
+        self.assertEqual(len(clf.labels_), n_committed)  # nothing committed
+        self.assertTrue(np.allclose(clf.cov_.covariance, cov_before))  # model unchanged
+
+        # repeatable and side-effect free
+        a = clf.decision_function(self.X[[5]], update=False)
+        b = clf.decision_function(self.X[[5]], update=False)
+        self.assertTrue(np.array_equal(a, b))
+        self.assertTrue(np.allclose(clf.cov_.covariance, cov_before))
+
+        # committing once (update=True) advances the model by exactly one trial
+        clf.partial_fit_predict(self.X[5])
+        self.assertEqual(len(clf.labels_), n_committed + 1)
+        self.assertFalse(np.allclose(clf.cov_.covariance, cov_before))
+
 
 if __name__ == "__main__":
     unittest.main()

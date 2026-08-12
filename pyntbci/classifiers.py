@@ -1817,13 +1817,21 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
                 self.cov_.update(np.concatenate((Xt, M[new].T), axis=1), weights=weight, sign=1)
                 self.labels_[k] = new
 
-    def partial_fit_predict(self, X: NDArray) -> tuple[int, float, NDArray]:
-        """Decode a single trial online, updating the model (if cumulative) with its pseudo-label.
+    def partial_fit_predict(self, X: NDArray, update: bool = True) -> tuple[int, float, NDArray]:
+        """Decode a single trial online, optionally committing it to the model with its pseudo-label.
 
         Parameters
         ----------
         X: NDArray
             The EEG data of a single trial of shape (n_channels, n_samples) or (1, n_channels, n_samples).
+        update: bool (default: True)
+            Whether to commit this trial to the online model (updating the running covariance and the
+            pseudo-label/confidence/history state) after decoding it. If False, the trial is decoded against the
+            current model but no state is changed, i.e. a pure, side-effect-free query that can be repeated any
+            number of times on the same or a growing trial (as a dynamic-stopping loop does, decoding growing
+            segments of a trial until it decides to stop) without polluting the model; commit the decided trial once
+            afterwards with a single update=True call. Only meaningful for cumulative variants (with cumulative=False
+            there is no cross-trial state to update).
 
         Returns
         -------
@@ -1855,16 +1863,17 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
                 confidence = self._margin(rho)
 
         label = int(np.argmax(rho))
-        self.w_, self.r_ = w_all[label], r_all[label]
-        self.labels_.append(label)
-        self.confidences_.append(confidence)
 
-        if self.cumulative:
-            weight = confidence if self.confidence else 1.0
-            self.cov_.update(np.concatenate((Xd.T, M[label].T), axis=1), weights=weight)
-            if self.posthoc:
-                self.X_hist_.append(Xd)
-                self._relabel(M)
+        if update:  # commit this trial to the online model (else this is a read-only query, leaving state untouched)
+            self.w_, self.r_ = w_all[label], r_all[label]
+            self.labels_.append(label)
+            self.confidences_.append(confidence)
+            if self.cumulative:
+                weight = confidence if self.confidence else 1.0
+                self.cov_.update(np.concatenate((Xd.T, M[label].T), axis=1), weights=weight)
+                if self.posthoc:
+                    self.X_hist_.append(Xd)
+                    self._relabel(M)
 
         return label, confidence, rho
 
@@ -1886,9 +1895,10 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         self._setup()
         return self
 
-    def _run(self, X: NDArray, reset: bool) -> tuple[NDArray, NDArray]:
+    def _run(self, X: NDArray, reset: bool, update: bool) -> tuple[NDArray, NDArray]:
         """Stream all trials in order, returning predictions and scores. Continues the current online session
-        (accumulating onto whatever has already been decoded), or starts a fresh one if reset=True."""
+        (accumulating onto whatever has already been decoded), or starts a fresh one if reset=True. If update=False,
+        the trials are only decoded (no state is changed), see partial_fit_predict."""
         if reset:
             self._setup()
         else:
@@ -1896,10 +1906,10 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         yh = np.zeros(X.shape[0], dtype="int64")
         scores = np.zeros((X.shape[0], self.classes_.size))
         for j in range(X.shape[0]):
-            yh[j], _, scores[j, :] = self.partial_fit_predict(X[j])
+            yh[j], _, scores[j, :] = self.partial_fit_predict(X[j], update=update)
         return yh, scores
 
-    def predict(self, X: NDArray, reset: bool = False) -> NDArray:
+    def predict(self, X: NDArray, reset: bool = False, update: bool = True) -> NDArray:
         """Decode a sequence of trials online, in the given (chronological) order.
 
         Each trial is decoded with the model learned from all trials decoded so far, and then folds into that model
@@ -1916,15 +1926,20 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         reset: bool (default: False)
             Whether to discard the current online session and start fresh before decoding X. Use reset=True (or a
             fresh instance, or fit()) for a self-contained replay; leave False to continue an ongoing session.
+        update: bool (default: True)
+            Whether to commit the decoded trials to the online model. Use update=False for a pure, side-effect-free
+            decode (nothing is committed), e.g. to repeatedly probe growing segments of a trial in a dynamic-stopping
+            loop without polluting the model, then commit the decided trial once with update=True. See
+            partial_fit_predict.
 
         Returns
         -------
         y: NDArray
             The predicted labels of shape (n_trials,).
         """
-        return self._run(X, reset)[0]
+        return self._run(X, reset, update)[0]
 
-    def decision_function(self, X: NDArray, reset: bool = False) -> NDArray:
+    def decision_function(self, X: NDArray, reset: bool = False, update: bool = True) -> NDArray:
         """Decode a sequence of trials online and return the per-trial per-class correlation scores.
 
         Stateful and online, see predict() (of which this is the score-returning counterpart).
@@ -1935,10 +1950,13 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
             The EEG data of shape (n_trials, n_channels, n_samples), in chronological order.
         reset: bool (default: False)
             Whether to discard the current online session and start fresh before decoding X, see predict().
+        update: bool (default: True)
+            Whether to commit the decoded trials to the online model, see predict(). Use update=False for a pure,
+            side-effect-free scoring (e.g. probing growing segments of a trial in a dynamic-stopping loop).
 
         Returns
         -------
         scores: NDArray
             The per-trial per-class correlation scores of shape (n_trials, n_classes).
         """
-        return self._run(X, reset)[1]
+        return self._run(X, reset, update)[1]
