@@ -571,6 +571,39 @@ class TestRCCA(unittest.TestCase):
                 stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, response_prior=bad
             ).fit(X, y)
 
+    def test_rcca_smoothness_smooths_response_and_keeps_accuracy(self):
+        base = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH)
+        base.fit(X, y)
+        L = pyntbci.utilities.smoothness_matrix(base._response_feature_lengths())
+
+        def roughness(r):
+            return (r[:, 0] @ L @ r[:, 0]) / (r[:, 0] @ r[:, 0])
+
+        prev = roughness(base.r_)
+        for sm in [1.0, 10.0, 100.0]:  # increasing smoothness must monotonically reduce the response's roughness
+            clf = pyntbci.classifiers.rCCA(
+                stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, smoothness_m=sm
+            )
+            clf.fit(X, y)
+            rough = roughness(clf.r_)
+            self.assertLess(rough, prev)
+            self.assertGreaterEqual(np.mean(clf.predict(X) == y), ACCURACY_THRESHOLD)
+            prev = rough
+
+    def test_rcca_smoothness_composes_with_response_prior(self):
+        prior = self._flash_vep_prior(int(ENCODING_LENGTH * FS))
+        clf = pyntbci.classifiers.rCCA(
+            stimulus=V,
+            fs=FS,
+            event="id",
+            encoding_length=ENCODING_LENGTH,
+            gamma_m=0.01,
+            response_prior=prior,
+            smoothness_m=5.0,
+        )
+        clf.fit(X, y)
+        self.assertGreaterEqual(np.mean(clf.predict(X) == y), ACCURACY_THRESHOLD)
+
     def test_rcca_running_matches_batch(self):
         # running=True, fed only new chunks each call, must produce the exact same cumulative scores as running=False
         # on the full prefix so far -- for every score_metric, and both with and without decoding_matrix enabled
@@ -1000,6 +1033,28 @@ class TestUnsupervisedRCCA(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             clf.predict(self.X)
+
+    def test_smoothness_runs_and_preserves_cumulative_accuracy(self):
+        acc_plain = np.mean(self._make(cumulative=True).predict(self.X) == self.y)
+        acc_smooth = np.mean(self._make(cumulative=True, smoothness_m=5.0).predict(self.X) == self.y)
+        self.assertGreaterEqual(acc_smooth, acc_plain - 0.1)  # smoothing should not meaningfully hurt
+
+    def test_smoothness_composes_with_response_prior(self):
+        # on shifted codes the response_prior anchors the phase; adding smoothness must still decode
+        enc = 0.3
+        prior = self._flash_vep_prior(int(enc * self.FS))
+        clf = pyntbci.classifiers.UnsupervisedRCCA(
+            stimulus=self.V,
+            fs=self.FS,
+            event="id",
+            onset_event=False,
+            encoding_length=enc,
+            gamma_m=0.01,
+            cumulative=False,
+            response_prior=prior,
+            smoothness_m=1.0,
+        )
+        self.assertGreaterEqual(np.mean(clf.predict(self.X) == self.y), 0.9)
 
 
 if __name__ == "__main__":

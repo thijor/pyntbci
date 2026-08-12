@@ -17,6 +17,7 @@ from pyntbci.utilities import (
     euclidean,
     event_matrix,
     inner,
+    smoothness_matrix,
 )
 
 
@@ -191,31 +192,45 @@ def _resolve_response_prior(response_prior: NDArray, n_features: int, n_events: 
     )
 
 
-def _apply_response_prior(
+def _apply_temporal_prior(
     prior: NDArray,
     gamma: float,
+    smoothness: float,
+    L: NDArray,
     w: NDArray,
     r: NDArray,
     Cxm: NDArray,
     Cmm: NDArray,
 ) -> tuple[NDArray, NDArray]:
-    """Regularize a temporal response toward a prior, component-wise, via a prior-mean ridge.
+    """Regularize a temporal response with a Gaussian prior (a prior mean and/or a smoothness prior), component-wise.
 
-    Given the spatial filter w (kept fixed), the temporal response is re-estimated as
-    r = (Cmm + lambda I)^-1 (Cmx w + lambda * prior), which monotonically interpolates from the unregularized data
-    response (lambda = 0) to the prior (lambda -> infinity). This anchors the response's absolute phase (breaking the
-    shift degeneracy of circularly-shifted codes, where an unconstrained response can slide to make any candidate
-    fit), while still letting the data shape it (so a slightly-wrong prior self-corrects). The (jointly sign-
-    ambiguous) filters w and r are first sign-flipped so the data response points the same way as the prior, else the
-    blend is destructive; the prior is scaled to the data response's magnitude so gamma is dimensionless. Shared by
-    rCCA and UnsupervisedRCCA in classifiers.
+    Given the spatial filter w (kept fixed), the temporal response is re-estimated as the ridge/generalized-Tikhonov
+    solution r = (Cmm + P)^-1 (Cmx w + lambda * mean), where the prior precision P = lambda I + kappa L combines two
+    optional priors, both scaled to the temporal covariance so their strengths are dimensionless:
+
+    - a prior *mean* (prior, e.g. an expected VEP shape): P gets lambda = gamma * trace(Cmm) / n_features on the
+      identity, and the right-hand side gets lambda * mean. This interpolates the response from the data-driven
+      estimate (lambda = 0) to the prior mean (lambda -> infinity). It anchors the response's absolute phase, which
+      is what makes circularly-shifted codes decodable (an unconstrained response can otherwise slide to make any
+      candidate fit); the (jointly sign-ambiguous) filters w and r are first sign-flipped to agree with the prior,
+      else the blend is destructive.
+    - a *smoothness* prior (L, the second-difference operator from smoothness_matrix): P gets kappa = smoothness *
+      trace(Cmm) / n_features on L, penalizing sum_t (r[t] - r[t-1])^2 so r is temporally smooth. This is a
+      zero-mean prior (it favors smoothness, not any particular shape), so it only enters the precision.
+
+    Either prior may be omitted (prior=None, or smoothness=None/L=None). Shared by rCCA and UnsupervisedRCCA.
 
     Parameters
     ----------
     prior: NDArray
-        The prior response of shape (n_features,), as resolved by _resolve_response_prior().
+        The prior mean response of shape (n_features,), as resolved by _resolve_response_prior(), or None.
     gamma: float
-        The strength of the regularization (0 ignores the prior; larger pulls harder toward it).
+        The strength of the prior-mean regularization (only used if prior is not None).
+    smoothness: float
+        The strength of the smoothness regularization (only used if not None).
+    L: NDArray
+        The smoothness penalty matrix of shape (n_features, n_features), see smoothness_matrix(). Only used if
+        smoothness is not None.
     w: NDArray
         The spatial filter of shape (n_channels, n_components).
     r: NDArray
@@ -232,15 +247,22 @@ def _apply_response_prior(
     r: NDArray
         The prior-regularized temporal response of shape (n_features, n_components).
     """
-    lam = gamma * np.trace(Cmm) / Cmm.shape[0]
-    A = Cmm + lam * np.eye(Cmm.shape[0])
+    A = Cmm.astype("float64", copy=True)
+    lam = 0.0
+    if prior is not None:  # prior-mean ridge: identity precision scaled by the mean feature variance
+        lam = gamma * np.trace(Cmm) / Cmm.shape[0]
+        A += lam * np.eye(Cmm.shape[0])
+    if smoothness is not None:  # smoothness precision scaled so its total (trace) matches smoothness * trace(Cmm)
+        A += smoothness * np.trace(Cmm) / np.trace(L) * L
     w_new = np.array(w, dtype="float64")
     r_new = np.zeros_like(r, dtype="float64")
     for c in range(r.shape[1]):
-        if r[:, c] @ prior < 0:  # align the joint sign ambiguity so the data response agrees with the prior
+        if prior is not None and r[:, c] @ prior < 0:  # align the joint sign ambiguity to agree with the prior mean
             w_new[:, c] = -w[:, c]
-        target = prior / np.linalg.norm(prior) * np.linalg.norm(r[:, c])
-        r_new[:, c] = np.linalg.solve(A, Cxm.T @ w_new[:, c] + lam * target)
+        rhs = Cxm.T @ w_new[:, c]
+        if prior is not None:
+            rhs = rhs + lam * (prior / np.linalg.norm(prior) * np.linalg.norm(r[:, c]))
+        r_new[:, c] = np.linalg.solve(A, rhs)
     return w_new, r_new
 
 
@@ -923,6 +945,13 @@ class rCCA(ClassifierMixin, BaseEstimator):
         The strength of the soft regularization toward response_prior, from 0 (ignore the prior, purely data-driven)
         upwards (larger pulls the response more strongly toward the prior; in the limit the response equals the
         prior). Only used if response_prior is not None.
+    smoothness_m: float (default: None)
+        The strength of a temporal-smoothness prior on the response r_: after the CCA, the temporal filter is
+        re-estimated with a second-difference penalty (see smoothness_matrix in utilities) that penalizes the squared
+        differences between adjacent response samples, favoring a smooth response (as commonly used when estimating
+        temporal response functions). Applied per event (smoothness is not enforced across event boundaries). Ranges
+        from 0 (no smoothing) upwards; the strength is scaled by the response covariance so it is dimensionless,
+        comparable to gamma_m. If None (default), no smoothness prior is used. Composes with response_prior.
     cca_: list[TransformerMixin]
         The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise
         len(cca_)=n_classes.
@@ -996,6 +1025,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
         running: bool = False,
         response_prior: NDArray = None,
         response_prior_gamma: float = 1.0,
+        smoothness_m: float = None,
     ) -> None:
         self.stimulus = stimulus
         self.fs = fs
@@ -1019,6 +1049,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self.running = running
         self.response_prior = response_prior
         self.response_prior_gamma = response_prior_gamma
+        self.smoothness_m = smoothness_m
 
     def _resolve_decoding_length_stride(self) -> tuple[float, float]:
         """Resolve decoding_length and decoding_stride, defaulting to 1/fs (i.e., no phase-shifting) if None.
@@ -1225,6 +1256,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self.set_encoding_matrix()
         n_classes = self.Ms_.shape[0]
         prior = _resolve_response_prior(self.response_prior, self.Ms_.shape[1], len(self.events_))
+        L = smoothness_matrix(self._response_feature_lengths()) if self.smoothness_m is not None else None
 
         # Set decoding matrix
         decoding_length, decoding_stride = self._resolve_decoding_length_stride()
@@ -1261,8 +1293,8 @@ class rCCA(ClassifierMixin, BaseEstimator):
                     )
                 )
                 self.cca_[i_class].fit(X[y == i_class, :, :], M[y[y == i_class], :, :])
-                if prior is not None:
-                    self._apply_response_prior_to_cca(self.cca_[i_class], prior)
+                if prior is not None or L is not None:
+                    self._apply_temporal_prior_to_cca(self.cca_[i_class], prior, L)
                 self.w_[:, :, i_class] = self.cca_[i_class].w_x_
                 self.r_[:, :, i_class] = self.cca_[i_class].w_y_
         else:
@@ -1286,8 +1318,8 @@ class rCCA(ClassifierMixin, BaseEstimator):
                     )
                 ]
             self.cca_[0].fit(X, M[y, :, :])
-            if prior is not None:
-                self._apply_response_prior_to_cca(self.cca_[0], prior)
+            if prior is not None or L is not None:
+                self._apply_temporal_prior_to_cca(self.cca_[0], prior, L)
             self.w_ = self.cca_[0].w_x_
             self.r_ = self.cca_[0].w_y_
 
@@ -1295,12 +1327,38 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self.set_templates()
         return self
 
-    def _apply_response_prior_to_cca(self, cca: TransformerMixin, prior: NDArray) -> None:
-        """Overwrite a fitted CCA's spatial and temporal filters with the prior-regularized temporal response (a
-        prior-mean ridge, see _apply_response_prior), so the templates built from them are anchored to the prior."""
+    def _response_feature_lengths(self) -> NDArray:
+        """The number of temporal features (response samples) per event, i.e. the sizes of the per-event blocks of
+        the temporal filter r_ (see encoding_length), as used to build the smoothness matrix."""
+        n_events = len(self.events_)
+        if self.encoding_length is None:
+            length = np.ones(n_events, dtype=int)
+        else:
+            length = np.atleast_1d((np.asarray(self.encoding_length, dtype=float) * self.fs)).astype(int)
+            if length.size == 1:
+                length = np.repeat(length, n_events)
+        if self.encoding_stride is None:
+            stride = np.ones(n_events, dtype=int)
+        else:
+            stride = np.atleast_1d((np.asarray(self.encoding_stride, dtype=float) * self.fs)).astype(int)
+            if stride.size == 1:
+                stride = np.repeat(stride, n_events)
+        return length // stride
+
+    def _apply_temporal_prior_to_cca(self, cca: TransformerMixin, prior: NDArray, L: NDArray) -> None:
+        """Overwrite a fitted CCA's spatial and temporal filters with the temporally regularized response (a
+        prior-mean and/or smoothness ridge, see _apply_temporal_prior), so the templates built from them inherit the
+        prior."""
         n_channels = cca.w_x_.shape[0]
-        cca.w_x_, cca.w_y_ = _apply_response_prior(
-            prior, self.response_prior_gamma, cca.w_x_, cca.w_y_, cca.cov_xy_[:n_channels, n_channels:], cca.cov_y_
+        cca.w_x_, cca.w_y_ = _apply_temporal_prior(
+            prior,
+            self.response_prior_gamma,
+            self.smoothness_m,
+            L,
+            cca.w_x_,
+            cca.w_y_,
+            cca.cov_xy_[:n_channels, n_channels:],
+            cca.cov_y_,
         )
 
     def predict(
@@ -1524,6 +1582,12 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         The strength of the soft regularization toward response_prior, ranging from 0 (ignore the prior, purely
         data-driven) upwards (larger pulls the response more strongly toward the prior; in the limit the response
         equals the prior). Only used if response_prior is not None.
+    smoothness_m: float (default: None)
+        The strength of a temporal-smoothness prior on the response, penalizing the squared differences between
+        adjacent response samples (see smoothness_matrix in utilities and rCCA's smoothness_m), so the response is
+        smooth. Unlike response_prior it makes no assumption about the response shape, so it does not by itself
+        resolve circularly-shifted codes; it composes with response_prior (which anchors the phase) and reduces
+        overfitting. Ranges from 0 (no smoothing) upwards. If None (default), no smoothness prior is used.
 
     Attributes
     ----------
@@ -1581,6 +1645,7 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         posthoc: bool = False,
         response_prior: NDArray = None,
         response_prior_gamma: float = 1.0,
+        smoothness_m: float = None,
     ) -> None:
         self.stimulus = stimulus
         self.fs = fs
@@ -1602,6 +1667,7 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         self.posthoc = posthoc
         self.response_prior = response_prior
         self.response_prior_gamma = response_prior_gamma
+        self.smoothness_m = smoothness_m
 
     def _setup(self) -> None:
         """Build the internal rCCA (for the structure matrices) and reset the running state."""
@@ -1628,6 +1694,7 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         self._response_prior_ = _resolve_response_prior(
             self.response_prior, self._rcca.Ms_.shape[1], len(self._rcca.events_)
         )
+        self._L_ = smoothness_matrix(self._rcca._response_feature_lengths()) if self.smoothness_m is not None else None
         self.cov_ = RunningCovariance()
         self.labels_ = []
         self.confidences_ = []
@@ -1719,9 +1786,16 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
                 self.alpha_x,
                 self.alpha_m,
             )
-            if self._response_prior_ is not None:  # anchor the response phase toward the expected VEP shape
-                w_all[i], r_all[i] = _apply_response_prior(
-                    self._response_prior_, self.response_prior_gamma, w_all[i], r_all[i], Cxm, Cmm
+            if self._response_prior_ is not None or self._L_ is not None:  # anchor the phase and/or smooth the response
+                w_all[i], r_all[i] = _apply_temporal_prior(
+                    self._response_prior_,
+                    self.response_prior_gamma,
+                    self.smoothness_m,
+                    self._L_,
+                    w_all[i],
+                    r_all[i],
+                    Cxm,
+                    Cmm,
                 )
             rho[i] = self._score(w_all[i], r_all[i], Xd, M[i])
         return rho, w_all, r_all

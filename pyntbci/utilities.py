@@ -881,6 +881,47 @@ def find_worst_neighbour(score: NDArray, neighbours: NDArray, layout: NDArray) -
     return idx, val
 
 
+def smoothness_matrix(lengths: Union[int, list[int], tuple[int, ...], NDArray]) -> NDArray:
+    """Make a temporal-smoothness (second-difference / discrete Laplacian) penalty matrix.
+
+    The returned matrix L implements a smoothness prior on a temporal filter r via the quadratic penalty r.T @ L @ r,
+    which equals the sum of squared differences between adjacent samples (sum_t (r[t] - r[t-1])^2). Minimizing it
+    favors a smooth r. Each block along the diagonal is the second-difference operator with free (Neumann)
+    boundaries: a tridiagonal matrix with diagonal [1, 2, 2, ..., 2, 1] and -1 on the first off-diagonals. When
+    multiple lengths are given, L is block-diagonal with one such block per length, so smoothness is enforced within
+    each block but not across block boundaries (e.g. per event of a reconvolution response, so that the tail of one
+    event's response and the start of the next are not tied together). L is symmetric positive semi-definite (its
+    null space is the per-block constant vectors, i.e. a constant offset is not penalized).
+
+    Parameters
+    ----------
+    lengths: int | list[int] | tuple[int, ...] | NDArray
+        The length of each block, i.e. the number of samples of each event's temporal response. A single int is a
+        single block.
+
+    Returns
+    -------
+    L: NDArray
+        The smoothness penalty matrix of shape (sum(lengths), sum(lengths)).
+    """
+    lengths = np.atleast_1d(lengths).astype(int)
+    n = int(lengths.sum())
+    L = np.zeros((n, n))
+    offset = 0
+    for m in lengths:
+        m = int(m)
+        if m >= 2:
+            idx = offset + np.arange(m)
+            diagonal = np.full(m, 2.0)
+            diagonal[0] = 1.0
+            diagonal[-1] = 1.0
+            L[idx, idx] = diagonal
+            L[idx[:-1], idx[1:]] = -1.0
+            L[idx[1:], idx[:-1]] = -1.0
+        offset += m
+    return L
+
+
 def pinv(A: NDArray, alpha: float = None) -> NDArray:
     """Compute the (Moore-Penrose) pseudo-inverse of a matrix.
 

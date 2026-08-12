@@ -35,6 +35,15 @@
   noisy data); it does not change the public API when left at the default `None`. The prior is given either as one
   response applied to all events or as the full concatenation of the per-event responses, matching the layout of
   `encoding_length`, and the underlying prior-mean ridge is shared between the two classifiers
+- Added a `smoothness_m` temporal-smoothness prior to `rCCA` and `UnsupervisedRCCA` in `classifiers`, and a
+  supporting `smoothness_matrix` to `utilities`. After the CCA, the temporal response is re-estimated with a
+  second-difference (discrete-Laplacian) Tikhonov penalty that penalizes the squared differences between adjacent
+  response samples, favoring a smooth response (as commonly done when estimating temporal response functions, e.g.
+  in the mTRF framework). It is applied per event (smoothness is not enforced across event boundaries) and scaled by
+  the response covariance so the strength is dimensionless (`smoothness_m` around 1–100 spans mild to strong
+  smoothing). It composes with `response_prior` — the two are a single Gaussian prior on the response, `response_prior`
+  supplying the mean and `smoothness_m` the (Laplacian) precision — and both are implemented by one shared
+  prior-mean/smoothness ridge. Defaults to `None` (no change to existing behavior)
 
 ### Changed 
 - Meta-estimators now clone their wrapped estimator/gate into a fitted attribute instead of fitting the passed-in

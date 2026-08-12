@@ -556,6 +556,31 @@ class TestPinv(unittest.TestCase):
             pyntbci.utilities.pinv(A_inf)
 
 
+class TestSmoothnessMatrix(unittest.TestCase):
+    def test_penalty_equals_sum_of_squared_differences(self):
+        L = pyntbci.utilities.smoothness_matrix(5)
+        rng = np.random.default_rng(0)
+        r = rng.standard_normal(5)
+        self.assertAlmostEqual(r @ L @ r, np.sum(np.diff(r) ** 2))
+
+    def test_properties(self):
+        L = pyntbci.utilities.smoothness_matrix(6)
+        self.assertTrue(np.allclose(L, L.T))  # symmetric
+        self.assertGreaterEqual(np.linalg.eigvalsh(L).min(), -1e-10)  # positive semi-definite
+        self.assertTrue(np.allclose(L @ np.ones(6), 0))  # a constant offset is not penalized (null space)
+
+    def test_block_diagonal_per_length(self):
+        L = pyntbci.utilities.smoothness_matrix([3, 2])
+        self.assertEqual(L.shape, (5, 5))
+        self.assertTrue(np.allclose(L[:3, 3:], 0) and np.allclose(L[3:, :3], 0))  # no smoothing across blocks
+        # each block equals the single-block operator of that length
+        self.assertTrue(np.allclose(L[:3, :3], pyntbci.utilities.smoothness_matrix(3)))
+        self.assertTrue(np.allclose(L[3:, 3:], pyntbci.utilities.smoothness_matrix(2)))
+
+    def test_length_one_block_is_zero(self):
+        self.assertTrue(np.allclose(pyntbci.utilities.smoothness_matrix(1), 0))
+
+
 class TestTrialsToEpochs(unittest.TestCase):
     def test_trials_to_epochs_shape_and_values(self):
         n_trials, n_channels, n_samples = 3, 2, 20
