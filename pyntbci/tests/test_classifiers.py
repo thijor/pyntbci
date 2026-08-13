@@ -1081,6 +1081,33 @@ class TestUnsupervisedRCCA(unittest.TestCase):
         self.assertEqual(len(clf.labels_), n_committed + 1)
         self.assertFalse(np.allclose(clf.cov_.covariance, cov_before))
 
+    def test_fit_and_score_block_decomposition_matches_full_covariance(self):
+        # _fit_and_score assembles each hypothesis' covariance block-wise, sharing the EEG (X) side across all
+        # hypotheses instead of rebuilding the whole joint covariance per hypothesis. This must give the same result
+        # as the straightforward per-hypothesis "peek the whole covariance then solve" reference.
+        from pyntbci.transformers import _solve_cca
+        from pyntbci.utilities import RunningCovariance
+
+        clf = self._make(cumulative=True)
+        clf.fit()
+        clf.predict(self.X[:5])  # populate a shared history
+        Xd = clf._decode(self.X[5])
+        M = clf._structure_matrix(Xd.shape[1])
+        n_channels = Xd.shape[0]
+        Xt = Xd.T
+
+        for base, weight in [(RunningCovariance(), None), (RunningCovariance(), 0.6), (clf.cov_, 1.0), (clf.cov_, 0.5)]:
+            rho_fast = clf._fit_and_score(base, Xd, M, weight)[0]
+            rho_ref = np.zeros(self.n_classes)
+            for i in range(self.n_classes):
+                cov = base.peek(np.concatenate((Xt, M[i].T), axis=1), weights=weight).covariance
+                w, r, _ = _solve_cca(
+                    cov[:n_channels, :n_channels], cov[:n_channels, n_channels:], cov[n_channels:, n_channels:], 1
+                )
+                rho_ref[i] = clf._score(w, r, Xd, M[i])
+            self.assertTrue(np.allclose(rho_fast, rho_ref, atol=1e-6))
+            self.assertTrue(np.array_equal(np.argmax(rho_fast), np.argmax(rho_ref)))
+
 
 if __name__ == "__main__":
     unittest.main()

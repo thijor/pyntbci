@@ -53,6 +53,14 @@
   prior-mean/smoothness ridge. Defaults to `None` (no change to existing behavior)
 
 ### Changed 
+- Improved the per-trial efficiency of `UnsupervisedRCCA` in `classifiers`: since all candidate hypotheses of a
+  trial share the same EEG and differ only in the stimulus structure matrix, `_fit_and_score` now assembles each
+  hypothesis' covariance block-wise from a shared EEG (X) side (computed once) plus the per-hypothesis stimulus (M)
+  and cross blocks, rather than rebuilding the whole joint covariance per hypothesis; the EEG-side whitening is
+  likewise computed once and reused (`_solve_cca` in `transformers` was split into `_whiten` + `_cca_from_whitened`
+  to allow this). Results are unchanged (verified against the previous per-hypothesis computation); the speedup is
+  negligible for a plain channel-space fit but grows with the spatial dimension, e.g. ~1.7x with a
+  `decoding_length`-based spatio-spectral filter that expands the EEG side ~12x
 - Meta-estimators now clone their wrapped estimator/gate into a fitted attribute instead of fitting the passed-in
   hyperparameter in place, following the scikit-learn convention (`self.estimator_ = clone(self.estimator)`): all
   five classes in `stopping`, `DifferenceGate` in `gates` (`estimator_`), and `Ensemble` in `classifiers` (`gate_`,

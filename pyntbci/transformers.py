@@ -162,17 +162,68 @@ def _solve_cca(
     rho: NDArray
         The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).
     """
-    Cxx = _shrink(Cxx, gamma_x)
-    Cyy = _shrink(Cyy, gamma_y)
+    return _cca_from_whitened(
+        _whiten(Cxx, gamma_x, alpha_x, "X"), Cxy, _whiten(Cyy, gamma_y, alpha_y, "Y"), n_components
+    )
 
-    # Inverse square root
-    iCxx = _inv_sqrt(Cxx, name="X") if alpha_x is None else _sym_sqrt(pinv(Cxx, alpha_x), name="X")
-    iCyy = _inv_sqrt(Cyy, name="Y") if alpha_y is None else _sym_sqrt(pinv(Cyy, alpha_y), name="Y")
 
-    # SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that can be
+def _whiten(C: NDArray, gamma: Union[float, list, NDArray], alpha: float, name: str) -> NDArray:
+    """Whiten a covariance matrix: regularize it (shrink towards the identity by gamma, see _shrink), then take its
+    inverse square root (a plain inverse if alpha is None, else a variance-truncated pseudo-inverse, see pinv).
+
+    Parameters
+    ----------
+    C: NDArray
+        A covariance matrix of shape (n, n).
+    gamma: float | list[float] | NDArray
+        Shrinkage regularization, see _shrink().
+    alpha: float
+        Amount of variance to retain when inverting. If None, all variance (a plain inverse).
+    name: str
+        The name of the side ("X" or "Y") that C was derived from, used only to phrase the error message if C is
+        singular or too ill-conditioned.
+
+    Returns
+    -------
+    iC: NDArray
+        The inverse square root of the regularized C of shape (n, n).
+    """
+    C = _shrink(C, gamma)
+    return _inv_sqrt(C, name) if alpha is None else _sym_sqrt(pinv(C, alpha), name)
+
+
+def _cca_from_whitened(
+    iCxx: NDArray, Cxy: NDArray, iCyy: NDArray, n_components: int
+) -> tuple[NDArray, NDArray, NDArray]:
+    """Solve the CCA from the whitened auto-covariances and the (raw) cross-covariance: SVD of the whitened
+    cross-covariance, then map back to feature space. Split out from _solve_cca so the (relatively expensive)
+    whitening of one side can be computed once and reused across many solves that share it, e.g. the spatial (X)
+    whitening shared by all candidate hypotheses of unsupervised rCCA, whose EEG side is identical while only the
+    stimulus (Y) side varies.
+
+    Parameters
+    ----------
+    iCxx: NDArray
+        The whitening of the X auto-covariance of shape (n_features_x, n_features_x), see _whiten().
+    Cxy: NDArray
+        The (raw) cross-covariance of X and Y of shape (n_features_x, n_features_y).
+    iCyy: NDArray
+        The whitening of the Y auto-covariance of shape (n_features_y, n_features_y), see _whiten().
+    n_components: int
+        The number of CCA components to return.
+
+    Returns
+    -------
+    w_x: NDArray
+        The weight vector to project X of shape (n_features_x, n_components).
+    w_y: NDArray
+        The weight vector to project Y of shape (n_features_y, n_components).
+    rho: NDArray
+        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).
+    """
+    # full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that can be
     # nonzero, instead of the full square U and V of which only the first n_components are ever used.
     U, rho, V = svd(iCxx @ Cxy @ iCyy, full_matrices=False)
-
     return (iCxx @ U)[:, :n_components], (iCyy @ V.T)[:, :n_components], rho
 
 

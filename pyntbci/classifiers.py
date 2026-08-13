@@ -7,7 +7,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.utils.validation import check_is_fitted
 from sklearn.exceptions import NotFittedError
 
-from pyntbci.transformers import CCA, _solve_cca
+from pyntbci.transformers import CCA, _cca_from_whitened, _whiten
 from pyntbci.utilities import (
     RunningCovariance,
     correct_latency,
@@ -1523,7 +1523,8 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
     `fit()` (or pass `reset=True`) to start a fresh session, e.g. before an independent replay. The single-trial
     `partial_fit_predict()` is the same online step exposed directly. The structure-matrix machinery of `rCCA`
     (event and encoding matrices, latency correction, optional spatio-spectral decoding matrix) is reused, and the
-    core CCA is solved with the same `_solve_cca` as `CCA` in `transformers`. With short trials or a wide encoding
+    core CCA is solved with the same whitened-SVD as `CCA` in `transformers` (the EEG-side whitening is shared across
+    all candidate hypotheses of a trial, since only the stimulus side differs). With short trials or a wide encoding
     matrix, the per-hypothesis covariances can be ill-conditioned; set `gamma_x`/`gamma_m` (or `alpha_x`/`alpha_m`)
     to regularize, as for supervised `rCCA`.
 
@@ -1749,8 +1750,8 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         Parameters
         ----------
         base: RunningCovariance
-            The covariance of the history the candidates share (empty for instantaneous, the committed history for
-            cumulative). Not mutated; each candidate peeks at base plus its own (Xd, M[i]) contribution.
+            The (uncentered-moment) covariance of the history the candidates share (empty for instantaneous, the
+            committed history for cumulative). Not mutated.
         Xd: NDArray
             The (decoded) current trial of shape (n_channels, n_samples).
         M: NDArray
@@ -1767,25 +1768,49 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         r_all: NDArray
             The per-class temporal filters of shape (n_classes, n_features, n_components).
         """
+        # Every candidate hypothesis shares the same EEG (X); only the stimulus structure matrix (M) differs. The
+        # joint covariance of (history + this trial as class i) is therefore assembled block-wise from the shared
+        # X-side moments (computed once) and the per-hypothesis M-side and cross moments, rather than rebuilding the
+        # whole covariance per candidate. In particular the X auto-covariance Cxx, and hence its (relatively
+        # expensive) whitening iCxx, are computed once and reused across all candidates.
         n_channels, n_features = Xd.shape[0], M.shape[1]
-        Xt = Xd.T
+        Xt = Xd.T  # (n_samples, n_channels)
+        wXt = Xt if weight is None else weight * Xt
+        n_new = Xt.shape[0] if weight is None else weight * Xt.shape[0]
+        sum_x_new = wXt.sum(axis=0)
+        mom_xx_new = Xt.T @ wXt
+
+        # Split the (uncentered) history moments into X-, M-, and cross-blocks (all zero if the history is empty)
+        if base.n_ == 0:
+            base_n = 0.0
+            base_sum_x = np.zeros(n_channels)
+            base_sum_m = np.zeros(n_features)
+            base_mom_xx = np.zeros((n_channels, n_channels))
+            base_mom_xm = np.zeros((n_channels, n_features))
+            base_mom_mm = np.zeros((n_features, n_features))
+        else:
+            base_n = base.n_
+            base_sum_x, base_sum_m = base.sum_[:n_channels], base.sum_[n_channels:]
+            base_mom_xx = base.moment_[:n_channels, :n_channels]
+            base_mom_xm = base.moment_[:n_channels, n_channels:]
+            base_mom_mm = base.moment_[n_channels:, n_channels:]
+
+        n = base_n + n_new
+        mean_x = (base_sum_x + sum_x_new) / n
+        Cxx = (base_mom_xx + mom_xx_new) / n - np.outer(mean_x, mean_x)
+        iCxx = _whiten(Cxx, self.gamma_x, self.alpha_x, "X")  # the EEG side is identical across hypotheses
+
         rho = np.zeros(self.classes_.size)
         w_all = np.zeros((self.classes_.size, n_channels, self.n_components))
         r_all = np.zeros((self.classes_.size, n_features, self.n_components))
         for i in range(self.classes_.size):
-            cov = base.peek(np.concatenate((Xt, M[i].T), axis=1), weights=weight).covariance
-            Cxm = cov[:n_channels, n_channels:]
-            Cmm = cov[n_channels:, n_channels:]
-            w_all[i], r_all[i], _ = _solve_cca(
-                cov[:n_channels, :n_channels],
-                Cxm,
-                Cmm,
-                self.n_components,
-                self.gamma_x,
-                self.gamma_m,
-                self.alpha_x,
-                self.alpha_m,
-            )
+            Mt = M[i].T  # (n_samples, n_features)
+            wMt = Mt if weight is None else weight * Mt
+            mean_m = (base_sum_m + wMt.sum(axis=0)) / n
+            Cxm = (base_mom_xm + Xt.T @ wMt) / n - np.outer(mean_x, mean_m)
+            Cmm = (base_mom_mm + Mt.T @ wMt) / n - np.outer(mean_m, mean_m)
+            iCmm = _whiten(Cmm, self.gamma_m, self.alpha_m, "Y")
+            w_all[i], r_all[i], _ = _cca_from_whitened(iCxx, Cxm, iCmm, self.n_components)
             if self._response_prior_ is not None or self._L_ is not None:  # anchor the phase and/or smooth the response
                 w_all[i], r_all[i] = _apply_temporal_prior(
                     self._response_prior_,
