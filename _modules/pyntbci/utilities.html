@@ -1013,6 +1013,50 @@
 
 
 
+<div class="viewcode-block" id="smoothness_matrix">
+<a class="viewcode-back" href="../../generated/pyntbci.utilities.smoothness_matrix.html#pyntbci.utilities.smoothness_matrix">[docs]</a>
+<span class="k">def</span> <span class="nf">smoothness_matrix</span><span class="p">(</span><span class="n">lengths</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a temporal-smoothness (second-difference / discrete Laplacian) penalty matrix.</span>
+
+<span class="sd">    The returned matrix L implements a smoothness prior on a temporal filter r via the quadratic penalty r.T @ L @ r,</span>
+<span class="sd">    which equals the sum of squared differences between adjacent samples (sum_t (r[t] - r[t-1])^2). Minimizing it</span>
+<span class="sd">    favors a smooth r. Each block along the diagonal is the second-difference operator with free (Neumann)</span>
+<span class="sd">    boundaries: a tridiagonal matrix with diagonal [1, 2, 2, ..., 2, 1] and -1 on the first off-diagonals. When</span>
+<span class="sd">    multiple lengths are given, L is block-diagonal with one such block per length, so smoothness is enforced within</span>
+<span class="sd">    each block but not across block boundaries (e.g. per event of a reconvolution response, so that the tail of one</span>
+<span class="sd">    event&#39;s response and the start of the next are not tied together). L is symmetric positive semi-definite (its</span>
+<span class="sd">    null space is the per-block constant vectors, i.e. a constant offset is not penalized).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lengths: int | list[int] | tuple[int, ...] | NDArray</span>
+<span class="sd">        The length of each block, i.e. the number of samples of each event&#39;s temporal response. A single int is a</span>
+<span class="sd">        single block.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    L: NDArray</span>
+<span class="sd">        The smoothness penalty matrix of shape (sum(lengths), sum(lengths)).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lengths</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">lengths</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="n">diagonal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+            <span class="n">diagonal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">diagonal</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">L</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">diagonal</span>
+            <span class="n">L</span><span class="p">[</span><span class="n">idx</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+            <span class="n">L</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">idx</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">m</span>
+    <span class="k">return</span> <span class="n">L</span></div>
+
+
+
 <div class="viewcode-block" id="pinv">
 <a class="viewcode-back" href="../../generated/pyntbci.utilities.pinv.html#pyntbci.utilities.pinv">[docs]</a>
 <span class="k">def</span> <span class="nf">pinv</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>

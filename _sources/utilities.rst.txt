@@ -29,4 +29,5 @@ Utilities
     inner
     pinv
     itr
+    smoothness_matrix
     trials_to_epochs

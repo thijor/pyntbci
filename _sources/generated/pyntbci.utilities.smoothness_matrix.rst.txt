@@ -1,0 +1,12 @@
+﻿pyntbci.utilities.smoothness_matrix
+===================================
+
+.. currentmodule:: pyntbci.utilities
+
+.. autofunction:: smoothness_matrix
+
+.. include:: pyntbci.utilities.smoothness_matrix.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -94,7 +94,7 @@
 <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">check_is_fitted</span>
 <span class="kn">from</span> <span class="nn">sklearn.exceptions</span> <span class="kn">import</span> <span class="n">NotFittedError</span>
 
-<span class="kn">from</span> <span class="nn">pyntbci.transformers</span> <span class="kn">import</span> <span class="n">CCA</span><span class="p">,</span> <span class="n">_solve_cca</span>
+<span class="kn">from</span> <span class="nn">pyntbci.transformers</span> <span class="kn">import</span> <span class="n">CCA</span><span class="p">,</span> <span class="n">_cca_from_whitened</span><span class="p">,</span> <span class="n">_whiten</span>
 <span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">RunningCovariance</span><span class="p">,</span>
     <span class="n">correct_latency</span><span class="p">,</span>
@@ -104,6 +104,7 @@
     <span class="n">euclidean</span><span class="p">,</span>
     <span class="n">event_matrix</span><span class="p">,</span>
     <span class="n">inner</span><span class="p">,</span>
+    <span class="n">smoothness_matrix</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -278,31 +279,45 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_apply_response_prior</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_apply_temporal_prior</span><span class="p">(</span>
     <span class="n">prior</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">smoothness</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">L</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">w</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">r</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">Cxm</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">Cmm</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Regularize a temporal response toward a prior, component-wise, via a prior-mean ridge.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Regularize a temporal response with a Gaussian prior (a prior mean and/or a smoothness prior), component-wise.</span>
 
-<span class="sd">    Given the spatial filter w (kept fixed), the temporal response is re-estimated as</span>
-<span class="sd">    r = (Cmm + lambda I)^-1 (Cmx w + lambda * prior), which monotonically interpolates from the unregularized data</span>
-<span class="sd">    response (lambda = 0) to the prior (lambda -&gt; infinity). This anchors the response&#39;s absolute phase (breaking the</span>
-<span class="sd">    shift degeneracy of circularly-shifted codes, where an unconstrained response can slide to make any candidate</span>
-<span class="sd">    fit), while still letting the data shape it (so a slightly-wrong prior self-corrects). The (jointly sign-</span>
-<span class="sd">    ambiguous) filters w and r are first sign-flipped so the data response points the same way as the prior, else the</span>
-<span class="sd">    blend is destructive; the prior is scaled to the data response&#39;s magnitude so gamma is dimensionless. Shared by</span>
-<span class="sd">    rCCA and UnsupervisedRCCA in classifiers.</span>
+<span class="sd">    Given the spatial filter w (kept fixed), the temporal response is re-estimated as the ridge/generalized-Tikhonov</span>
+<span class="sd">    solution r = (Cmm + P)^-1 (Cmx w + lambda * mean), where the prior precision P = lambda I + kappa L combines two</span>
+<span class="sd">    optional priors, both scaled to the temporal covariance so their strengths are dimensionless:</span>
+
+<span class="sd">    - a prior *mean* (prior, e.g. an expected VEP shape): P gets lambda = gamma * trace(Cmm) / n_features on the</span>
+<span class="sd">      identity, and the right-hand side gets lambda * mean. This interpolates the response from the data-driven</span>
+<span class="sd">      estimate (lambda = 0) to the prior mean (lambda -&gt; infinity). It anchors the response&#39;s absolute phase, which</span>
+<span class="sd">      is what makes circularly-shifted codes decodable (an unconstrained response can otherwise slide to make any</span>
+<span class="sd">      candidate fit); the (jointly sign-ambiguous) filters w and r are first sign-flipped to agree with the prior,</span>
+<span class="sd">      else the blend is destructive.</span>
+<span class="sd">    - a *smoothness* prior (L, the second-difference operator from smoothness_matrix): P gets kappa = smoothness *</span>
+<span class="sd">      trace(Cmm) / n_features on L, penalizing sum_t (r[t] - r[t-1])^2 so r is temporally smooth. This is a</span>
+<span class="sd">      zero-mean prior (it favors smoothness, not any particular shape), so it only enters the precision.</span>
+
+<span class="sd">    Either prior may be omitted (prior=None, or smoothness=None/L=None). Shared by rCCA and UnsupervisedRCCA.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    prior: NDArray</span>
-<span class="sd">        The prior response of shape (n_features,), as resolved by _resolve_response_prior().</span>
+<span class="sd">        The prior mean response of shape (n_features,), as resolved by _resolve_response_prior(), or None.</span>
 <span class="sd">    gamma: float</span>
-<span class="sd">        The strength of the regularization (0 ignores the prior; larger pulls harder toward it).</span>
+<span class="sd">        The strength of the prior-mean regularization (only used if prior is not None).</span>
+<span class="sd">    smoothness: float</span>
+<span class="sd">        The strength of the smoothness regularization (only used if not None).</span>
+<span class="sd">    L: NDArray</span>
+<span class="sd">        The smoothness penalty matrix of shape (n_features, n_features), see smoothness_matrix(). Only used if</span>
+<span class="sd">        smoothness is not None.</span>
 <span class="sd">    w: NDArray</span>
 <span class="sd">        The spatial filter of shape (n_channels, n_components).</span>
 <span class="sd">    r: NDArray</span>
@@ -319,15 +334,22 @@
 <span class="sd">    r: NDArray</span>
 <span class="sd">        The prior-regularized temporal response of shape (n_features, n_components).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">lam</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cmm</span><span class="p">)</span> <span class="o">/</span> <span class="n">Cmm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">Cmm</span> <span class="o">+</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">Cmm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">Cmm</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">lam</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># prior-mean ridge: identity precision scaled by the mean feature variance</span>
+        <span class="n">lam</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cmm</span><span class="p">)</span> <span class="o">/</span> <span class="n">Cmm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">A</span> <span class="o">+=</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">Cmm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">smoothness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># smoothness precision scaled so its total (trace) matches smoothness * trace(Cmm)</span>
+        <span class="n">A</span> <span class="o">+=</span> <span class="n">smoothness</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Cmm</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">L</span><span class="p">)</span> <span class="o">*</span> <span class="n">L</span>
     <span class="n">w_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
     <span class="n">r_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">@</span> <span class="n">prior</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># align the joint sign ambiguity so the data response agrees with the prior</span>
+        <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">@</span> <span class="n">prior</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># align the joint sign ambiguity to agree with the prior mean</span>
             <span class="n">w_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">w</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">prior</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">prior</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r</span><span class="p">[:,</span> <span class="n">c</span><span class="p">])</span>
-        <span class="n">r_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Cxm</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">w_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">+</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">rhs</span> <span class="o">=</span> <span class="n">Cxm</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">w_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">rhs</span> <span class="o">+</span> <span class="n">lam</span> <span class="o">*</span> <span class="p">(</span><span class="n">prior</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">prior</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]))</span>
+        <span class="n">r_new</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">w_new</span><span class="p">,</span> <span class="n">r_new</span>
 
 
@@ -1039,6 +1061,13 @@
 <span class="sd">        The strength of the soft regularization toward response_prior, from 0 (ignore the prior, purely data-driven)</span>
 <span class="sd">        upwards (larger pulls the response more strongly toward the prior; in the limit the response equals the</span>
 <span class="sd">        prior). Only used if response_prior is not None.</span>
+<span class="sd">    smoothness_m: float (default: None)</span>
+<span class="sd">        The strength of a temporal-smoothness prior on the response r_: after the CCA, the temporal filter is</span>
+<span class="sd">        re-estimated with a second-difference penalty (see smoothness_matrix in utilities) that penalizes the squared</span>
+<span class="sd">        differences between adjacent response samples, favoring a smooth response (as commonly used when estimating</span>
+<span class="sd">        temporal response functions). Applied per event (smoothness is not enforced across event boundaries). Ranges</span>
+<span class="sd">        from 0 (no smoothing) upwards; the strength is scaled by the response covariance so it is dimensionless,</span>
+<span class="sd">        comparable to gamma_m. If None (default), no smoothness prior is used. Composes with response_prior.</span>
 <span class="sd">    cca_: list[TransformerMixin]</span>
 <span class="sd">        The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise</span>
 <span class="sd">        len(cca_)=n_classes.</span>
@@ -1112,6 +1141,7 @@
         <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">response_prior</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">response_prior_gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">smoothness_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
@@ -1135,6 +1165,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="n">running</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span> <span class="o">=</span> <span class="n">response_prior</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span> <span class="o">=</span> <span class="n">response_prior_gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_m</span> <span class="o">=</span> <span class="n">smoothness_m</span>
 
     <span class="k">def</span> <span class="nf">_resolve_decoding_length_stride</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve decoding_length and decoding_stride, defaulting to 1/fs (i.e., no phase-shifting) if None.</span>
@@ -1346,6 +1377,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding_matrix</span><span class="p">()</span>
         <span class="n">n_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">prior</span> <span class="o">=</span> <span class="n">_resolve_response_prior</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events_</span><span class="p">))</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">smoothness_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_response_feature_lengths</span><span class="p">())</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="c1"># Set decoding matrix</span>
         <span class="n">decoding_length</span><span class="p">,</span> <span class="n">decoding_stride</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_decoding_length_stride</span><span class="p">()</span>
@@ -1382,8 +1414,8 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">M</span><span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i_class</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:])</span>
-                <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_apply_response_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">],</span> <span class="n">prior</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">L</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_apply_temporal_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">],</span> <span class="n">prior</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">w_x_</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">r_</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i_class</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="n">i_class</span><span class="p">]</span><span class="o">.</span><span class="n">w_y_</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1407,8 +1439,8 @@
                     <span class="p">)</span>
                 <span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
-            <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_apply_response_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">prior</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">L</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_apply_temporal_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">prior</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">w_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">w_x_</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cca_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">w_y_</span>
 
@@ -1417,12 +1449,38 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_apply_response_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cca</span><span class="p">:</span> <span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">prior</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite a fitted CCA&#39;s spatial and temporal filters with the prior-regularized temporal response (a</span>
-<span class="sd">        prior-mean ridge, see _apply_response_prior), so the templates built from them are anchored to the prior.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_response_feature_lengths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The number of temporal features (response samples) per event, i.e. the sizes of the per-event blocks of</span>
+<span class="sd">        the temporal filter r_ (see encoding_length), as used to build the smoothness matrix.&quot;&quot;&quot;</span>
+        <span class="n">n_events</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">length</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">n_events</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_stride</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stride</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">n_events</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">length</span> <span class="o">//</span> <span class="n">stride</span>
+
+    <span class="k">def</span> <span class="nf">_apply_temporal_prior_to_cca</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cca</span><span class="p">:</span> <span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">prior</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite a fitted CCA&#39;s spatial and temporal filters with the temporally regularized response (a</span>
+<span class="sd">        prior-mean and/or smoothness ridge, see _apply_temporal_prior), so the templates built from them inherit the</span>
+<span class="sd">        prior.&quot;&quot;&quot;</span>
         <span class="n">n_channels</span> <span class="o">=</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_y_</span> <span class="o">=</span> <span class="n">_apply_response_prior</span><span class="p">(</span>
-            <span class="n">prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_y_</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">cov_xy_</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">:],</span> <span class="n">cca</span><span class="o">.</span><span class="n">cov_y_</span>
+        <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="p">,</span> <span class="n">cca</span><span class="o">.</span><span class="n">w_y_</span> <span class="o">=</span> <span class="n">_apply_temporal_prior</span><span class="p">(</span>
+            <span class="n">prior</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_m</span><span class="p">,</span>
+            <span class="n">L</span><span class="p">,</span>
+            <span class="n">cca</span><span class="o">.</span><span class="n">w_x_</span><span class="p">,</span>
+            <span class="n">cca</span><span class="o">.</span><span class="n">w_y_</span><span class="p">,</span>
+            <span class="n">cca</span><span class="o">.</span><span class="n">cov_xy_</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">:],</span>
+            <span class="n">cca</span><span class="o">.</span><span class="n">cov_y_</span><span class="p">,</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="rCCA.predict">
@@ -1608,7 +1666,8 @@
 <span class="sd">    `fit()` (or pass `reset=True`) to start a fresh session, e.g. before an independent replay. The single-trial</span>
 <span class="sd">    `partial_fit_predict()` is the same online step exposed directly. The structure-matrix machinery of `rCCA`</span>
 <span class="sd">    (event and encoding matrices, latency correction, optional spatio-spectral decoding matrix) is reused, and the</span>
-<span class="sd">    core CCA is solved with the same `_solve_cca` as `CCA` in `transformers`. With short trials or a wide encoding</span>
+<span class="sd">    core CCA is solved with the same whitened-SVD as `CCA` in `transformers` (the EEG-side whitening is shared across</span>
+<span class="sd">    all candidate hypotheses of a trial, since only the stimulus side differs). With short trials or a wide encoding</span>
 <span class="sd">    matrix, the per-hypothesis covariances can be ill-conditioned; set `gamma_x`/`gamma_m` (or `alpha_x`/`alpha_m`)</span>
 <span class="sd">    to regularize, as for supervised `rCCA`.</span>
 
@@ -1667,6 +1726,12 @@
 <span class="sd">        The strength of the soft regularization toward response_prior, ranging from 0 (ignore the prior, purely</span>
 <span class="sd">        data-driven) upwards (larger pulls the response more strongly toward the prior; in the limit the response</span>
 <span class="sd">        equals the prior). Only used if response_prior is not None.</span>
+<span class="sd">    smoothness_m: float (default: None)</span>
+<span class="sd">        The strength of a temporal-smoothness prior on the response, penalizing the squared differences between</span>
+<span class="sd">        adjacent response samples (see smoothness_matrix in utilities and rCCA&#39;s smoothness_m), so the response is</span>
+<span class="sd">        smooth. Unlike response_prior it makes no assumption about the response shape, so it does not by itself</span>
+<span class="sd">        resolve circularly-shifted codes; it composes with response_prior (which anchors the phase) and reduces</span>
+<span class="sd">        overfitting. Ranges from 0 (no smoothing) upwards. If None (default), no smoothness prior is used.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -1724,6 +1789,7 @@
         <span class="n">posthoc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">response_prior</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">response_prior_gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">smoothness_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stimulus</span> <span class="o">=</span> <span class="n">stimulus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
@@ -1745,6 +1811,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">posthoc</span> <span class="o">=</span> <span class="n">posthoc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span> <span class="o">=</span> <span class="n">response_prior</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span> <span class="o">=</span> <span class="n">response_prior_gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_m</span> <span class="o">=</span> <span class="n">smoothness_m</span>
 
     <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the internal rCCA (for the structure matrices) and reset the running state.&quot;&quot;&quot;</span>
@@ -1771,6 +1838,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span> <span class="o">=</span> <span class="n">_resolve_response_prior</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">response_prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">Ms_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">events_</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_L_</span> <span class="o">=</span> <span class="n">smoothness_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rcca</span><span class="o">.</span><span class="n">_response_feature_lengths</span><span class="p">())</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span> <span class="o">=</span> <span class="n">RunningCovariance</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">confidences_</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1825,8 +1893,8 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        base: RunningCovariance</span>
-<span class="sd">            The covariance of the history the candidates share (empty for instantaneous, the committed history for</span>
-<span class="sd">            cumulative). Not mutated; each candidate peeks at base plus its own (Xd, M[i]) contribution.</span>
+<span class="sd">            The (uncentered-moment) covariance of the history the candidates share (empty for instantaneous, the</span>
+<span class="sd">            committed history for cumulative). Not mutated.</span>
 <span class="sd">        Xd: NDArray</span>
 <span class="sd">            The (decoded) current trial of shape (n_channels, n_samples).</span>
 <span class="sd">        M: NDArray</span>
@@ -1843,28 +1911,59 @@
 <span class="sd">        r_all: NDArray</span>
 <span class="sd">            The per-class temporal filters of shape (n_classes, n_features, n_components).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Every candidate hypothesis shares the same EEG (X); only the stimulus structure matrix (M) differs. The</span>
+        <span class="c1"># joint covariance of (history + this trial as class i) is therefore assembled block-wise from the shared</span>
+        <span class="c1"># X-side moments (computed once) and the per-hypothesis M-side and cross moments, rather than rebuilding the</span>
+        <span class="c1"># whole covariance per candidate. In particular the X auto-covariance Cxx, and hence its (relatively</span>
+        <span class="c1"># expensive) whitening iCxx, are computed once and reused across all candidates.</span>
         <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">Xd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">Xt</span> <span class="o">=</span> <span class="n">Xd</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">Xt</span> <span class="o">=</span> <span class="n">Xd</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># (n_samples, n_channels)</span>
+        <span class="n">wXt</span> <span class="o">=</span> <span class="n">Xt</span> <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">Xt</span>
+        <span class="n">n_new</span> <span class="o">=</span> <span class="n">Xt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">Xt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">sum_x_new</span> <span class="o">=</span> <span class="n">wXt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">mom_xx_new</span> <span class="o">=</span> <span class="n">Xt</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">wXt</span>
+
+        <span class="c1"># Split the (uncentered) history moments into X-, M-, and cross-blocks (all zero if the history is empty)</span>
+        <span class="k">if</span> <span class="n">base</span><span class="o">.</span><span class="n">n_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">base_n</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">base_sum_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)</span>
+            <span class="n">base_sum_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+            <span class="n">base_mom_xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">))</span>
+            <span class="n">base_mom_xm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span>
+            <span class="n">base_mom_mm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_features</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">base_n</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">n_</span>
+            <span class="n">base_sum_x</span><span class="p">,</span> <span class="n">base_sum_m</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">sum_</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">],</span> <span class="n">base</span><span class="o">.</span><span class="n">sum_</span><span class="p">[</span><span class="n">n_channels</span><span class="p">:]</span>
+            <span class="n">base_mom_xx</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">moment_</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="p">:</span><span class="n">n_channels</span><span class="p">]</span>
+            <span class="n">base_mom_xm</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">moment_</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">:]</span>
+            <span class="n">base_mom_mm</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">moment_</span><span class="p">[</span><span class="n">n_channels</span><span class="p">:,</span> <span class="n">n_channels</span><span class="p">:]</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="n">base_n</span> <span class="o">+</span> <span class="n">n_new</span>
+        <span class="n">mean_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_sum_x</span> <span class="o">+</span> <span class="n">sum_x_new</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">Cxx</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_mom_xx</span> <span class="o">+</span> <span class="n">mom_xx_new</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">mean_x</span><span class="p">,</span> <span class="n">mean_x</span><span class="p">)</span>
+        <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_whiten</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">)</span>  <span class="c1"># the EEG side is identical across hypotheses</span>
+
         <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         <span class="n">w_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
         <span class="n">r_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">n_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
-            <span class="n">cov</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">peek</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xt</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">covariance</span>
-            <span class="n">Cxm</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">:]</span>
-            <span class="n">Cmm</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[</span><span class="n">n_channels</span><span class="p">:,</span> <span class="n">n_channels</span><span class="p">:]</span>
-            <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_solve_cca</span><span class="p">(</span>
-                <span class="n">cov</span><span class="p">[:</span><span class="n">n_channels</span><span class="p">,</span> <span class="p">:</span><span class="n">n_channels</span><span class="p">],</span>
-                <span class="n">Cxm</span><span class="p">,</span>
-                <span class="n">Cmm</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gamma_m</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># anchor the response phase toward the expected VEP shape</span>
-                <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_apply_response_prior</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span><span class="p">,</span> <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">Cxm</span><span class="p">,</span> <span class="n">Cmm</span>
+            <span class="n">Mt</span> <span class="o">=</span> <span class="n">M</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># (n_samples, n_features)</span>
+            <span class="n">wMt</span> <span class="o">=</span> <span class="n">Mt</span> <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">Mt</span>
+            <span class="n">mean_m</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_sum_m</span> <span class="o">+</span> <span class="n">wMt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">n</span>
+            <span class="n">Cxm</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_mom_xm</span> <span class="o">+</span> <span class="n">Xt</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">wMt</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">mean_x</span><span class="p">,</span> <span class="n">mean_m</span><span class="p">)</span>
+            <span class="n">Cmm</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_mom_mm</span> <span class="o">+</span> <span class="n">Mt</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">wMt</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">mean_m</span><span class="p">,</span> <span class="n">mean_m</span><span class="p">)</span>
+            <span class="n">iCmm</span> <span class="o">=</span> <span class="n">_whiten</span><span class="p">(</span><span class="n">Cmm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_m</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">)</span>
+            <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_cca_from_whitened</span><span class="p">(</span><span class="n">iCxx</span><span class="p">,</span> <span class="n">Cxm</span><span class="p">,</span> <span class="n">iCmm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_L_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># anchor the phase and/or smooth the response</span>
+                <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_apply_temporal_prior</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_response_prior_</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">response_prior_gamma</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_m</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_L_</span><span class="p">,</span>
+                    <span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">Cxm</span><span class="p">,</span>
+                    <span class="n">Cmm</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_score</span><span class="p">(</span><span class="n">w_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">Xd</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">rho</span><span class="p">,</span> <span class="n">w_all</span><span class="p">,</span> <span class="n">r_all</span>
@@ -1888,13 +1987,21 @@
 
 <div class="viewcode-block" id="UnsupervisedRCCA.partial_fit_predict">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA.partial_fit_predict">[docs]</a>
-    <span class="k">def</span> <span class="nf">partial_fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a single trial online, updating the model (if cumulative) with its pseudo-label.</span>
+    <span class="k">def</span> <span class="nf">partial_fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a single trial online, optionally committing it to the model with its pseudo-label.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: NDArray</span>
 <span class="sd">            The EEG data of a single trial of shape (n_channels, n_samples) or (1, n_channels, n_samples).</span>
+<span class="sd">        update: bool (default: True)</span>
+<span class="sd">            Whether to commit this trial to the online model (updating the running covariance and the</span>
+<span class="sd">            pseudo-label/confidence/history state) after decoding it. If False, the trial is decoded against the</span>
+<span class="sd">            current model but no state is changed, i.e. a pure, side-effect-free query that can be repeated any</span>
+<span class="sd">            number of times on the same or a growing trial (as a dynamic-stopping loop does, decoding growing</span>
+<span class="sd">            segments of a trial until it decides to stop) without polluting the model; commit the decided trial once</span>
+<span class="sd">            afterwards with a single update=True call. Only meaningful for cumulative variants (with cumulative=False</span>
+<span class="sd">            there is no cross-trial state to update).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1926,16 +2033,17 @@
                 <span class="n">confidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_margin</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
 
         <span class="n">label</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">rho</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="n">w_all</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">confidences_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">confidence</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cumulative</span><span class="p">:</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">confidence</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span> <span class="k">else</span> <span class="mf">1.0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xd</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posthoc</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Xd</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_relabel</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">update</span><span class="p">:</span>  <span class="c1"># commit this trial to the online model (else this is a read-only query, leaving state untouched)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_</span> <span class="o">=</span> <span class="n">w_all</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="n">r_all</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">confidences_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">confidence</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cumulative</span><span class="p">:</span>
+                <span class="n">weight</span> <span class="o">=</span> <span class="n">confidence</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span> <span class="k">else</span> <span class="mf">1.0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cov_</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Xd</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">M</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posthoc</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">X_hist_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Xd</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_relabel</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">label</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">rho</span></div>
 
@@ -1961,9 +2069,10 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stream all trials in order, returning predictions and scores. Continues the current online session</span>
-<span class="sd">        (accumulating onto whatever has already been decoded), or starts a fresh one if reset=True.&quot;&quot;&quot;</span>
+<span class="sd">        (accumulating onto whatever has already been decoded), or starts a fresh one if reset=True. If update=False,</span>
+<span class="sd">        the trials are only decoded (no state is changed), see partial_fit_predict.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1971,12 +2080,12 @@
         <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-            <span class="n">yh</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">_</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partial_fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">yh</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">_</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partial_fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">update</span><span class="o">=</span><span class="n">update</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">yh</span><span class="p">,</span> <span class="n">scores</span>
 
 <div class="viewcode-block" id="UnsupervisedRCCA.predict">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA.predict">[docs]</a>
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a sequence of trials online, in the given (chronological) order.</span>
 
 <span class="sd">        Each trial is decoded with the model learned from all trials decoded so far, and then folds into that model</span>
@@ -1993,18 +2102,23 @@
 <span class="sd">        reset: bool (default: False)</span>
 <span class="sd">            Whether to discard the current online session and start fresh before decoding X. Use reset=True (or a</span>
 <span class="sd">            fresh instance, or fit()) for a self-contained replay; leave False to continue an ongoing session.</span>
+<span class="sd">        update: bool (default: True)</span>
+<span class="sd">            Whether to commit the decoded trials to the online model. Use update=False for a pure, side-effect-free</span>
+<span class="sd">            decode (nothing is committed), e.g. to repeatedly probe growing segments of a trial in a dynamic-stopping</span>
+<span class="sd">            loop without polluting the model, then commit the decided trial once with update=True. See</span>
+<span class="sd">            partial_fit_predict.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y: NDArray</span>
 <span class="sd">            The predicted labels of shape (n_trials,).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">update</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="UnsupervisedRCCA.decision_function">
 <a class="viewcode-back" href="../../generated/pyntbci.classifiers.UnsupervisedRCCA.html#pyntbci.classifiers.UnsupervisedRCCA.decision_function">[docs]</a>
-    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode a sequence of trials online and return the per-trial per-class correlation scores.</span>
 
 <span class="sd">        Stateful and online, see predict() (of which this is the score-returning counterpart).</span>
@@ -2015,13 +2129,16 @@
 <span class="sd">            The EEG data of shape (n_trials, n_channels, n_samples), in chronological order.</span>
 <span class="sd">        reset: bool (default: False)</span>
 <span class="sd">            Whether to discard the current online session and start fresh before decoding X, see predict().</span>
+<span class="sd">        update: bool (default: True)</span>
+<span class="sd">            Whether to commit the decoded trials to the online model, see predict(). Use update=False for a pure,</span>
+<span class="sd">            side-effect-free scoring (e.g. probing growing segments of a trial in a dynamic-stopping loop).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scores: NDArray</span>
 <span class="sd">            The per-trial per-class correlation scores of shape (n_trials, n_classes).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">update</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
 </div>
 
 </pre></div>

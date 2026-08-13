@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyntbci.utilities.trials_to_epochs &mdash; PyntBCI 1.9.1 documentation</title>
+  <title>pyntbci.utilities.smoothness_matrix &mdash; PyntBCI 1.9.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
@@ -24,7 +24,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="pyntbci.utilities.smoothness_matrix" href="pyntbci.utilities.smoothness_matrix.html" /> 
+    <link rel="next" title="pyntbci.utilities.trials_to_epochs" href="pyntbci.utilities.trials_to_epochs.html" />
+    <link rel="prev" title="pyntbci.utilities.itr" href="pyntbci.utilities.itr.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -77,9 +78,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">pyntbci.utilities.trials_to_epochs</li>
+      <li class="breadcrumb-item active">pyntbci.utilities.smoothness_matrix</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/pyntbci.utilities.trials_to_epochs.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pyntbci.utilities.smoothness_matrix.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -87,28 +88,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pyntbci-utilities-trials-to-epochs">
-<h1>pyntbci.utilities.trials_to_epochs<a class="headerlink" href="#pyntbci-utilities-trials-to-epochs" title="Link to this heading"></a></h1>
+  <section id="pyntbci-utilities-smoothness-matrix">
+<h1>pyntbci.utilities.smoothness_matrix<a class="headerlink" href="#pyntbci-utilities-smoothness-matrix" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyntbci.utilities.trials_to_epochs">
-<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">trials_to_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">NDArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NDArray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyntbci/utilities.html#trials_to_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.trials_to_epochs" title="Link to this definition"></a></dt>
-<dd><p>Slice trials to epochs.</p>
+<dt class="sig sig-object py" id="pyntbci.utilities.smoothness_matrix">
+<span class="sig-prename descclassname"><span class="pre">pyntbci.utilities.</span></span><span class="sig-name descname"><span class="pre">smoothness_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NDArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/utilities.html#smoothness_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.utilities.smoothness_matrix" title="Link to this definition"></a></dt>
+<dd><p>Make a temporal-smoothness (second-difference / discrete Laplacian) penalty matrix.</p>
+<p>The returned matrix L implements a smoothness prior on a temporal filter r via the quadratic penalty r.T &#64; L &#64; r,
+which equals the sum of squared differences between adjacent samples (sum_t (r[t] - r[t-1])^2). Minimizing it
+favors a smooth r. Each block along the diagonal is the second-difference operator with free (Neumann)
+boundaries: a tridiagonal matrix with diagonal [1, 2, 2, …, 2, 1] and -1 on the first off-diagonals. When
+multiple lengths are given, L is block-diagonal with one such block per length, so smoothness is enforced within
+each block but not across block boundaries (e.g. per event of a reconvolution response, so that the tail of one
+event’s response and the start of the next are not tied together). L is symmetric positive semi-definite (its
+null space is the per-block constant vectors, i.e. a constant offset is not penalized).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>NDArray</em>) – The EEG data of shape (n_trials, n_channels, n_samples).</p></li>
-<li><p><strong>y</strong> (<em>NDArray</em>) – Label vector of shape (n_trials).</p></li>
-<li><p><strong>codes</strong> (<em>NDArray</em>) – Codes matrix of shape (n_codes, n_samples).</p></li>
-<li><p><strong>epoch_size</strong> (<em>int</em>) – The width of an epoch starting at the onset of an epoch in samples.</p></li>
-<li><p><strong>step_size</strong> (<em>int</em>) – The distance between consecutive epochs in samples.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>lengths</strong> (<em>int</em><em> | </em><em>list</em><em>[</em><em>int</em><em>] </em><em>| </em><em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>] </em><em>| </em><em>NDArray</em>) – The length of each block, i.e. the number of samples of each event’s temporal response. A single int is a
+single block.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>X_sliced</strong> (<em>NDArray</em>) – The sliced EEG data of shape (n_trials, n_epochs, n_channels, epoch_size).</p></li>
-<li><p><strong>y_sliced</strong> (<em>NDArray</em>) – The sliced label information of shape (n_trials, n_epochs).</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>L</strong> – The smoothness penalty matrix of shape (sum(lengths), sum(lengths)).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -119,7 +122,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyntbci.utilities.smoothness_matrix.html" class="btn btn-neutral float-left" title="pyntbci.utilities.smoothness_matrix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.utilities.itr.html" class="btn btn-neutral float-left" title="pyntbci.utilities.itr" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyntbci.utilities.trials_to_epochs.html" class="btn btn-neutral float-right" title="pyntbci.utilities.trials_to_epochs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

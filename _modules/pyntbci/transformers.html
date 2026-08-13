@@ -249,17 +249,68 @@
 <span class="sd">    rho: NDArray</span>
 <span class="sd">        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Cxx</span> <span class="o">=</span> <span class="n">_shrink</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">gamma_x</span><span class="p">)</span>
-    <span class="n">Cyy</span> <span class="o">=</span> <span class="n">_shrink</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">gamma_y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_cca_from_whitened</span><span class="p">(</span>
+        <span class="n">_whiten</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">gamma_x</span><span class="p">,</span> <span class="n">alpha_x</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="n">Cxy</span><span class="p">,</span> <span class="n">_whiten</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">gamma_y</span><span class="p">,</span> <span class="n">alpha_y</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span> <span class="n">n_components</span>
+    <span class="p">)</span>
 
-    <span class="c1"># Inverse square root</span>
-    <span class="n">iCxx</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">alpha_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">alpha_x</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
-    <span class="n">iCyy</span> <span class="o">=</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">alpha_y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">alpha_y</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
 
-    <span class="c1"># SVD. full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that can be</span>
+<span class="k">def</span> <span class="nf">_whiten</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whiten a covariance matrix: regularize it (shrink towards the identity by gamma, see _shrink), then take its</span>
+<span class="sd">    inverse square root (a plain inverse if alpha is None, else a variance-truncated pseudo-inverse, see pinv).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    C: NDArray</span>
+<span class="sd">        A covariance matrix of shape (n, n).</span>
+<span class="sd">    gamma: float | list[float] | NDArray</span>
+<span class="sd">        Shrinkage regularization, see _shrink().</span>
+<span class="sd">    alpha: float</span>
+<span class="sd">        Amount of variance to retain when inverting. If None, all variance (a plain inverse).</span>
+<span class="sd">    name: str</span>
+<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) that C was derived from, used only to phrase the error message if C is</span>
+<span class="sd">        singular or too ill-conditioned.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iC: NDArray</span>
+<span class="sd">        The inverse square root of the regularized C of shape (n, n).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">_shrink</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="n">alpha</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">alpha</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_cca_from_whitened</span><span class="p">(</span>
+    <span class="n">iCxx</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">Cxy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">iCyy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the CCA from the whitened auto-covariances and the (raw) cross-covariance: SVD of the whitened</span>
+<span class="sd">    cross-covariance, then map back to feature space. Split out from _solve_cca so the (relatively expensive)</span>
+<span class="sd">    whitening of one side can be computed once and reused across many solves that share it, e.g. the spatial (X)</span>
+<span class="sd">    whitening shared by all candidate hypotheses of unsupervised rCCA, whose EEG side is identical while only the</span>
+<span class="sd">    stimulus (Y) side varies.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    iCxx: NDArray</span>
+<span class="sd">        The whitening of the X auto-covariance of shape (n_features_x, n_features_x), see _whiten().</span>
+<span class="sd">    Cxy: NDArray</span>
+<span class="sd">        The (raw) cross-covariance of X and Y of shape (n_features_x, n_features_y).</span>
+<span class="sd">    iCyy: NDArray</span>
+<span class="sd">        The whitening of the Y auto-covariance of shape (n_features_y, n_features_y), see _whiten().</span>
+<span class="sd">    n_components: int</span>
+<span class="sd">        The number of CCA components to return.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    w_x: NDArray</span>
+<span class="sd">        The weight vector to project X of shape (n_features_x, n_components).</span>
+<span class="sd">    w_y: NDArray</span>
+<span class="sd">        The weight vector to project Y of shape (n_features_y, n_components).</span>
+<span class="sd">    rho: NDArray</span>
+<span class="sd">        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that can be</span>
     <span class="c1"># nonzero, instead of the full square U and V of which only the first n_components are ever used.</span>
     <span class="n">U</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">Cxy</span> <span class="o">@</span> <span class="n">iCyy</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
     <span class="k">return</span> <span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">U</span><span class="p">)[:,</span> <span class="p">:</span><span class="n">n_components</span><span class="p">],</span> <span class="p">(</span><span class="n">iCyy</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">)[:,</span> <span class="p">:</span><span class="n">n_components</span><span class="p">],</span> <span class="n">rho</span>
 
 
