@@ -5,8 +5,6 @@
 
 .. autofunction:: is_m_sequence
 
-.. include:: pyntbci.stimulus.is_m_sequence.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

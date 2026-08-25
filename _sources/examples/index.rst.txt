@@ -18,7 +18,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain        computer interface. DOI: https://doi.org/10.34973/9txv-z787 .. [2] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. DOI: https://doi.org/10.1088/1741-2552/abecef">
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. doi: https://doi.org/10.1088/1741-2552/abecef .. [2] Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.        doi: https://doi.org/10.1371/journal.pone.0133797">
 
 .. only:: html
 
@@ -52,7 +52,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Early stopping">
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.        doi: https://doi.org/10.1371/journal.pone.0133797 .. [2] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. doi: http://doi.org/10.1088/1741-2552/abecef .. [3] Ahmadi, S., Desain, P., &amp; Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response        brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.        doi: https://doi.org/10.3389/fnhum.2024.1437965">
 
 .. only:: html
 
@@ -120,7 +120,7 @@ These examples demonstrate how to use PyntBCI.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive        learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026. .. [2] Thielen, J., &amp; Tangermann, M. (2025, October). Exploring new territory II: Calibration-free decoding for ERP BCI.        In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE. .. [3] Thielen, J., Sosulski, J., &amp; Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP        BCI. 9th Graz Brain-Computer Interface Conference 2024. .. [4] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007.">
+    <div class="sphx-glr-thumbcontainer" tooltip="References ---------- .. [1] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive        learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.        doi: ... .. [2] Thielen, J., &amp; Tangermann, M. (2025, October). Exploring new territory II: Calibration-free decoding for ERP BCI.        In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE.        doi: https://doi.org/10.1109/SMC58881.2025.11342596 .. [3] Thielen, J., Sosulski, J., &amp; Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP        BCI. 9th Graz Brain-Computer Interface Conference 2024. doi: https://doi.org/10.3217/978-3-99161-014-4-057 .. [4] Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),        056007. doi: https://doi.org/10.1088/1741-2552/abecef">
 
 .. only:: html
 

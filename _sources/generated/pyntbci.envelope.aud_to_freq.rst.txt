@@ -5,8 +5,6 @@
 
 .. autofunction:: aud_to_freq
 
-.. include:: pyntbci.envelope.aud_to_freq.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

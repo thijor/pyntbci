@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyntbci.envelope &mdash; PyntBCI 1.9.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -49,15 +49,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.eeg">EEG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.gates">Gates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.plotting">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stimulus">Stimulus</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stopping">Stopping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.transformers">Transformers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.utilities">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#eeg">EEG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#envelope">Envelope</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#gates">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#stimulus">Stimulus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#utilities">Utilities</a></li>
 </ul>
 
         </div>
@@ -85,20 +85,20 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyntbci.envelope</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">signal</span>
 
 
 <div class="viewcode-block" id="aud_space_bw">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.aud_space_bw.html#pyntbci.envelope.aud_space_bw">[docs]</a>
-<span class="k">def</span> <span class="nf">aud_space_bw</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">aud_space_bw</span><span class="p">(</span>
     <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"erb"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
+<span class="w">    </span><span class="sd">"""Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
 <span class="sd">    frequencies fmin and fmax at the auditory scale. All frequencies are specified in Hz. The distance between two</span>
 <span class="sd">    consecutive values is bw on the auditory scale, and the points will be centered on the auditory scale between fmin</span>
 <span class="sd">    and fmax.</span>
@@ -113,14 +113,14 @@
 <span class="sd">        Maximum center frequency.</span>
 <span class="sd">    bw: float (default: 1.0)</span>
 <span class="sd">        Bandwidth or spacing between center frequencies.</span>
-<span class="sd">    scale: str (default: &quot;erb&quot;)</span>
+<span class="sd">    scale: str (default: "erb")</span>
 <span class="sd">        Auditory scale.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    y: NDArray</span>
 <span class="sd">        A vector containing the center frequencies.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Convert the frequency limits to auditory scale</span>
     <span class="n">aud_limits</span> <span class="o">=</span> <span class="n">freq_to_aud</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">]),</span> <span class="n">scale</span><span class="p">)</span>
     <span class="n">aud_range</span> <span class="o">=</span> <span class="n">aud_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">aud_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -144,11 +144,11 @@
 
 <div class="viewcode-block" id="aud_to_freq">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.aud_to_freq.html#pyntbci.envelope.aud_to_freq">[docs]</a>
-<span class="k">def</span> <span class="nf">aud_to_freq</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">aud_to_freq</span><span class="p">(</span>
     <span class="n">aud</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
-    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"erb"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert auditory units at the auditory scale to frequency (Hz).</span>
+<span class="w">    </span><span class="sd">"""Convert auditory units at the auditory scale to frequency (Hz).</span>
 
 <span class="sd">    Adapted from LTFAT: https://ltfat.org/doc/auditory/audtofreq audtofreq.m (Peter L. Søndergaard)</span>
 
@@ -156,25 +156,25 @@
 <span class="sd">    ----------</span>
 <span class="sd">    aud: NDArray</span>
 <span class="sd">        The values at the ERB auditory scale.</span>
-<span class="sd">    scale: str (default: &quot;erb&quot;)</span>
+<span class="sd">    scale: str (default: "erb")</span>
 <span class="sd">        Auditory scale.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    freq: NDArray</span>
 <span class="sd">        The values in frequencies measured in Hz.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">&quot;erb&quot;</span><span class="p">:</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">"erb"</span><span class="p">:</span>
         <span class="n">freq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">0.00437</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">aud</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">aud</span><span class="p">)</span> <span class="o">/</span> <span class="mf">9.2645</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown auditory scale: </span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown auditory scale: </span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">freq</span></div>
 
 
 
 <div class="viewcode-block" id="gammatone">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.gammatone.html#pyntbci.envelope.gammatone">[docs]</a>
-<span class="k">def</span> <span class="nf">gammatone</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gammatone</span><span class="p">(</span>
     <span class="n">audio</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
@@ -185,15 +185,13 @@
     <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4000.0</span><span class="p">,</span>
     <span class="n">spacing</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the envelope of audio using a gammatone filterbank.</span>
+<span class="w">    </span><span class="sd">"""Compute the envelope of audio using a gammatone filterbank.</span>
 
 <span class="sd">    Developed in collaboration with Hanneke Scheppink.</span>
 <span class="sd">    Adapted from: https://zenodo.org/records/3377911 preprocess_data.m (Neetha Das)</span>
-<span class="sd">    Deviations:</span>
-<span class="sd">        - Use of gammatone filterbank from scipy</span>
-<span class="sd">        - Use of a lowpass rather than a bandpass on the envelope</span>
-<span class="sd">        - Use of a butterworth filter rather than an equiripple</span>
-<span class="sd">        - No downsample before the lowpass, as it seems redundant</span>
+<span class="sd">    Deviations: (1) Use of gammatone filterbank from scipy. (2) Use of a lowpass rather than a bandpass on the envelope.</span>
+<span class="sd">    (3) Use of a butterworth filter rather than an equiripple. (4) No downsample before the lowpass, as it seems</span>
+<span class="sd">    redundant.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -220,14 +218,14 @@
 <span class="sd">    -------</span>
 <span class="sd">    envelope: NDArray</span>
 <span class="sd">        The envelope for each of the subbands in the gammatone filterbank of shape (n_samples, n_subbands).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">freqs</span> <span class="o">=</span> <span class="n">erb_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
 
     <span class="c1"># Build bandpass filter</span>
     <span class="c1"># Note: second-order sections (rather than b/a transfer function coefficients) are used here, as the resulting</span>
     <span class="c1"># filter order can be high (e.g. lowpass close to fs_inter), for which the b/a form is numerically unstable.</span>
     <span class="n">N</span><span class="p">,</span> <span class="n">Wn</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">buttord</span><span class="p">(</span><span class="n">wp</span><span class="o">=</span><span class="n">lowpass</span> <span class="o">-</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="n">lowpass</span> <span class="o">+</span> <span class="mf">0.45</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
-    <span class="n">sos_butter</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;low&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;sos&quot;</span><span class="p">)</span>
+    <span class="n">sos_butter</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">"low"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">"sos"</span><span class="p">)</span>
 
     <span class="c1"># Resample stimulus</span>
     <span class="n">audio</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_inter</span><span class="p">)</span>
@@ -236,7 +234,7 @@
     <span class="n">envelope</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="n">freqs</span><span class="p">:</span>
         <span class="c1"># Build gammatone filter subband</span>
-        <span class="n">bgamma</span><span class="p">,</span> <span class="n">agamma</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">gammatone</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;fir&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
+        <span class="n">bgamma</span><span class="p">,</span> <span class="n">agamma</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">gammatone</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="s2">"fir"</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs_inter</span><span class="p">)</span>
 
         <span class="c1"># Compute envelope of gammatone filter subband</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">bgamma</span><span class="p">,</span> <span class="n">agamma</span><span class="p">,</span> <span class="n">audio</span><span class="p">))</span>
@@ -261,13 +259,13 @@
 
 <div class="viewcode-block" id="rms">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.rms.html#pyntbci.envelope.rms">[docs]</a>
-<span class="k">def</span> <span class="nf">rms</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rms</span><span class="p">(</span>
     <span class="n">audio</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">fs_inter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">,</span>
     <span class="n">fs_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the envelope of the audio as the root mean square (RMS) of the signal.</span>
+<span class="w">    </span><span class="sd">"""Compute the envelope of the audio as the root mean square (RMS) of the signal.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -284,7 +282,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    envelope: NDArray</span>
 <span class="sd">        The envelope using the RMS of the audio of shape (n_samples,).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Resample stimulus</span>
     <span class="n">audio</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs_inter</span><span class="p">)</span>
 
@@ -300,12 +298,12 @@
 
 <div class="viewcode-block" id="erb_space_bw">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.erb_space_bw.html#pyntbci.envelope.erb_space_bw">[docs]</a>
-<span class="k">def</span> <span class="nf">erb_space_bw</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">erb_space_bw</span><span class="p">(</span>
     <span class="n">fmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">fmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
+<span class="w">    </span><span class="sd">"""Auditory scale points specified by bandwidth. It computes a vector containing values equidistantly scaled between</span>
 <span class="sd">    frequencies fmin and fmax at the ERB auditory scale. All frequencies are specified in Hz. The distance between two</span>
 <span class="sd">    consecutive values is bw on ERB auditory scale, and the points will be centered on the scale between fmin and fmax.</span>
 
@@ -324,19 +322,19 @@
 <span class="sd">    -------</span>
 <span class="sd">    y: NDArray</span>
 <span class="sd">        A vector containing the center frequencies.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">aud_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="s2">&quot;erb&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">aud_space_bw</span><span class="p">(</span><span class="n">fmin</span><span class="p">,</span> <span class="n">fmax</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="s2">"erb"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">y</span></div>
 
 
 
 <div class="viewcode-block" id="freq_to_aud">
 <a class="viewcode-back" href="../../generated/pyntbci.envelope.freq_to_aud.html#pyntbci.envelope.freq_to_aud">[docs]</a>
-<span class="k">def</span> <span class="nf">freq_to_aud</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">freq_to_aud</span><span class="p">(</span>
     <span class="n">freq</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
-    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;erb&quot;</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"erb"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert frequencies (Hz) to auditory units at the auditory scale.</span>
+<span class="w">    </span><span class="sd">"""Convert frequencies (Hz) to auditory units at the auditory scale.</span>
 
 <span class="sd">    Adapted from LTFAT: https://ltfat.org/doc/auditory/freqtoaud freqtoaud.m (Peter L. Søndergaard)</span>
 
@@ -344,18 +342,18 @@
 <span class="sd">    ----------</span>
 <span class="sd">    freq: NDArray</span>
 <span class="sd">        The values in frequencies measured in Hz.</span>
-<span class="sd">    scale: str (default: &quot;erb&quot;)</span>
+<span class="sd">    scale: str (default: "erb")</span>
 <span class="sd">        Auditory scale.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    aud: NDArray</span>
 <span class="sd">        The values at the ERB auditory scale.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">&quot;erb&quot;</span><span class="p">:</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">"erb"</span><span class="p">:</span>
         <span class="n">aud</span> <span class="o">=</span> <span class="mf">9.2645</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.00437</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown auditory scale: </span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown auditory scale: </span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">aud</span></div>
 
 </pre></div>

@@ -22,7 +22,7 @@ import pyntbci
 
 # %%
 # The stimulus
-# --------
+# ------------
 # PyntBCI contains a `stimulus` module with several functions that create various well-known noise-codes. Here we
 # generate an m-sequence.
 

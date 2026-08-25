@@ -5,8 +5,6 @@
 
 .. autofunction:: encoding_matrix
 
-.. include:: pyntbci.utilities.encoding_matrix.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

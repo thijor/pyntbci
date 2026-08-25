@@ -2,12 +2,13 @@ Gates
 =====
 
 .. automodule:: pyntbci.gates
+   :no-index:
 
 .. currentmodule:: pyntbci.gates
 
 .. autosummary::
     :toctree: generated/
-    :template: function.rst
+    :template: class.rst
 
     AggregateGate
     DifferenceGate

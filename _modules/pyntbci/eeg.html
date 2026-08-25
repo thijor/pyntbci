@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyntbci.eeg &mdash; PyntBCI 1.9.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -49,15 +49,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.eeg">EEG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.gates">Gates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.plotting">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stimulus">Stimulus</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stopping">Stopping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.transformers">Transformers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.utilities">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#eeg">EEG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#envelope">Envelope</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#gates">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#stimulus">Stimulus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#utilities">Utilities</a></li>
 </ul>
 
         </div>
@@ -85,22 +85,22 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyntbci.eeg</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 
-<span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="n">encoding_matrix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyntbci.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">encoding_matrix</span>
 
 
 <div class="viewcode-block" id="generate_impulse_response">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_impulse_response.html#pyntbci.eeg.generate_impulse_response">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_impulse_response</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_impulse_response</span><span class="p">(</span>
     <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">components</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a temporal response function (i.e., a VEP / impulse response kernel) as the sum of one or more</span>
+<span class="w">    </span><span class="sd">"""Generate a temporal response function (i.e., a VEP / impulse response kernel) as the sum of one or more</span>
 <span class="sd">    Ricker wavelets (a biphasic bump, similar to a single-component visual evoked potential).</span>
 
 <span class="sd">    Parameters</span>
@@ -111,7 +111,7 @@
 <span class="sd">        A list of (amplitude, latency, width) tuples, each in (a.u., seconds, seconds), that are summed to form the</span>
 <span class="sd">        impulse response. If None, three component are used (-0.5, 0.075, 0.020), (1.0, 0.1, 0.05), and</span>
 <span class="sd">        (-0.4, 0.125, 0.020), representing a prototypical VEP.</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned array. Computation is always done in float64 internally; this only controls the</span>
 <span class="sd">        precision of the final result.</span>
 
@@ -119,7 +119,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    impulse_response: NDArray</span>
 <span class="sd">        The impulse response of shape (n_samples,), where n_samples covers the longest component with some margin.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">components</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">components</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.075</span><span class="p">,</span> <span class="mf">0.020</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.100</span><span class="p">,</span> <span class="mf">0.030</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.125</span><span class="p">,</span> <span class="mf">0.020</span><span class="p">)]</span>
 
@@ -138,15 +138,15 @@
 
 <div class="viewcode-block" id="generate_c_vep_source">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_c_vep_source.html#pyntbci.eeg.generate_c_vep_source">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_c_vep_source</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_c_vep_source</span><span class="p">(</span>
     <span class="n">stimulus</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">impulse_response</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a single-source c-VEP signal per trial. The c-VEP is generated by convolving a binary stimulus with</span>
+<span class="w">    </span><span class="sd">"""Generate a single-source c-VEP signal per trial. The c-VEP is generated by convolving a binary stimulus with</span>
 <span class="sd">    a VEP impulse response, following the reconvolution approach used throughout PyntBCI (see rCCA in classifiers).</span>
 
 <span class="sd">    Parameters</span>
@@ -163,7 +163,7 @@
 <span class="sd">    impulse_response: NDArray (default: None)</span>
 <span class="sd">        The impulse response of shape (n_response_samples,) to convolve the stimulus with. If None, a default</span>
 <span class="sd">        impulse response is generated using generate_impulse_response(fs).</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned array. Computation is always done in float64 internally; this only controls the</span>
 <span class="sd">        precision of the final result.</span>
 
@@ -171,20 +171,20 @@
 <span class="sd">    -------</span>
 <span class="sd">    source: NDArray</span>
 <span class="sd">        The single-source c-VEP signal of shape (n_trials, n_samples), normalized to unit standard deviation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">impulse_response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">impulse_response</span> <span class="o">=</span> <span class="n">generate_impulse_response</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+        <span class="n">impulse_response</span> <span class="o">=</span> <span class="n">generate_impulse_response</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
 
     <span class="n">n_classes</span><span class="p">,</span> <span class="n">n_bits</span> <span class="o">=</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="c1"># Tile the stimulus cycle to cover the full trial length</span>
     <span class="n">n_repeats</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">/</span> <span class="n">n_bits</span><span class="p">))</span>
-    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_repeats</span><span class="p">))[:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_repeats</span><span class="p">))[:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float64"</span><span class="p">)</span>
 
     <span class="c1"># Convolve the stimulus with the impulse response to obtain a template response per class</span>
     <span class="n">M</span> <span class="o">=</span> <span class="n">encoding_matrix</span><span class="p">(</span><span class="n">V</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">impulse_response</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">impulse_response</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">M</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_classes</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">)))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
-    <span class="n">T</span> <span class="o">/=</span> <span class="n">T</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+    <span class="n">T</span> <span class="o">/=</span> <span class="n">T</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s2">"float64"</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
 
     <span class="k">return</span> <span class="n">T</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span></div>
 
@@ -192,18 +192,18 @@
 
 <div class="viewcode-block" id="generate_mixing_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_mixing_matrix.html#pyntbci.eeg.generate_mixing_matrix">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_mixing_matrix</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_mixing_matrix</span><span class="p">(</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_sources</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">primary_channels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">leakage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
     <span class="n">channel_jitter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
     <span class="n">random_state</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a mixing matrix that projects one or more sources to channel space, simulating volume conduction. A</span>
-<span class="sd">    set of &quot;primary&quot; channels can be specified per source (e.g., occipital channels for a visually evoked source),</span>
-<span class="sd">    which receive a weight of 1, while all other channels receive a smaller &quot;leakage&quot; weight.</span>
+<span class="w">    </span><span class="sd">"""Generate a mixing matrix that projects one or more sources to channel space, simulating volume conduction. A</span>
+<span class="sd">    set of "primary" channels can be specified per source (e.g., occipital channels for a visually evoked source),</span>
+<span class="sd">    which receive a weight of 1, while all other channels receive a smaller "leakage" weight.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -222,7 +222,7 @@
 <span class="sd">        The relative per-channel random gain variability, as a fraction of the weight.</span>
 <span class="sd">    random_state: int | np.random.Generator (default: None)</span>
 <span class="sd">        A seed or numpy random number generator to draw the channel gains from. If None, a new one is used.</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned array. Computation is always done in float64 internally; this only controls the</span>
 <span class="sd">        precision of the final result.</span>
 
@@ -230,7 +230,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    mixing_matrix: NDArray</span>
 <span class="sd">        The mixing matrix of shape (n_sources, n_channels).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">primary_channels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -239,9 +239,9 @@
         <span class="n">primary_channels</span> <span class="o">=</span> <span class="p">[[</span><span class="n">primary_channels</span><span class="p">]]</span> <span class="o">*</span> <span class="n">n_sources</span>
     <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">primary_channels</span><span class="p">):</span>
         <span class="n">primary_channels</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">primary_channels</span><span class="p">)]</span> <span class="o">*</span> <span class="n">n_sources</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">primary_channels</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_sources</span><span class="p">,</span> <span class="s2">&quot;primary_channels must have one entry per source.&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">primary_channels</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_sources</span><span class="p">,</span> <span class="s2">"primary_channels must have one entry per source."</span>
 
-    <span class="n">mixing_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_sources</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">),</span> <span class="n">leakage</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="n">mixing_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_sources</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">),</span> <span class="n">leakage</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i_source</span><span class="p">,</span> <span class="n">channels</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">primary_channels</span><span class="p">):</span>
         <span class="n">mixing_matrix</span><span class="p">[</span><span class="n">i_source</span><span class="p">,</span> <span class="n">channels</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="n">mixing_matrix</span> <span class="o">*=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">channel_jitter</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">mixing_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -253,11 +253,11 @@
 
 <div class="viewcode-block" id="apply_mixing_matrix">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.apply_mixing_matrix.html#pyntbci.eeg.apply_mixing_matrix">[docs]</a>
-<span class="k">def</span> <span class="nf">apply_mixing_matrix</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_mixing_matrix</span><span class="p">(</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">mixing_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Project one or more source signals to channel space using a mixing matrix.</span>
+<span class="w">    </span><span class="sd">"""Project one or more source signals to channel space using a mixing matrix.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -271,24 +271,24 @@
 <span class="sd">    -------</span>
 <span class="sd">    X: NDArray</span>
 <span class="sd">        The multi-channel signal of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;sc,tsn-&gt;tcn&quot;</span><span class="p">,</span> <span class="n">mixing_matrix</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"sc,tsn-&gt;tcn"</span><span class="p">,</span> <span class="n">mixing_matrix</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="generate_white_noise">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_white_noise.html#pyntbci.eeg.generate_white_noise">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_white_noise</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_white_noise</span><span class="p">(</span>
     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">random_state</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate white sensor / measurement noise, i.e., independent and identically distributed Gaussian noise per</span>
+<span class="w">    </span><span class="sd">"""Generate white sensor / measurement noise, i.e., independent and identically distributed Gaussian noise per</span>
 <span class="sd">    channel and sample. Because it is independent across channels, this noise source guarantees that data it is</span>
 <span class="sd">    added to remains full rank across channels (see generate_noise).</span>
 
@@ -304,7 +304,7 @@
 <span class="sd">        The standard deviation of the noise.</span>
 <span class="sd">    random_state: int | np.random.Generator (default: None)</span>
 <span class="sd">        A seed or numpy random number generator to draw the noise from. If None, a new one is used.</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned array. Computation is always done in float64 internally; this only controls the</span>
 <span class="sd">        precision of the final result.</span>
 
@@ -312,7 +312,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    noise: NDArray</span>
 <span class="sd">        The white noise of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
     <span class="n">noise</span> <span class="o">=</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">noise</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span></div>
@@ -321,16 +321,16 @@
 
 <div class="viewcode-block" id="generate_pink_noise">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_pink_noise.html#pyntbci.eeg.generate_pink_noise">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_pink_noise</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_pink_noise</span><span class="p">(</span>
     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">exponent</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">random_state</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate 1/f (pink) noise per channel, approximating the aperiodic background spectrum of EEG. Each channel</span>
+<span class="w">    </span><span class="sd">"""Generate 1/f (pink) noise per channel, approximating the aperiodic background spectrum of EEG. Each channel</span>
 <span class="sd">    is generated independently by shaping the amplitude spectrum of independent white noise.</span>
 
 <span class="sd">    Parameters</span>
@@ -348,7 +348,7 @@
 <span class="sd">        1.0 gives classical pink noise, 0.0 gives white noise, and 2.0 gives brown noise.</span>
 <span class="sd">    random_state: int | np.random.Generator (default: None)</span>
 <span class="sd">        A seed or numpy random number generator to draw the noise from. If None, a new one is used.</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned array. Computation (including the FFT) is always done in float64/complex128</span>
 <span class="sd">        internally; this only controls the precision of the final result.</span>
 
@@ -356,7 +356,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    noise: NDArray</span>
 <span class="sd">        The pink noise of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
 
     <span class="n">white</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span>
@@ -368,7 +368,7 @@
     <span class="n">spectrum</span> <span class="o">*=</span> <span class="n">scale</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
 
     <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfft</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">noise</span> <span class="o">*=</span> <span class="n">amplitude</span> <span class="o">/</span> <span class="p">(</span><span class="n">noise</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">noise</span> <span class="o">*=</span> <span class="n">amplitude</span> <span class="o">/</span> <span class="p">(</span><span class="n">noise</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s2">"float64"</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">noise</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span></div>
 
@@ -376,7 +376,7 @@
 
 <div class="viewcode-block" id="generate_line_noise">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_line_noise.html#pyntbci.eeg.generate_line_noise">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_line_noise</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_line_noise</span><span class="p">(</span>
     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -386,9 +386,9 @@
     <span class="n">n_harmonics</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">channel_jitter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
     <span class="n">random_state</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate electrical line noise (e.g., 50 Hz mains interference and its harmonics), shared (with only small</span>
+<span class="w">    </span><span class="sd">"""Generate electrical line noise (e.g., 50 Hz mains interference and its harmonics), shared (with only small</span>
 <span class="sd">    gain variations) across channels, with a random phase per trial.</span>
 
 <span class="sd">    Parameters</span>
@@ -412,7 +412,7 @@
 <span class="sd">    random_state: int | np.random.Generator (default: None)</span>
 <span class="sd">        A seed or numpy random number generator to draw the phase and channel gains from. If None, a new one is</span>
 <span class="sd">        used.</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned array. Computation is always done in float64 internally; this only controls the</span>
 <span class="sd">        precision of the final result.</span>
 
@@ -420,7 +420,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    noise: NDArray</span>
 <span class="sd">        The line noise of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
 
     <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs</span>
@@ -438,7 +438,7 @@
 
 <div class="viewcode-block" id="generate_noise">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_noise.html#pyntbci.eeg.generate_noise">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_noise</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_noise</span><span class="p">(</span>
     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -450,9 +450,9 @@
     <span class="n">line_freq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span>
     <span class="n">line_harmonics</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">random_state</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate multi-channel EEG background noise as the sum of white sensor noise, 1/f pink noise, and electrical</span>
+<span class="w">    </span><span class="sd">"""Generate multi-channel EEG background noise as the sum of white sensor noise, 1/f pink noise, and electrical</span>
 <span class="sd">    line noise. White noise is always included with a strictly positive amplitude, which guarantees that channels</span>
 <span class="sd">    are statistically independent and hence that any data this noise is added to is of full rank across channels</span>
 <span class="sd">    (almost surely, given at least n_channels independent samples), preventing singular covariance matrices.</span>
@@ -481,7 +481,7 @@
 <span class="sd">        The number of line noise harmonics to include. Only used if line_noise &gt; 0.</span>
 <span class="sd">    random_state: int | np.random.Generator (default: None)</span>
 <span class="sd">        A seed or numpy random number generator to draw the noise from. If None, a new one is used.</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned array. The individual noise sources are summed in float64 internally, regardless</span>
 <span class="sd">        of dtype, to avoid compounding rounding error; this only controls the precision of the final result.</span>
 
@@ -489,12 +489,12 @@
 <span class="sd">    -------</span>
 <span class="sd">    noise: NDArray</span>
 <span class="sd">        The combined noise of shape (n_trials, n_channels, n_samples).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">white_noise</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;white_noise must be strictly positive to guarantee full-rank data.&quot;</span>
+<span class="sd">    """</span>
+    <span class="k">assert</span> <span class="n">white_noise</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"white_noise must be strictly positive to guarantee full-rank data."</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
 
     <span class="n">noise</span> <span class="o">=</span> <span class="n">generate_white_noise</span><span class="p">(</span>
-        <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">white_noise</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span>
+        <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">white_noise</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">pink_noise</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -505,7 +505,7 @@
             <span class="n">amplitude</span><span class="o">=</span><span class="n">pink_noise</span><span class="p">,</span>
             <span class="n">exponent</span><span class="o">=</span><span class="n">pink_exponent</span><span class="p">,</span>
             <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
-            <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">line_noise</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -518,7 +518,7 @@
             <span class="n">amplitude</span><span class="o">=</span><span class="n">line_noise</span><span class="p">,</span>
             <span class="n">n_harmonics</span><span class="o">=</span><span class="n">line_harmonics</span><span class="p">,</span>
             <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
-            <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">noise</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span></div>
@@ -527,7 +527,7 @@
 
 <div class="viewcode-block" id="generate_c_vep">
 <a class="viewcode-back" href="../../generated/pyntbci.eeg.generate_c_vep.html#pyntbci.eeg.generate_c_vep">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_c_vep</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_c_vep</span><span class="p">(</span>
     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -545,9 +545,9 @@
     <span class="n">line_freq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span>
     <span class="n">line_harmonics</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">random_state</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"float32"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a synthetic multi-channel c-VEP EEG dataset. Each trial consists of a c-VEP source signal (the</span>
+<span class="w">    </span><span class="sd">"""Generate a synthetic multi-channel c-VEP EEG dataset. Each trial consists of a c-VEP source signal (the</span>
 <span class="sd">    convolution of a binary stimulus and a VEP impulse response), projected to channel space with a mixing matrix</span>
 <span class="sd">    that is strongest at primary_channels (e.g., occipital channels), plus background noise. The result can be</span>
 <span class="sd">    passed directly to, e.g., eCCA or rCCA in classifiers.</span>
@@ -595,7 +595,7 @@
 <span class="sd">    random_state: int | np.random.Generator (default: None)</span>
 <span class="sd">        A seed or numpy random number generator to draw the stimulus, labels, mixing matrix, and noise from. If</span>
 <span class="sd">        None, a new one is used.</span>
-<span class="sd">    dtype: str | np.dtype (default: &quot;float32&quot;)</span>
+<span class="sd">    dtype: str | np.dtype (default: "float32")</span>
 <span class="sd">        The dtype of the returned EEG data X. Computation is always done in float64 internally; this only controls</span>
 <span class="sd">        the precision of the final result. The returned stimulus is always float64, as it represents a binary code.</span>
 
@@ -607,27 +607,33 @@
 <span class="sd">        The vector of ground-truth labels of shape (n_trials).</span>
 <span class="sd">    stimulus: NDArray</span>
 <span class="sd">        The (single-cycle) binary stimulus of shape (n_classes, n_bits) that was used to generate the c-VEP.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
 
     <span class="k">assert</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">stimulus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">n_classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
-        <span class="s2">&quot;At least one of y, stimulus, or n_classes must be provided.&quot;</span>
+        <span class="s2">"At least one of y, stimulus, or n_classes must be provided."</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">stimulus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">n_classes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">n_classes</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
         <span class="n">n_bits</span> <span class="o">=</span> <span class="n">n_samples</span> <span class="k">if</span> <span class="n">cycle_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">cycle_size</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
-        <span class="n">stimulus</span> <span class="o">=</span> <span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">n_bits</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+        <span class="n">stimulus</span> <span class="o">=</span> <span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">n_bits</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float64"</span><span class="p">)</span>
     <span class="n">n_classes</span> <span class="o">=</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="n">n_classes</span><span class="p">)))[:</span><span class="n">n_trials</span><span class="p">])</span>
 
-    <span class="n">source</span> <span class="o">=</span> <span class="n">generate_c_vep_source</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">impulse_response</span><span class="o">=</span><span class="n">impulse_response</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">generate_c_vep_source</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">impulse_response</span><span class="o">=</span><span class="n">impulse_response</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">primary_channels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">primary_channels</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">primary_channels</span> <span class="o">&lt;</span> <span class="n">n_channels</span><span class="p">,</span> <span class="s2">"primary channels must be less than n_channels"</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">primary_channels</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="nb">max</span><span class="p">(</span><span class="n">primary_channels</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_channels</span><span class="p">,</span> <span class="s2">"primary channels must be less than n_channels"</span>
 
     <span class="n">mixing_matrix</span> <span class="o">=</span> <span class="n">generate_mixing_matrix</span><span class="p">(</span>
-        <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_sources</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="n">primary_channels</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span>
+        <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_sources</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="n">primary_channels</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span>
     <span class="p">)</span>
     <span class="n">X_signal</span> <span class="o">=</span> <span class="n">apply_mixing_matrix</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">mixing_matrix</span><span class="p">)</span>
 
@@ -643,7 +649,7 @@
         <span class="n">line_freq</span><span class="o">=</span><span class="n">line_freq</span><span class="p">,</span>
         <span class="n">line_harmonics</span><span class="o">=</span><span class="n">line_harmonics</span><span class="p">,</span>
         <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">X</span> <span class="o">=</span> <span class="n">snr</span> <span class="o">*</span> <span class="n">X_signal</span> <span class="o">+</span> <span class="n">X_noise</span>

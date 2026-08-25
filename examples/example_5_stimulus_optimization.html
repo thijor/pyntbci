@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stimulus optimization &mdash; PyntBCI 1.9.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -61,15 +61,15 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.eeg">EEG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#eeg">EEG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#envelope">Envelope</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#gates">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stimulus">Stimulus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#utilities">Utilities</a></li>
 </ul>
 
         </div>
@@ -117,10 +117,10 @@ re(con)volution in brain-computer interfacing. PloS one, 10(7), e0133797.
 DOI: <a class="reference external" href="https://doi.org/10.1371/journal.pone.0133797">https://doi.org/10.1371/journal.pone.0133797</a></p>
 </aside>
 </aside>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">import</span> <span class="nn">pyntbci</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyntbci</span>
 </pre></div>
 </div>
 </section>
@@ -140,7 +140,7 @@ DOI: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 <span class="n">LAGS</span> <span class="o">=</span> <span class="n">SHIFTS</span> <span class="o">/</span> <span class="n">PR</span>
 
 <span class="n">N_TRIALS</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">N_CLASSES</span>
-<span class="n">N_CHANNELS</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">N_CHANNELS</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="n">N_SAMPLES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">CYCLE_SIZE</span> <span class="o">*</span> <span class="n">FS</span><span class="p">)</span>
 <span class="n">N_COMPONENTS</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">N_FILTER_BANDS</span> <span class="o">=</span> <span class="mi">4</span>
@@ -148,12 +148,14 @@ DOI: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 <span class="n">SEED</span> <span class="o">=</span> <span class="mi">42</span>
 
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">eeg</span><span class="o">.</span><span class="n">generate_c_vep</span><span class="p">(</span>
-    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
+    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Extract templates with rCCA</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</section>
+<section id="extract-templates-with-rcca">
+<h2>Extract templates with rCCA<a class="headerlink" href="#extract-templates-with-rcca" title="Link to this heading"></a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">rcca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">"id"</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 <span class="n">rcca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">T</span> <span class="o">=</span> <span class="n">rcca</span><span class="o">.</span><span class="n">Ts_</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
@@ -165,7 +167,7 @@ DOI: <a class="reference external" href="https://doi.org/10.1371/journal.pone.01
 we have a 4 x 8 matrix speller setup, for a total of 32 classes. Thus, we can select an optimal subset of 32 codes
 from the 63 available codes. This we will do by minimizing the maximum pair-wise correlation between templates within
 the subset.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">n_random</span> <span class="o">=</span> <span class="mi">100000</span>  <span class="c1"># number of random &quot;optimizations&quot;</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">n_random</span> <span class="o">=</span> <span class="mi">100000</span>  <span class="c1"># number of random "optimizations"</span>
 
 <span class="c1"># Assumed speller matrix</span>
 <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_CLASSES</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
@@ -196,27 +198,27 @@ the subset.</p>
 
 <span class="c1"># Visualize tested and optimized layouts</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">optimized</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;optimized&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;maximum within random layout&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">optimized</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"optimized"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"maximum within random layout"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;maximum correlation across layouts&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"maximum correlation across layouts"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"count"</span><span class="p">)</span>
 
 <span class="c1"># Visualize optimized layouts</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">optimized_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;optimized&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">optimized_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"optimized"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;maximum correlation within layouts&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;norm. count&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"maximum correlation within layouts"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"norm. count"</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
 <li><img src="../_images/sphx_glr_example_5_stimulus_optimization_001.png" srcset="../_images/sphx_glr_example_5_stimulus_optimization_001.png" alt="example 5 stimulus optimization" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_5_stimulus_optimization_002.png" srcset="../_images/sphx_glr_example_5_stimulus_optimization_002.png" alt="example 5 stimulus optimization" class = "sphx-glr-multi-img"/></li>
 </ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(145.22222222222223, 0.5, &#39;norm. count&#39;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(145.22222222222223, 0.5, 'norm. count')
 </pre></div>
 </div>
 </section>
@@ -255,30 +257,30 @@ grid, such that codes that still correlate much are not placed at neighbouring c
 
 <span class="c1"># Visualize tested and optimized layouts</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">optimized</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;optimized&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;maximum within random layout&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">optimized</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"optimized"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"maximum within random layout"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;maximum correlation across layouts&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"maximum correlation across layouts"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"count"</span><span class="p">)</span>
 
 <span class="c1"># Visualize optimized layouts</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">optimized_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;optimized&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">optimized_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"optimized"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">random_vals</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"best random (N=</span><span class="si">{</span><span class="n">n_random</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;maximum correlation within layouts&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;norm. count&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"maximum correlation within layouts"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"norm. count"</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
 <li><img src="../_images/sphx_glr_example_5_stimulus_optimization_003.png" srcset="../_images/sphx_glr_example_5_stimulus_optimization_003.png" alt="example 5 stimulus optimization" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_5_stimulus_optimization_004.png" srcset="../_images/sphx_glr_example_5_stimulus_optimization_004.png" alt="example 5 stimulus optimization" class = "sphx-glr-multi-img"/></li>
 </ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(154.22222222222223, 0.5, &#39;norm. count&#39;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(154.22222222222223, 0.5, 'norm. count')
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 3.487 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.037 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-5-stimulus-optimization-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/468d427b59e093a03ee509cccaa7a404/example_5_stimulus_optimization.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_5_stimulus_optimization.ipynb</span></code></a></p>

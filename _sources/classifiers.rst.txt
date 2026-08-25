@@ -2,6 +2,7 @@ Classifiers
 ===========
 
 .. automodule:: pyntbci.classifiers
+   :no-index:
 
 .. currentmodule:: pyntbci.classifiers
 

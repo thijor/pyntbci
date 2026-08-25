@@ -2,6 +2,7 @@ Utilities
 =========
 
 .. automodule:: pyntbci.utilities
+   :no-index:
 
 .. currentmodule:: pyntbci.utilities
 

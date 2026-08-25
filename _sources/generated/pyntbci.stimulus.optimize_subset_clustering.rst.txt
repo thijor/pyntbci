@@ -5,8 +5,6 @@
 
 .. autofunction:: optimize_subset_clustering
 
-.. include:: pyntbci.stimulus.optimize_subset_clustering.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

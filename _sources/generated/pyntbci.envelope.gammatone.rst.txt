@@ -5,8 +5,6 @@
 
 .. autofunction:: gammatone
 
-.. include:: pyntbci.envelope.gammatone.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

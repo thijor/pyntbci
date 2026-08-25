@@ -2,6 +2,7 @@ Stimulus
 ========
 
 .. automodule:: pyntbci.stimulus
+   :no-index:
 
 .. currentmodule:: pyntbci.stimulus
 

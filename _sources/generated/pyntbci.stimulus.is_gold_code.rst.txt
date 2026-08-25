@@ -5,8 +5,6 @@
 
 .. autofunction:: is_gold_code
 
-.. include:: pyntbci.stimulus.is_gold_code.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

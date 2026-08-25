@@ -5,8 +5,6 @@
 
 .. autofunction:: topoplot
 
-.. include:: pyntbci.plotting.topoplot.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

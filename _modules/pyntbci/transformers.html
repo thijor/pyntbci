@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyntbci.transformers &mdash; PyntBCI 1.9.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -49,15 +49,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.eeg">EEG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.gates">Gates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.plotting">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stimulus">Stimulus</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.stopping">Stopping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.transformers">Transformers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-pyntbci.utilities">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#eeg">EEG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#envelope">Envelope</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#gates">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#stimulus">Stimulus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#utilities">Utilities</a></li>
 </ul>
 
         </div>
@@ -85,24 +85,24 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyntbci.transformers</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">eigh</span><span class="p">,</span> <span class="n">LinAlgError</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">check_is_fitted</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">svd</span><span class="p">,</span> <span class="n">eigh</span><span class="p">,</span> <span class="n">LinAlgError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.utils.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_is_fitted</span>
 
-<span class="kn">from</span> <span class="nn">pyntbci.utilities</span> <span class="kn">import</span> <span class="n">covariance</span><span class="p">,</span> <span class="n">pinv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyntbci.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">covariance</span><span class="p">,</span> <span class="n">pinv</span>
 
 
-<span class="k">def</span> <span class="nf">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an error message for a singular or too ill-conditioned covariance matrix.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build an error message for a singular or too ill-conditioned covariance matrix.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name: str</span>
-<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) the covariance matrix was derived from.</span>
+<span class="sd">        The name of the side ("X" or "Y") the covariance matrix was derived from.</span>
 <span class="sd">    shape: tuple</span>
 <span class="sd">        The shape of the covariance matrix.</span>
 
@@ -110,19 +110,19 @@
 <span class="sd">    -------</span>
 <span class="sd">    message: str</span>
 <span class="sd">        The error message.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">other</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span> <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span> <span class="k">else</span> <span class="s2">&quot;x&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">other</span> <span class="o">=</span> <span class="s2">"y"</span> <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"x"</span> <span class="k">else</span> <span class="s2">"x"</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> covariance matrix of shape </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> is singular or too ill-conditioned to invert. This usually &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;means there is too little data relative to the number of features, e.g. when fitting a separate CCA per &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;class on a small per-class subset of the data (ensemble=True in eCCA/rCCA). Consider setting &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;gamma_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">/alpha_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> (or gamma_</span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2">/alpha_</span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2"> if the other side is the &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;problem) to regularize the covariance matrix, or providing more training data.&quot;</span>
+        <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> covariance matrix of shape </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> is singular or too ill-conditioned to invert. This usually "</span>
+        <span class="sa">f</span><span class="s2">"means there is too little data relative to the number of features, e.g. when fitting a separate CCA per "</span>
+        <span class="sa">f</span><span class="s2">"class on a small per-class subset of the data (ensemble=True in eCCA/rCCA). Consider setting "</span>
+        <span class="sa">f</span><span class="s2">"gamma_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">/alpha_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> (or gamma_</span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2">/alpha_</span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2"> if the other side is the "</span>
+        <span class="sa">f</span><span class="s2">"problem) to regularize the covariance matrix, or providing more training data."</span>
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_sym_sqrt</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;X&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the square root of a symmetric positive semi-definite matrix via its eigendecomposition. Equivalent</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_sym_sqrt</span><span class="p">(</span><span class="n">M</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"X"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Compute the square root of a symmetric positive semi-definite matrix via its eigendecomposition. Equivalent</span>
 <span class="sd">    to scipy.linalg.sqrtm(M) for such matrices, but exploits symmetry to be faster, more numerically stable, and</span>
 <span class="sd">    guaranteed real (avoiding the small imaginary numerical noise that the general-purpose scipy.linalg.sqrtm can</span>
 <span class="sd">    introduce). Also checks, using the already-computed eigenvalues, that M is not so ill-conditioned that inverting</span>
@@ -132,15 +132,15 @@
 <span class="sd">    ----------</span>
 <span class="sd">    M: NDArray</span>
 <span class="sd">        A symmetric positive semi-definite matrix of shape (n, n).</span>
-<span class="sd">    name: str (default: &quot;X&quot;)</span>
-<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) that M was derived from, used only to phrase the error message if M turns</span>
+<span class="sd">    name: str (default: "X")</span>
+<span class="sd">        The name of the side ("X" or "Y") that M was derived from, used only to phrase the error message if M turns</span>
 <span class="sd">        out not to be (numerically) positive semi-definite.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    sqrtM: NDArray</span>
 <span class="sd">        The square root of M of shape (n, n), such that sqrtM @ sqrtM == M.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">w</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-8</span> <span class="o">*</span> <span class="n">w</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">LinAlgError</span><span class="p">(</span><span class="n">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
@@ -148,8 +148,8 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">V</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
 
 
-<span class="k">def</span> <span class="nf">_inv_sqrt</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;X&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the inverse square root of a symmetric positive-definite matrix via a single eigendecomposition,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_inv_sqrt</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"X"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Compute the inverse square root of a symmetric positive-definite matrix via a single eigendecomposition,</span>
 <span class="sd">    raising a clear, actionable error if C is singular or too ill-conditioned to invert stably.</span>
 
 <span class="sd">    Computing C^(-1/2) directly from the eigendecomposition of C avoids a separate matrix inversion (one</span>
@@ -157,29 +157,29 @@
 <span class="sd">    crucially, lets the conditioning of C itself be checked: an ordinary near-singular C (as opposed to one so</span>
 <span class="sd">    corrupted that inv() already fails or the result is no longer positive semi-definite) has a tiny-but-positive</span>
 <span class="sd">    smallest eigenvalue, which is only visible on C, not on its inverse. The reciprocal condition number is</span>
-<span class="sd">    compared against the standard rank tolerance (n * eps), matching numpy/scipy&#39;s own rank/pseudo-inverse cutoffs.</span>
+<span class="sd">    compared against the standard rank tolerance (n * eps), matching numpy/scipy's own rank/pseudo-inverse cutoffs.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    C: NDArray</span>
 <span class="sd">        A symmetric positive-definite matrix of shape (n, n).</span>
-<span class="sd">    name: str (default: &quot;X&quot;)</span>
-<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) that C was derived from, used only to phrase the error message if C turns</span>
+<span class="sd">    name: str (default: "X")</span>
+<span class="sd">        The name of the side ("X" or "Y") that C was derived from, used only to phrase the error message if C turns</span>
 <span class="sd">        out to be singular or too ill-conditioned.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    iCsqrt: NDArray</span>
 <span class="sd">        The inverse square root of C of shape (n, n), such that iCsqrt @ iCsqrt == inv(C).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">w</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">w</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="n">LinAlgError</span><span class="p">(</span><span class="n">_ill_conditioned_message</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">V</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
 
 
-<span class="k">def</span> <span class="nf">_shrink</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shrink a covariance matrix towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_shrink</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Shrink a covariance matrix towards nu * I, blending row-wise and column-wise scaling by (1 - gamma) so the</span>
 <span class="sd">    result stays symmetric for a per-feature gamma (for scalar gamma this is identical to (1 - gamma) * C + gamma *</span>
 <span class="sd">    nu * I, since both terms are then equal). Returns C unchanged if gamma is None.</span>
 
@@ -195,7 +195,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    C: NDArray</span>
 <span class="sd">        The (regularized) covariance matrix of shape (n, n).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">C</span>
     <span class="n">nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">C</span><span class="p">)</span> <span class="o">/</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -206,7 +206,7 @@
     <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">C</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">+</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_solve_cca</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_solve_cca</span><span class="p">(</span>
     <span class="n">Cxx</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">Cxy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">Cyy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -216,10 +216,10 @@
     <span class="n">alpha_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">alpha_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the CCA from the (auto- and cross-) covariance blocks: regularize, whiten, and take the SVD of the</span>
+<span class="w">    </span><span class="sd">"""Solve the CCA from the (auto- and cross-) covariance blocks: regularize, whiten, and take the SVD of the</span>
 <span class="sd">    whitened cross-covariance. This is the core linear algebra of CCA, factored out so it can be reused directly on</span>
 <span class="sd">    externally-accumulated covariance matrices (e.g. the running per-hypothesis covariances of unsupervised</span>
-<span class="sd">    adaptive rCCA) without going through CCA&#39;s own running-state bookkeeping.</span>
+<span class="sd">    adaptive rCCA) without going through CCA's own running-state bookkeeping.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -248,14 +248,14 @@
 <span class="sd">        The weight vector to project Y of shape (n_features_y, n_components).</span>
 <span class="sd">    rho: NDArray</span>
 <span class="sd">        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_cca_from_whitened</span><span class="p">(</span>
-        <span class="n">_whiten</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">gamma_x</span><span class="p">,</span> <span class="n">alpha_x</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="n">Cxy</span><span class="p">,</span> <span class="n">_whiten</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">gamma_y</span><span class="p">,</span> <span class="n">alpha_y</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span> <span class="n">n_components</span>
+        <span class="n">_whiten</span><span class="p">(</span><span class="n">Cxx</span><span class="p">,</span> <span class="n">gamma_x</span><span class="p">,</span> <span class="n">alpha_x</span><span class="p">,</span> <span class="s2">"X"</span><span class="p">),</span> <span class="n">Cxy</span><span class="p">,</span> <span class="n">_whiten</span><span class="p">(</span><span class="n">Cyy</span><span class="p">,</span> <span class="n">gamma_y</span><span class="p">,</span> <span class="n">alpha_y</span><span class="p">,</span> <span class="s2">"Y"</span><span class="p">),</span> <span class="n">n_components</span>
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_whiten</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whiten a covariance matrix: regularize it (shrink towards the identity by gamma, see _shrink), then take its</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_whiten</span><span class="p">(</span><span class="n">C</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whiten a covariance matrix: regularize it (shrink towards the identity by gamma, see _shrink), then take its</span>
 <span class="sd">    inverse square root (a plain inverse if alpha is None, else a variance-truncated pseudo-inverse, see pinv).</span>
 
 <span class="sd">    Parameters</span>
@@ -267,22 +267,22 @@
 <span class="sd">    alpha: float</span>
 <span class="sd">        Amount of variance to retain when inverting. If None, all variance (a plain inverse).</span>
 <span class="sd">    name: str</span>
-<span class="sd">        The name of the side (&quot;X&quot; or &quot;Y&quot;) that C was derived from, used only to phrase the error message if C is</span>
+<span class="sd">        The name of the side ("X" or "Y") that C was derived from, used only to phrase the error message if C is</span>
 <span class="sd">        singular or too ill-conditioned.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    iC: NDArray</span>
 <span class="sd">        The inverse square root of the regularized C of shape (n, n).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">C</span> <span class="o">=</span> <span class="n">_shrink</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_inv_sqrt</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="n">alpha</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_sym_sqrt</span><span class="p">(</span><span class="n">pinv</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">alpha</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_cca_from_whitened</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_cca_from_whitened</span><span class="p">(</span>
     <span class="n">iCxx</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">Cxy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">iCyy</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve the CCA from the whitened auto-covariances and the (raw) cross-covariance: SVD of the whitened</span>
+<span class="w">    </span><span class="sd">"""Solve the CCA from the whitened auto-covariances and the (raw) cross-covariance: SVD of the whitened</span>
 <span class="sd">    cross-covariance, then map back to feature space. Split out from _solve_cca so the (relatively expensive)</span>
 <span class="sd">    whitening of one side can be computed once and reused across many solves that share it, e.g. the spatial (X)</span>
 <span class="sd">    whitening shared by all candidate hypotheses of unsupervised rCCA, whose EEG side is identical while only the</span>
@@ -307,7 +307,7 @@
 <span class="sd">        The weight vector to project Y of shape (n_features_y, n_components).</span>
 <span class="sd">    rho: NDArray</span>
 <span class="sd">        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># full_matrices=False computes only the min(n_features_x, n_features_y) leading singular vectors that can be</span>
     <span class="c1"># nonzero, instead of the full square U and V of which only the first n_components are ever used.</span>
     <span class="n">U</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">iCxx</span> <span class="o">@</span> <span class="n">Cxy</span> <span class="o">@</span> <span class="n">iCyy</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -316,9 +316,9 @@
 
 <div class="viewcode-block" id="CCA">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA">[docs]</a>
-<span class="k">class</span> <span class="nc">CCA</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.</span>
-<span class="sd">    Here, CCA is implemented as the SVD of (cross)covariance matrices [1]_.</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CCA</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.</span>
+<span class="sd">    Here, CCA is implemented as the SVD of (cross)covariance matrices.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -347,30 +347,25 @@
 <span class="sd">    rho_: NDArray</span>
 <span class="sd">        The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).</span>
 <span class="sd">    n_x_: int</span>
-<span class="sd">        The number of samples used to estimate avg_x_ and cov_x_.</span>
+<span class="sd">        The number of samples used to estimate ``avg_x_`` and ``cov_x_``.</span>
 <span class="sd">    avg_x_: NDArray</span>
 <span class="sd">        The (running) average of X of shape (n_features_x).</span>
 <span class="sd">    cov_x_: NDArray</span>
 <span class="sd">        The (running) covariance of X of shape (n_features_x, n_features_x).</span>
 <span class="sd">    n_y_: int</span>
-<span class="sd">        The number of samples used to estimate avg_y_ and cov_y_.</span>
+<span class="sd">        The number of samples used to estimate ``avg_y_`` and ``cov_y_``.</span>
 <span class="sd">    avg_y_: NDArray</span>
 <span class="sd">        The (running) average of Y of shape (n_features_y).</span>
 <span class="sd">    cov_y_: NDArray</span>
 <span class="sd">        The (running) covariance of Y of shape (n_features_y, n_features_y).</span>
 <span class="sd">    n_xy_: int</span>
-<span class="sd">        The number of samples used to estimate avg_xy_ and cov_xy_.</span>
+<span class="sd">        The number of samples used to estimate ``avg_xy_`` and ``cov_xy_``.</span>
 <span class="sd">    avg_xy_: NDArray</span>
 <span class="sd">        The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).</span>
 <span class="sd">    cov_xy_: NDArray</span>
 <span class="sd">        The (running) covariance of concat(X, Y) of shape (n_features_x + n_features_y, n_features_x + n_features_y),</span>
 <span class="sd">        from which the cross-covariance of X and Y is taken as the (n_features_x, n_features_y) off-diagonal block.</span>
-
-<span class="sd">    References</span>
-<span class="sd">    ----------</span>
-<span class="sd">    .. [1] Hotelling, H. (1992). Relations between two sets of variates. In Breakthroughs in statistics: methodology and</span>
-<span class="sd">           distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">w_x_</span><span class="p">:</span> <span class="n">NDArray</span>
     <span class="n">w_y_</span><span class="p">:</span> <span class="n">NDArray</span>
@@ -385,7 +380,7 @@
     <span class="n">avg_xy_</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">cov_xy_</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">gamma_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -401,12 +396,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span> <span class="o">=</span> <span class="n">alpha_x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span> <span class="o">=</span> <span class="n">alpha_y</span>
 
-    <span class="k">def</span> <span class="nf">_fit_X2D_Y2D</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_X2D_Y2D</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the CCA for a 2D X data matrix and 2D Y data matrix.</span>
+<span class="w">        </span><span class="sd">"""Fit the CCA for a 2D X data matrix and 2D Y data matrix.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -414,9 +409,9 @@
 <span class="sd">            Data matrix of shape (n_samples, n_features_x).</span>
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Data matrix of shape (n_samples, n_features_y).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
 
         <span class="c1"># Compute covariances. Cxx/Cyy are taken as blocks of the joint covariance of concat(X, Y) rather than</span>
         <span class="c1"># computed separately, since they are already sub-computations of it.</span>
@@ -437,12 +432,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">cov_x_</span><span class="p">,</span> <span class="n">Cxy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_y_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_y</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_fit_X3D_Y3D</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_X3D_Y3D</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the CCA for a 3D X data matrix and 3D Y data matrix.</span>
+<span class="w">        </span><span class="sd">"""Fit the CCA for a 3D X data matrix and 3D Y data matrix.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -450,11 +445,11 @@
 <span class="sd">            Data matrix of shape (n_trials, n_features_x, n_samples).</span>
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Data matrix of shape (n_trials, n_features_y, n_samples).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unequal samples in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
 
         <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_features_x</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">n_features_y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -466,12 +461,12 @@
         <span class="c1"># CCA</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fit_X2D_Y2D</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_fit_X3D_Y1D</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_X3D_Y1D</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the CCA for a 3D X data matrix and 1D Y label vector.</span>
+<span class="w">        </span><span class="sd">"""Fit the CCA for a 3D X data matrix and 1D Y label vector.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -479,9 +474,9 @@
 <span class="sd">            Data matrix of shape (n_trials, n_features_x, n_samples).</span>
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Label vector of shape (n_trials,).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unequal trials in X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) and Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
 
         <span class="n">n_trials</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
@@ -497,12 +492,12 @@
 
 <div class="viewcode-block" id="CCA.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA.fit">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransformerMixin</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the CCA in one of 3 ways: (1) X (data) is 3D and y (labels) is 1D, (2) X (data) is 3D and Y (data) is 3D,</span>
+<span class="w">        </span><span class="sd">"""Fit the CCA in one of 3 ways: (1) X (data) is 3D and y (labels) is 1D, (2) X (data) is 3D and Y (data) is 3D,</span>
 <span class="sd">        or (3) X (data) is 2D and Y (data) is 2D.</span>
 
 <span class="sd">        Parameters</span>
@@ -517,7 +512,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        self: TransformerMixin</span>
 <span class="sd">            Returns the instance itself.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">Y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit_X3D_Y1D</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">Y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -525,17 +520,17 @@
         <span class="k">elif</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">Y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit_X2D_Y2D</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dimensions of X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) and/or Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) are not valid.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dimensions of X (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) and/or Y (</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) are not valid."</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_transform_X2D</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform_X2D</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the 2D data matrix from feature space to component space.</span>
+<span class="w">        </span><span class="sd">"""Transform the 2D data matrix from feature space to component space.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -550,7 +545,7 @@
 <span class="sd">            Projected data matrix of shape (n_samples, n_components).</span>
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Projected data matrix of shape (n_samples, n_components).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_x_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_x_</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">Y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -558,12 +553,12 @@
 
         <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span>
 
-    <span class="k">def</span> <span class="nf">_transform_X3D</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform_X3D</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the 3D data matrix from feature space to component space.</span>
+<span class="w">        </span><span class="sd">"""Transform the 3D data matrix from feature space to component space.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -578,7 +573,7 @@
 <span class="sd">            Projected data matrix of shape (n_trials, n_components, n_samples).</span>
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Projected data matrix of shape (n_trials, n_components, n_samples).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Batched matmul: (n_components, n_features) @ (n_trials, n_features, n_samples) broadcasts the weight</span>
         <span class="c1"># matrix across trials, avoiding the transpose+reshape (and the copy it forces) needed to route through</span>
         <span class="c1"># _transform_X2D.</span>
@@ -591,12 +586,12 @@
 
 <div class="viewcode-block" id="CCA.transform">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.CCA.html#pyntbci.transformers.CCA.transform">[docs]</a>
-    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the data matrix from feature space to component space. Note, works with both 2D and 3D data, and</span>
+<span class="w">        </span><span class="sd">"""Transform the data matrix from feature space to component space. Note, works with both 2D and 3D data, and</span>
 <span class="sd">        can operate on both X and Y if both are not None, or on each separately if the other is None.</span>
 
 <span class="sd">        Parameters</span>
@@ -616,7 +611,7 @@
 <span class="sd">        Y: NDArray</span>
 <span class="sd">            Projected data matrix of shape (n_samples, n_components) or (n_trials, n_components, n_samples). None if the</span>
 <span class="sd">            input was None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">Y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
@@ -624,7 +619,7 @@
         <span class="k">elif</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">Y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
             <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_X2D</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;X and Y must be both 3D or 2D, or None.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"X and Y must be both 3D or 2D, or None."</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span></div>
 </div>
@@ -633,8 +628,8 @@
 
 <div class="viewcode-block" id="Vectorizer">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer">[docs]</a>
-<span class="k">class</span> <span class="nc">Vectorizer</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorizer. Flattens a multi-dimensional data matrix per trial into a single feature vector, e.g. to use</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Vectorizer</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Vectorizer. Flattens a multi-dimensional data matrix per trial into a single feature vector, e.g. to use</span>
 <span class="sd">    multi-channel time-series data with generic (non multi-dimensional) scikit-learn estimators.</span>
 
 <span class="sd">    Parameters</span>
@@ -642,9 +637,9 @@
 <span class="sd">    channel_prime: bool (default: False)</span>
 <span class="sd">        Whether the channels are the fastest-varying (i.e., contiguous) dimension in the flattened feature vector.</span>
 <span class="sd">        If False, the samples are the fastest-varying dimension instead.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">channel_prime</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -652,12 +647,12 @@
 
 <div class="viewcode-block" id="Vectorizer.fit">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer.fit">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransformerMixin</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the vectorizer. Note, does not involve learning.</span>
+<span class="w">        </span><span class="sd">"""Fit the vectorizer. Note, does not involve learning.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -670,19 +665,19 @@
 <span class="sd">        -------</span>
 <span class="sd">        self: TransformerMixin</span>
 <span class="sd">            Returns the instance itself.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_features_in_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="Vectorizer.transform">
 <a class="viewcode-back" href="../../generated/pyntbci.transformers.Vectorizer.html#pyntbci.transformers.Vectorizer.transform">[docs]</a>
-    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flatten the data matrix per trial into a single feature vector.</span>
+<span class="w">        </span><span class="sd">"""Flatten the data matrix per trial into a single feature vector.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -695,7 +690,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        X: NDArray</span>
 <span class="sd">            Flattened data matrix of shape (n_trials, n_channels * n_samples).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_prime</span><span class="p">:</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>

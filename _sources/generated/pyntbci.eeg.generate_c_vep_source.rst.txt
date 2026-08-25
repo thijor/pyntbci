@@ -5,8 +5,6 @@
 
 .. autofunction:: generate_c_vep_source
 
-.. include:: pyntbci.eeg.generate_c_vep_source.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

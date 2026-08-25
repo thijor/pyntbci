@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bitwise decoding &mdash; PyntBCI 1.9.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -61,15 +61,15 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.eeg">EEG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#eeg">EEG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#envelope">Envelope</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#gates">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stimulus">Stimulus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#utilities">Utilities</a></li>
 </ul>
 
         </div>
@@ -108,12 +108,12 @@ to download the full example code.</p>
 defined as the windows of data within a trial, synchronized to the onset of individual flashes. For each of these epochs
 the classifier determines whether a flash was presented or not. Integrating that information over time, allows the
 decoding of trials.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">sklearn.discriminant_analysis</span> <span class="kn">import</span> <span class="n">LinearDiscriminantAnalysis</span>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.discriminant_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDiscriminantAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
 
-<span class="kn">import</span> <span class="nn">pyntbci</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyntbci</span>
 </pre></div>
 </div>
 <section id="simulate-data">
@@ -132,7 +132,7 @@ decoding of trials.</p>
 <span class="n">LAGS</span> <span class="o">=</span> <span class="n">SHIFTS</span> <span class="o">/</span> <span class="n">PR</span>
 
 <span class="n">N_TRIALS</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">N_CLASSES</span>
-<span class="n">N_CHANNELS</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">N_CHANNELS</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="n">N_SAMPLES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">CYCLE_SIZE</span> <span class="o">*</span> <span class="n">FS</span><span class="p">)</span>
 <span class="n">N_COMPONENTS</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">N_FILTER_BANDS</span> <span class="o">=</span> <span class="mi">4</span>
@@ -140,7 +140,7 @@ decoding of trials.</p>
 <span class="n">SEED</span> <span class="o">=</span> <span class="mi">42</span>
 
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">eeg</span><span class="o">.</span><span class="n">generate_c_vep</span><span class="p">(</span>
-    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
+    <span class="n">N_TRIALS</span><span class="p">,</span> <span class="n">N_CHANNELS</span><span class="p">,</span> <span class="n">N_SAMPLES</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">primary_channels</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">SEED</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -167,23 +167,23 @@ specifically, a target class-label (flash versus no-flash) for each epoch in eac
 <span class="n">encoding_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">FS</span><span class="p">)</span>  <span class="c1"># 300 ms</span>
 <span class="n">encoding_stride</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">*</span> <span class="n">FS</span><span class="p">)</span>  <span class="c1"># 1/60 ms</span>
 <span class="n">X_sliced</span><span class="p">,</span> <span class="n">y_sliced</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">trials_to_epochs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">encoding_length</span><span class="p">,</span> <span class="n">encoding_stride</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X_sliced: shape:&quot;</span><span class="p">,</span> <span class="n">X_sliced</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;, type:&quot;</span><span class="p">,</span> <span class="n">X_sliced</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y_sliced: shape:&quot;</span><span class="p">,</span> <span class="n">y_sliced</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;, type:&quot;</span><span class="p">,</span> <span class="n">y_sliced</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"X_sliced: shape:"</span><span class="p">,</span> <span class="n">X_sliced</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">", type:"</span><span class="p">,</span> <span class="n">X_sliced</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"y_sliced: shape:"</span><span class="p">,</span> <span class="n">y_sliced</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">", type:"</span><span class="p">,</span> <span class="n">y_sliced</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
 <span class="c1"># Inspect sliced labels</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="n">hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">y_sliced</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">hist</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="p">[</span><span class="s2">&quot;non-target (no flash)&quot;</span><span class="p">,</span> <span class="s2">&quot;target (flash)&quot;</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Epoch labels&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="p">[</span><span class="s2">"non-target (no flash)"</span><span class="p">,</span> <span class="s2">"target (flash)"</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"label"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"count"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Epoch labels"</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of flash epochs:&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_sliced</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of non-flash epochs:&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_sliced</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Number of flash epochs:"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_sliced</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Number of non-flash epochs:"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_sliced</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_4_bitwise_decoding_001.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_001.png" alt="Epoch labels" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X_sliced: shape: (32, 108, 16, 36) , type: float32
+<img src="../_images/sphx_glr_example_4_bitwise_decoding_001.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_001.png" alt="Epoch labels" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X_sliced: shape: (32, 108, 8, 36) , type: float32
 y_sliced: shape: (32, 108) , type: uint8
 Number of flash epochs: 1756
 Number of non-flash epochs: 1700
@@ -219,11 +219,11 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.</p>
 
 <span class="c1"># Set up codebook for trial classification</span>
 <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N_SAMPLES</span> <span class="o">/</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-<span class="n">_V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">encoding_length</span><span class="p">:</span><span class="n">encoding_stride</span><span class="p">]</span>
+<span class="n">_V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float32"</span><span class="p">)[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">encoding_length</span><span class="p">:</span><span class="n">encoding_stride</span><span class="p">]</span>
 
 <span class="c1"># Setup pipeline</span>
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
-    <span class="n">pyntbci</span><span class="o">.</span><span class="n">transformers</span><span class="o">.</span><span class="n">Vectorizer</span><span class="p">(),</span> <span class="n">LinearDiscriminantAnalysis</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;eigen&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+    <span class="n">pyntbci</span><span class="o">.</span><span class="n">transformers</span><span class="o">.</span><span class="n">Vectorizer</span><span class="p">(),</span> <span class="n">LinearDiscriminantAnalysis</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">"eigen"</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="c1"># Loop folds</span>
@@ -255,36 +255,36 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.</p>
     <span class="n">accuracy_trial</span><span class="p">[</span><span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
 
 <span class="c1"># Print accuracy (average and standard deviation over folds)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LDA:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Epoch: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Trial: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_trial</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"LDA:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Epoch: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Trial: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_trial</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
 
 <span class="c1"># Plot epoch accuracy (over folds)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="n">accuracy_epoch</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;(test) fold&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LDA: classification accuracy (epoch): avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"(test) fold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"LDA: classification accuracy (epoch): avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Plot trial accuracy (over folds)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="n">accuracy_trial</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;(test) fold&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LDA: classification accuracy (trial): avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"(test) fold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"LDA: classification accuracy (trial): avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><img src="../_images/sphx_glr_example_4_bitwise_decoding_002.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_002.png" alt="LDA: classification accuracy (epoch): avg=0.83 std=0.01" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_example_4_bitwise_decoding_002.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_002.png" alt="LDA: classification accuracy (epoch): avg=0.81 std=0.01" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_4_bitwise_decoding_003.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_003.png" alt="LDA: classification accuracy (trial): avg=1.00 std=0.00" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>LDA:
         Epoch: avg=0.8 with std=0.01
         Trial: avg=1.0 with std=0.00
 
-Text(0.5, 1.0, &#39;LDA: classification accuracy (trial): avg=1.00 std=0.00&#39;)
+Text(0.5, 1.0, 'LDA: classification accuracy (trial): avg=1.00 std=0.00')
 </pre></div>
 </div>
 </section>
@@ -319,12 +319,12 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.</p>
 
 <span class="c1"># Set up codebook for trial classification</span>
 <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N_SAMPLES</span> <span class="o">/</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-<span class="n">_V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">encoding_length</span><span class="p">:</span><span class="n">encoding_stride</span><span class="p">]</span>
+<span class="n">_V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float32"</span><span class="p">)[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">encoding_length</span><span class="p">:</span><span class="n">encoding_stride</span><span class="p">]</span>
 
 <span class="c1"># Setup pipeline</span>
 <span class="n">cca</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">transformers</span><span class="o">.</span><span class="n">CCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">vec</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">transformers</span><span class="o">.</span><span class="n">Vectorizer</span><span class="p">()</span>
-<span class="n">lda</span> <span class="o">=</span> <span class="n">LinearDiscriminantAnalysis</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;eigen&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+<span class="n">lda</span> <span class="o">=</span> <span class="n">LinearDiscriminantAnalysis</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">"eigen"</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">)</span>
 
 <span class="c1"># Loop folds</span>
 <span class="n">accuracy_epoch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_folds</span><span class="p">)</span>
@@ -363,43 +363,43 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.</p>
     <span class="n">accuracy_trial</span><span class="p">[</span><span class="n">i_fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_tst</span> <span class="o">==</span> <span class="n">y_tst</span><span class="p">)</span>
 
 <span class="c1"># Print accuracy (average and standard deviation over folds)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CCA+LDA:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Epoch: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Trial: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_trial</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"CCA+LDA:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Epoch: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_epoch</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Trial: avg=</span><span class="si">{:.1f}</span><span class="s2"> with std=</span><span class="si">{:.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">accuracy_trial</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
 
 <span class="c1"># Plot epoch accuracy (over folds)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="n">accuracy_epoch</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;(test) fold&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"(test) fold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span>
-    <span class="s2">&quot;CCA+LDA: classification accuracy (epoch): &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="s2">"CCA+LDA: classification accuracy (epoch): "</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">"avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_epoch</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span>
 <span class="p">)</span>
 
 <span class="c1"># Plot trial accuracy (over folds)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_folds</span><span class="p">),</span> <span class="n">accuracy_trial</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;(test) fold&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_folds</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"(test) fold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span>
-    <span class="s2">&quot;CCA+LDA: classification accuracy (trial): &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="s2">"CCA+LDA: classification accuracy (trial): "</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">"avg=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> std=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">accuracy_trial</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><img src="../_images/sphx_glr_example_4_bitwise_decoding_004.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_004.png" alt="CCA+LDA: classification accuracy (epoch): avg=0.86 std=0.01" class = "sphx-glr-multi-img"/></li>
+<li><img src="../_images/sphx_glr_example_4_bitwise_decoding_004.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_004.png" alt="CCA+LDA: classification accuracy (epoch): avg=0.83 std=0.01" class = "sphx-glr-multi-img"/></li>
 <li><img src="../_images/sphx_glr_example_4_bitwise_decoding_005.png" srcset="../_images/sphx_glr_example_4_bitwise_decoding_005.png" alt="CCA+LDA: classification accuracy (trial): avg=1.00 std=0.00" class = "sphx-glr-multi-img"/></li>
 </ul>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>CCA+LDA:
-        Epoch: avg=0.9 with std=0.01
+        Epoch: avg=0.8 with std=0.01
         Trial: avg=1.0 with std=0.00
 
-Text(0.5, 1.0, &#39;CCA+LDA: classification accuracy (trial): avg=1.00 std=0.00&#39;)
+Text(0.5, 1.0, 'CCA+LDA: classification accuracy (trial): avg=1.00 std=0.00')
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.087 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.307 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-4-bitwise-decoding-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/ee690d29163033cdce16256703635276/example_4_bitwise_decoding.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_4_bitwise_decoding.ipynb</span></code></a></p>

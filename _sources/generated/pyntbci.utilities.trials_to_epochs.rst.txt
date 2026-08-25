@@ -5,8 +5,6 @@
 
 .. autofunction:: trials_to_epochs
 
-.. include:: pyntbci.utilities.trials_to_epochs.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

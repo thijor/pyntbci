@@ -14,12 +14,13 @@ References
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 import pyntbci
 
 # %%
 # Simulate data
-# -----------------
+# -------------
 # The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
 FS = 120
@@ -35,7 +36,7 @@ CYCLE_SIZE = V.shape[1] / FS
 LAGS = SHIFTS / PR
 
 N_TRIALS = 1 * N_CLASSES
-N_CHANNELS = 16
+N_CHANNELS = 8
 N_SAMPLES = int(2 * CYCLE_SIZE * FS)
 N_COMPONENTS = 3
 N_FILTER_BANDS = 4
@@ -43,12 +44,12 @@ ENCODING_LENGTH = 0.3
 SEED = 42
 
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=4, random_state=SEED
 )
 
 # %%
 # Inspect data
-# -----------------
+# ------------
 
 # Print data shapes
 print("X", X.shape, "(trials x channels x samples)", X.dtype)  # EEG
@@ -84,9 +85,9 @@ fig.tight_layout()
 ax.set_title("Stimulus time-series")
 
 # %%
-# ERP CCA
-# -----------------
-# The full ERP CCA (eCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
+# eCCA
+# -------
+# The full eCCA pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 # `pyntbci.classifiers.eCCA`. All it needs are the lags if a circular shifted code is used (not used here) in `lags`,
 # the sampling frequency `fs`, and the duration of one period of a code as `cycle_size`.
 #
@@ -100,11 +101,9 @@ print("w: shape:", ecca.w_.shape, ", type:", ecca.w_.dtype)
 
 # Plot CCA filter
 fig, ax = plt.subplots(figsize=(5, 3))
-ax.plot(np.arange(N_CHANNELS), ecca.w_)
+locfile = os.path.join(os.path.dirname(pyntbci.__file__), "capfiles", "thielen8.loc")
+pyntbci.plotting.topoplot(ecca.w_, locfile=locfile, ax=ax)
 ax.set_title("spatial filter")
-ax.set_xlabel("channel")
-ax.set_ylabel("weight")
-ax.set_title("Spatial filter")
 
 # %%
 # Cross-validation

@@ -5,21 +5,23 @@ This script shows how to use unsupervised adaptive rCCA from PyntBCI for calibra
 Unlike the supervised rCCA (see the rCCA example), the unsupervised variant needs no calibration data: each trial is
 decoded by fitting a separate rCCA per candidate stimulus (as a hypothesis) and selecting the stimulus whose model
 best fits the data. This "instantaneous" mode can be improved by cumulatively learning from previously decoded trials,
-using their predicted labels as pseudo-labels [1,2,3]_. Two further extensions are shown: confidence-weighting (updates
-are driven mostly by confidently decoded trials) and post hoc re-analysis (past trials are re-decoded, and their
-pseudo-labels corrected, with a later, better model).
+using their predicted labels as pseudo-labels [1]_ [2]_ [3]_. Two further extensions are shown: confidence-weighting
+(updates are driven mostly by confidently decoded trials) and post hoc re-analysis (past trials are re-decoded, and
+their pseudo-labels corrected, with a later, better model).
 
 References
 ----------
 .. [1] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive
        learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.
+       doi: ...
 .. [2] Thielen, J., & Tangermann, M. (2025, October). Exploring new territory II: Calibration-free decoding for ERP BCI.
        In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE.
+       doi: https://doi.org/10.1109/SMC58881.2025.11342596
 .. [3] Thielen, J., Sosulski, J., & Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP
-       BCI. 9th Graz Brain-Computer Interface Conference 2024.
+       BCI. 9th Graz Brain-Computer Interface Conference 2024. doi: https://doi.org/10.3217/978-3-99161-014-4-057
 .. [4] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007.
+       056007. doi: https://doi.org/10.1088/1741-2552/abecef
 """
 
 import matplotlib.pyplot as plt
@@ -180,9 +182,7 @@ window = 5
 trend = np.convolve(stop_times, np.ones(window) / window, mode="valid")
 plt.figure(figsize=(15, 4))
 plt.plot(1 + np.arange(N_TRIALS), stop_times, linestyle="-", marker="o", alpha=0.4, label="stopping time")
-plt.plot(
-    1 + np.arange(window - 1, N_TRIALS), trend, color="C0", linewidth=2, label=f"moving average ({window} trials)"
-)
+plt.plot(1 + np.arange(window - 1, N_TRIALS), trend, color="C0", linewidth=2, label=f"moving average ({window} trials)")
 plt.xlabel("trial [#]")
 plt.ylabel("stopping time [s]")
 plt.legend()

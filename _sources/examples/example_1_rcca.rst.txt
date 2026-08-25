@@ -26,19 +26,21 @@ reconvolution and spatial and temporal filters using canonical correlation analy
 
 References
 ----------
-.. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-       computer interface. DOI: https://doi.org/10.34973/9txv-z787
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+.. [1] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
+       056007. doi: https://doi.org/10.1088/1741-2552/abecef
+.. [2] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+       re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+       doi: https://doi.org/10.1371/journal.pone.0133797
 
-.. GENERATED FROM PYTHON SOURCE LINES 16-22
+.. GENERATED FROM PYTHON SOURCE LINES 17-24
 
 .. code-block:: Python
 
 
     import matplotlib.pyplot as plt
     import numpy as np
+    import os
 
     import pyntbci
 
@@ -49,13 +51,13 @@ References
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 23-26
+.. GENERATED FROM PYTHON SOURCE LINES 25-28
 
 Simulate data
------------------
+-------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-51
+.. GENERATED FROM PYTHON SOURCE LINES 28-53
 
 .. code-block:: Python
 
@@ -73,7 +75,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     LAGS = SHIFTS / PR
 
     N_TRIALS = 1 * N_CLASSES
-    N_CHANNELS = 16
+    N_CHANNELS = 8
     N_SAMPLES = int(2 * CYCLE_SIZE * FS)
     N_COMPONENTS = 3
     N_FILTER_BANDS = 4
@@ -81,7 +83,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     SEED = 42
 
     X, y, V = pyntbci.eeg.generate_c_vep(
-        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
+        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=4, random_state=SEED
     )
 
 
@@ -91,12 +93,12 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-54
+.. GENERATED FROM PYTHON SOURCE LINES 54-56
 
 Inspect data
------------------
+------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-88
+.. GENERATED FROM PYTHON SOURCE LINES 56-90
 
 .. code-block:: Python
 
@@ -166,7 +168,7 @@ Inspect data
 
  .. code-block:: none
 
-    X (32, 16, 252) (trials x channels x samples) float32
+    X (32, 8, 252) (trials x channels x samples) float32
     y (32,) (trials) int64
     V (32, 126) (classes, samples) uint8
     fs 120 Hz
@@ -176,22 +178,21 @@ Inspect data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-101
+.. GENERATED FROM PYTHON SOURCE LINES 91-102
 
 The event matrix
 ----------------
 The first step for reconvolution is to find within the sequences the repetitive events. This can be imposed "manually"
 by choosing the event definition that we believe the brain responds to. Here, the so-called "duration" event is used,
-which marks the length of a flash as the important piece of information. As the sequences in this dataset were
-modulated, there are only two events: a short and a long flash. Additionally, a third event is added that will account
-for the onset of a trial, during which all of a sudden the screen started flashing. The event matrix is a matrix of n
-classes, e events, and m samples.
+which marks the length of a flash as the important piece of information. Additionally, an event is added that will
+account for the onset of a trial, during which all of a sudden the screen started flashing. The event matrix is a
+matrix of n classes, e events, and m samples.
 
 Please, note that more event definitions exist, which can be explored with the `event` variable of `rCCA`. For
 instance, `event="contrast"` is a useful event definition as well, which looks at rising and falling edges,
 generalising over the length of a flash.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-125
+.. GENERATED FROM PYTHON SOURCE LINES 102-126
 
 .. code-block:: Python
 
@@ -250,7 +251,7 @@ generalising over the length of a flash.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-136
+.. GENERATED FROM PYTHON SOURCE LINES 127-137
 
 The structure matrix
 --------------------
@@ -263,7 +264,7 @@ classes, l response samples, and m samples.
 An important parameter here is the `encoding_length` argument. An easy abstraction is to assume the same length for
 the responses to each of the events. However, one could also set different lengths for each of the events.
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-154
+.. GENERATED FROM PYTHON SOURCE LINES 137-155
 
 .. code-block:: Python
 
@@ -303,7 +304,7 @@ the responses to each of the events. However, one could also set different lengt
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-167
+.. GENERATED FROM PYTHON SOURCE LINES 156-168
 
 Reconvolution CCA
 -----------------
@@ -318,7 +319,7 @@ spatial filters `rCCA.w_` and temporal filter `rCCA.r_`.
 Please note that the transient responses are concatenated in this temporal filter `rCCA.r_`. One can use
 `rCCA.events_` to disentangle these and find which response is associated to which event.
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-190
+.. GENERATED FROM PYTHON SOURCE LINES 168-190
 
 .. code-block:: Python
 
@@ -332,10 +333,9 @@ Please note that the transient responses are concatenated in this temporal filte
 
     # Plot CCA filters
     fig, ax = plt.subplots(1, 2, figsize=(15, 3))
-    ax[0].plot(np.arange(N_CHANNELS), rcca.w_)
+    locfile = os.path.join(os.path.dirname(pyntbci.__file__), "capfiles", "thielen8.loc")
+    pyntbci.plotting.topoplot(rcca.w_, locfile=locfile, ax=ax[0])
     ax[0].set_title("spatial filter")
-    ax[0].set_xlabel("channel")
-    ax[0].set_ylabel("weight")
     tmp = np.reshape(rcca.r_, (len(rcca.events_), -1))
     for i in range(len(rcca.events_)):
         ax[1].plot(np.arange(int(encoding_length * FS)) / FS, tmp[i, :])
@@ -358,7 +358,7 @@ Please note that the transient responses are concatenated in this temporal filte
 
  .. code-block:: none
 
-    w:  (16, 1) (channels)
+    w:  (8, 1) (channels)
     r:  (72, 1) (encoding_length*events)
 
 
@@ -581,7 +581,7 @@ need during testing to classify single-trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 16.694 seconds)
+   **Total running time of the script:** (0 minutes 14.739 seconds)
 
 
 .. _sphx_glr_download_examples_example_1_rcca.py:

@@ -5,8 +5,6 @@
 
 .. autofunction:: euclidean
 
-.. include:: pyntbci.utilities.euclidean.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

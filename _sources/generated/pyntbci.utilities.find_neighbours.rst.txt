@@ -5,8 +5,6 @@
 
 .. autofunction:: find_neighbours
 
-.. include:: pyntbci.utilities.find_neighbours.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

@@ -5,8 +5,6 @@
 
 .. autofunction:: inner
 
-.. include:: pyntbci.utilities.inner.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

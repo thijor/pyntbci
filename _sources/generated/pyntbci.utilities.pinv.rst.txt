@@ -5,8 +5,6 @@
 
 .. autofunction:: pinv
 
-.. include:: pyntbci.utilities.pinv.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

@@ -26,7 +26,19 @@ two kinds: static stopping and dynamic stopping. In static stopping, an optimal 
 in dynamic stopping the optimal stopping time depends on reaching a certain criterion, which may naturally lead to a
 variable stopping time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 10-16
+References
+----------
+.. [1] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+       re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+       doi: https://doi.org/10.1371/journal.pone.0133797
+.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
+       056007. doi: http://doi.org/10.1088/1741-2552/abecef
+.. [3] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
+       doi: https://doi.org/10.3389/fnhum.2024.1437965
+
+.. GENERATED FROM PYTHON SOURCE LINES 22-28
 
 .. code-block:: Python
 
@@ -43,13 +55,13 @@ variable stopping time.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 17-20
+.. GENERATED FROM PYTHON SOURCE LINES 29-32
 
 Simulate data
------------------
+-------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-52
+.. GENERATED FROM PYTHON SOURCE LINES 32-64
 
 .. code-block:: Python
 
@@ -67,7 +79,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     LAGS = SHIFTS / PR
 
     N_TRIALS = 2 * N_CLASSES
-    N_CHANNELS = 16
+    N_CHANNELS = 8
     N_SAMPLES = int(4 * CYCLE_SIZE * FS)
     N_COMPONENTS = 3
     N_FILTER_BANDS = 4
@@ -75,7 +87,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     SEED = 42
 
     X, y, V = pyntbci.eeg.generate_c_vep(
-        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
+        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=4, random_state=SEED
     )
 
     N_FOLDS = 4
@@ -92,7 +104,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-58
+.. GENERATED FROM PYTHON SOURCE LINES 65-70
 
 Maximum accuracy static stopping
 --------------------------------
@@ -100,7 +112,7 @@ The "maximum accuracy" method is a static stopping method that learns one stoppi
 reaches the maximum classification accuracy. During testing, all trials will stop as soon as that time is reached,
 hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-122
+.. GENERATED FROM PYTHON SOURCE LINES 70-134
 
 .. code-block:: Python
 
@@ -189,7 +201,7 @@ hence static stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-128
+.. GENERATED FROM PYTHON SOURCE LINES 135-140
 
 Maximum ITR static stopping
 ---------------------------
@@ -197,7 +209,7 @@ The "maximum ITR" method is a static stopping method that learns one stopping ti
 reaches the maximum information-transfer rate (ITR). During testing, all trials will stop as soon as that time is
 reached, hence static stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-194
+.. GENERATED FROM PYTHON SOURCE LINES 140-206
 
 .. code-block:: Python
 
@@ -288,7 +300,7 @@ reached, hence static stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-200
+.. GENERATED FROM PYTHON SOURCE LINES 207-212
 
 Targeted accuracy static stopping
 ---------------------------------
@@ -296,7 +308,7 @@ The "targeted accuracy" method is a static stopping method that learns one stopp
 reaches a preset targeted accuracy. During testing, all trials will stop as soon as that time is reached, hence static
 stopping.
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-267
+.. GENERATED FROM PYTHON SOURCE LINES 212-279
 
 .. code-block:: Python
 
@@ -388,20 +400,14 @@ stopping.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-278
+.. GENERATED FROM PYTHON SOURCE LINES 280-284
 
 Margin dynamic stopping
 -----------------------
 The margin method learns threshold margins (i.e., the difference between the best and second-best score) to stop.
 These margins are defined as such that a targeted accuracy is reached. See [1]_ for more information.
 
-References:
-
-.. [1] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-       re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
-       doi: https://doi.org/10.1371/journal.pone.0133797
-
-.. GENERATED FROM PYTHON SOURCE LINES 278-354
+.. GENERATED FROM PYTHON SOURCE LINES 284-360
 
 .. code-block:: Python
 
@@ -497,7 +503,7 @@ References:
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_005.png
-         :alt: Margin dynamic stopping: avg acc 0.97 | avg dur 0.25 | avg itr 1113.0
+         :alt: Margin dynamic stopping: avg acc 0.97 | avg dur 0.26 | avg itr 1070.8
          :srcset: /examples/images/sphx_glr_example_3_early_stopping_005.png
          :class: sphx-glr-multi-img
 
@@ -508,24 +514,18 @@ References:
 
     Margin:
             Accuracy: avg=0.97 with std=0.03
-            Duration: avg=0.25 with std=0.01
-            ITR: avg=1113.0 with std=113.53
+            Duration: avg=0.26 with std=0.01
+            ITR: avg=1070.8 with std=92.60
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-365
+.. GENERATED FROM PYTHON SOURCE LINES 361-365
 
 Beta dynamic stopping
 ---------------------
 The beta method fits a beta distribution to the non-maximum scores (i.e., if correlation, then correlation+1)/2), and
 tests the probability of the maximum correlation to belong to that beta distribution. See [2]_ for more information.
-
-References:
-
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
 .. GENERATED FROM PYTHON SOURCE LINES 365-431
 
@@ -601,7 +601,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_006.png
-   :alt: Beta dynamic stopping: avg acc 1.00 | avg dur 0.31 | avg itr 975.9
+   :alt: Beta dynamic stopping: avg acc 0.98 | avg dur 0.32 | avg itr 901.8
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_006.png
    :class: sphx-glr-single-img
 
@@ -611,14 +611,14 @@ References:
  .. code-block:: none
 
     Beta:
-            Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.31 with std=0.01
-            ITR: avg=975.9 with std=34.92
+            Accuracy: avg=0.98 with std=0.03
+            Duration: avg=0.32 with std=0.01
+            ITR: avg=901.8 with std=44.09
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 432-442
+.. GENERATED FROM PYTHON SOURCE LINES 432-437
 
 Bayesian dynamic stopping (BDS0)
 --------------------------------
@@ -626,12 +626,7 @@ The Bayesian method fits Gaussian distributions for target and non-target respon
 threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [3]_ for
 more information.
 
-References:
-
-.. [3] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
-       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
-
-.. GENERATED FROM PYTHON SOURCE LINES 442-524
+.. GENERATED FROM PYTHON SOURCE LINES 437-519
 
 .. code-block:: Python
 
@@ -733,7 +728,7 @@ References:
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_008.png
-         :alt: BDS0 dynamic stopping: avg acc 0.95 | avg dur 0.43 | avg itr 637.5
+         :alt: BDS0 dynamic stopping: avg acc 0.94 | avg dur 0.43 | avg itr 619.2
          :srcset: /examples/images/sphx_glr_example_3_early_stopping_008.png
          :class: sphx-glr-multi-img
 
@@ -743,26 +738,21 @@ References:
  .. code-block:: none
 
     BDS0:
-            Accuracy: avg=0.95 with std=0.05
+            Accuracy: avg=0.94 with std=0.04
             Duration: avg=0.43 with std=0.03
-            ITR: avg=637.5 with std=72.88
+            ITR: avg=619.2 with std=33.49
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 525-534
+.. GENERATED FROM PYTHON SOURCE LINES 520-524
 
 Bayesian dynamic stopping (BDS1)
 --------------------------------
 The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [4]_.
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [3]_.
 
-References:
-
-.. [4] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
-       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
-
-.. GENERATED FROM PYTHON SOURCE LINES 534-598
+.. GENERATED FROM PYTHON SOURCE LINES 524-588
 
 .. code-block:: Python
 
@@ -834,7 +824,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_009.png
-   :alt: BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.64 | avg itr 468.7
+   :alt: BDS1 dynamic stopping: avg acc 1.00 | avg dur 0.70 | avg itr 426.7
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_009.png
    :class: sphx-glr-single-img
 
@@ -845,25 +835,20 @@ References:
 
     BDS1:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.64 with std=0.04
-            ITR: avg=468.7 with std=26.56
+            Duration: avg=0.70 with std=0.00
+            ITR: avg=426.7 with std=1.90
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 599-608
+.. GENERATED FROM PYTHON SOURCE LINES 589-593
 
 Bayesian dynamic stopping (BDS2)
 --------------------------------
 The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [5]_.
+threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [3]_.
 
-References:
-
-.. [5] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
-       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
-
-.. GENERATED FROM PYTHON SOURCE LINES 608-672
+.. GENERATED FROM PYTHON SOURCE LINES 593-657
 
 .. code-block:: Python
 
@@ -935,7 +920,7 @@ References:
 
 
 .. image-sg:: /examples/images/sphx_glr_example_3_early_stopping_010.png
-   :alt: BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.51 | avg itr 585.7
+   :alt: BDS2 dynamic stopping: avg acc 1.00 | avg dur 0.54 | avg itr 558.7
    :srcset: /examples/images/sphx_glr_example_3_early_stopping_010.png
    :class: sphx-glr-single-img
 
@@ -946,20 +931,20 @@ References:
 
     BDS2:
             Accuracy: avg=1.00 with std=0.00
-            Duration: avg=0.51 with std=0.03
-            ITR: avg=585.7 with std=34.97
+            Duration: avg=0.54 with std=0.02
+            ITR: avg=558.7 with std=18.01
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 673-677
+.. GENERATED FROM PYTHON SOURCE LINES 658-662
 
 Overall comparison
 ------------------
 Comparison of the presented stopping methods. Note, each of these use default parameters that might need fine-tuning.
 Additionally, the evaluation is performed on a single participant only.
 
-.. GENERATED FROM PYTHON SOURCE LINES 677-713
+.. GENERATED FROM PYTHON SOURCE LINES 662-698
 
 .. code-block:: Python
 
@@ -1014,7 +999,7 @@ Additionally, the evaluation is performed on a single participant only.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.482 seconds)
+   **Total running time of the script:** (0 minutes 7.420 seconds)
 
 
 .. _sphx_glr_download_examples_example_3_early_stopping.py:

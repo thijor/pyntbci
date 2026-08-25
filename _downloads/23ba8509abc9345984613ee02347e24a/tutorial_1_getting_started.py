@@ -3,30 +3,31 @@ Getting started
 ===============
 
 This getting started tutorial shows an example of how to use the PyntBCI library for analysing code-modulated responses
-[1]_. This tutorial makes use of a small synthetic EEG dataset of EEG data. In this notebook, the reconvolution CCA
-(rCCA) method for decoding EEG is demonstrated, see [1]_ and [2]_.
+[1]_. This tutorial makes use of a small synthetic dataset of EEG data. In this notebook, the reconvolution CCA (rCCA)
+method for decoding EEG is demonstrated (see [2]_ and [3]_).
 
 References
 ----------
 .. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
        Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
-       of Neural Engineering, 18(6), 061002. DOI: https://doi.org/10.1088/1741-2552/ac38cf
+       of Neural Engineering, 18(6), 061002. doi: https://doi.org/10.1088/1741-2552/ac38cf
 .. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
+       056007. doi: https://doi.org/10.1088/1741-2552/abecef
 .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
-       DOI: https://doi.org/10.1371/journal.pone.0133797
+       doi: https://doi.org/10.1371/journal.pone.0133797
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 import pyntbci
 
 # %%
 # Simulate data
-# -----------------
+# -------------
 # The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 # The dataset consists of: (1) The EEG data X that is a matrix of k trials, c channels, and m samples; (2) The labels y
 # that is a vector of k trials; (3) The pseudo-random noise-codes V that is a matrix of stimuli with n classes and m
@@ -46,7 +47,7 @@ CYCLE_SIZE = V.shape[1] / FS
 LAGS = SHIFTS / PR
 
 N_TRIALS = 1 * N_CLASSES
-N_CHANNELS = 16
+N_CHANNELS = 8
 N_SAMPLES = int(2 * CYCLE_SIZE * FS)
 N_COMPONENTS = 3
 N_FILTER_BANDS = 4
@@ -55,12 +56,12 @@ SEED = 42
 
 y = np.random.permutation(np.arange(N_TRIALS) % N_CLASSES)
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, y=y, stimulus=V, primary_channels=4, random_state=SEED
 )
 
 # %%
 # Inspect data
-# -----------------
+# ------------
 
 # Print data shapes
 print("X", X.shape, "(trials x channels x samples)", X.dtype)  # EEG
@@ -100,10 +101,9 @@ ax.set_title("Stimulus time-series")
 # ----------------
 # The first step for reconvolution is to find within the sequences the repetitive events. This can be imposed "manually"
 # by choosing the event definition that we believe the brain responds to. Here, the so-called "duration" event is used,
-# which marks the length of a flash as the important piece of information. As the sequences in this dataset were
-# modulated, there are only two events: a short and a long flash. Additionally, a third event is added that will account
-# for the onset of a trial, during which all of a sudden the screen started flashing. The event matrix is a matrix of n
-# classes, e events, and m samples.
+# which marks the length of a flash as the important piece of information. Additionally, an event is added that will
+# account for the onset of a trial, during which all of a sudden the screen started flashing. The event matrix is a
+# matrix of n classes, e events, and m samples.
 #
 # Please, note that more event definitions exist, which can be explored with the `event` variable of `rCCA`. For
 # instance, `event="contrast"` is a useful event definition as well, which looks at rising and falling edges,
@@ -183,10 +183,9 @@ print("r: ", rcca.r_.shape, "(encoding_length*events)")
 
 # Plot CCA filters
 fig, ax = plt.subplots(1, 2, figsize=(15, 3))
-ax[0].plot(np.arange(N_CHANNELS), rcca.w_)
+locfile = os.path.join(os.path.dirname(pyntbci.__file__), "capfiles", "thielen8.loc")
+pyntbci.plotting.topoplot(rcca.w_, locfile=locfile, ax=ax[0])
 ax[0].set_title("spatial filter")
-ax[0].set_xlabel("channel")
-ax[0].set_ylabel("weight")
 tmp = np.reshape(rcca.r_, (len(rcca.events_), -1))
 for i in range(len(rcca.events_)):
     ax[1].plot(np.arange(int(encoding_length * FS)) / FS, tmp[i, :])

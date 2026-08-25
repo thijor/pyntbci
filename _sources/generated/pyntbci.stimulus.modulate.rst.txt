@@ -5,8 +5,6 @@
 
 .. autofunction:: modulate
 
-.. include:: pyntbci.stimulus.modulate.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

@@ -2,6 +2,7 @@ Envelope
 ========
 
 .. automodule:: pyntbci.envelope
+   :no-index:
 
 .. currentmodule:: pyntbci.envelope
 

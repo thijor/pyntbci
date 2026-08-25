@@ -5,8 +5,6 @@
 
 .. autofunction:: eventplot
 
-.. include:: pyntbci.plotting.eventplot.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

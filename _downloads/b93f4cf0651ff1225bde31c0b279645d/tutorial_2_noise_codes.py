@@ -3,14 +3,18 @@ Noise codes
 ===========
 
 This tutorial shows how to generate different types of noise-codes using the PyntBCI library. Noise-codes are used to
-evoke the code-modulated visual evoked potential (c-VEP) as measured by EEG. For a comprehensive literature review, see
-[1]_.
+evoke the code-modulated responses as measured by EEG. For a comprehensive literature review of code-modulated visual
+evoked potentials (c-VEPs), see [1]_. For an empirical analysis of the performance of various noise-codes for a c-VEP
+BCI, see [2]_.
 
 References
 ----------
 .. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
        Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature review. Journal
-       of Neural Engineering, 18(6), 061002. DOI: https://doi.org/10.1088/1741-2552/ac38cf
+       of Neural Engineering, 18(6), 061002. doi: https://doi.org/10.1088/1741-2552/ac38cf
+.. [2] Thielen, J. (2025). Addressing BCI inefficiency in c-VEP-based BCIs: A comprehensive study of neurophysiological
+       predictors, binary stimulus sequences, and user comfort. Biomedical Physics & Engineering Express, 11(4), 045017.
+       doi: https://doi.org/10.1088/2057-1976/ade316
 """
 
 import matplotlib.pyplot as plt
@@ -67,7 +71,7 @@ plt.ylabel("stimulus")
 
 # %%
 # Modulated Gold codes
-# --------------
+# --------------------
 # Original m-sequences and Gold codes have a run-length distribution with a maximum length equal to the length of the
 # shift register that was used. To limit this, codes can be modulated to contain only run-lengths of length 1 and 2.
 
@@ -93,7 +97,7 @@ plt.ylabel("stimulus")
 
 # %%
 # De Bruijn sequence
-# --------------
+# ------------------
 # Also other codes exist, such as the De Bruijn sequence.
 
 # Generate a de Bruijn sequence.

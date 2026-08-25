@@ -19,7 +19,7 @@ import pyntbci
 
 # %%
 # Simulate data
-# -----------------
+# -------------
 # The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
 FS = 120
@@ -35,7 +35,7 @@ CYCLE_SIZE = V.shape[1] / FS
 LAGS = SHIFTS / PR
 
 N_TRIALS = 1 * N_CLASSES
-N_CHANNELS = 16
+N_CHANNELS = 8
 N_SAMPLES = int(2 * CYCLE_SIZE * FS)
 N_COMPONENTS = 3
 N_FILTER_BANDS = 4
@@ -43,11 +43,12 @@ ENCODING_LENGTH = 0.3
 SEED = 42
 
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=4, random_state=SEED
 )
 
 # %%
 # Extract templates with rCCA
+# ---------------------------
 
 rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="id", encoding_length=0.3)
 rcca.fit(X, y)
@@ -55,7 +56,7 @@ T = rcca.Ts_[:, 0, :].T
 
 # %%
 # Optimize stimulus subset
-# -----------------
+# ------------------------
 # The cell above generated 63 different codes and for each an expected template EEG response. In the following we assume
 # we have a 4 x 8 matrix speller setup, for a total of 32 classes. Thus, we can select an optimal subset of 32 codes
 # from the 63 available codes. This we will do by minimizing the maximum pair-wise correlation between templates within
@@ -109,7 +110,7 @@ plt.ylabel("norm. count")
 
 # %%
 # Optimize stimulus layout
-# -----------------
+# ------------------------
 # Now we have the optimal subset of 32 codes. Still, we could optimize how these are allocated to the 4 x 8 speller
 # grid, such that codes that still correlate much are not placed at neighbouring cells in the grid.
 

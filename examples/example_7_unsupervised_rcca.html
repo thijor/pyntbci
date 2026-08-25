@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Unsupervised rCCA &mdash; PyntBCI 1.9.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -61,15 +61,15 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.eeg">EEG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#eeg">EEG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#envelope">Envelope</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#gates">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stimulus">Stimulus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#utilities">Utilities</a></li>
 </ul>
 
         </div>
@@ -104,50 +104,52 @@ to download the full example code.</p>
 </div>
 <section class="sphx-glr-example-title" id="unsupervised-rcca">
 <span id="sphx-glr-examples-example-7-unsupervised-rcca-py"></span><h1>Unsupervised rCCA<a class="headerlink" href="#unsupervised-rcca" title="Link to this heading"></a></h1>
-<p>This script shows how to use unsupervised adaptive rCCA from PyntBCI for calibration-free decoding of c-VEP trials <a class="footnote-reference brackets" href="#id5" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.
+<p>This script shows how to use unsupervised adaptive rCCA from PyntBCI for calibration-free decoding of c-VEP trials <a class="footnote-reference brackets" href="#id8" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.
 Unlike the supervised rCCA (see the rCCA example), the unsupervised variant needs no calibration data: each trial is
 decoded by fitting a separate rCCA per candidate stimulus (as a hypothesis) and selecting the stimulus whose model
 best fits the data. This “instantaneous” mode can be improved by cumulatively learning from previously decoded trials,
-using their predicted labels as pseudo-labels [1,2,3]_. Two further extensions are shown: confidence-weighting (updates
-are driven mostly by confidently decoded trials) and post hoc re-analysis (past trials are re-decoded, and their
-pseudo-labels corrected, with a later, better model).</p>
+using their predicted labels as pseudo-labels <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#id7" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>. Two further extensions are shown: confidence-weighting
+(updates are driven mostly by confidently decoded trials) and post hoc re-analysis (past trials are re-decoded, and
+their pseudo-labels corrected, with a later, better model).</p>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id2" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id6">1</a>,<a role="doc-backlink" href="#id7">2</a>,<a role="doc-backlink" href="#id8">3</a>)</span>
-<p>Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive
-learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.</p>
-</aside>
-<aside class="footnote brackets" id="id3" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
-<p>Thielen, J., &amp; Tangermann, M. (2025, October). Exploring new territory II: Calibration-free decoding for ERP BCI.
-In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE.</p>
-</aside>
-<aside class="footnote brackets" id="id4" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
-<p>Thielen, J., Sosulski, J., &amp; Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP
-BCI. 9th Graz Brain-Computer Interface Conference 2024.</p>
-</aside>
 <aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id9">2</a>,<a role="doc-backlink" href="#id10">3</a>,<a role="doc-backlink" href="#id11">4</a>)</span>
+<p>Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive
+learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.
+doi: …</p>
+</aside>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">2</a><span class="fn-bracket">]</span></span>
+<p>Thielen, J., &amp; Tangermann, M. (2025, October). Exploring new territory II: Calibration-free decoding for ERP BCI.
+In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE.
+doi: <a class="reference external" href="https://doi.org/10.1109/SMC58881.2025.11342596">https://doi.org/10.1109/SMC58881.2025.11342596</a></p>
+</aside>
+<aside class="footnote brackets" id="id7" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">3</a><span class="fn-bracket">]</span></span>
+<p>Thielen, J., Sosulski, J., &amp; Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP
+BCI. 9th Graz Brain-Computer Interface Conference 2024. doi: <a class="reference external" href="https://doi.org/10.3217/978-3-99161-014-4-057">https://doi.org/10.3217/978-3-99161-014-4-057</a></p>
+</aside>
+<aside class="footnote brackets" id="id8" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id9">2</a>)</span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id12">2</a>)</span>
 <p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
 code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-056007.</p>
+056007. doi: <a class="reference external" href="https://doi.org/10.1088/1741-2552/abecef">https://doi.org/10.1088/1741-2552/abecef</a></p>
 </aside>
 </aside>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">import</span> <span class="nn">pyntbci</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyntbci</span>
 </pre></div>
 </div>
 </section>
 <section id="simulate-data">
 <h2>Simulate data<a class="headerlink" href="#simulate-data" title="Link to this heading"></a></h2>
-<p>The cell below simulates synthetic c-VEP data in response to a set of Gold codes (as in <a class="footnote-reference brackets" href="#id2" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>). The trials are put in
+<p>The cell below simulates synthetic c-VEP data in response to a set of Gold codes (as in <a class="footnote-reference brackets" href="#id5" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>). The trials are put in
 a random (chronological) order to mimic an online copy-spelling session, in which the unsupervised classifier sees
 one trial at a time and adapts as it goes.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">FS</span> <span class="o">=</span> <span class="mi">120</span>  <span class="c1"># sampling frequency</span>
@@ -172,21 +174,21 @@ one trial at a time and adapts as it goes.</p>
 <span class="n">order</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">order</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
 
-<span class="c1"># All variants share the same rCCA configuration. A &quot;refe&quot; event with an onset event is used (as in [1]_). Because the</span>
+<span class="c1"># All variants share the same rCCA configuration. A "refe" event with an onset event is used (as in [1]_). Because the</span>
 <span class="c1"># once-per-trial onset response makes the response covariance rank-deficient (and, at short trial durations, there are</span>
 <span class="c1"># few samples relative to the response length), alpha_m truncates the near-degenerate directions of the response</span>
 <span class="c1"># covariance (as for supervised rCCA with little data).</span>
-<span class="n">RCCA_KWARGS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;refe&quot;</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">alpha_m</span><span class="o">=</span><span class="mf">0.99</span><span class="p">)</span>
+<span class="n">RCCA_KWARGS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">stimulus</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">"refe"</span><span class="p">,</span> <span class="n">onset_event</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding_length</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">alpha_m</span><span class="o">=</span><span class="mf">0.99</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="inspect-data">
 <h2>Inspect data<a class="headerlink" href="#inspect-data" title="Link to this heading"></a></h2>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials x channels x samples)&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># EEG</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(trials)&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># labels</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;(classes, samples)&quot;</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># codes</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fs&quot;</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="s2">&quot;Hz&quot;</span><span class="p">)</span>  <span class="c1"># sampling frequency</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fr&quot;</span><span class="p">,</span> <span class="n">PR</span><span class="p">,</span> <span class="s2">&quot;Hz&quot;</span><span class="p">)</span>  <span class="c1"># presentation rate</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"X"</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">"(trials x channels x samples)"</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># EEG</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">"(trials)"</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># labels</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"V"</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">"(classes, samples)"</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># codes</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fs"</span><span class="p">,</span> <span class="n">FS</span><span class="p">,</span> <span class="s2">"Hz"</span><span class="p">)</span>  <span class="c1"># sampling frequency</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fr"</span><span class="p">,</span> <span class="n">PR</span><span class="p">,</span> <span class="s2">"Hz"</span><span class="p">)</span>  <span class="c1"># presentation rate</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>X (36, 8, 378) (trials x channels x samples) float32
@@ -201,7 +203,7 @@ fr 60 Hz
 <h2>Unsupervised decoding<a class="headerlink" href="#unsupervised-decoding" title="Link to this heading"></a></h2>
 <p><cite>UnsupervisedRCCA</cite> is calibration-free, so there is no supervised <cite>fit(X, y)</cite>. Instead, <cite>predict(X)</cite> streams the
 trials in the given (chronological) order and decodes each one with the model learned from the trials before it. The
-four variants of <a class="footnote-reference brackets" href="#id2" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> are selected with the <cite>cumulative</cite>, <cite>confidence</cite>, and <cite>posthoc</cite> flags. Shown on short
+four variants of <a class="footnote-reference brackets" href="#id5" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> are selected with the <cite>cumulative</cite>, <cite>confidence</cite>, and <cite>posthoc</cite> flags. Shown on short
 (one-cycle) trials, where a single trial carries too little information to decode well on its own, cumulative
 learning from previously decoded trials clearly helps.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">CYCLE_SIZE</span> <span class="o">*</span> <span class="n">FS</span><span class="p">)</span>  <span class="c1"># one cycle</span>
@@ -209,12 +211,12 @@ learning from previously decoded trials clearly helps.</p>
 <span class="c1"># Instantaneous: every trial decoded independently, no learning across trials</span>
 <span class="n">rcca_i</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">UnsupervisedRCCA</span><span class="p">(</span><span class="o">**</span><span class="n">RCCA_KWARGS</span><span class="p">,</span> <span class="n">cumulative</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">yh_i</span> <span class="o">=</span> <span class="n">rcca_i</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Instantaneous accuracy: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Instantaneous accuracy: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Cumulative: learn from previously decoded trials using their (pseudo-)labels</span>
 <span class="n">rcca_c</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">UnsupervisedRCCA</span><span class="p">(</span><span class="o">**</span><span class="n">RCCA_KWARGS</span><span class="p">,</span> <span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">yh_c</span> <span class="o">=</span> <span class="n">rcca_c</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_samples</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cumulative accuracy:    </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cumulative accuracy:    </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh_c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Instantaneous accuracy: 0.72
@@ -224,16 +226,16 @@ Cumulative accuracy:    1.00
 </section>
 <section id="decoding-curve">
 <h2>Decoding curve<a class="headerlink" href="#decoding-curve" title="Link to this heading"></a></h2>
-<p>Following <a class="footnote-reference brackets" href="#id2" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, the four variants are compared with a decoding curve: the classification accuracy as a function of
+<p>Following <a class="footnote-reference brackets" href="#id5" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, the four variants are compared with a decoding curve: the classification accuracy as a function of
 the single-trial duration. For each trial duration, the full online session is re-run from scratch on the truncated
 trials. Cumulative learning clearly improves over the instantaneous baseline, especially at shorter trial durations,
 and the post hoc re-analysis squeezes out a bit more at the short end; the variants converge once single trials are
 long enough to decode well on their own.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;instantaneous&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-    <span class="s2">&quot;cumulative&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-    <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-    <span class="s2">&quot;posthoc&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">posthoc</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"instantaneous"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="s2">"cumulative"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"confidence"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"posthoc"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">posthoc</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
 <span class="p">}</span>
 
 <span class="n">trial_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span> <span class="o">*</span> <span class="n">CYCLE_SIZE</span>  <span class="c1"># in seconds</span>
@@ -247,12 +249,12 @@ long enough to decode well on their own.</p>
 <span class="c1"># Plot decoding curves</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">i_variant</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">variants</span><span class="p">):</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">trial_sizes</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">[</span><span class="n">i_variant</span><span class="p">,</span> <span class="p">:],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;chance&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;trial duration [s]&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">trial_sizes</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">[</span><span class="n">i_variant</span><span class="p">,</span> <span class="p">:],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"-"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">N_CLASSES</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"chance"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"trial duration [s]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"accuracy"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Unsupervised rCCA decoding curve&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Unsupervised rCCA decoding curve"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -262,7 +264,7 @@ long enough to decode well on their own.</p>
 <p>The sections above decode each trial at a fixed duration. Online, we would rather stop as soon as we are confident,
 so that easy trials are decided quickly. This is dynamic stopping: <cite>DistributionStopping</cite> wraps the classifier and,
 each time a new segment of data comes in, tests whether the winning score stands out enough from the rest (here, an
-outlier of a beta distribution fit to the non-winning scores) to commit to a decision <a class="footnote-reference brackets" href="#id5" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
+outlier of a beta distribution fit to the non-winning scores) to commit to a decision <a class="footnote-reference brackets" href="#id8" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
 <p>Below it is combined with the cumulative <cite>UnsupervisedRCCA</cite>, fully online: we loop over the trials in their
 chronological order and, within each trial, feed the data in growing segments of 100 ms (<cite>running=True</cite>, resetting
 the running state at the first segment of each trial). <cite>predict</cite> returns -1 while the trial is undecided; the first
@@ -278,14 +280,14 @@ decreases over the course of the session.</p>
     <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">UnsupervisedRCCA</span><span class="p">(</span><span class="o">**</span><span class="n">RCCA_KWARGS</span><span class="p">,</span> <span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="n">segment_time</span><span class="o">=</span><span class="n">segment_time</span><span class="p">,</span>
     <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span>
-    <span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span>
+    <span class="n">distribution</span><span class="o">=</span><span class="s2">"beta"</span><span class="p">,</span>
     <span class="n">target_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
     <span class="n">min_time</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>  <span class="c1"># do not stop on the first, near-degenerate segments</span>
     <span class="n">max_time</span><span class="o">=</span><span class="n">N_SAMPLES</span> <span class="o">/</span> <span class="n">FS</span><span class="p">,</span>  <span class="c1"># force a decision by the end of the trial</span>
 <span class="p">)</span>
 <span class="n">stop</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># calibration-free: sets up the (empty) online model, X and y are not used to train it</span>
 
-<span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+<span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"int64"</span><span class="p">)</span>
 <span class="n">stop_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i_trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">):</span>  <span class="c1"># trials arrive one by one, in chronological order</span>
     <span class="n">prev</span> <span class="o">=</span> <span class="mi">0</span>
@@ -298,28 +300,26 @@ decreases over the course of the session.</p>
     <span class="n">yh</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
     <span class="n">stop_times</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">/</span> <span class="n">FS</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Online dynamic-stopping accuracy: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Online dynamic-stopping accuracy: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Plot the stopping time over the session (in chronological trial order), with a moving average to show the trend. It</span>
 <span class="c1"># tends to decrease as the cumulative model adapts and grows more confident.</span>
 <span class="n">window</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">trend</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">stop_times</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="o">/</span> <span class="n">window</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+<span class="n">trend</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">stop_times</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="o">/</span> <span class="n">window</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"valid"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">),</span> <span class="n">stop_times</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;stopping time&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">window</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N_TRIALS</span><span class="p">),</span> <span class="n">trend</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;moving average (</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s2"> trials)&quot;</span>
-<span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;trial [#]&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;stopping time [s]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">),</span> <span class="n">stop_times</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"-"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"stopping time"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">window</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N_TRIALS</span><span class="p">),</span> <span class="n">trend</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"moving average (</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s2"> trials)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"trial [#]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"stopping time [s]"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Unsupervised rCCA with dynamic stopping (online)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Unsupervised rCCA with dynamic stopping (online)"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
 <img src="../_images/sphx_glr_example_7_unsupervised_rcca_002.png" srcset="../_images/sphx_glr_example_7_unsupervised_rcca_002.png" alt="Unsupervised rCCA with dynamic stopping (online)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Online dynamic-stopping accuracy: 0.83
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (18 minutes 47.127 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (17 minutes 52.290 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-7-unsupervised-rcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/cf7a59fb92f6b7749d6ffc20ff008211/example_7_unsupervised_rcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_7_unsupervised_rcca.ipynb</span></code></a></p>

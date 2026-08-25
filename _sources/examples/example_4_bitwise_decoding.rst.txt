@@ -47,7 +47,7 @@ decoding of trials.
 .. GENERATED FROM PYTHON SOURCE LINES 18-21
 
 Simulate data
------------------
+-------------
 The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
 .. GENERATED FROM PYTHON SOURCE LINES 21-46
@@ -68,7 +68,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     LAGS = SHIFTS / PR
 
     N_TRIALS = 1 * N_CLASSES
-    N_CHANNELS = 16
+    N_CHANNELS = 8
     N_SAMPLES = int(2 * CYCLE_SIZE * FS)
     N_COMPONENTS = 3
     N_FILTER_BANDS = 4
@@ -76,7 +76,7 @@ The cell below simulates some synthetic c-VEP data in response to a circularly s
     SEED = 42
 
     X, y, V = pyntbci.eeg.generate_c_vep(
-        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
+        N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=4, random_state=SEED
     )
 
 
@@ -147,7 +147,7 @@ specifically, a target class-label (flash versus no-flash) for each epoch in eac
 
  .. code-block:: none
 
-    X_sliced: shape: (32, 108, 16, 36) , type: float32
+    X_sliced: shape: (32, 108, 8, 36) , type: float32
     y_sliced: shape: (32, 108) , type: uint8
     Number of flash epochs: 1756
     Number of non-flash epochs: 1700
@@ -261,7 +261,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_4_bitwise_decoding_002.png
-         :alt: LDA: classification accuracy (epoch): avg=0.83 std=0.01
+         :alt: LDA: classification accuracy (epoch): avg=0.81 std=0.01
          :srcset: /examples/images/sphx_glr_example_4_bitwise_decoding_002.png
          :class: sphx-glr-multi-img
 
@@ -404,7 +404,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
     *
 
       .. image-sg:: /examples/images/sphx_glr_example_4_bitwise_decoding_004.png
-         :alt: CCA+LDA: classification accuracy (epoch): avg=0.86 std=0.01
+         :alt: CCA+LDA: classification accuracy (epoch): avg=0.83 std=0.01
          :srcset: /examples/images/sphx_glr_example_4_bitwise_decoding_004.png
          :class: sphx-glr-multi-img
 
@@ -421,7 +421,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
  .. code-block:: none
 
     CCA+LDA:
-            Epoch: avg=0.9 with std=0.01
+            Epoch: avg=0.8 with std=0.01
             Trial: avg=1.0 with std=0.00
 
     Text(0.5, 1.0, 'CCA+LDA: classification accuracy (trial): avg=1.00 std=0.00')
@@ -431,7 +431,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.087 seconds)
+   **Total running time of the script:** (0 minutes 1.307 seconds)
 
 
 .. _sphx_glr_download_examples_example_4_bitwise_decoding.py:

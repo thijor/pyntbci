@@ -5,8 +5,6 @@
 
 .. autofunction:: rms
 
-.. include:: pyntbci.envelope.rms.examples
-
 .. raw:: html
 
     <div style='clear:both'></div>

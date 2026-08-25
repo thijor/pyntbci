@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyntbci.stimulus.make_golay_sequence &mdash; PyntBCI 1.9.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=fd6457a4" />
       <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -52,15 +52,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.classifiers">Classifiers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.eeg">EEG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.envelope">Envelope</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.gates">Gates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.plotting">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stimulus">Stimulus</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.stopping">Stopping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.transformers">Transformers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pyntbci.utilities">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#classifiers">Classifiers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#eeg">EEG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#envelope">Envelope</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#gates">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#plotting">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stimulus">Stimulus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#stopping">Stopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#transformers">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#utilities">Utilities</a></li>
 </ul>
 
         </div>
@@ -93,7 +93,7 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pyntbci.stimulus.make_golay_sequence">
 <span class="sig-prename descclassname"><span class="pre">pyntbci.stimulus.</span></span><span class="sig-name descname"><span class="pre">make_golay_sequence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/stimulus.html#make_golay_sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.stimulus.make_golay_sequence" title="Link to this definition"></a></dt>
-<dd><p>Make complementary Golay sequences. Golay sequence <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a> examples are taken from <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</p>
+<dd><p>Make complementary Golay sequences.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>stimulus</strong> – A matrix with two complementary Golay sequences of shape (2, n_bits).</p>
@@ -103,19 +103,10 @@
 </dd>
 </dl>
 <p class="rubric">References</p>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">11</a><span class="fn-bracket">]</span></span>
-<p>Golay, MJE. (1949). Notes on digital coding. Proc. IEEE, 37, 657.</p>
-</aside>
-<aside class="footnote brackets" id="id4" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">12</a><span class="fn-bracket">]</span></span>
-<p>Wei, Q., Liu, Y., Gao, X., Wang, Y., Yang, C., Lu, Z., &amp; Gong, H. (2018). A novel c-VEP BCI paradigm for
-increasing the number of stimulus targets based on grouping modulation with different codes. IEEE
-Transactions on Neural Systems and Rehabilitation Engineering, 26(6), 1178-1187. DOI:
-10.1109/TNSRE.2018.2837501</p>
-</aside>
-</aside>
+<p>Golay, MJE. (1949). Notes on digital coding. Proc. IEEE, 37, 657.
+Wei, Q., Liu, Y., Gao, X., Wang, Y., Yang, C., Lu, Z., &amp; Gong, H. (2018). A novel c-VEP BCI paradigm for increasing
+the number of stimulus targets based on grouping modulation with different codes. IEEE Transactions on Neural
+Systems and Rehabilitation Engineering, 26(6), 1178-1187. doi: 10.1109/TNSRE.2018.2837501</p>
 </dd></dl>
 
 <div style='clear:both'></div></section>
