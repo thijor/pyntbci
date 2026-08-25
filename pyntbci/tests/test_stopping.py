@@ -500,7 +500,9 @@ class TestRCCASelfTrainingStopping(unittest.TestCase):
         # A running (non-ensemble) rCCA is committable but not update-silenced; a plain rCCA is neither.
         run = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, running=True)
         plain = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3)
-        ens = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, running=True, ensemble=True)
+        ens = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=0.3, running=True, ensemble=True
+        )
         self.assertTrue(pyntbci.stopping._supports_commit(run))
         self.assertFalse(pyntbci.stopping._supports_update(run))  # its probes are read-only already
         self.assertFalse(pyntbci.stopping._supports_commit(plain))

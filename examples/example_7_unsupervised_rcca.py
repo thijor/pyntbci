@@ -182,9 +182,7 @@ window = 5
 trend = np.convolve(stop_times, np.ones(window) / window, mode="valid")
 plt.figure(figsize=(15, 4))
 plt.plot(1 + np.arange(N_TRIALS), stop_times, linestyle="-", marker="o", alpha=0.4, label="stopping time")
-plt.plot(
-    1 + np.arange(window - 1, N_TRIALS), trend, color="C0", linewidth=2, label=f"moving average ({window} trials)"
-)
+plt.plot(1 + np.arange(window - 1, N_TRIALS), trend, color="C0", linewidth=2, label=f"moving average ({window} trials)")
 plt.xlabel("trial [#]")
 plt.ylabel("stopping time [s]")
 plt.legend()
