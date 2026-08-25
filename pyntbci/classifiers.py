@@ -932,7 +932,10 @@ class rCCA(ClassifierMixin, BaseEstimator):
         concat(y1, y2)). Not supported for ensemble=True, since each class's covariance would then be running on
         its own, and a class absent from an early batch would otherwise silently never get initialized. To start
         a new running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then
-        set_params(running=True) again).
+        set_params(running=True) again). This also enables unsupervised self-training: seed the statistics with a
+        supervised fit(X_train, y_train), then keep adapting from each new, unlabeled trial at its own predicted
+        (pseudo-)label with partial_fit_predict() - the supervised-seeded analogue of UnsupervisedRCCA's cumulative
+        mode.
     response_prior: NDArray (default: None)
         A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak
         near 100 ms, and a negative peak near 125 ms), sampled at fs, toward which the learned temporal filter r_ is
@@ -1387,6 +1390,56 @@ class rCCA(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self)
         return np.argmax(self.decision_function(X, running=running, reset=reset), axis=1)
+
+    def partial_fit_predict(self, X: NDArray, update: bool = True) -> NDArray:
+        """Decode trials online and fold each into the running model at its own predicted (pseudo-)label.
+
+        This is the supervised-seeded analogue of the cumulative mode of `UnsupervisedRCCA`: after an initial
+        `fit(X_train, y_train)` has seeded the running statistics with (labeled) calibration data, this decodes each
+        new, unlabeled trial with the model learned so far and - unless `update=False` - accumulates it back into that
+        running covariance at its own prediction, so the model keeps adapting from one trial to the next without any
+        further ground-truth labels. It reuses the exact incremental machinery of `running=True` (see the `running`
+        parameter): each fold-in is a `fit()` call that adds the trial to the running covariance and rebuilds the
+        templates, so it is equivalent to a supervised `fit()` on all trials (real and pseudo-labeled) seen so far.
+
+        Requires `running=True` (otherwise `fit()` would discard the accumulated statistics instead of adding to
+        them) and is not supported for `ensemble=True`. Trials are processed one at a time, in the given order, so
+        trial i is decoded with the model updated by trials 0..i-1; pass a single trial per call for the online,
+        real-time case (passing a batch is equivalent to looping over its trials in order). With `n_components > 1`
+        the pseudo-label is taken from the first component (as in `UnsupervisedRCCA`).
+
+        Unlike `UnsupervisedRCCA.predict`, plain `predict`/`decision_function` never update the model themselves; the
+        update happens only here. This is what lets a dynamic-stopping loop probe growing data read-only and then
+        commit the decided trial exactly once (an rCCA with `running=True` is committable, see `pyntbci.stopping`).
+
+        Parameters
+        ----------
+        X: NDArray
+            The EEG data of a single trial of shape (n_channels, n_samples), or of a sequence of trials of shape
+            (n_trials, n_channels, n_samples), in chronological order.
+        update: bool (default: True)
+            Whether to fold each decoded trial back into the running model at its predicted label. If False, this is
+            a pure decode (identical to predict()), leaving the model untouched.
+
+        Returns
+        -------
+        y: NDArray
+            The predicted labels of shape (n_trials,).
+        """
+        check_is_fitted(self)
+        assert self.running, "partial_fit_predict requires running=True to retain and update the running statistics."
+        assert not self.ensemble, "partial_fit_predict is not supported for ensemble=True."
+        if X.ndim == 2:
+            X = X[np.newaxis, :, :]
+        yh = np.zeros(X.shape[0], dtype="int64")
+        for i in range(X.shape[0]):
+            scores = self.decision_function(X[[i], :, :])  # decode against the model learned so far (read-only)
+            if scores.ndim == 3:  # (n_trials, n_classes, n_components): use the first component for the pseudo-label
+                scores = scores[:, :, 0]
+            yh[i] = int(np.argmax(scores[0]))
+            if update:  # fold this trial in at its pseudo-label; running=True accumulates and rebuilds the templates
+                self.fit(X[[i], :, :], yh[[i]])
+        return yh
 
     def set_encoding_matrix(
         self,

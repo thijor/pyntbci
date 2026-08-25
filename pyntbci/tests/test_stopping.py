@@ -472,5 +472,72 @@ class TestUnsupervisedRCCAStopping(unittest.TestCase):
         self.assertEqual(len(stop.estimator_.labels_), 0)
 
 
+class TestRCCASelfTrainingStopping(unittest.TestCase):
+    # A supervised rCCA with running=True is committable too (see _supports_commit): a dynamic-stopping loop can seed
+    # it with calibration data and then keep adapting it from each decoded trial at its predicted (pseudo-)label -
+    # the supervised-seeded analogue of the UnsupervisedRCCA case above. Unlike UnsupervisedRCCA, rCCA's own probes
+    # are already read-only (only partial_fit_predict updates), so no update=False is needed; but it must still be
+    # routed through the buffering path so the full trial prefix is retained for the single commit.
+
+    N_SEED = N_CLASSES  # supervised calibration trials (one per class), enough to seed a well-posed model
+    N_TEST = 4  # a small set of self-trained test trials, to keep the O(n^2) buffering recompute cheap
+    SEG = int(SEGMENT_TIME * FS)
+    N_STOP_SEG = int(MAX_TIME / SEGMENT_TIME) + 2
+
+    @classmethod
+    def _make_stopping(cls):
+        # gamma_x/gamma_m keep the (wide) covariances invertible for the short early segments a stopping loop probes.
+        est = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=0.3, gamma_x=0.1, gamma_m=0.1, running=True
+        )
+        stop = pyntbci.stopping.DistributionStopping(
+            est, segment_time=SEGMENT_TIME, fs=FS, distribution="beta", min_time=MIN_TIME, max_time=MAX_TIME
+        )
+        stop.fit(X[: cls.N_SEED], y[: cls.N_SEED])  # supervised seed
+        return stop
+
+    def test_predicates(self):
+        # A running (non-ensemble) rCCA is committable but not update-silenced; a plain rCCA is neither.
+        run = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, running=True)
+        plain = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3)
+        ens = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, running=True, ensemble=True)
+        self.assertTrue(pyntbci.stopping._supports_commit(run))
+        self.assertFalse(pyntbci.stopping._supports_update(run))  # its probes are read-only already
+        self.assertFalse(pyntbci.stopping._supports_commit(plain))
+        self.assertFalse(pyntbci.stopping._supports_commit(ens))
+
+    def test_running_loop_probes_read_only_and_commits_once_per_stop(self):
+        stop = self._make_stopping()
+        n_seed_samples = stop.estimator_.cca_[0].n_xy_  # samples accumulated by the supervised seed
+
+        for i_trial in range(self.N_SEED, self.N_SEED + self.N_TEST):
+            prev = 0
+            stopped = False
+            for i_seg in range(self.N_STOP_SEG):
+                idx = (1 + i_seg) * self.SEG
+                r_before = stop.estimator_.r_.copy()
+                yh = stop.predict(X[[i_trial], :, prev:idx], running=True, reset=(prev == 0))
+                prev = idx
+                if yh[0] < 0:
+                    # an undecided probe must leave the online model untouched
+                    self.assertTrue(np.allclose(stop.estimator_.r_, r_before))
+                else:
+                    # the decision folds this trial in: the model (templates) must change
+                    self.assertFalse(np.allclose(stop.estimator_.r_, r_before))
+                    stopped = True
+                    break
+            self.assertTrue(stopped)  # max_time forces a decision by then
+
+        # The running model has grown beyond the seed by having folded in the self-trained trials
+        self.assertGreater(stop.estimator_.cca_[0].n_xy_, n_seed_samples)
+
+    def test_non_running_predict_never_commits(self):
+        stop = self._make_stopping()
+        r_seed = stop.estimator_.r_.copy()
+        for i_seg in range(self.N_STOP_SEG):
+            stop.predict(X[self.N_SEED : self.N_SEED + self.N_TEST, :, : (1 + i_seg) * self.SEG])
+        self.assertTrue(np.allclose(stop.estimator_.r_, r_seed))  # nothing folded in
+
+
 if __name__ == "__main__":
     unittest.main()

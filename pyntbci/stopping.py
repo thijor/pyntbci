@@ -40,13 +40,14 @@ def _supports_running(estimator: ClassifierMixin) -> bool:
 
 
 def _supports_update(estimator: ClassifierMixin) -> bool:
-    """Whether estimator has a stateful online model that its predict()/decision_function() optionally commit to,
-    gated by an `update` flag (i.e. UnsupervisedRCCA). A dynamic-stopping loop probes the growing data of a trial
-    repeatedly, so such probes must pass update=False (a pure, side-effect-free decode that leaves the online model
-    untouched); the decided trial is committed once afterwards via partial_fit_predict(update=True), see
-    _commit_stopped(). It is mutually exclusive with _supports_running() (an online update-capable estimator does not
-    support the running scoring interface), so such an estimator always routes through the buffering fallback of
-    _running_predict(), which is what makes the full trial prefix available for the single commit.
+    """Whether estimator's own predict()/decision_function() commit the trial into a stateful online model by default,
+    so a read-only probe must actively suppress that with update=False (i.e. UnsupervisedRCCA, whose predict() folds
+    each trial in unless told otherwise). This is the narrower of the two online-learning capabilities used here: it
+    is only about silencing predict()'s built-in update during the many growing-data probes of a dynamic-stopping
+    loop (see _probe_kwargs()). The complementary act of folding a decided trial back in is _supports_commit().
+
+    An rCCA (running=True) is deliberately not included: its predict()/decision_function() never update the model
+    (only partial_fit_predict() does), so its probes are already read-only and need no update=False.
 
     Parameters
     ----------
@@ -56,18 +57,49 @@ def _supports_update(estimator: ClassifierMixin) -> bool:
     Returns
     -------
     supported: bool
-        Whether estimator exposes the online update protocol (an `update` flag on predict()/decision_function() and a
-        partial_fit_predict() to commit one trial).
+        Whether estimator's predict()/decision_function() take an `update` flag that must be set False to probe it
+        without committing.
     """
     return isinstance(estimator, pyntbci.classifiers.UnsupervisedRCCA)
 
 
+def _supports_commit(estimator: ClassifierMixin) -> bool:
+    """Whether a dynamic-stopping loop can fold a decided trial back into estimator's online model via
+    partial_fit_predict(update=True) (see _commit_stopped()). This is the broader capability: it holds for
+    UnsupervisedRCCA (calibration-free cumulative learning) and for an rCCA with running=True (its supervised
+    counterpart, seeded with calibration data and then adapted from each decoded trial at its pseudo-label, see
+    rCCA.partial_fit_predict). Not supported for ensemble=True, whose per-class filters have no single running model.
+
+    A committable estimator must be routed through the buffering path of _running_predict() (rather than its own
+    running scoring, which rCCA otherwise supports) so that the full trial prefix is retained here, in stopping, and
+    is available to commit once the trial is decided; see _running_predict(). This is a superset of
+    _supports_update(): every _supports_update() estimator is also committable.
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The estimator to check.
+
+    Returns
+    -------
+    supported: bool
+        Whether estimator exposes partial_fit_predict(update=True) to fold one decided trial into its online model.
+    """
+    if isinstance(estimator, pyntbci.classifiers.UnsupervisedRCCA):
+        return True
+    return (
+        isinstance(estimator, pyntbci.classifiers.rCCA)
+        and getattr(estimator, "running", False)
+        and not getattr(estimator, "ensemble", False)
+    )
+
+
 def _probe_kwargs(estimator: ClassifierMixin) -> dict:
     """The extra keyword arguments to make a scoring/prediction call on estimator a read-only probe: update=False for
-    an online update-capable estimator (see _supports_update()), so a dynamic-stopping sweep over growing data does
-    not commit (pollute the online model), and nothing (the estimator's own default) otherwise. Note, this is
-    distinct from the running/reset arguments (see _supports_running()): those estimators are never update-capable,
-    so this returns nothing for them.
+    an estimator whose predict()/decision_function() would otherwise commit (see _supports_update(), i.e.
+    UnsupervisedRCCA), so a dynamic-stopping sweep over growing data does not pollute the online model, and nothing
+    (the estimator's own default) otherwise. Note, an rCCA is not update-capable in this sense (its predict() never
+    commits, only partial_fit_predict() does), so this returns nothing for it even when it is committable.
 
     Parameters
     ----------
@@ -180,6 +212,11 @@ def _running_predict(
     predict()/decision_function() calls need, in the fallback case, or how many samples have been observed, in
     both cases, to resolve the current segment index) lives in stopping._running_.
 
+    A committable estimator (see _supports_commit()) is always routed through the buffering path, even if it would
+    otherwise support running scoring (as an rCCA does), because the full trial prefix must be retained here to be
+    folded into its online model once the trial is decided (see _commit_stopped()); its own bounded running-scoring
+    state would not preserve the whole trial.
+
     Parameters
     ----------
     stopping: ClassifierMixin
@@ -202,7 +239,7 @@ def _running_predict(
     r = stopping._running_
     method_name = "decision_function" if use_decision_function else "predict"
     method = getattr(stopping.estimator_, method_name)
-    if _supports_running(stopping.estimator_):
+    if _supports_running(stopping.estimator_) and not _supports_commit(stopping.estimator_):
         result = method(X_chunk, running=True, reset=reset)
     else:
         r["raw_buffer"] = X_chunk if r["raw_buffer"] is None else np.concatenate((r["raw_buffer"], X_chunk), axis=2)
@@ -212,20 +249,21 @@ def _running_predict(
 
 
 def _commit_stopped(stopping: ClassifierMixin, yh: NDArray, running: bool) -> None:
-    """Commit the just-decided trials of a running-mode stop decision into an online update-capable estimator.
+    """Commit the just-decided trials of a running-mode stop decision into a committable estimator's online model.
 
-    A stateful online estimator (see _supports_update(), i.e. UnsupervisedRCCA) is probed read-only (update=False,
-    injected by _probe_kwargs()) while a trial's data grows, so the repeated dynamic-stopping queries never pollute
-    its model. This performs the matching commit: each trial that has now been decided (yh >= 0) is folded into the
-    model exactly once, using the full trial prefix buffered in stopping._running_ (populated by _running_predict(),
-    through which such estimators always route since they do not support the running scoring interface). The commit
-    re-runs the estimator on the same buffered prefix that produced yh, against the still-unmutated model, so the
-    label partial_fit_predict() assigns matches the one the *Stopping class just emitted.
+    A committable estimator (see _supports_commit(): UnsupervisedRCCA, or an rCCA with running=True) is probed
+    read-only while a trial's data grows, so the repeated dynamic-stopping queries never pollute its model
+    (UnsupervisedRCCA via update=False from _probe_kwargs(); rCCA because its decision_function() never updates). This
+    performs the matching commit: each trial that has now been decided (yh >= 0) is folded into the model exactly
+    once, using the full trial prefix buffered in stopping._running_ (populated by _running_predict(), through which
+    committable estimators always route). The commit re-runs the estimator on the same buffered prefix that produced
+    yh, against the still-unmutated model, so the label partial_fit_predict() folds in matches the one the *Stopping
+    class just emitted.
 
-    It is a no-op outside running mode (there is no buffer, and running=False deliberately never commits), for an
-    estimator without an online model to update, or when no trial stopped. Trials already committed earlier in the
-    same running sequence are tracked (in stopping._running_["committed"]) and never committed twice, so in a batch
-    each trial folds in once, at the moment it is decided, in stop-time order.
+    It is a no-op outside running mode (there is no buffer, and running=False deliberately never commits), for a
+    non-committable estimator, or when no trial stopped. Trials already committed earlier in the same running
+    sequence are tracked (in stopping._running_["committed"]) and never committed twice, so in a batch each trial
+    folds in once, at the moment it is decided, in stop-time order.
 
     Parameters
     ----------
@@ -241,7 +279,7 @@ def _commit_stopped(stopping: ClassifierMixin, yh: NDArray, running: bool) -> No
         return
     estimator = stopping.estimator_
     r = stopping._running_
-    if not _supports_update(estimator) or r is None or r.get("raw_buffer") is None:
+    if not _supports_commit(estimator) or r is None or r.get("raw_buffer") is None:
         return
     committed = r.setdefault("committed", np.zeros(len(yh), dtype=bool))
     for i in np.flatnonzero(yh >= 0):

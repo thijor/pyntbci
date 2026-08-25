@@ -752,6 +752,74 @@ class TestRCCA(unittest.TestCase):
         rcca_fresh.fit(X1, y1)
         self.assertTrue(np.allclose(rcca.w_, rcca_fresh.w_))
 
+    def test_rcca_partial_fit_predict_matches_manual_loop(self):
+        # partial_fit_predict is the supervised-seeded analogue of UnsupervisedRCCA's cumulative mode: seed the
+        # running statistics with a supervised fit, then fold each new trial in at its own predicted (pseudo-)label.
+        # It must be exactly the explicit predict()-then-fit(running=True) loop, one trial at a time.
+        k = N_TRIALS // 3
+
+        clf = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True)
+        clf.fit(X[:k], y[:k])  # supervised seed
+        r_seed = clf.r_.copy()
+        yh = clf.partial_fit_predict(X[k:])
+
+        ref = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True)
+        ref.fit(X[:k], y[:k])
+        yh_ref = np.zeros(N_TRIALS - k, dtype="int64")
+        for i in range(N_TRIALS - k):
+            yh_ref[i] = ref.predict(X[[k + i]])[0]  # decode with the model so far
+            ref.fit(X[[k + i]], yh_ref[[i]])  # fold in at the pseudo-label
+
+        self.assertEqual(yh.shape, (N_TRIALS - k,))
+        self.assertTrue(np.array_equal(yh, yh_ref))
+        self.assertTrue(np.allclose(clf.r_, ref.r_, atol=1e-8))  # same adapted model
+        self.assertFalse(np.allclose(clf.r_, r_seed))  # the model actually adapted away from the seed
+        self.assertGreaterEqual(np.mean(yh == y[k:]), ACCURACY_THRESHOLD)
+
+    def test_rcca_partial_fit_predict_update_false_is_read_only(self):
+        # update=False is a pure decode: identical to predict(), leaving the running model untouched (as a dynamic
+        # stopping loop probes growing data without committing).
+        k = N_TRIALS // 3
+        clf = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True)
+        clf.fit(X[:k], y[:k])
+        r_before = clf.r_.copy()
+        n_before = clf.cca_[0].n_xy_
+
+        yh = clf.partial_fit_predict(X[k:], update=False)
+        self.assertTrue(np.array_equal(yh, clf.predict(X[k:])))  # identical to a plain predict
+        self.assertTrue(np.allclose(clf.r_, r_before))  # model unchanged
+        self.assertEqual(clf.cca_[0].n_xy_, n_before)  # running covariance not grown
+
+    def test_rcca_partial_fit_predict_single_trial_equals_batch(self):
+        # Streaming trials one at a time (2D single-trial calls) equals a single batch call, which internally loops
+        # over the trials in order.
+        k = N_TRIALS // 3
+        batch = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True)
+        batch.fit(X[:k], y[:k])
+        yh_batch = batch.partial_fit_predict(X[k:])
+
+        stream = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True
+        )
+        stream.fit(X[:k], y[:k])
+        yh_stream = np.array([stream.partial_fit_predict(X[k + i])[0] for i in range(N_TRIALS - k)])
+
+        self.assertTrue(np.array_equal(yh_batch, yh_stream))
+        self.assertTrue(np.allclose(batch.r_, stream.r_, atol=1e-8))
+
+    def test_rcca_partial_fit_predict_requires_running(self):
+        clf = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH)
+        clf.fit(X, y)
+        with self.assertRaises(AssertionError):
+            clf.partial_fit_predict(X[[0]])
+
+    def test_rcca_partial_fit_predict_rejects_ensemble(self):
+        clf = pyntbci.classifiers.rCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, running=True, ensemble=True
+        )
+        with self.assertRaises(AssertionError):
+            clf.fit(X, y)  # ensemble+running already rejected at fit; partial_fit_predict also guards it
+
 
 class TestEnsemble(unittest.TestCase):
     def test_ensemble_shape(self):
