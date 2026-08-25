@@ -14,6 +14,7 @@ References
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 import pyntbci
 
@@ -35,7 +36,7 @@ CYCLE_SIZE = V.shape[1] / FS
 LAGS = SHIFTS / PR
 
 N_TRIALS = 1 * N_CLASSES
-N_CHANNELS = 16
+N_CHANNELS = 8
 N_SAMPLES = int(2 * CYCLE_SIZE * FS)
 N_COMPONENTS = 3
 N_FILTER_BANDS = 4
@@ -43,7 +44,7 @@ ENCODING_LENGTH = 0.3
 SEED = 42
 
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=4, random_state=SEED
 )
 
 # %%
@@ -100,11 +101,9 @@ print("w: shape:", ecca.w_.shape, ", type:", ecca.w_.dtype)
 
 # Plot CCA filter
 fig, ax = plt.subplots(figsize=(5, 3))
-ax.plot(np.arange(N_CHANNELS), ecca.w_)
+locfile = os.path.join(os.path.dirname(pyntbci.__file__), "capfiles", "thielen8.loc")
+pyntbci.plotting.topoplot(ecca.w_, locfile=locfile, ax=ax)
 ax.set_title("spatial filter")
-ax.set_xlabel("channel")
-ax.set_ylabel("weight")
-ax.set_title("Spatial filter")
 
 # %%
 # Cross-validation

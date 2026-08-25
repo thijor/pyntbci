@@ -13,13 +13,15 @@ References
 ----------
 .. [1] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive
        learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.
+       doi: ...
 .. [2] Thielen, J., & Tangermann, M. (2025, October). Exploring new territory II: Calibration-free decoding for ERP BCI.
        In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE.
+       doi: https://doi.org/10.1109/SMC58881.2025.11342596
 .. [3] Thielen, J., Sosulski, J., & Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP
-       BCI. 9th Graz Brain-Computer Interface Conference 2024.
+       BCI. 9th Graz Brain-Computer Interface Conference 2024. doi: https://doi.org/10.3217/978-3-99161-014-4-057
 .. [4] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007.
+       056007. doi: https://doi.org/10.1088/1741-2552/abecef
 """
 
 import matplotlib.pyplot as plt

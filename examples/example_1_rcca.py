@@ -7,15 +7,17 @@ reconvolution and spatial and temporal filters using canonical correlation analy
 
 References
 ----------
-.. [1] Thielen et al. (2021) From full calibration to zero training for a code-modulated visual evoked potentials brain
-       computer interface. DOI: https://doi.org/10.34973/9txv-z787
-.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+.. [1] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-       056007. DOI: https://doi.org/10.1088/1741-2552/abecef
+       056007. doi: https://doi.org/10.1088/1741-2552/abecef
+.. [2] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+       re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+       doi: https://doi.org/10.1371/journal.pone.0133797
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 import pyntbci
 
@@ -37,7 +39,7 @@ CYCLE_SIZE = V.shape[1] / FS
 LAGS = SHIFTS / PR
 
 N_TRIALS = 1 * N_CLASSES
-N_CHANNELS = 16
+N_CHANNELS = 8
 N_SAMPLES = int(2 * CYCLE_SIZE * FS)
 N_COMPONENTS = 3
 N_FILTER_BANDS = 4
@@ -45,7 +47,7 @@ ENCODING_LENGTH = 0.3
 SEED = 42
 
 X, y, V = pyntbci.eeg.generate_c_vep(
-    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=8, random_state=SEED
+    N_TRIALS, N_CHANNELS, N_SAMPLES, FS, n_classes=N_CLASSES, stimulus=V, primary_channels=4, random_state=SEED
 )
 
 # %%
@@ -90,10 +92,9 @@ ax.set_title("Stimulus time-series")
 # ----------------
 # The first step for reconvolution is to find within the sequences the repetitive events. This can be imposed "manually"
 # by choosing the event definition that we believe the brain responds to. Here, the so-called "duration" event is used,
-# which marks the length of a flash as the important piece of information. As the sequences in this dataset were
-# modulated, there are only two events: a short and a long flash. Additionally, a third event is added that will account
-# for the onset of a trial, during which all of a sudden the screen started flashing. The event matrix is a matrix of n
-# classes, e events, and m samples.
+# which marks the length of a flash as the important piece of information. Additionally, an event is added that will
+# account for the onset of a trial, during which all of a sudden the screen started flashing. The event matrix is a
+# matrix of n classes, e events, and m samples.
 #
 # Please, note that more event definitions exist, which can be explored with the `event` variable of `rCCA`. For
 # instance, `event="contrast"` is a useful event definition as well, which looks at rising and falling edges,
@@ -174,10 +175,9 @@ print("r: ", rcca.r_.shape, "(encoding_length*events)")
 
 # Plot CCA filters
 fig, ax = plt.subplots(1, 2, figsize=(15, 3))
-ax[0].plot(np.arange(N_CHANNELS), rcca.w_)
+locfile = os.path.join(os.path.dirname(pyntbci.__file__), "capfiles", "thielen8.loc")
+pyntbci.plotting.topoplot(rcca.w_, locfile=locfile, ax=ax[0])
 ax[0].set_title("spatial filter")
-ax[0].set_xlabel("channel")
-ax[0].set_ylabel("weight")
 tmp = np.reshape(rcca.r_, (len(rcca.events_), -1))
 for i in range(len(rcca.events_)):
     ax[1].plot(np.arange(int(encoding_length * FS)) / FS, tmp[i, :])

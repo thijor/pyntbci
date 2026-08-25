@@ -6,6 +6,18 @@ when to stop the processing or decoding of a trial based on the reliability of t
 two kinds: static stopping and dynamic stopping. In static stopping, an optimal fixes stopping time is learned, while
 in dynamic stopping the optimal stopping time depends on reaching a certain criterion, which may naturally lead to a
 variable stopping time.
+
+References
+----------
+.. [1] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+       re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+       doi: https://doi.org/10.1371/journal.pone.0133797
+.. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+       code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
+       056007. doi: http://doi.org/10.1088/1741-2552/abecef
+.. [3] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
+       brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
+       doi: https://doi.org/10.3389/fnhum.2024.1437965
 """
 
 import matplotlib.pyplot as plt
@@ -269,12 +281,6 @@ print(f"\tITR: avg={itr_tgt_acc.mean():.1f} with std={itr_tgt_acc.std():.2f}")
 # -----------------------
 # The margin method learns threshold margins (i.e., the difference between the best and second-best score) to stop.
 # These margins are defined as such that a targeted accuracy is reached. See [1]_ for more information.
-#
-# References:
-#
-# .. [1] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-#        re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
-#        doi: https://doi.org/10.1371/journal.pone.0133797
 
 # Fit classifier
 rcca = pyntbci.classifiers.rCCA(stimulus=V, fs=FS, event="refe", encoding_length=0.3, score_metric="correlation")
@@ -356,12 +362,6 @@ print(f"\tITR: avg={itr_margin.mean():.1f} with std={itr_margin.std():.2f}")
 # ---------------------
 # The beta method fits a beta distribution to the non-maximum scores (i.e., if correlation, then correlation+1)/2), and
 # tests the probability of the maximum correlation to belong to that beta distribution. See [2]_ for more information.
-#
-# References:
-#
-# .. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-#        code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-#        056007. doi: http://doi.org/10.1088/1741-2552/abecef
 
 # Loop folds
 accuracy_beta = np.zeros(N_FOLDS)
@@ -434,11 +434,6 @@ print(f"\tITR: avg={itr_beta.mean():.1f} with std={itr_beta.std():.2f}")
 # The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
 # threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [3]_ for
 # more information.
-#
-# References:
-#
-# .. [3] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
-#        brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
 
 # Cost ratio and target probabilities
 cr = 1.0
@@ -525,12 +520,7 @@ print(f"\tITR: avg={itr_bds0.mean():.1f} with std={itr_bds0.std():.2f}")
 # Bayesian dynamic stopping (BDS1)
 # --------------------------------
 # The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-# threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [4]_.
-#
-# References:
-#
-# .. [4] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
-#        brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
+# threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [3]_.
 
 # Loop folds
 accuracy_bds1 = np.zeros(N_FOLDS)
@@ -599,12 +589,7 @@ print(f"\tITR: avg={itr_bds1.mean():.1f} with std={itr_bds1.std():.2f}")
 # Bayesian dynamic stopping (BDS2)
 # --------------------------------
 # The Bayesian method fits Gaussian distributions for target and non-target responses, and calculates a stopping
-# threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [5]_.
-#
-# References:
-#
-# .. [5] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
-#        brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
+# threshold using these and a cost criterion. This method comes in three flavours: bds0, bds1, and bds2. See [3]_.
 
 # Loop folds
 accuracy_bds2 = np.zeros(N_FOLDS)
