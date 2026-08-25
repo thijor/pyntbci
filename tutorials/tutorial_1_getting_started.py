@@ -27,7 +27,7 @@ import pyntbci
 
 # %%
 # Simulate data
-# -----------------
+# -------------
 # The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 # The dataset consists of: (1) The EEG data X that is a matrix of k trials, c channels, and m samples; (2) The labels y
 # that is a vector of k trials; (3) The pseudo-random noise-codes V that is a matrix of stimuli with n classes and m
@@ -61,7 +61,7 @@ X, y, V = pyntbci.eeg.generate_c_vep(
 
 # %%
 # Inspect data
-# -----------------
+# ------------
 
 # Print data shapes
 print("X", X.shape, "(trials x channels x samples)", X.dtype)  # EEG

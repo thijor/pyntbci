@@ -229,7 +229,7 @@ def _cca_from_whitened(
 
 class CCA(TransformerMixin, BaseEstimator):
     """Canonical correlation analysis (CCA). Maximizes the correlation between two variables in their projected spaces.
-    Here, CCA is implemented as the SVD of (cross)covariance matrices [1]_.
+    Here, CCA is implemented as the SVD of (cross)covariance matrices.
 
     Parameters
     ----------
@@ -258,29 +258,24 @@ class CCA(TransformerMixin, BaseEstimator):
     rho_: NDArray
         The singular values (canonical correlations) of shape (min(n_features_x, n_features_y),).
     n_x_: int
-        The number of samples used to estimate avg_x_ and cov_x_.
+        The number of samples used to estimate ``avg_x_`` and ``cov_x_``.
     avg_x_: NDArray
         The (running) average of X of shape (n_features_x).
     cov_x_: NDArray
         The (running) covariance of X of shape (n_features_x, n_features_x).
     n_y_: int
-        The number of samples used to estimate avg_y_ and cov_y_.
+        The number of samples used to estimate ``avg_y_`` and ``cov_y_``.
     avg_y_: NDArray
         The (running) average of Y of shape (n_features_y).
     cov_y_: NDArray
         The (running) covariance of Y of shape (n_features_y, n_features_y).
     n_xy_: int
-        The number of samples used to estimate avg_xy_ and cov_xy_.
+        The number of samples used to estimate ``avg_xy_`` and ``cov_xy_``.
     avg_xy_: NDArray
         The (running) average of concat(X, Y) of shape (n_features_x + n_features_y).
     cov_xy_: NDArray
         The (running) covariance of concat(X, Y) of shape (n_features_x + n_features_y, n_features_x + n_features_y),
         from which the cross-covariance of X and Y is taken as the (n_features_x, n_features_y) off-diagonal block.
-
-    References
-    ----------
-    .. [1] Hotelling, H. (1992). Relations between two sets of variates. In Breakthroughs in statistics: methodology and
-           distribution (pp. 162-190). New York, NY: Springer New York. doi: 10.1007/978-1-4612-4380-9_14
     """
 
     w_x_: NDArray

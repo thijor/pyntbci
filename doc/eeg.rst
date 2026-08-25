@@ -2,6 +2,7 @@ EEG
 ===
 
 .. automodule:: pyntbci.eeg
+   :no-index:
 
 .. currentmodule:: pyntbci.eeg
 

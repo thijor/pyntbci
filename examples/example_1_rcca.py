@@ -23,7 +23,7 @@ import pyntbci
 
 # %%
 # Simulate data
-# -----------------
+# -------------
 # The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
 FS = 120
@@ -52,7 +52,7 @@ X, y, V = pyntbci.eeg.generate_c_vep(
 
 # %%
 # Inspect data
-# -----------------
+# ------------
 
 # Print data shapes
 print("X", X.shape, "(trials x channels x samples)", X.dtype)  # EEG

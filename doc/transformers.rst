@@ -2,6 +2,7 @@ Transformers
 ============
 
 .. automodule:: pyntbci.transformers
+   :no-index:
 
 .. currentmodule:: pyntbci.transformers
 

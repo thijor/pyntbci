@@ -113,7 +113,7 @@ class DifferenceGate(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_: NDArray
-        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting it on the
+        The classes that can be predicted, taken from the wrapped estimator's ``classes_`` after fitting it on the
         difference scores.
     estimator_: ClassifierMixin
         The fitted clone of estimator. The passed-in estimator is never mutated.

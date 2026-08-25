@@ -47,6 +47,14 @@ autosummary_generate = True
 autodoc_default_options = {"inherited-members": False}
 autodoc_default_flags = {"inherited-members": None}
 
+# scikit-learn adds metadata-routing methods (set_*_request, get_metadata_routing) to every estimator, whose
+# docstrings contain :ref:`metadata_routing` and :term:`meta-estimator` cross-references into scikit-learn's own
+# documentation, which is not part of this build. These surface as "undefined label" (ref.ref) and "term not in
+# glossary" (ref.term) warnings. They cannot be silenced with nitpick_ignore (that only governs nitpicky-mode
+# missing-reference warnings, whereas these std-domain ref/term warnings are always emitted), so the two warning
+# categories are suppressed here. This project's own docstrings use no :ref:/:term: roles, so nothing of ours is hidden.
+suppress_warnings = ["ref.ref", "ref.term"]
+
 numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
@@ -81,8 +89,3 @@ todo_include_todos = True
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]

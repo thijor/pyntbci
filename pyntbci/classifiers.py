@@ -267,7 +267,7 @@ def _apply_temporal_prior(
 
 
 class eCCA(ClassifierMixin, BaseEstimator):
-    """ERP CCA classifier. Also called the "reference" method [1]_. It computes ERPs as templates for full sequences and
+    """eCCA classifier, also called the "reference" method. It computes templates by averaging full sequences and
     performs a CCA for spatial filtering.
 
     Parameters
@@ -332,18 +332,12 @@ class eCCA(ClassifierMixin, BaseEstimator):
         (i.e., all circularly shifted classes can be predicted, whether or not they were observed in y during fit),
         otherwise the sorted unique labels observed in y.
     cca_: list[TransformerMixin]
-        The CCA used to fit the spatial filters. If ensemble=False, len(cca_)=1, otherwise len(cca_)=n_classes.
+        The CCA used to fit the spatial filters. If ensemble=False, len(``cca_``)=1, otherwise len(``cca_``)=n_classes.
     w_: NDArray
         The weight vector representing a spatial filter of shape (n_channels, n_components). If ensemble=True, then the
         shape is (n_channels, n_components, n_classes).
     T_: NDArray
         The template matrix representing the expected responses of shape (n_classes, n_components, n_samples).
-
-    References
-    ----------
-    .. [1] Martínez-Cagigal, V., Thielen, J., Santamaria-Vazquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R.
-           (2021). Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): A literature
-           review. Journal of Neural Engineering, 18(6), 061002. doi: 10.1088/1741-2552/ac38cf
     """
 
     classes_: NDArray
@@ -754,7 +748,7 @@ class Ensemble(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_: NDArray
-        The classes that can be predicted, taken from the gate's classes_ after fitting.
+        The classes that can be predicted, taken from the gate's ``classes_`` after fitting.
     models_: list[ClassifierMixin]
         A list containing all models learned for each of the databanks (clones of estimator).
     gate_: ClassifierMixin
@@ -865,8 +859,8 @@ class Ensemble(ClassifierMixin, BaseEstimator):
 
 
 class rCCA(ClassifierMixin, BaseEstimator):
-    """Reconvolution CCA classifier. It performs a spatial and temporal decomposition (reconvolution [3]_) within a
-    CCA [4]_ to perform spatial filtering as well as template prediction [5]_.
+    """Reconvolution CCA classifier. It performs a spatial and temporal decomposition (i.e., reconvolution) within a CCA
+    to perform spatial filtering as well as template prediction.
 
     Parameters
     ----------
@@ -926,7 +920,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
         passed to that call. If True, each fit() call instead adds its trials to the ones seen in all previous
         fit() calls (i.e., keeps the spatial/temporal filter's running covariance from CCA(running=True) instead
         of discarding it), so a model can be trained gradually as more trials become available without redoing
-        the full computation on all trials so far. Since rCCA's templates (Ts_/Tw_) are already always recomputed
+        the full computation on all trials so far. Since rCCA's templates (``Ts_``/``Tw_``) are already always recomputed
         from the stimulus and the current filter, not the training trials themselves, this is mathematically
         exact: two calls fit(X1, y1) then fit(X2, y2) give the same filter as one call fit(concat(X1, X2),
         concat(y1, y2)). Not supported for ensemble=True, since each class's covariance would then be running on
@@ -938,10 +932,10 @@ class rCCA(ClassifierMixin, BaseEstimator):
         mode.
     response_prior: NDArray (default: None)
         A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak
-        near 100 ms, and a negative peak near 125 ms), sampled at fs, toward which the learned temporal filter r_ is
+        near 100 ms, and a negative peak near 125 ms), sampled at fs, toward which the learned temporal filter ``r_`` is
         softly regularized (see response_prior_gamma). Given either as one response of length n_event_samples
         (applied to every event) or as the full concatenation of the per-event responses of length n_features
-        (matching r_; see encoding_length). Unlike in the unsupervised case, the (labeled) fit already estimates the
+        (matching ``r_``; see encoding_length). Unlike in the unsupervised case, the (labeled) fit already estimates the
         response at the correct phase, so this acts as a regularizer toward a physiologically plausible shape, which
         can stabilize the response when little/noisy data is available. If None (default), no prior is used.
     response_prior_gamma: float (default: 1.0)
@@ -949,15 +943,15 @@ class rCCA(ClassifierMixin, BaseEstimator):
         upwards (larger pulls the response more strongly toward the prior; in the limit the response equals the
         prior). Only used if response_prior is not None.
     smoothness_m: float (default: None)
-        The strength of a temporal-smoothness prior on the response r_: after the CCA, the temporal filter is
+        The strength of a temporal-smoothness prior on the response ``r_``: after the CCA, the temporal filter is
         re-estimated with a second-difference penalty (see smoothness_matrix in utilities) that penalizes the squared
         differences between adjacent response samples, favoring a smooth response (as commonly used when estimating
         temporal response functions). Applied per event (smoothness is not enforced across event boundaries). Ranges
         from 0 (no smoothing) upwards; the strength is scaled by the response covariance so it is dimensionless,
         comparable to gamma_m. If None (default), no smoothness prior is used. Composes with response_prior.
     cca_: list[TransformerMixin]
-        The CCA used to fit the spatial and temporal filters. If ensemble=False, len(cca_)=1, otherwise
-        len(cca_)=n_classes.
+        The CCA used to fit the spatial and temporal filters. If ensemble=False, len(``cca_``)=1, otherwise
+        len(``cca_``)=n_classes.
     events_: list
         The list of events used to map the stimulus to, as set by set_encoding_matrix().
     w_: NDArray
@@ -980,17 +974,6 @@ class rCCA(ClassifierMixin, BaseEstimator):
         The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
         stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of
         previous cycles).
-
-    References
-    ----------
-    .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-           re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
-    .. [4] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2017). Re(con)volution: accurate response prediction
-           for broad-band evoked potentials-based brain computer interfaces. Brain-Computer Interface Research: A
-           State-of-the-Art Summary 6, 35-42. doi: 10.1007/978-3-319-64373-1_4
-    .. [5] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-           code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-           056007. doi: 10.1088/1741-2552/abecef
     """
 
     classes_: NDArray
@@ -1072,7 +1055,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
         self,
         n_samples: int,
     ) -> NDArray:
-        """Get the templates, tiled (Ts_ followed by repeated Tw_) to the requested length. Used by decision_function()
+        """Get the templates, tiled (``Ts_`` followed by repeated ``Tw_``) to the requested length. Used by decision_function()
         for both the batch and the running path, since (unlike eCCA's get_T()) no de-meaning is applied here, so a
         chunk at any given position range has the same value regardless of how many more samples are requested.
 
@@ -1332,7 +1315,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
 
     def _response_feature_lengths(self) -> NDArray:
         """The number of temporal features (response samples) per event, i.e. the sizes of the per-event blocks of
-        the temporal filter r_ (see encoding_length), as used to build the smoothness matrix."""
+        the temporal filter ``r_`` (see encoding_length), as used to build the smoothness matrix."""
         n_events = len(self.events_)
         if self.encoding_length is None:
             length = np.ones(n_events, dtype=int)
@@ -1538,7 +1521,7 @@ class rCCA(ClassifierMixin, BaseEstimator):
 
 
 class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
-    """Unsupervised adaptive reconvolution CCA classifier for calibration-free c-VEP decoding [6]_.
+    """Unsupervised adaptive reconvolution CCA classifier for calibration-free c-VEP decoding.
 
     Instead of a supervised calibration, each trial is decoded by fitting a separate rCCA per candidate stimulus (as
     a hypothesis) and selecting the stimulus whose model best fits the trial, i.e. yields the highest correlation
@@ -1557,14 +1540,14 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
     - `confidence=True` (implies `cumulative`): each trial is weighted by a confidence, so that high-confidence
       trials drive the model updates and low-confidence trials are suppressed. The confidence is the normalized
       correlation margin `(rho_winner - rho_runner_up) / std(rho_except_winner)`, estimated from an instantaneous
-      pass (as in [6]_), and used as a per-trial weight in the running covariance.
+      pass, and used as a per-trial weight in the running covariance.
     - `posthoc=True` (implies `cumulative`): after each trial, all previously decoded trials are re-decoded with the
       just-updated (presumably better) model and their pseudo-labels are corrected, which then affects subsequent
       updates. This is the only mode that must retain the past trials' EEG (in `X_hist_`), since re-decoding needs
       the raw data; a changed label is applied to the running covariance as an exact remove-then-re-add, avoiding a
       full refit. The other modes keep no raw data (only the running covariance and the list of pseudo-labels).
 
-    These flags reproduce the four variants of [6]_: instantaneous (all False), cumulative (`cumulative`),
+    These flags reproduce the four variants: instantaneous (all False), cumulative (`cumulative`),
     confidence-weighted cumulative (`cumulative`, `confidence`), and confidence-weighted cumulative with post hoc
     re-analysis (`cumulative`, `confidence`, `posthoc`).
 
@@ -1606,7 +1589,7 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
     tmin: float (default: 0)
         The start of stimulation in seconds. Can be used if there was a delay in the marker.
     n_components: int (default: 1)
-        The number of CCA components to use. Decoding and confidence use the first component only, matching [6]_.
+        The number of CCA components to use. Decoding and confidence use the first component only.
     gamma_x: float | list[float] | NDArray (default: None)
         Regularization on the covariance matrix for CCA along X (channels), see `rCCA`.
     gamma_m: float | list[float] | NDArray (default: None)
@@ -1622,12 +1605,12 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         Whether to weight each trial by its confidence during cumulative updates. Implies cumulative.
     posthoc: bool (default: False)
         Whether to re-decode and relabel all previous trials after each update. Implies cumulative, and retains the
-        past trials' EEG in X_hist_.
+        past trials' EEG in ``X_hist_``.
     response_prior: NDArray (default: None)
         A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak
         near 100 ms, and a negative peak near 125 ms), sampled at fs. Either one response of length n_event_samples
         (applied to every event) or the full concatenation of the per-event responses of length n_features (matching
-        the temporal filter r_; see encoding_length). If given, the learned response is softly regularized toward it
+        the temporal filter ``r_``; see encoding_length). If given, the learned response is softly regularized toward it
         (see response_prior_gamma), which anchors the response's absolute phase. This is what makes decoding work for
         circularly-shifted codes (e.g. shifted m-sequences): without it, an unconstrained response can circularly
         slide to make every candidate stimulus fit equally well (the more so the longer encoding_length), so the
@@ -1661,11 +1644,6 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         The running covariance of the pseudo-labeled history (only populated if cumulative).
     X_hist_: list
         The (decoded) EEG of the decoded trials, retained only if posthoc, for re-decoding.
-
-    References
-    ----------
-    .. [6] Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive
-           learning for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026.
     """
 
     classes_: NDArray
@@ -1786,7 +1764,7 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
 
     @staticmethod
     def _margin(rho: NDArray) -> float:
-        """The confidence: normalized margin between the winning and runner-up correlations (see [6]_)."""
+        """The confidence: normalized margin between the winning and runner-up correlations."""
         order = np.sort(rho)
         denom = order[:-1].std()
         return float((order[-1] - order[-2]) / denom) if denom > 0 else 0.0

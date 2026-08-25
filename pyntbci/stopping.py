@@ -290,7 +290,7 @@ def _commit_stopped(stopping: ClassifierMixin, yh: NDArray, running: bool) -> No
 
 class BayesStopping(ClassifierMixin, BaseEstimator):
     """Bayesian dynamic stopping. Fits Gaussian distributions for target and non-target responses, and calculates a
-    stopping threshold using these and a cost criterion [1]_.
+    stopping threshold using these and a cost criterion.
 
     Parameters
     ----------
@@ -321,7 +321,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_: NDArray
-        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        The classes that can be predicted, taken from the wrapped estimator's ``classes_`` after fitting. Note, predict()
         may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     alpha_: float
         The scaling parameter between observed and predicted responses.
@@ -341,11 +341,6 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         The predicted probability of a false detection of shape (n_segments).
     pm_: NDArray
         The predicted probability of a miss of shape (n_segments).
-
-    References
-    ----------
-    .. [1] Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response
-           brain-computer interfacing. Frontiers in Human Neuroscience, 18, 1437965.
     """
 
     classes_: NDArray
@@ -424,7 +419,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         y: NDArray,
     ) -> None:
         """Fit the Bayesian dynamic stopping model using the analytic template-based approach, i.e., using the inner
-        product between the rCCA templates. Sets alpha_, sigma_, b0_, b1_, s0_, s1_, eta_, pf_, and pm_.
+        product between the rCCA templates. Sets ``alpha_``, ``sigma_``, ``b0_``, ``b1_``, ``s0_``, ``s1_``, ``eta_``, ``pf_``, and ``pm_``.
 
         Parameters
         ----------
@@ -502,7 +497,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         y: NDArray,
     ) -> None:
         """Fit the Bayesian dynamic stopping model using the empirical approach, i.e., using the empirical scores
-        obtained from the estimator object. Sets b0_, b1_, s0_, s1_, eta_, pf_, and pm_.
+        obtained from the estimator object. Sets ``b0_``, ``b1_``, ``s0_``, ``s1_``, ``eta_``, ``pf_``, and ``pm_``.
 
         Parameters
         ----------
@@ -693,7 +688,7 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_: NDArray
-        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting (i.e., after the
+        The classes that can be predicted, taken from the wrapped estimator's ``classes_`` after fitting (i.e., after the
         internal cross-validation, fit on the last fold, matching what predict() uses). Note, predict() may
         additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     stop_time_: float
@@ -880,7 +875,7 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
 
 class DistributionStopping(ClassifierMixin, BaseEstimator):
     """Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability
-    of the target / maximum score to be an outlier of that distribution [2]_.
+    of the target / maximum score to be an outlier of that distribution.
 
     Parameters
     ----------
@@ -906,17 +901,11 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_: NDArray
-        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        The classes that can be predicted, taken from the wrapped estimator's ``classes_`` after fitting. Note, predict()
         may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     distributions_: list[dict]
         A list of dictionaries containing the parameters of the distribution for each data segment. Only used if
         trained=True.
-
-    References
-    ----------
-    .. [2] Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
-           code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
-           056007. doi: 10.1088/1741-2552/abecef
     """
 
     classes_: NDArray
@@ -1098,7 +1087,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
 
 class MarginStopping(ClassifierMixin, BaseEstimator):
     """Margin dynamic stopping. Learns threshold margins (difference between best and second-best score) to stop at
-    such that a targeted accuracy is reached [3]_.
+    such that a targeted accuracy is reached.
 
     Parameters
     ----------
@@ -1126,15 +1115,10 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_: NDArray
-        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        The classes that can be predicted, taken from the wrapped estimator's ``classes_`` after fitting. Note, predict()
         may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     margins_: NDArray
         The trained stopping margins of shape (n_segments).
-
-    References
-    ----------
-    .. [3] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-           re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
 
     classes_: NDArray
@@ -1333,7 +1317,7 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_: NDArray
-        The classes that can be predicted, taken from the wrapped estimator's classes_ after fitting. Note, predict()
+        The classes that can be predicted, taken from the wrapped estimator's ``classes_`` after fitting. Note, predict()
         may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     values_: NDArray
         The trained stopping values of shape (n_segments).

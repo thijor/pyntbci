@@ -12,7 +12,7 @@ def is_de_bruijn_sequence(
     k: int = 2,
     n: int = 6,
 ) -> bool:
-    """Check whether a stimulus is a de Bruijn sequence. A de Bruijn sequence [1]_ should contain all possible
+    """Check whether a stimulus is a de Bruijn sequence. A de Bruijn sequence should contain all possible
     substrings of the alphabet.
 
     Parameters
@@ -31,8 +31,8 @@ def is_de_bruijn_sequence(
 
     References
     ----------
-    .. [1] De Bruijn, N. G. (1946). A combinatorial problem. Proceedings of the Section of Sciences of the Koninklijke
-           Nederlandse Akademie van Wetenschappen te Amsterdam, 49(7), 758-764.
+    De Bruijn, N. G. (1946). A combinatorial problem. Proceedings of the Section of Sciences of the Koninklijke
+    Nederlandse Akademie van Wetenschappen te Amsterdam, 49(7), 758-764.
     """
     stimulus = stimulus.flatten()
     n_bits = stimulus.size
@@ -63,12 +63,14 @@ def is_de_bruijn_sequence(
 def is_gold_code(
     stimulus: NDArray,
 ) -> bool:
-    """Check whether a stimulus is a Gold code. Gold codes [3]_ have a 3-valued auto- and cross-correlation function
-    [4]_. If the length of the linear feedback shift register m is even:
+    """Check whether a stimulus is a Gold code. Gold codes have a 3-valued auto- and cross-correlation function.
+
+    If the length of the linear feedback shift register m is even:
     * 1/(2^n−1)
     * −(2^{(n+2)/2}+1)/(2^n−1)
     * (2^{(n+2)/2}−1)/(2^n−1)
     in ratio ~3/4, ~1/8, ~1/8.
+
     If the length of the linear feedback shift register n is odd:
     * 1/(2^n−1)
     * −(2^{(n+1)/2}+1)/(2^n−1)
@@ -87,9 +89,9 @@ def is_gold_code(
 
     References
     ----------
-    .. [3] Gold, R. (1967). Optimal binary sequences for spread spectrum multiplexing (Corresp.). IEEE Transactions on
-           information theory, 13(4), 619-621.
-    .. [4] Meel, J. (1999). Spread spectrum (SS). De Nayer Instituut, Hogeschool Voor Wetenschap & Kunst.
+    Gold, R. (1967). Optimal binary sequences for spread spectrum multiplexing (Corresp.). IEEE Transactions on
+    information theory, 13(4), 619-621.
+    Meel, J. (1999). Spread spectrum (SS). De Nayer Instituut, Hogeschool Voor Wetenschap & Kunst.
     """
     assert np.unique(stimulus).size == 2, "The input sequences are not binary."
     n_classes, n_bits = stimulus.shape
@@ -129,8 +131,8 @@ def is_gold_code(
 def is_m_sequence(
     stimulus: NDArray,
 ) -> bool:
-    """Check whether a stimulus is an m-sequence. An m-sequence [5]_ should have an auto-correlation function that is 1
-    at time-shift 0 and -1/n elsewhere [6]_.
+    """Check whether a stimulus is an m-sequence. An m-sequence should have an auto-correlation function that is 1 at
+    time-shift 0 and -1/n elsewhere.
 
     Parameters
     ----------
@@ -144,8 +146,8 @@ def is_m_sequence(
 
     References
     ----------
-    .. [5] Golomb, S. W. (1967). Shift register sequences. Holden-Day. Inc., San Fransisco.
-    .. [6] Meel, J. (1999). Spread spectrum (SS)
+    Golomb, S. W. (1967). Shift register sequences. Holden-Day. Inc., San Fransisco.
+    Meel, J. (1999). Spread spectrum (SS)
     """
     stimulus = stimulus.flatten()
     n_bits = stimulus.size
@@ -168,7 +170,7 @@ def is_m_sequence(
 
 
 def make_apa_sequence() -> NDArray:
-    """Make an almost perfect auto-correlation (APA) sequence. APA sequence [7]_ examples are taken from [8]_.
+    """Make an almost perfect auto-correlation (APA) sequence.
 
     Returns
     -------
@@ -177,12 +179,11 @@ def make_apa_sequence() -> NDArray:
 
     References
     ----------
-    .. [7] Wolfmann, J. (1992). Almost perfect autocorrelation sequences. IEEE Transactions on Information Theory,
-           38(4), 1412-1418. DOI: 10.1109/18.144729
-    .. [8] Wei, Q., Liu, Y., Gao, X., Wang, Y., Yang, C., Lu, Z., & Gong, H. (2018). A novel c-VEP BCI paradigm for
-           increasing the number of stimulus targets based on grouping modulation with different codes. IEEE
-           Transactions on Neural Systems and Rehabilitation Engineering, 26(6), 1178-1187.
-           DOI: 10.1109/TNSRE.2018.2837501
+    Wolfmann, J. (1992). Almost perfect autocorrelation sequences. IEEE Transactions on Information Theory, 38(4),
+    1412-1418. doi: 10.1109/18.144729
+    Wei, Q., Liu, Y., Gao, X., Wang, Y., Yang, C., Lu, Z., & Gong, H. (2018). A novel c-VEP BCI paradigm for increasing
+    the number of stimulus targets based on grouping modulation with different codes. IEEE Transactions on Neural
+    Systems and Rehabilitation Engineering, 26(6), 1178-1187. doi: 10.1109/TNSRE.2018.2837501
     """
     # Credit: Wei et al. (2018) doi: 10.1109/TNSRE.2018.2837501
     stimulus = [
@@ -260,7 +261,7 @@ def make_de_bruijn_sequence(
     n: int = 6,
     seed: list[int] = None,
 ) -> NDArray:
-    """Make a de Bruijn sequence. This code to generate a de Bruijn sequence [9]_ is largely inspired by [10]_.
+    """Make a de Bruijn sequence. This code to generate a de Bruijn sequence is largely inspired by Eviatar Bach.
 
     Parameters
     ----------
@@ -278,9 +279,9 @@ def make_de_bruijn_sequence(
 
     References
     ----------
-    .. [9] De Bruijn, N. G. (1946). A combinatorial problem. Proceedings of the Section of Sciences of the Koninklijke
-           Nederlandse Akademie van Wetenschappen te Amsterdam, 49(7), 758-764.
-    .. [10] Eviatar Bach: git.sagemath.org/sage.git/tree/src/sage/combinat/debruijn_sequence.pyx
+    De Bruijn, N. G. (1946). A combinatorial problem. Proceedings of the Section of Sciences of the Koninklijke
+    Nederlandse Akademie van Wetenschappen te Amsterdam, 49(7), 758-764.
+    Eviatar Bach: git.sagemath.org/sage.git/tree/src/sage/combinat/debruijn_sequence.pyx
     """
     if seed is None:
         register = [0] * k * n
@@ -307,7 +308,7 @@ def make_de_bruijn_sequence(
 
 
 def make_golay_sequence() -> NDArray:
-    """Make complementary Golay sequences. Golay sequence [11]_ examples are taken from [12]_.
+    """Make complementary Golay sequences.
 
     Returns
     -------
@@ -316,11 +317,10 @@ def make_golay_sequence() -> NDArray:
 
     References
     ----------
-    .. [11] Golay, MJE. (1949). Notes on digital coding. Proc. IEEE, 37, 657.
-    .. [12] Wei, Q., Liu, Y., Gao, X., Wang, Y., Yang, C., Lu, Z., & Gong, H. (2018). A novel c-VEP BCI paradigm for
-            increasing the number of stimulus targets based on grouping modulation with different codes. IEEE
-            Transactions on Neural Systems and Rehabilitation Engineering, 26(6), 1178-1187. DOI:
-            10.1109/TNSRE.2018.2837501
+    Golay, MJE. (1949). Notes on digital coding. Proc. IEEE, 37, 657.
+    Wei, Q., Liu, Y., Gao, X., Wang, Y., Yang, C., Lu, Z., & Gong, H. (2018). A novel c-VEP BCI paradigm for increasing
+    the number of stimulus targets based on grouping modulation with different codes. IEEE Transactions on Neural
+    Systems and Rehabilitation Engineering, 26(6), 1178-1187. doi: 10.1109/TNSRE.2018.2837501
     """
     # Credit: Wei et al. (2018) doi: 10.1109/TNSRE.2018.2837501
     ga = [
@@ -465,7 +465,7 @@ def make_gold_codes(
     seed1: list[int] = None,
     seed2: list[int] = None,
 ) -> NDArray:
-    """Make a set of Gold codes. The Gold codes [13]_ should be generated with two polynomials that define a preferred
+    """Make a set of Gold codes. The Gold codes should be generated with two polynomials that define a preferred
     pair of m-sequences.
 
     Parameters
@@ -488,8 +488,8 @@ def make_gold_codes(
 
     References
     ----------
-    .. [13] Gold, R. (1967). Optimal binary sequences for spread spectrum multiplexing (Corresp.). IEEE Transactions on
-            information theory, 13(4), 619-621.
+    Gold, R. (1967). Optimal binary sequences for spread spectrum multiplexing (Corresp.). IEEE Transactions on
+    information theory, 13(4), 619-621.
     """
     if poly1 is None:
         poly1 = [1, 0, 0, 0, 0, 1]
@@ -513,7 +513,7 @@ def make_m_sequence(
     base: int = 2,
     seed: list[int] = None,
 ) -> NDArray:
-    """Make a maximum length sequence. Maximum length sequence, or m-sequence [14]_.
+    """Make a maximum length sequence. Maximum length sequence, or m-sequence.
 
     Parameters
     ----------
@@ -533,7 +533,7 @@ def make_m_sequence(
 
     References
     ----------
-    .. [14] Golomb, S. W. (1967). Shift register sequences. Holden-Day. Inc., San Fransisco.
+    Golomb, S. W. (1967). Shift register sequences. Holden-Day. Inc., San Fransisco.
     """
     if poly is None:
         poly = [1, 0, 0, 0, 0, 1]
@@ -557,7 +557,7 @@ def make_m_sequence(
 def modulate(
     stimulus: NDArray,
 ) -> NDArray:
-    """Modulate a stimulus. Modulation is done by xoring with a double frequency bit-clock [15]_. This limits
+    """Modulate a stimulus. Modulation is done by xoring with a double frequency bit-clock. This limits
     low-frequency content as well as the event distribution (i.e., limits to shorter (only two) run-lengths).
 
     Parameters
@@ -572,8 +572,8 @@ def modulate(
 
     References
     ----------
-    .. [15] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
+    Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
     """
     stimulus = np.repeat(stimulus, 2, axis=1)
     clock = np.zeros(stimulus.shape, dtype="uint8")
@@ -589,7 +589,7 @@ def optimize_layout_incremental(
     random_state: Union[int, np.random.Generator] = None,
 ) -> NDArray:
     """Optimize the allocation of codes to a layout by considering the correlation between neighboring codes. This
-    method was developed and evaluated as part of [16]_.
+    method was developed and evaluated as part of Thielen et al. (2015).
 
     Parameters
     ----------
@@ -611,8 +611,8 @@ def optimize_layout_incremental(
 
     References
     ----------
-    .. [16] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
+    Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
     n_codes = X.shape[0]
     rng = np.random.default_rng(random_state)
@@ -669,7 +669,7 @@ def optimize_layout_incremental(
 def optimize_subset_clustering(X: NDArray, n_subset: int) -> NDArray:
     """Optimize the subset by first clustering similar codes and subsequently selecting the best candidates from each
     cluster. The best candidate from each cluster is defined by the minimum maximum correlation with any code outside
-    the cluster. This method was developed and evaluated as part of [17]_.
+    the cluster. This method was developed and evaluated as part of Thielen et al. (2015).
 
     Parameters
     ----------
@@ -685,8 +685,8 @@ def optimize_subset_clustering(X: NDArray, n_subset: int) -> NDArray:
 
     References
     ----------
-    .. [17] Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-            re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
+    Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
     n_codes = X.shape[0]
     assert n_codes > n_subset, "X must contain more than n_subset codes"

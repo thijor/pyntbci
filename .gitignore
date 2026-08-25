@@ -70,6 +70,12 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+doc/_build/
+# sphinx-gallery generated output (sources live in the top-level examples/ and tutorials/)
+doc/generated/
+doc/examples/
+doc/tutorials/
+doc/sg_execution_times.rst
 
 # PyBuilder
 .pybuilder/

@@ -71,7 +71,7 @@ plt.ylabel("stimulus")
 
 # %%
 # Modulated Gold codes
-# --------------
+# --------------------
 # Original m-sequences and Gold codes have a run-length distribution with a maximum length equal to the length of the
 # shift register that was used. To limit this, codes can be modulated to contain only run-lengths of length 1 and 2.
 
@@ -97,7 +97,7 @@ plt.ylabel("stimulus")
 
 # %%
 # De Bruijn sequence
-# --------------
+# ------------------
 # Also other codes exist, such as the De Bruijn sequence.
 
 # Generate a de Bruijn sequence.

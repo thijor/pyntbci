@@ -2,6 +2,7 @@ Stopping
 ========
 
 .. automodule:: pyntbci.stopping
+   :no-index:
 
 .. currentmodule:: pyntbci.stopping
 

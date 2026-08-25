@@ -513,6 +513,12 @@ def generate_c_vep(
 
     source = generate_c_vep_source(stimulus, y, n_samples, fs, impulse_response=impulse_response, dtype="float64")
 
+    if primary_channels is not None:
+        if isinstance(primary_channels, int):
+            assert primary_channels < n_channels, "primary channels must be less than n_channels"
+        elif isinstance(primary_channels, list):
+            assert max(primary_channels) < n_channels, "primary channels must be less than n_channels"
+
     mixing_matrix = generate_mixing_matrix(
         n_channels, n_sources=1, primary_channels=primary_channels, random_state=rng, dtype="float64"
     )

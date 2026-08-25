@@ -2,6 +2,7 @@ Plotting
 ========
 
 .. automodule:: pyntbci.plotting
+   :no-index:
 
 .. currentmodule:: pyntbci.plotting
 

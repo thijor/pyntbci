@@ -20,7 +20,7 @@ import pyntbci
 
 # %%
 # Simulate data
-# -----------------
+# -------------
 # The cell below simulates some synthetic c-VEP data in response to a circularly shifted m-sequence.
 
 FS = 120
@@ -49,7 +49,7 @@ X, y, V = pyntbci.eeg.generate_c_vep(
 
 # %%
 # Inspect data
-# -----------------
+# ------------
 
 # Print data shapes
 print("X", X.shape, "(trials x channels x samples)", X.dtype)  # EEG
@@ -85,9 +85,9 @@ fig.tight_layout()
 ax.set_title("Stimulus time-series")
 
 # %%
-# ERP CCA
-# -----------------
-# The full ERP CCA (eCCA) pipeline is implemented as a scikit-learn compatible class in PyntBCI in
+# eCCA
+# -------
+# The full eCCA pipeline is implemented as a scikit-learn compatible class in PyntBCI in
 # `pyntbci.classifiers.eCCA`. All it needs are the lags if a circular shifted code is used (not used here) in `lags`,
 # the sampling frequency `fs`, and the duration of one period of a code as `cycle_size`.
 #

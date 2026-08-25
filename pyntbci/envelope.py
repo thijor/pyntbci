@@ -94,11 +94,9 @@ def gammatone(
 
     Developed in collaboration with Hanneke Scheppink.
     Adapted from: https://zenodo.org/records/3377911 preprocess_data.m (Neetha Das)
-    Deviations:
-        - Use of gammatone filterbank from scipy
-        - Use of a lowpass rather than a bandpass on the envelope
-        - Use of a butterworth filter rather than an equiripple
-        - No downsample before the lowpass, as it seems redundant
+    Deviations: (1) Use of gammatone filterbank from scipy. (2) Use of a lowpass rather than a bandpass on the envelope.
+    (3) Use of a butterworth filter rather than an equiripple. (4) No downsample before the lowpass, as it seems
+    redundant.
 
     Parameters
     ----------

@@ -5,9 +5,9 @@ This script shows how to use unsupervised adaptive rCCA from PyntBCI for calibra
 Unlike the supervised rCCA (see the rCCA example), the unsupervised variant needs no calibration data: each trial is
 decoded by fitting a separate rCCA per candidate stimulus (as a hypothesis) and selecting the stimulus whose model
 best fits the data. This "instantaneous" mode can be improved by cumulatively learning from previously decoded trials,
-using their predicted labels as pseudo-labels [1,2,3]_. Two further extensions are shown: confidence-weighting (updates
-are driven mostly by confidently decoded trials) and post hoc re-analysis (past trials are re-decoded, and their
-pseudo-labels corrected, with a later, better model).
+using their predicted labels as pseudo-labels [1]_ [2]_ [3]_. Two further extensions are shown: confidence-weighting
+(updates are driven mostly by confidently decoded trials) and post hoc re-analysis (past trials are re-decoded, and
+their pseudo-labels corrected, with a later, better model).
 
 References
 ----------
