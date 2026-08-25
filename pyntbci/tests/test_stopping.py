@@ -395,5 +395,82 @@ class TestValueStopping(unittest.TestCase):
         _assert_predict_running_matches_batch(self, stop)
 
 
+class TestUnsupervisedRCCAStopping(unittest.TestCase):
+    # The online, calibration-free UnsupervisedRCCA commits each decoded trial into a running model, gated by an
+    # update flag. A dynamic-stopping wrapper probes the growing data of a trial many times before deciding, so those
+    # probes must not commit (pollute the model); the trial must fold in exactly once, when it is finally decided
+    # (yh >= 0). These tests exercise that wiring through DistributionStopping (see _supports_update/_commit_stopped).
+    #
+    # UnsupervisedRCCA does not support the running scoring interface, so a stopping loop recomputes it from scratch on
+    # the growing buffer every segment (O(n_segments^2) per trial). To keep the test cheap, only a few trials are used
+    # and the loops are bounded to just past max_time (which forces a decision by then anyway).
+
+    N = 4  # a small subset of trials, enough to exercise the commit mechanics without the O(n^2) recompute cost
+    SEG = int(SEGMENT_TIME * FS)
+    N_STOP_SEG = int(MAX_TIME / SEGMENT_TIME) + 2  # segments up to just past the forced-stop time
+
+    @classmethod
+    def _make_stopping(cls):
+        # gamma_x/gamma_m regularize the (wide) covariances so the short early segments a stopping loop probes stay
+        # invertible (the documented short-trial case); the exact values are immaterial to the commit mechanics tested.
+        est = pyntbci.classifiers.UnsupervisedRCCA(
+            stimulus=V, fs=FS, event="refe", encoding_length=ENCODING_LENGTH, cumulative=True, gamma_x=0.1, gamma_m=0.1
+        )
+        stop = pyntbci.stopping.DistributionStopping(
+            est, segment_time=SEGMENT_TIME, fs=FS, distribution="norm", min_time=MIN_TIME, max_time=MAX_TIME
+        )
+        stop.fit(X[: cls.N], y[: cls.N])  # calibration-free: X, y are not used to train the estimator
+        return stop
+
+    def test_running_loop_probes_read_only_and_commits_once_per_stop(self):
+        stop = self._make_stopping()
+        self.assertEqual(len(stop.estimator_.labels_), 0)  # nothing committed yet
+
+        for i_trial in range(self.N):
+            n_before = len(stop.estimator_.labels_)
+            prev = 0
+            stopped = False
+            for i_seg in range(self.N_STOP_SEG):
+                idx = (1 + i_seg) * self.SEG
+                labels_before = len(stop.estimator_.labels_)
+                cov_n_before = stop.estimator_.cov_.n_  # accumulated observation count; 0 while the model is empty
+                yh = stop.predict(X[[i_trial], :, prev:idx], running=True, reset=(prev == 0))
+                prev = idx
+                if yh[0] < 0:
+                    # a non-decision probe must leave the online model untouched
+                    self.assertEqual(len(stop.estimator_.labels_), labels_before)
+                    self.assertEqual(stop.estimator_.cov_.n_, cov_n_before)
+                else:
+                    # the decision folds this trial in exactly once, with the committed label matching the emitted one
+                    self.assertEqual(len(stop.estimator_.labels_), labels_before + 1)
+                    self.assertEqual(stop.estimator_.labels_[-1], yh[0])
+                    stopped = True
+                    break
+            self.assertTrue(stopped)  # max_time forces a decision by then
+            self.assertEqual(len(stop.estimator_.labels_), n_before + 1)  # exactly one trial folded in
+
+        self.assertEqual(len(stop.estimator_.labels_), self.N)  # one commit per trial overall
+
+    def test_batch_running_commits_each_trial_once(self):
+        stop = self._make_stopping()
+        prev = 0
+        for i_seg in range(self.N_STOP_SEG):
+            idx = (1 + i_seg) * self.SEG
+            stop.predict(X[: self.N, :, prev:idx], running=True, reset=(prev == 0))
+            prev = idx
+            if len(stop.estimator_.labels_) == self.N:  # all trials decided and folded in
+                break
+        # Every trial is decided (max_time forces it) and folds into the shared online model exactly once, never twice
+        self.assertEqual(len(stop.estimator_.labels_), self.N)
+
+    def test_non_running_predict_never_commits(self):
+        stop = self._make_stopping()
+        # A from-scratch (running=False) sweep over growing prefixes is a read-only probe throughout: it must never
+        # commit (mutate) the online model, matching the documented "non-running never commits" behavior.
+        for i_seg in range(self.N_STOP_SEG):
+            stop.predict(X[: self.N, :, : (1 + i_seg) * self.SEG])
+        self.assertEqual(len(stop.estimator_.labels_), 0)
+
+
 if __name__ == "__main__":
     unittest.main()

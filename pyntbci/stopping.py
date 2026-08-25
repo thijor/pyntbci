@@ -39,6 +39,49 @@ def _supports_running(estimator: ClassifierMixin) -> bool:
     )
 
 
+def _supports_update(estimator: ClassifierMixin) -> bool:
+    """Whether estimator has a stateful online model that its predict()/decision_function() optionally commit to,
+    gated by an `update` flag (i.e. UnsupervisedRCCA). A dynamic-stopping loop probes the growing data of a trial
+    repeatedly, so such probes must pass update=False (a pure, side-effect-free decode that leaves the online model
+    untouched); the decided trial is committed once afterwards via partial_fit_predict(update=True), see
+    _commit_stopped(). It is mutually exclusive with _supports_running() (an online update-capable estimator does not
+    support the running scoring interface), so such an estimator always routes through the buffering fallback of
+    _running_predict(), which is what makes the full trial prefix available for the single commit.
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The estimator to check.
+
+    Returns
+    -------
+    supported: bool
+        Whether estimator exposes the online update protocol (an `update` flag on predict()/decision_function() and a
+        partial_fit_predict() to commit one trial).
+    """
+    return isinstance(estimator, pyntbci.classifiers.UnsupervisedRCCA)
+
+
+def _probe_kwargs(estimator: ClassifierMixin) -> dict:
+    """The extra keyword arguments to make a scoring/prediction call on estimator a read-only probe: update=False for
+    an online update-capable estimator (see _supports_update()), so a dynamic-stopping sweep over growing data does
+    not commit (pollute the online model), and nothing (the estimator's own default) otherwise. Note, this is
+    distinct from the running/reset arguments (see _supports_running()): those estimators are never update-capable,
+    so this returns nothing for them.
+
+    Parameters
+    ----------
+    estimator: ClassifierMixin
+        The estimator that will be probed.
+
+    Returns
+    -------
+    kwargs: dict
+        The keyword arguments to add to the probing predict()/decision_function() call.
+    """
+    return {"update": False} if _supports_update(estimator) else {}
+
+
 def _iter_segment_scores(
     estimator: ClassifierMixin,
     X: NDArray,
@@ -76,7 +119,7 @@ def _iter_segment_scores(
         if use_running:
             scores = estimator.decision_function(X[:, :, prev:idx], running=True, reset=(i_segment == 0))
         else:
-            scores = estimator.decision_function(X[:, :, :idx])
+            scores = estimator.decision_function(X[:, :, :idx], **_probe_kwargs(estimator))
         prev = idx
         yield i_segment, scores
 
@@ -116,7 +159,7 @@ def _iter_segment_predictions(
         if use_running:
             yh = estimator.predict(X[:, :, prev:idx], running=True, reset=(i_segment == 0))
         else:
-            yh = estimator.predict(X[:, :, :idx])
+            yh = estimator.predict(X[:, :, :idx], **_probe_kwargs(estimator))
         prev = idx
         yield i_segment, yh
 
@@ -163,9 +206,48 @@ def _running_predict(
         result = method(X_chunk, running=True, reset=reset)
     else:
         r["raw_buffer"] = X_chunk if r["raw_buffer"] is None else np.concatenate((r["raw_buffer"], X_chunk), axis=2)
-        result = method(r["raw_buffer"])
+        result = method(r["raw_buffer"], **_probe_kwargs(stopping.estimator_))
     r["n_samples"] += X_chunk.shape[2]
     return result
+
+
+def _commit_stopped(stopping: ClassifierMixin, yh: NDArray, running: bool) -> None:
+    """Commit the just-decided trials of a running-mode stop decision into an online update-capable estimator.
+
+    A stateful online estimator (see _supports_update(), i.e. UnsupervisedRCCA) is probed read-only (update=False,
+    injected by _probe_kwargs()) while a trial's data grows, so the repeated dynamic-stopping queries never pollute
+    its model. This performs the matching commit: each trial that has now been decided (yh >= 0) is folded into the
+    model exactly once, using the full trial prefix buffered in stopping._running_ (populated by _running_predict(),
+    through which such estimators always route since they do not support the running scoring interface). The commit
+    re-runs the estimator on the same buffered prefix that produced yh, against the still-unmutated model, so the
+    label partial_fit_predict() assigns matches the one the *Stopping class just emitted.
+
+    It is a no-op outside running mode (there is no buffer, and running=False deliberately never commits), for an
+    estimator without an online model to update, or when no trial stopped. Trials already committed earlier in the
+    same running sequence are tracked (in stopping._running_["committed"]) and never committed twice, so in a batch
+    each trial folds in once, at the moment it is decided, in stop-time order.
+
+    Parameters
+    ----------
+    stopping: ClassifierMixin
+        The *Stopping instance whose wrapped estimator to commit to and whose running state (stopping._running_) to
+        use and update.
+    yh: NDArray
+        The just-emitted labels of shape (n_trials,); trials with yh >= 0 have been decided (stopped).
+    running: bool
+        Whether this was a running-mode call; commits happen only in running mode (see above).
+    """
+    if not running:
+        return
+    estimator = stopping.estimator_
+    r = stopping._running_
+    if not _supports_update(estimator) or r is None or r.get("raw_buffer") is None:
+        return
+    committed = r.setdefault("committed", np.zeros(len(yh), dtype=bool))
+    for i in np.flatnonzero(yh >= 0):
+        if not committed[i]:
+            estimator.partial_fit_predict(r["raw_buffer"][i], update=True)  # fold this decided trial into the model
+            committed[i] = True
 
 
 class BayesStopping(ClassifierMixin, BaseEstimator):
@@ -478,7 +560,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator_.predict(X)
+                yh = self.estimator_.predict(X, **_probe_kwargs(self.estimator_))
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -488,7 +570,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator_.decision_function(X)
+                scores = self.estimator_.decision_function(X, **_probe_kwargs(self.estimator_))
 
             # Check if stopped
             if self.method == "bds0":
@@ -538,6 +620,7 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
 
+        _commit_stopped(self, yh, running)
         return yh
 
 
@@ -746,13 +829,14 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator_.predict(X)
+                yh = self.estimator_.predict(X, **_probe_kwargs(self.estimator_))
 
         else:
             if running:
                 _running_predict(self, X, reset, use_decision_function=False)  # advance state, result unused
             yh = np.full(X.shape[0], -1, dtype="int64")
 
+        _commit_stopped(self, yh, running)
         return yh
 
 
@@ -921,7 +1005,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator_.predict(X)
+                yh = self.estimator_.predict(X, **_probe_kwargs(self.estimator_))
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -931,7 +1015,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator_.decision_function(X)
+                scores = self.estimator_.decision_function(X, **_probe_kwargs(self.estimator_))
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -970,6 +1054,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
 
+        _commit_stopped(self, yh, running)
         return yh
 
 
@@ -1152,7 +1237,7 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator_.predict(X)
+                yh = self.estimator_.predict(X, **_probe_kwargs(self.estimator_))
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -1162,7 +1247,7 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator_.decision_function(X)
+                scores = self.estimator_.decision_function(X, **_probe_kwargs(self.estimator_))
 
             # Sort the scores (ascending)
             scores_sorted = np.sort(scores, axis=1)
@@ -1177,6 +1262,7 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
 
+        _commit_stopped(self, yh, running)
         return yh
 
 
@@ -1353,7 +1439,7 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
             if running:
                 yh = _running_predict(self, X, reset, use_decision_function=False)
             else:
-                yh = self.estimator_.predict(X)
+                yh = self.estimator_.predict(X, **_probe_kwargs(self.estimator_))
 
         else:
             i_segment = int(np.round(ctime / self.segment_time)) - 1
@@ -1363,7 +1449,7 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
             if running:
                 scores = _running_predict(self, X, reset, use_decision_function=True)
             else:
-                scores = self.estimator_.decision_function(X)
+                scores = self.estimator_.decision_function(X, **_probe_kwargs(self.estimator_))
 
             # Compute values
             values = np.max(scores, axis=1)
@@ -1375,4 +1461,5 @@ class ValueStopping(ClassifierMixin, BaseEstimator):
             yh = np.argmax(scores, axis=1)
             yh[not_stopped] = -1
 
+        _commit_stopped(self, yh, running)
         return yh

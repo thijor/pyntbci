@@ -127,3 +127,64 @@ plt.ylabel("accuracy")
 plt.legend()
 plt.title("Unsupervised rCCA decoding curve")
 plt.tight_layout()
+
+# %%
+# Online dynamic stopping
+# -----------------------
+# The sections above decode each trial at a fixed duration. Online, we would rather stop as soon as we are confident,
+# so that easy trials are decided quickly. This is dynamic stopping: `DistributionStopping` wraps the classifier and,
+# each time a new segment of data comes in, tests whether the winning score stands out enough from the rest (here, an
+# outlier of a beta distribution fit to the non-winning scores) to commit to a decision [4]_.
+#
+# Below it is combined with the cumulative `UnsupervisedRCCA`, fully online: we loop over the trials in their
+# chronological order and, within each trial, feed the data in growing segments of 100 ms (`running=True`, resetting
+# the running state at the first segment of each trial). `predict` returns -1 while the trial is undecided; the first
+# segment at which it returns a label >= 0 is the stopping point, and that decision also commits the (now decided)
+# trial into the online model exactly once, so the classifier keeps adapting from one trial to the next. Because the
+# cumulative model grows more confident as it accumulates trials, it tends to stop earlier: the stopping time
+# decreases over the course of the session.
+
+segment_time = 0.1  # 100 ms segments
+segment_samples = int(segment_time * FS)
+n_segments = N_SAMPLES // segment_samples
+
+stop = pyntbci.stopping.DistributionStopping(
+    pyntbci.classifiers.UnsupervisedRCCA(**RCCA_KWARGS, cumulative=True),
+    segment_time=segment_time,
+    fs=FS,
+    distribution="beta",
+    target_p=0.95,
+    min_time=0.2,  # do not stop on the first, near-degenerate segments
+    max_time=N_SAMPLES / FS,  # force a decision by the end of the trial
+)
+stop.fit(X=None, y=None)  # calibration-free: sets up the (empty) online model, X and y are not used to train it
+
+yh = np.full(N_TRIALS, -1, dtype="int64")
+stop_times = np.zeros(N_TRIALS)
+for i_trial in range(N_TRIALS):  # trials arrive one by one, in chronological order
+    prev = 0
+    for i_segment in range(n_segments):  # grow the trial 100 ms at a time
+        idx = (1 + i_segment) * segment_samples
+        label = stop.predict(X[[i_trial], :, prev:idx], running=True, reset=(i_segment == 0))[0]
+        prev = idx
+        if label >= 0:  # a decision is made (and this trial folds into the online model), so stop growing it
+            break
+    yh[i_trial] = label
+    stop_times[i_trial] = idx / FS
+
+print(f"Online dynamic-stopping accuracy: {np.mean(yh == y):.2f}")
+
+# Plot the stopping time over the session (in chronological trial order), with a moving average to show the trend. It
+# tends to decrease as the cumulative model adapts and grows more confident.
+window = 5
+trend = np.convolve(stop_times, np.ones(window) / window, mode="valid")
+plt.figure(figsize=(15, 4))
+plt.plot(1 + np.arange(N_TRIALS), stop_times, linestyle="-", marker="o", alpha=0.4, label="stopping time")
+plt.plot(
+    1 + np.arange(window - 1, N_TRIALS), trend, color="C0", linewidth=2, label=f"moving average ({window} trials)"
+)
+plt.xlabel("trial [#]")
+plt.ylabel("stopping time [s]")
+plt.legend()
+plt.title("Unsupervised rCCA with dynamic stopping (online)")
+plt.tight_layout()
