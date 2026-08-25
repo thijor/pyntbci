@@ -126,6 +126,49 @@
     <span class="p">)</span>
 
 
+<span class="k">def</span> <span class="nf">_supports_update</span><span class="p">(</span><span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether estimator has a stateful online model that its predict()/decision_function() optionally commit to,</span>
+<span class="sd">    gated by an `update` flag (i.e. UnsupervisedRCCA). A dynamic-stopping loop probes the growing data of a trial</span>
+<span class="sd">    repeatedly, so such probes must pass update=False (a pure, side-effect-free decode that leaves the online model</span>
+<span class="sd">    untouched); the decided trial is committed once afterwards via partial_fit_predict(update=True), see</span>
+<span class="sd">    _commit_stopped(). It is mutually exclusive with _supports_running() (an online update-capable estimator does not</span>
+<span class="sd">    support the running scoring interface), so such an estimator always routes through the buffering fallback of</span>
+<span class="sd">    _running_predict(), which is what makes the full trial prefix available for the single commit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator: ClassifierMixin</span>
+<span class="sd">        The estimator to check.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    supported: bool</span>
+<span class="sd">        Whether estimator exposes the online update protocol (an `update` flag on predict()/decision_function() and a</span>
+<span class="sd">        partial_fit_predict() to commit one trial).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">UnsupervisedRCCA</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_probe_kwargs</span><span class="p">(</span><span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The extra keyword arguments to make a scoring/prediction call on estimator a read-only probe: update=False for</span>
+<span class="sd">    an online update-capable estimator (see _supports_update()), so a dynamic-stopping sweep over growing data does</span>
+<span class="sd">    not commit (pollute the online model), and nothing (the estimator&#39;s own default) otherwise. Note, this is</span>
+<span class="sd">    distinct from the running/reset arguments (see _supports_running()): those estimators are never update-capable,</span>
+<span class="sd">    so this returns nothing for them.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator: ClassifierMixin</span>
+<span class="sd">        The estimator that will be probed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    kwargs: dict</span>
+<span class="sd">        The keyword arguments to add to the probing predict()/decision_function() call.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;update&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span> <span class="k">if</span> <span class="n">_supports_update</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+
+
 <span class="k">def</span> <span class="nf">_iter_segment_scores</span><span class="p">(</span>
     <span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">,</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -163,7 +206,7 @@
         <span class="k">if</span> <span class="n">use_running</span><span class="p">:</span>
             <span class="n">scores</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">prev</span><span class="p">:</span><span class="n">idx</span><span class="p">],</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="p">(</span><span class="n">i_segment</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">scores</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">],</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="n">estimator</span><span class="p">))</span>
         <span class="n">prev</span> <span class="o">=</span> <span class="n">idx</span>
         <span class="k">yield</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">scores</span>
 
@@ -203,7 +246,7 @@
         <span class="k">if</span> <span class="n">use_running</span><span class="p">:</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">prev</span><span class="p">:</span><span class="n">idx</span><span class="p">],</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="p">(</span><span class="n">i_segment</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">yh</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">yh</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">idx</span><span class="p">],</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="n">estimator</span><span class="p">))</span>
         <span class="n">prev</span> <span class="o">=</span> <span class="n">idx</span>
         <span class="k">yield</span> <span class="n">i_segment</span><span class="p">,</span> <span class="n">yh</span>
 
@@ -250,9 +293,48 @@
         <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">X_chunk</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_chunk</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">],</span> <span class="n">X_chunk</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="n">stopping</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
     <span class="n">r</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">X_chunk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">_commit_stopped</span><span class="p">(</span><span class="n">stopping</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">yh</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Commit the just-decided trials of a running-mode stop decision into an online update-capable estimator.</span>
+
+<span class="sd">    A stateful online estimator (see _supports_update(), i.e. UnsupervisedRCCA) is probed read-only (update=False,</span>
+<span class="sd">    injected by _probe_kwargs()) while a trial&#39;s data grows, so the repeated dynamic-stopping queries never pollute</span>
+<span class="sd">    its model. This performs the matching commit: each trial that has now been decided (yh &gt;= 0) is folded into the</span>
+<span class="sd">    model exactly once, using the full trial prefix buffered in stopping._running_ (populated by _running_predict(),</span>
+<span class="sd">    through which such estimators always route since they do not support the running scoring interface). The commit</span>
+<span class="sd">    re-runs the estimator on the same buffered prefix that produced yh, against the still-unmutated model, so the</span>
+<span class="sd">    label partial_fit_predict() assigns matches the one the *Stopping class just emitted.</span>
+
+<span class="sd">    It is a no-op outside running mode (there is no buffer, and running=False deliberately never commits), for an</span>
+<span class="sd">    estimator without an online model to update, or when no trial stopped. Trials already committed earlier in the</span>
+<span class="sd">    same running sequence are tracked (in stopping._running_[&quot;committed&quot;]) and never committed twice, so in a batch</span>
+<span class="sd">    each trial folds in once, at the moment it is decided, in stop-time order.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stopping: ClassifierMixin</span>
+<span class="sd">        The *Stopping instance whose wrapped estimator to commit to and whose running state (stopping._running_) to</span>
+<span class="sd">        use and update.</span>
+<span class="sd">    yh: NDArray</span>
+<span class="sd">        The just-emitted labels of shape (n_trials,); trials with yh &gt;= 0 have been decided (stopped).</span>
+<span class="sd">    running: bool</span>
+<span class="sd">        Whether this was a running-mode call; commits happen only in running mode (see above).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">running</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">estimator</span> <span class="o">=</span> <span class="n">stopping</span><span class="o">.</span><span class="n">estimator_</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">stopping</span><span class="o">.</span><span class="n">_running_</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_supports_update</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span> <span class="ow">or</span> <span class="n">r</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">committed</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;committed&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yh</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">yh</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">committed</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">estimator</span><span class="o">.</span><span class="n">partial_fit_predict</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># fold this decided trial into the model</span>
+            <span class="n">committed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
 
 <div class="viewcode-block" id="BayesStopping">
@@ -572,7 +654,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
@@ -582,7 +664,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
             <span class="c1"># Check if stopped</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bds0&quot;</span><span class="p">:</span>
@@ -632,6 +714,7 @@
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
+        <span class="n">_commit_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yh</span><span class="p">,</span> <span class="n">running</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
 
@@ -849,13 +932,14 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># advance state, result unused</span>
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
 
+        <span class="n">_commit_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yh</span><span class="p">,</span> <span class="n">running</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
 
@@ -1033,7 +1117,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
@@ -1043,7 +1127,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
             <span class="c1"># Sort the scores (ascending)</span>
             <span class="n">scores_sorted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1082,6 +1166,7 @@
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
+        <span class="n">_commit_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yh</span><span class="p">,</span> <span class="n">running</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
 
@@ -1273,7 +1358,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
@@ -1283,7 +1368,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
             <span class="c1"># Sort the scores (ascending)</span>
             <span class="n">scores_sorted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1298,6 +1383,7 @@
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
+        <span class="n">_commit_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yh</span><span class="p">,</span> <span class="n">running</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
 
@@ -1483,7 +1569,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">yh</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">yh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ctime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_time</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
@@ -1493,7 +1579,7 @@
             <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">_running_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">reset</span><span class="p">,</span> <span class="n">use_decision_function</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">_probe_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="p">))</span>
 
             <span class="c1"># Compute values</span>
             <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1505,6 +1591,7 @@
             <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">yh</span><span class="p">[</span><span class="n">not_stopped</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
+        <span class="n">_commit_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yh</span><span class="p">,</span> <span class="n">running</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">yh</span></div>
 </div>
 

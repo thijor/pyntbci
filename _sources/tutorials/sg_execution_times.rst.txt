@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:03.350** total execution time for 3 files **from tutorials**:
+**00:03.621** total execution time for 3 files **from tutorials**:
 
 .. container::
 
@@ -33,11 +33,11 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_tutorials_tutorial_1_getting_started.py` (``tutorial_1_getting_started.py``)
-     - 00:01.554
+     - 00:01.686
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_2_noise_codes.py` (``tutorial_2_noise_codes.py``)
-     - 00:00.909
+     - 00:00.972
      - 0.0
    * - :ref:`sphx_glr_tutorials_tutorial_3_reconvolution_events.py` (``tutorial_3_reconvolution_events.py``)
-     - 00:00.886
+     - 00:00.963
      - 0.0

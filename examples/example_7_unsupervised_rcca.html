@@ -131,7 +131,8 @@ In 2025 IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp
 BCI. 9th Graz Brain-Computer Interface Conference 2024.</p>
 </aside>
 <aside class="footnote brackets" id="id5" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">4</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id9">2</a>)</span>
 <p>Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a
 code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5),
 056007.</p>
@@ -255,7 +256,70 @@ long enough to decode well on their own.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_example_7_unsupervised_rcca_001.png" srcset="../_images/sphx_glr_example_7_unsupervised_rcca_001.png" alt="Unsupervised rCCA decoding curve" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (15 minutes 2.491 seconds)</p>
+<img src="../_images/sphx_glr_example_7_unsupervised_rcca_001.png" srcset="../_images/sphx_glr_example_7_unsupervised_rcca_001.png" alt="Unsupervised rCCA decoding curve" class = "sphx-glr-single-img"/></section>
+<section id="online-dynamic-stopping">
+<h2>Online dynamic stopping<a class="headerlink" href="#online-dynamic-stopping" title="Link to this heading"></a></h2>
+<p>The sections above decode each trial at a fixed duration. Online, we would rather stop as soon as we are confident,
+so that easy trials are decided quickly. This is dynamic stopping: <cite>DistributionStopping</cite> wraps the classifier and,
+each time a new segment of data comes in, tests whether the winning score stands out enough from the rest (here, an
+outlier of a beta distribution fit to the non-winning scores) to commit to a decision <a class="footnote-reference brackets" href="#id5" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
+<p>Below it is combined with the cumulative <cite>UnsupervisedRCCA</cite>, fully online: we loop over the trials in their
+chronological order and, within each trial, feed the data in growing segments of 100 ms (<cite>running=True</cite>, resetting
+the running state at the first segment of each trial). <cite>predict</cite> returns -1 while the trial is undecided; the first
+segment at which it returns a label &gt;= 0 is the stopping point, and that decision also commits the (now decided)
+trial into the online model exactly once, so the classifier keeps adapting from one trial to the next. Because the
+cumulative model grows more confident as it accumulates trials, it tends to stop earlier: the stopping time
+decreases over the course of the session.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">segment_time</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># 100 ms segments</span>
+<span class="n">segment_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">segment_time</span> <span class="o">*</span> <span class="n">FS</span><span class="p">)</span>
+<span class="n">n_segments</span> <span class="o">=</span> <span class="n">N_SAMPLES</span> <span class="o">//</span> <span class="n">segment_samples</span>
+
+<span class="n">stop</span> <span class="o">=</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">DistributionStopping</span><span class="p">(</span>
+    <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">UnsupervisedRCCA</span><span class="p">(</span><span class="o">**</span><span class="n">RCCA_KWARGS</span><span class="p">,</span> <span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">segment_time</span><span class="o">=</span><span class="n">segment_time</span><span class="p">,</span>
+    <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span>
+    <span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span>
+    <span class="n">target_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">min_time</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>  <span class="c1"># do not stop on the first, near-degenerate segments</span>
+    <span class="n">max_time</span><span class="o">=</span><span class="n">N_SAMPLES</span> <span class="o">/</span> <span class="n">FS</span><span class="p">,</span>  <span class="c1"># force a decision by the end of the trial</span>
+<span class="p">)</span>
+<span class="n">stop</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># calibration-free: sets up the (empty) online model, X and y are not used to train it</span>
+
+<span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+<span class="n">stop_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i_trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">):</span>  <span class="c1"># trials arrive one by one, in chronological order</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i_segment</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>  <span class="c1"># grow the trial 100 ms at a time</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i_segment</span><span class="p">)</span> <span class="o">*</span> <span class="n">segment_samples</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">stop</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="n">i_trial</span><span class="p">],</span> <span class="p">:,</span> <span class="n">prev</span><span class="p">:</span><span class="n">idx</span><span class="p">],</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="p">(</span><span class="n">i_segment</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># a decision is made (and this trial folds into the online model), so stop growing it</span>
+            <span class="k">break</span>
+    <span class="n">yh</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+    <span class="n">stop_times</span><span class="p">[</span><span class="n">i_trial</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">/</span> <span class="n">FS</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Online dynamic-stopping accuracy: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yh</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Plot the stopping time over the session (in chronological trial order), with a moving average to show the trend. It</span>
+<span class="c1"># tends to decrease as the cumulative model adapts and grows more confident.</span>
+<span class="n">window</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">trend</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">stop_times</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="o">/</span> <span class="n">window</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N_TRIALS</span><span class="p">),</span> <span class="n">stop_times</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;stopping time&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">window</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N_TRIALS</span><span class="p">),</span> <span class="n">trend</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;moving average (</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s2"> trials)&quot;</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;trial [#]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;stopping time [s]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Unsupervised rCCA with dynamic stopping (online)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_example_7_unsupervised_rcca_002.png" srcset="../_images/sphx_glr_example_7_unsupervised_rcca_002.png" alt="Unsupervised rCCA with dynamic stopping (online)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Online dynamic-stopping accuracy: 0.83
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (18 minutes 28.071 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-example-7-unsupervised-rcca-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/cf7a59fb92f6b7749d6ffc20ff008211/example_7_unsupervised_rcca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_7_unsupervised_rcca.ipynb</span></code></a></p>
