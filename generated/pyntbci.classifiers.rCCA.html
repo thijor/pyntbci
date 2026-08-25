@@ -140,7 +140,10 @@ exact: two calls fit(X1, y1) then fit(X2, y2) give the same filter as one call f
 concat(y1, y2)). Not supported for ensemble=True, since each class’s covariance would then be running on
 its own, and a class absent from an early batch would otherwise silently never get initialized. To start
 a new running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then
-set_params(running=True) again).</p></li>
+set_params(running=True) again). This also enables unsupervised self-training: seed the statistics with a
+supervised fit(X_train, y_train), then keep adapting from each new, unlabeled trial at its own predicted
+(pseudo-)label with partial_fit_predict() - the supervised-seeded analogue of UnsupervisedRCCA’s cumulative
+mode.</p></li>
 <li><p><strong>response_prior</strong> (<em>NDArray</em><em> (</em><em>default: None</em><em>)</em>) – A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak
 near 100 ms, and a negative peak near 125 ms), sampled at fs, toward which the learned temporal filter <a href="#id11"><span class="problematic" id="id12">r_</span></a> is
 softly regularized (see response_prior_gamma). Given either as one response of length n_event_samples
@@ -248,6 +251,43 @@ which to find the associated stimulus!</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ClassifierMixin</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyntbci.classifiers.rCCA.partial_fit_predict">
+<span class="sig-name descname"><span class="pre">partial_fit_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span></span></span><a class="reference internal" href="../_modules/pyntbci/classifiers.html#rCCA.partial_fit_predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyntbci.classifiers.rCCA.partial_fit_predict" title="Link to this definition"></a></dt>
+<dd><p>Decode trials online and fold each into the running model at its own predicted (pseudo-)label.</p>
+<p>This is the supervised-seeded analogue of the cumulative mode of <cite>UnsupervisedRCCA</cite>: after an initial
+<cite>fit(X_train, y_train)</cite> has seeded the running statistics with (labeled) calibration data, this decodes each
+new, unlabeled trial with the model learned so far and - unless <cite>update=False</cite> - accumulates it back into that
+running covariance at its own prediction, so the model keeps adapting from one trial to the next without any
+further ground-truth labels. It reuses the exact incremental machinery of <cite>running=True</cite> (see the <cite>running</cite>
+parameter): each fold-in is a <cite>fit()</cite> call that adds the trial to the running covariance and rebuilds the
+templates, so it is equivalent to a supervised <cite>fit()</cite> on all trials (real and pseudo-labeled) seen so far.</p>
+<p>Requires <cite>running=True</cite> (otherwise <cite>fit()</cite> would discard the accumulated statistics instead of adding to
+them) and is not supported for <cite>ensemble=True</cite>. Trials are processed one at a time, in the given order, so
+trial i is decoded with the model updated by trials 0..i-1; pass a single trial per call for the online,
+real-time case (passing a batch is equivalent to looping over its trials in order). With <cite>n_components &gt; 1</cite>
+the pseudo-label is taken from the first component (as in <cite>UnsupervisedRCCA</cite>).</p>
+<p>Unlike <cite>UnsupervisedRCCA.predict</cite>, plain <cite>predict</cite>/<cite>decision_function</cite> never update the model themselves; the
+update happens only here. This is what lets a dynamic-stopping loop probe growing data read-only and then
+commit the decided trial exactly once (an rCCA with <cite>running=True</cite> is committable, see <cite>pyntbci.stopping</cite>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>NDArray</em>) – The EEG data of a single trial of shape (n_channels, n_samples), or of a sequence of trials of shape
+(n_trials, n_channels, n_samples), in chronological order.</p></li>
+<li><p><strong>update</strong> (<em>bool</em><em> (</em><em>default: True</em><em>)</em>) – Whether to fold each decoded trial back into the running model at its predicted label. If False, this is
+a pure decode (identical to predict()), leaving the model untouched.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>y</strong> – The predicted labels of shape (n_trials,).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray</p>
 </dd>
 </dl>
 </dd></dl>

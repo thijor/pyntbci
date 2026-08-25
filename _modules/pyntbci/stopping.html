@@ -127,13 +127,14 @@
 
 
 <span class="k">def</span> <span class="nf">_supports_update</span><span class="p">(</span><span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether estimator has a stateful online model that its predict()/decision_function() optionally commit to,</span>
-<span class="sd">    gated by an `update` flag (i.e. UnsupervisedRCCA). A dynamic-stopping loop probes the growing data of a trial</span>
-<span class="sd">    repeatedly, so such probes must pass update=False (a pure, side-effect-free decode that leaves the online model</span>
-<span class="sd">    untouched); the decided trial is committed once afterwards via partial_fit_predict(update=True), see</span>
-<span class="sd">    _commit_stopped(). It is mutually exclusive with _supports_running() (an online update-capable estimator does not</span>
-<span class="sd">    support the running scoring interface), so such an estimator always routes through the buffering fallback of</span>
-<span class="sd">    _running_predict(), which is what makes the full trial prefix available for the single commit.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether estimator&#39;s own predict()/decision_function() commit the trial into a stateful online model by default,</span>
+<span class="sd">    so a read-only probe must actively suppress that with update=False (i.e. UnsupervisedRCCA, whose predict() folds</span>
+<span class="sd">    each trial in unless told otherwise). This is the narrower of the two online-learning capabilities used here: it</span>
+<span class="sd">    is only about silencing predict()&#39;s built-in update during the many growing-data probes of a dynamic-stopping</span>
+<span class="sd">    loop (see _probe_kwargs()). The complementary act of folding a decided trial back in is _supports_commit().</span>
+
+<span class="sd">    An rCCA (running=True) is deliberately not included: its predict()/decision_function() never update the model</span>
+<span class="sd">    (only partial_fit_predict() does), so its probes are already read-only and need no update=False.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -143,18 +144,49 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    supported: bool</span>
-<span class="sd">        Whether estimator exposes the online update protocol (an `update` flag on predict()/decision_function() and a</span>
-<span class="sd">        partial_fit_predict() to commit one trial).</span>
+<span class="sd">        Whether estimator&#39;s predict()/decision_function() take an `update` flag that must be set False to probe it</span>
+<span class="sd">        without committing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">UnsupervisedRCCA</span><span class="p">)</span>
 
 
+<span class="k">def</span> <span class="nf">_supports_commit</span><span class="p">(</span><span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether a dynamic-stopping loop can fold a decided trial back into estimator&#39;s online model via</span>
+<span class="sd">    partial_fit_predict(update=True) (see _commit_stopped()). This is the broader capability: it holds for</span>
+<span class="sd">    UnsupervisedRCCA (calibration-free cumulative learning) and for an rCCA with running=True (its supervised</span>
+<span class="sd">    counterpart, seeded with calibration data and then adapted from each decoded trial at its pseudo-label, see</span>
+<span class="sd">    rCCA.partial_fit_predict). Not supported for ensemble=True, whose per-class filters have no single running model.</span>
+
+<span class="sd">    A committable estimator must be routed through the buffering path of _running_predict() (rather than its own</span>
+<span class="sd">    running scoring, which rCCA otherwise supports) so that the full trial prefix is retained here, in stopping, and</span>
+<span class="sd">    is available to commit once the trial is decided; see _running_predict(). This is a superset of</span>
+<span class="sd">    _supports_update(): every _supports_update() estimator is also committable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator: ClassifierMixin</span>
+<span class="sd">        The estimator to check.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    supported: bool</span>
+<span class="sd">        Whether estimator exposes partial_fit_predict(update=True) to fold one decided trial into its online model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">UnsupervisedRCCA</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">pyntbci</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">rCCA</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="s2">&quot;ensemble&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
 <span class="k">def</span> <span class="nf">_probe_kwargs</span><span class="p">(</span><span class="n">estimator</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The extra keyword arguments to make a scoring/prediction call on estimator a read-only probe: update=False for</span>
-<span class="sd">    an online update-capable estimator (see _supports_update()), so a dynamic-stopping sweep over growing data does</span>
-<span class="sd">    not commit (pollute the online model), and nothing (the estimator&#39;s own default) otherwise. Note, this is</span>
-<span class="sd">    distinct from the running/reset arguments (see _supports_running()): those estimators are never update-capable,</span>
-<span class="sd">    so this returns nothing for them.</span>
+<span class="sd">    an estimator whose predict()/decision_function() would otherwise commit (see _supports_update(), i.e.</span>
+<span class="sd">    UnsupervisedRCCA), so a dynamic-stopping sweep over growing data does not pollute the online model, and nothing</span>
+<span class="sd">    (the estimator&#39;s own default) otherwise. Note, an rCCA is not update-capable in this sense (its predict() never</span>
+<span class="sd">    commits, only partial_fit_predict() does), so this returns nothing for it even when it is committable.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -267,6 +299,11 @@
 <span class="sd">    predict()/decision_function() calls need, in the fallback case, or how many samples have been observed, in</span>
 <span class="sd">    both cases, to resolve the current segment index) lives in stopping._running_.</span>
 
+<span class="sd">    A committable estimator (see _supports_commit()) is always routed through the buffering path, even if it would</span>
+<span class="sd">    otherwise support running scoring (as an rCCA does), because the full trial prefix must be retained here to be</span>
+<span class="sd">    folded into its online model once the trial is decided (see _commit_stopped()); its own bounded running-scoring</span>
+<span class="sd">    state would not preserve the whole trial.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    stopping: ClassifierMixin</span>
@@ -289,7 +326,7 @@
     <span class="n">r</span> <span class="o">=</span> <span class="n">stopping</span><span class="o">.</span><span class="n">_running_</span>
     <span class="n">method_name</span> <span class="o">=</span> <span class="s2">&quot;decision_function&quot;</span> <span class="k">if</span> <span class="n">use_decision_function</span> <span class="k">else</span> <span class="s2">&quot;predict&quot;</span>
     <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stopping</span><span class="o">.</span><span class="n">estimator_</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">_supports_running</span><span class="p">(</span><span class="n">stopping</span><span class="o">.</span><span class="n">estimator_</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_supports_running</span><span class="p">(</span><span class="n">stopping</span><span class="o">.</span><span class="n">estimator_</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_supports_commit</span><span class="p">(</span><span class="n">stopping</span><span class="o">.</span><span class="n">estimator_</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">X_chunk</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_chunk</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">],</span> <span class="n">X_chunk</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -299,20 +336,21 @@
 
 
 <span class="k">def</span> <span class="nf">_commit_stopped</span><span class="p">(</span><span class="n">stopping</span><span class="p">:</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">yh</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">running</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Commit the just-decided trials of a running-mode stop decision into an online update-capable estimator.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Commit the just-decided trials of a running-mode stop decision into a committable estimator&#39;s online model.</span>
 
-<span class="sd">    A stateful online estimator (see _supports_update(), i.e. UnsupervisedRCCA) is probed read-only (update=False,</span>
-<span class="sd">    injected by _probe_kwargs()) while a trial&#39;s data grows, so the repeated dynamic-stopping queries never pollute</span>
-<span class="sd">    its model. This performs the matching commit: each trial that has now been decided (yh &gt;= 0) is folded into the</span>
-<span class="sd">    model exactly once, using the full trial prefix buffered in stopping._running_ (populated by _running_predict(),</span>
-<span class="sd">    through which such estimators always route since they do not support the running scoring interface). The commit</span>
-<span class="sd">    re-runs the estimator on the same buffered prefix that produced yh, against the still-unmutated model, so the</span>
-<span class="sd">    label partial_fit_predict() assigns matches the one the *Stopping class just emitted.</span>
+<span class="sd">    A committable estimator (see _supports_commit(): UnsupervisedRCCA, or an rCCA with running=True) is probed</span>
+<span class="sd">    read-only while a trial&#39;s data grows, so the repeated dynamic-stopping queries never pollute its model</span>
+<span class="sd">    (UnsupervisedRCCA via update=False from _probe_kwargs(); rCCA because its decision_function() never updates). This</span>
+<span class="sd">    performs the matching commit: each trial that has now been decided (yh &gt;= 0) is folded into the model exactly</span>
+<span class="sd">    once, using the full trial prefix buffered in stopping._running_ (populated by _running_predict(), through which</span>
+<span class="sd">    committable estimators always route). The commit re-runs the estimator on the same buffered prefix that produced</span>
+<span class="sd">    yh, against the still-unmutated model, so the label partial_fit_predict() folds in matches the one the *Stopping</span>
+<span class="sd">    class just emitted.</span>
 
-<span class="sd">    It is a no-op outside running mode (there is no buffer, and running=False deliberately never commits), for an</span>
-<span class="sd">    estimator without an online model to update, or when no trial stopped. Trials already committed earlier in the</span>
-<span class="sd">    same running sequence are tracked (in stopping._running_[&quot;committed&quot;]) and never committed twice, so in a batch</span>
-<span class="sd">    each trial folds in once, at the moment it is decided, in stop-time order.</span>
+<span class="sd">    It is a no-op outside running mode (there is no buffer, and running=False deliberately never commits), for a</span>
+<span class="sd">    non-committable estimator, or when no trial stopped. Trials already committed earlier in the same running</span>
+<span class="sd">    sequence are tracked (in stopping._running_[&quot;committed&quot;]) and never committed twice, so in a batch each trial</span>
+<span class="sd">    folds in once, at the moment it is decided, in stop-time order.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -328,7 +366,7 @@
         <span class="k">return</span>
     <span class="n">estimator</span> <span class="o">=</span> <span class="n">stopping</span><span class="o">.</span><span class="n">estimator_</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">stopping</span><span class="o">.</span><span class="n">_running_</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">_supports_update</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span> <span class="ow">or</span> <span class="n">r</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_supports_commit</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span> <span class="ow">or</span> <span class="n">r</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raw_buffer&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">committed</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;committed&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yh</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">yh</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>

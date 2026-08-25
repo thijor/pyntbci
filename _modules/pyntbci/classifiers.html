@@ -1048,7 +1048,10 @@
 <span class="sd">        concat(y1, y2)). Not supported for ensemble=True, since each class&#39;s covariance would then be running on</span>
 <span class="sd">        its own, and a class absent from an early batch would otherwise silently never get initialized. To start</span>
 <span class="sd">        a new running fit from scratch, use a new instance (or call set_params(running=False) once, fit(), then</span>
-<span class="sd">        set_params(running=True) again).</span>
+<span class="sd">        set_params(running=True) again). This also enables unsupervised self-training: seed the statistics with a</span>
+<span class="sd">        supervised fit(X_train, y_train), then keep adapting from each new, unlabeled trial at its own predicted</span>
+<span class="sd">        (pseudo-)label with partial_fit_predict() - the supervised-seeded analogue of UnsupervisedRCCA&#39;s cumulative</span>
+<span class="sd">        mode.</span>
 <span class="sd">    response_prior: NDArray (default: None)</span>
 <span class="sd">        A prior on the expected transient response (e.g. a flash-VEP: a negative peak near 75 ms, a positive peak</span>
 <span class="sd">        near 100 ms, and a negative peak near 125 ms), sampled at fs, toward which the learned temporal filter r_ is</span>
@@ -1511,6 +1514,59 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="n">running</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rCCA.partial_fit_predict">
+<a class="viewcode-back" href="../../generated/pyntbci.classifiers.rCCA.html#pyntbci.classifiers.rCCA.partial_fit_predict">[docs]</a>
+    <span class="k">def</span> <span class="nf">partial_fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode trials online and fold each into the running model at its own predicted (pseudo-)label.</span>
+
+<span class="sd">        This is the supervised-seeded analogue of the cumulative mode of `UnsupervisedRCCA`: after an initial</span>
+<span class="sd">        `fit(X_train, y_train)` has seeded the running statistics with (labeled) calibration data, this decodes each</span>
+<span class="sd">        new, unlabeled trial with the model learned so far and - unless `update=False` - accumulates it back into that</span>
+<span class="sd">        running covariance at its own prediction, so the model keeps adapting from one trial to the next without any</span>
+<span class="sd">        further ground-truth labels. It reuses the exact incremental machinery of `running=True` (see the `running`</span>
+<span class="sd">        parameter): each fold-in is a `fit()` call that adds the trial to the running covariance and rebuilds the</span>
+<span class="sd">        templates, so it is equivalent to a supervised `fit()` on all trials (real and pseudo-labeled) seen so far.</span>
+
+<span class="sd">        Requires `running=True` (otherwise `fit()` would discard the accumulated statistics instead of adding to</span>
+<span class="sd">        them) and is not supported for `ensemble=True`. Trials are processed one at a time, in the given order, so</span>
+<span class="sd">        trial i is decoded with the model updated by trials 0..i-1; pass a single trial per call for the online,</span>
+<span class="sd">        real-time case (passing a batch is equivalent to looping over its trials in order). With `n_components &gt; 1`</span>
+<span class="sd">        the pseudo-label is taken from the first component (as in `UnsupervisedRCCA`).</span>
+
+<span class="sd">        Unlike `UnsupervisedRCCA.predict`, plain `predict`/`decision_function` never update the model themselves; the</span>
+<span class="sd">        update happens only here. This is what lets a dynamic-stopping loop probe growing data read-only and then</span>
+<span class="sd">        commit the decided trial exactly once (an rCCA with `running=True` is committable, see `pyntbci.stopping`).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: NDArray</span>
+<span class="sd">            The EEG data of a single trial of shape (n_channels, n_samples), or of a sequence of trials of shape</span>
+<span class="sd">            (n_trials, n_channels, n_samples), in chronological order.</span>
+<span class="sd">        update: bool (default: True)</span>
+<span class="sd">            Whether to fold each decoded trial back into the running model at its predicted label. If False, this is</span>
+<span class="sd">            a pure decode (identical to predict()), leaving the model untouched.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y: NDArray</span>
+<span class="sd">            The predicted labels of shape (n_trials,).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">,</span> <span class="s2">&quot;partial_fit_predict requires running=True to retain and update the running statistics.&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">,</span> <span class="s2">&quot;partial_fit_predict is not supported for ensemble=True.&quot;</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">yh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="n">i</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:])</span>  <span class="c1"># decode against the model learned so far (read-only)</span>
+            <span class="k">if</span> <span class="n">scores</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># (n_trials, n_classes, n_components): use the first component for the pseudo-label</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">yh</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">update</span><span class="p">:</span>  <span class="c1"># fold this trial in at its pseudo-label; running=True accumulates and rebuilds the templates</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="n">i</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">yh</span><span class="p">[[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">yh</span></div>
 
 
 <div class="viewcode-block" id="rCCA.set_encoding_matrix">
