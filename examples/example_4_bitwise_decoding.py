@@ -248,7 +248,10 @@ for i_fold in range(n_folds):
     accuracy_epoch[i_fold] = np.mean(yh_sliced_tst == y_sliced_tst.flatten())
 
     # Apply pipeline (on trial level)
-    ph_tst = pipeline.predict_proba(X_sliced_tst.reshape((-1, N_CHANNELS, encoding_length)))[:, 1]
+    X_ = X_sliced_tst.reshape((-1, N_CHANNELS, encoding_length))
+    X_ = cca.transform(X_)[0]
+    X_ = vec.transform(X_)
+    ph_tst = lda.predict_proba(X_)[:, 1]
     ph_tst = np.reshape(ph_tst, y_sliced_tst.shape)
     rho = pyntbci.utilities.correlation(ph_tst, _V)
     yh_tst = np.argmax(rho, axis=1)
