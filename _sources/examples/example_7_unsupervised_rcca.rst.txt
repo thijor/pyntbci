@@ -319,7 +319,7 @@ decreases over the course of the session.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (17 minutes 52.290 seconds)
+   **Total running time of the script:** (18 minutes 42.179 seconds)
 
 
 .. _sphx_glr_download_examples_example_7_unsupervised_rcca.py:

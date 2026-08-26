@@ -313,7 +313,7 @@ Note, the dataset contains single-trials of 31.5 seconds long. For many particip
 used, this leads to 100% accuracy. A new parameter is introduced here, that cuts the single-trials to shorter lengths.
 Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-283
+.. GENERATED FROM PYTHON SOURCE LINES 205-286
 
 .. code-block:: Python
 
@@ -363,7 +363,10 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
         accuracy_epoch[i_fold] = np.mean(yh_sliced_tst == y_sliced_tst.flatten())
 
         # Apply pipeline (on trial level)
-        ph_tst = pipeline.predict_proba(X_sliced_tst.reshape((-1, N_CHANNELS, encoding_length)))[:, 1]
+        X_ = X_sliced_tst.reshape((-1, N_CHANNELS, encoding_length))
+        X_ = cca.transform(X_)[0]
+        X_ = vec.transform(X_)
+        ph_tst = lda.predict_proba(X_)[:, 1]
         ph_tst = np.reshape(ph_tst, y_sliced_tst.shape)
         rho = pyntbci.utilities.correlation(ph_tst, _V)
         yh_tst = np.argmax(rho, axis=1)
@@ -431,7 +434,7 @@ Ideally, this parameter is explored, to estimate a so-called decoding curve.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.307 seconds)
+   **Total running time of the script:** (0 minutes 1.608 seconds)
 
 
 .. _sphx_glr_download_examples_example_4_bitwise_decoding.py:

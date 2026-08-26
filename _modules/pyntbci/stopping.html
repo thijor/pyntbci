@@ -379,7 +379,7 @@
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.BayesStopping.html#pyntbci.stopping.BayesStopping">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BayesStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Bayesian dynamic stopping. Fits Gaussian distributions for target and non-target responses, and calculates a</span>
-<span class="sd">    stopping threshold using these and a cost criterion.</span>
+<span class="sd">    stopping threshold using these and a cost criterion (Ahmadi et al. 2021).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -430,6 +430,11 @@
 <span class="sd">        The predicted probability of a false detection of shape (n_segments).</span>
 <span class="sd">    pm_: NDArray</span>
 <span class="sd">        The predicted probability of a miss of shape (n_segments).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Ahmadi, S., Desain, P., &amp; Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response brain-computer</span>
+<span class="sd">    interfacing. Frontiers in Human Neuroscience, 18, 1437965. doi: https://doi.org/10.3389/fnhum.2024.1437965</span>
 <span class="sd">    """</span>
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
@@ -982,7 +987,7 @@
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.DistributionStopping.html#pyntbci.stopping.DistributionStopping">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DistributionStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability</span>
-<span class="sd">    of the target / maximum score to be an outlier of that distribution.</span>
+<span class="sd">    of the target / maximum score to be an outlier of that distribution (Thielen et al. 2021).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1013,6 +1018,12 @@
 <span class="sd">    distributions_: list[dict]</span>
 <span class="sd">        A list of dictionaries containing the parameters of the distribution for each data segment. Only used if</span>
 <span class="sd">        trained=True.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Thielen, J., Marsman, P., Farquhar, J., &amp; Desain, P. (2021). From full calibration to zero training for a</span>
+<span class="sd">    code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5), 056007.</span>
+<span class="sd">    doi: https://doi.org/10.1088/1741-2552/abecef</span>
 <span class="sd">    """</span>
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
@@ -1203,7 +1214,7 @@
 <a class="viewcode-back" href="../../generated/pyntbci.stopping.MarginStopping.html#pyntbci.stopping.MarginStopping">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MarginStopping</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Margin dynamic stopping. Learns threshold margins (difference between best and second-best score) to stop at</span>
-<span class="sd">    such that a targeted accuracy is reached.</span>
+<span class="sd">    such that a targeted accuracy is reached (Thielen et al. 2015).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1235,6 +1246,12 @@
 <span class="sd">        may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.</span>
 <span class="sd">    margins_: NDArray</span>
 <span class="sd">        The trained stopping margins of shape (n_segments).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Thielen, J., van den Broek, P., Farquhar, J., &amp; Desain, P. (2015). Broad-Band visually evoked potentials:</span>
+<span class="sd">    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.</span>
+<span class="sd">    doi: https://doi.org/10.1371/journal.pone.0133797</span>
 <span class="sd">    """</span>
 
     <span class="n">classes_</span><span class="p">:</span> <span class="n">NDArray</span>
