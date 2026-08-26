@@ -267,8 +267,8 @@ def _apply_temporal_prior(
 
 
 class eCCA(ClassifierMixin, BaseEstimator):
-    """eCCA classifier, also called the "reference" method. It computes templates by averaging full sequences and
-    performs a CCA for spatial filtering.
+    """eCCA classifier, also called the "reference" method (Martinez-Cagigal et al. 2021). It computes templates by
+    averaging full sequences and performs a CCA for spatial filtering.
 
     Parameters
     ----------
@@ -338,6 +338,12 @@ class eCCA(ClassifierMixin, BaseEstimator):
         shape is (n_channels, n_components, n_classes).
     T_: NDArray
         The template matrix representing the expected responses of shape (n_classes, n_components, n_samples).
+
+    References
+    ----------
+    Martínez-Cagigal, V., Thielen, J., Santamaría-Vázquez, E., Pérez-Velasco, S., Desain, P., & Hornero, R. (2021).
+    Brain–computer interfaces based on code-modulated visual evoked potentials (c-VEP): a literature review. Journal of
+    Neural Engineering. doi: https://doi.org/10.1088/1741-2552/ac38cf
     """
 
     classes_: NDArray
@@ -860,7 +866,7 @@ class Ensemble(ClassifierMixin, BaseEstimator):
 
 class rCCA(ClassifierMixin, BaseEstimator):
     """Reconvolution CCA classifier. It performs a spatial and temporal decomposition (i.e., reconvolution) within a CCA
-    to perform spatial filtering as well as template prediction.
+    to perform spatial filtering as well as template prediction (Thielen et al. 2015, 2021).
 
     Parameters
     ----------
@@ -974,6 +980,15 @@ class rCCA(ClassifierMixin, BaseEstimator):
         The template matrix representing the expected responses of shape (n_classes, n_components, n_samples) for
         stimulus cycles 2 and further (i.e., it does not include the onset of stimulation but does include the tails of
         previous cycles).
+
+    References
+    ----------
+    Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+    doi: https://doi.org/10.1371/journal.pone.0133797
+    Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+    code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5), 056007.
+    doi: https://doi.org/10.1088/1741-2552/abecef
     """
 
     classes_: NDArray
@@ -1521,7 +1536,8 @@ class rCCA(ClassifierMixin, BaseEstimator):
 
 
 class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
-    """Unsupervised adaptive reconvolution CCA classifier for calibration-free c-VEP decoding.
+    """Unsupervised adaptive reconvolution CCA classifier for calibration-free decoding (Thielen et al. 2021, 2024,
+    2025, 2026).
 
     Instead of a supervised calibration, each trial is decoded by fitting a separate rCCA per candidate stimulus (as
     a hypothesis) and selecting the stimulus whose model best fits the trial, i.e. yields the highest correlation
@@ -1644,6 +1660,19 @@ class UnsupervisedRCCA(ClassifierMixin, BaseEstimator):
         The running covariance of the pseudo-labeled history (only populated if cumulative).
     X_hist_: list
         The (decoded) EEG of the decoded trials, retained only if posthoc, for re-decoding.
+
+    References
+    ----------
+    Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+    code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5), 056007.
+    doi: https://doi.org/10.1088/1741-2552/abecef
+    Thielen, J., Sosulski, J., & Tangermann, M. (2024). Exploring new territory: Calibration-free decoding for c-VEP
+    BCI. 9th Graz Brain-Computer Interface Conference 2024, 325–330. doi: https://doi.org/10.3217/978-3-99161-014-4-057
+    Thielen, J., & Tangermann, M. (2025). Exploring new territory II: Calibration-free decoding for ERP BCI. In 2025
+    IEEE International Conference on Systems, Man, and Cybernetics (SMC) (pp. 3788-3793). IEEE.
+    doi: https://doi.org/10.1109/SMC58881.2025.11342596
+    Thielen, J. (2026). Confidence-weighted cumulative rCCA with post hoc re-analysis: unsupervised adaptive learning
+    for calibration-free c-VEP BCI. 10th Graz Brain-Computer Interface Conference 2026. doi:
     """
 
     classes_: NDArray

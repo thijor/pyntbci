@@ -573,7 +573,7 @@ def modulate(
     References
     ----------
     Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
-    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. DOI: 10.1371/journal.pone.0133797
+    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797. doi: 10.1371/journal.pone.0133797
     """
     stimulus = np.repeat(stimulus, 2, axis=1)
     clock = np.zeros(stimulus.shape, dtype="uint8")

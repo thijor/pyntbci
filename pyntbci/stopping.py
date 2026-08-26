@@ -290,7 +290,7 @@ def _commit_stopped(stopping: ClassifierMixin, yh: NDArray, running: bool) -> No
 
 class BayesStopping(ClassifierMixin, BaseEstimator):
     """Bayesian dynamic stopping. Fits Gaussian distributions for target and non-target responses, and calculates a
-    stopping threshold using these and a cost criterion.
+    stopping threshold using these and a cost criterion (Ahmadi et al. 2021).
 
     Parameters
     ----------
@@ -341,6 +341,11 @@ class BayesStopping(ClassifierMixin, BaseEstimator):
         The predicted probability of a false detection of shape (n_segments).
     pm_: NDArray
         The predicted probability of a miss of shape (n_segments).
+
+    References
+    ----------
+    Ahmadi, S., Desain, P., & Thielen, J. (2024). A Bayesian dynamic stopping method for evoked response brain-computer
+    interfacing. Frontiers in Human Neuroscience, 18, 1437965. doi: https://doi.org/10.3389/fnhum.2024.1437965
     """
 
     classes_: NDArray
@@ -875,7 +880,7 @@ class CriterionStopping(ClassifierMixin, BaseEstimator):
 
 class DistributionStopping(ClassifierMixin, BaseEstimator):
     """Distribution dynamic stopping. Fits a distribution to non-target / non-maximum scores, and tests the probability
-    of the target / maximum score to be an outlier of that distribution.
+    of the target / maximum score to be an outlier of that distribution (Thielen et al. 2021).
 
     Parameters
     ----------
@@ -906,6 +911,12 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
     distributions_: list[dict]
         A list of dictionaries containing the parameters of the distribution for each data segment. Only used if
         trained=True.
+
+    References
+    ----------
+    Thielen, J., Marsman, P., Farquhar, J., & Desain, P. (2021). From full calibration to zero training for a
+    code-modulated visual evoked potentials for brain–computer interface. Journal of Neural Engineering, 18(5), 056007.
+    doi: https://doi.org/10.1088/1741-2552/abecef
     """
 
     classes_: NDArray
@@ -1087,7 +1098,7 @@ class DistributionStopping(ClassifierMixin, BaseEstimator):
 
 class MarginStopping(ClassifierMixin, BaseEstimator):
     """Margin dynamic stopping. Learns threshold margins (difference between best and second-best score) to stop at
-    such that a targeted accuracy is reached.
+    such that a targeted accuracy is reached (Thielen et al. 2015).
 
     Parameters
     ----------
@@ -1119,6 +1130,12 @@ class MarginStopping(ClassifierMixin, BaseEstimator):
         may additionally return -1 to indicate a trial has not yet been stopped, which is not itself a class.
     margins_: NDArray
         The trained stopping margins of shape (n_segments).
+
+    References
+    ----------
+    Thielen, J., van den Broek, P., Farquhar, J., & Desain, P. (2015). Broad-Band visually evoked potentials:
+    re(con)volution in brain-computer interfacing. PLOS ONE, 10(7), e0133797.
+    doi: https://doi.org/10.1371/journal.pone.0133797
     """
 
     classes_: NDArray
